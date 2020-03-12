@@ -1,6 +1,8 @@
-# gen3
-Framework for managing cloud infrastructure via templates. 
+# engine-plugin-aws
 
-It is part of the broader [CodeOnTap](http://codeontap.io) devops framework.
+This plugin provides support for deploying components to Amazon Web Services(aws)
 
-See [wiki](https://github.com/codeontap/gen3/wiki) for further documentation.
+The repo contains two plugins
+
+- aws - The standard component support including services and component implementations
+- awstest - Provides unit testing for the aws plugin components

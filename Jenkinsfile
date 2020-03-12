@@ -15,12 +15,11 @@ pipeline {
                 label 'codeontaplatest'
             }
             environment {
-                GENERATION_DIR="${WORKSPACE}/aws"
-                GENERATION_BASE_DIR="${WORKSPACE}"
+                GENERATION_PLUGIN_DIRS="${WORKSPACE}"
             }
             steps {
                 sh '''#!/usr/bin/env bash
-                ${WORKSPACE}/test/aws/run_aws_template_tests.sh
+                    ./test/run_aws_template_tests.sh
                 '''
             }
         }
