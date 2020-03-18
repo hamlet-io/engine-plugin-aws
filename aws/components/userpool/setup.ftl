@@ -128,7 +128,7 @@
         [#local smsVerification = true]
     [/#if]
 
-    [#if solution.VerifyEmail || ( solution.LoginAliases.seq_contains("email"))]
+    [#if solution.VerifyEmail || ( asArray(solution.LoginAliases)?seq_contains("email"))]
         [#if ! (solution.Schema["email"]!"")?has_content ]
             [@fatal
                 message="Schema Attribute required: email - Add Schema listed in detail"
