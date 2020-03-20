@@ -56,11 +56,11 @@
         [#-- Input parameters to the template --]
         [#local parameters = {}]
 
-        [#list solution.Parameters as id,paramter ]
+        [#list solution.Parameters as id,parameter ]
             [#local parameters = mergeObjects(
                                     parameters,
                                     {
-                                        paramter.Key : paramter.Value
+                                        parameter.Key : parameter.Value
                                     }
 
             )]
