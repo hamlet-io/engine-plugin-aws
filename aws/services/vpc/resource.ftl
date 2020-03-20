@@ -243,6 +243,15 @@
         trafficType /]
 [/#macro]
 
+[#assign VPC_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true,
+            "Export" : true
+        }
+    }
+]
+
 [#macro createVPC
             id
             name
@@ -262,6 +271,7 @@
                 "EnableDnsHostnames" : dnsHostnames
             }
         tags=getCfTemplateCoreTags(name)
+        outputs=VPC_OUTPUT_MAPPINGS
         outputId=id
     /]
 [/#macro]

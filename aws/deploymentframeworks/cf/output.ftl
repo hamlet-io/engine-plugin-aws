@@ -124,12 +124,25 @@
     ]
 [/#function]
 
-[#macro cfOutput id value ]
+[#macro cfOutput id value export=false ]
     [@mergeWithJsonOutput
         name="outputs"
         content=
             {
-                id : { "Value" : value }
+                id : {
+                    "Value" : value
+                } +
+                export?then(
+                    {
+                        "Export" : {
+                            "Name" : {
+                                "Fn::Join" :
+                                    [ ":", [ { "Ref" : "AWS::StackName" }, id ] ]
+                            }
+                        }
+                    },
+                    {}
+                )
             }
     /]
 [/#macro]
@@ -146,7 +159,8 @@
             deletionPolicy=""
             updateReplacePolicy=""
             updatePolicy={}
-            creationPolicy={}]
+            creationPolicy={}
+    ]
 
     [#local localDependencies = [] ]
     [#list asArray(dependencies) as resourceId]
@@ -183,7 +197,8 @@
                 oId,
                 {
                     "Ref" : id
-                }
+                },
+                value.Export!false
             /]
         [#else]
             [@cfOutput
@@ -198,7 +213,8 @@
                             "Fn::GetAtt" : [id, value.Attribute]
                         }
                     )
-                )
+                ),
+                value.Export!false
             /]
         [/#if]
     [/#list]

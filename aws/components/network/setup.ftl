@@ -128,6 +128,8 @@
                 [#local networkACL = getLinkTarget(occurrence, networkLink + { "NetworkACL" : networkACLId }, false )]
                 [#local networkACLId = networkACL.State.Resources["networkACL"].Id ]
 
+                [#local tierSubnetIdRefs = []]
+
                 [#list zones as zone]
 
                     [#if zoneSubnets[zone.Id]?has_content]
@@ -139,6 +141,8 @@
                         [#local routeTableAssociationId = zoneSubnetResources["routeTableAssoc"].Id]
                         [#local networkACLAssociationId = zoneSubnetResources["networkACLAssoc"].Id]
                         [#local routeTableId = (routeTableZones[zone.Id]["routeTable"]).Id]
+
+                        [#local tierSubnetIdRefs += [ getReference(subnetId) ]]
 
                         [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
                             [@createSubnet
@@ -163,6 +167,19 @@
                         [/#if]
                     [/#if]
                 [/#list]
+
+                [#local tierListId = formatId( "subnetList", core.Id, tierId) ]
+                [@cfOutput
+                        tierListId,
+                        {
+                            "Fn::Join": [
+                                ",",
+                                tierSubnetIdRefs
+                            ]
+                        },
+                        true
+                /]
+
             [/#if]
         [/#list]
     [/#if]
