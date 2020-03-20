@@ -251,6 +251,11 @@
         }
     }
 ]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPC_RESOURCE_TYPE
+    mappings=VPC_OUTPUT_MAPPINGS
+/]
 
 [#macro createVPC
             id
