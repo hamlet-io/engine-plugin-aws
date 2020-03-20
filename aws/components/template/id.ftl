@@ -1,0 +1,11 @@
+[#ftl]
+[@addResourceGroupInformation
+    type=TEMPLATE_COMPONENT_TYPE
+    attributes=[]
+    provider=AWS_PROVIDER
+    resourceGroup=DEFAULT_RESOURCE_GROUP
+    services=
+        [
+            AWS_CLOUDFORMATION_SERVICE
+        ]
+/]

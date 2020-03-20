@@ -5,6 +5,7 @@
 [#assign AWS_ATHENA_SERVICE = "athena"]
 [#assign AWS_CERTIFICATE_MANAGER_SERVICE = "acm"]
 [#assign AWS_CLOUDFRONT_SERVICE = "cf"]
+[#assign AWS_CLOUDFORMATION_SERVICE = "cfn" ]
 [#assign AWS_CLOUDMAP_SERVICE = "cloudmap"]
 [#assign AWS_CLOUDWATCH_SERVICE = "cw"]
 [#assign AWS_COGNITO_SERVICE = "cognito"]
