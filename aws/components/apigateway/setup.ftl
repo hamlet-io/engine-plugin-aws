@@ -90,7 +90,7 @@
                     [#if isLinkTargetActive(linkTarget) ]
                         [#local stageVariables +=
                             {
-                                formatSettingName(link.Name, "DOCKER") : linkTargetAttributes.FQDN
+                                formatSettingName(true, link.Name, "DOCKER") : linkTargetAttributes.FQDN
                             }
                         ]
                     [/#if]
@@ -101,6 +101,7 @@
                     [#-- even if lambda have yet to be deployed                                  --]
                     [#local stageVariableName =
                             formatSettingName(
+                                true,
                                 link.Name,
                                 linkTargetCore.SubComponent.Name,
                                 "LAMBDA")
