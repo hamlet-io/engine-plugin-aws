@@ -13,9 +13,6 @@
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
-    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
 
     [#local codeSrcBucket = getRegistryEndPoint("scripts", occurrence)]
     [#local codeSrcPrefix = formatRelativePath(
