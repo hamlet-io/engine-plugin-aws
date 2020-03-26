@@ -8,12 +8,6 @@
     [#local solution = occurrence.Configuration.Solution]
 
     [#local id = formatResourceId(COT_ADAPTOR_RESOURCE_TYPE, core.Id)]
-
-    [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ] )]
-    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-
     [#assign componentState =
         {
             "Resources" : {
