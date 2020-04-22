@@ -880,68 +880,8 @@
     }
   },
   "Environments": {
-    "alm": {
-      "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
-        }
-      }
-    },
-    "alpha": {
-      "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 2
-        }
-      }
-    },
-    "beta": {
-      "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
-        }
-      }
-    },
-    "int": {
-      "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
-        }
-      }
-    },
-    "aat": {
-      "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
-        }
-      }
-    },
-    "uat": {
-      "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
-        }
-      }
-    },
-    "system": {
-      "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
-        }
-      }
-    },
     "preprod": {
       "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
-        },
         "DeadLetterQueue": {
           "MaxReceives": 13
         }
@@ -949,10 +889,6 @@
     },
     "stg": {
       "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
-        },
         "DeadLetterQueue": {
           "MaxReceives": 13
         }
@@ -963,20 +899,8 @@
         "AutoMinorVersionUpgrade": false
       },
       "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
-        },
         "DeadLetterQueue": {
           "MaxReceives": 13
-        }
-      }
-    },
-    "trn": {
-      "Operations": {
-        "FlowLogs": {
-          "Enabled": true,
-          "Expiration": 7
         }
       }
     }
