@@ -461,6 +461,17 @@
         dependencies=""
         outputId=""
  ]
+
+    [#-- override some of the providers which use longer names --]
+    [#switch providerType ]
+        [#case "Amazon" ]
+            [#local providerType = "LoginWithAmazon" ]
+            [#break]
+        [#case "Apple"]
+            [#local providerType = "SignInWithApple" ]
+            [#break]
+    [/#switch]
+
     [@cfResource
         id=id
         type="AWS::Cognito::UserPoolIdentityProvider"

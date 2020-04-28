@@ -358,18 +358,80 @@
             [/#list]
 
             [#switch authProviderEngine ]
+                [#case "Google"]
+                [#case "Amazon"]
+                    [#local providerDetails = {
+                        "client_id" : valueIfContent(
+                                            (subSolution[authProviderName].ClientId)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_CLIENT_ID"])!"COTFatal: ClientId not defined"
+                        ),
+                        "client_secret" : valueIfContent(
+                                            (subSolution[authProviderName].ClientSecret)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_CLIENT_SECRET"])!"COTFatal: ClientSecret not defined"
+                        ),
+                        "authorize_scopes" : valueIfContent(
+                                            (subSolution[authProviderName].Scopes)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_SCOPES"])!"COTFatal: Scopes not defined"
+                        )
+                    }]
+                    [#break]
+
+                [#case "Facebook" ]
+                    [#local providerDetails = {
+                        "client_id" : valueIfContent(
+                                            (subSolution[authProviderName].ClientId)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_CLIENT_ID"])!"COTFatal: ClientId not defined"
+                        ),
+                        "client_secret" : valueIfContent(
+                                            (subSolution[authProviderName].ClientSecret)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_CLIENT_SECRET"])!"COTFatal: ClientSecret not defined"
+                        ),
+                        "authorize_scopes" : valueIfContent(
+                                            (subSolution[authProviderName].Scopes)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_SCOPES"])!"COTFatal: Scopes not defined"
+                        ),
+                        "api_version" : valueIfContent(
+                                            (subSolution[authProviderName].APIVersion)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_API_VERSION"])!"COTFatal: APIVersion not defined"
+                        )
+                    }]
+                    [#break]
+
+                [#case "Apple"]
+                    [#local providerDetails = {
+                        "client_id" : valueIfContent(
+                                            (subSolution[authProviderName].ClientId)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_CLIENT_ID"])!"COTFatal: ClientId not defined"
+                        ),
+                        "team_id" : valueIfContent(
+                                            (subSolution[authProviderName].TeamId)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_TEAM_ID"])!"COTFatal: TeamId not defined"
+                        ),
+                        "key_id" : valueIfContent(
+                                            (subSolution[authProviderName].KeyId)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_KEY_ID"])!"COTFatal: KeyId not defined"
+                        ),
+                        "private_key" : valueIfContent(
+                                            (subSolution[authProviderName].PrivateKey)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_PRIVATE_KEY"])!"COTFatal: PrivateKey not defined"
+                        ),
+                        "authorize_scopes" : valueIfContent(
+                                            (subSolution[authProviderName].Scopes)!"",
+                                            (environment[ settingsPrefix + "_" + authProviderName?upper_case + "_SCOPES"])!"COTFatal: Scopes not defined"
+                        )
+                    }]
+                    [#break]
+
                 [#case "SAML" ]
                     [#local providerDetails = {
                         "MetadataURL" : valueIfContent(
                                             (subSolution.SAML.MetadataUrl)!"",
                                             (environment[ settingsPrefix + "SAML_METADATA_URL"])!"COTFatal: MetadataUrl not defined"
                         ),
-                        "IDPSignout" : valueIfContent(
-                                            (environment[settingsPrefix + "SAML_IDP_SIGNOUT"])!"",
-                                            subSolution.SAML.EnableIDPSignOut?c
-                        )
+                        "IDPSignout" :  subSolution.SAML.EnableIDPSignOut
                     }]
                     [#break]
+
                 [#case "OIDC" ]
 
                     [#local providerDetails = {
