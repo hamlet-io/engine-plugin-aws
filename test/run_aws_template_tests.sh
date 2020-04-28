@@ -25,7 +25,7 @@ for unit in $UNIT_LIST; do
     ${GENERATION_DIR}/createTemplate.sh -i mock -p aws -p awstest -o "${TEST_OUTPUT_DIR}" -l application -u $unit > /dev/null 2>&1 || true
 done
 
-cot test generate --directory "${TEST_OUTPUT_DIR}" -o "${TEST_OUTPUT_DIR}/test_templates.py"
+hamlet test generate --directory "${TEST_OUTPUT_DIR}" -o "${TEST_OUTPUT_DIR}/test_templates.py"
 
 cd "${TEST_OUTPUT_DIR}"
 echo "Running Tests..."
