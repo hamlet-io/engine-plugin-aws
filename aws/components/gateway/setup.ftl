@@ -209,7 +209,7 @@
                                                     id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
                                                     routeTableId=zoneRouteTableId
                                                     destinationType="nat"
-                                                    destinationAttribtue=getReference(natGatewayId)
+                                                    destinationAttribute=getReference(natGatewayId)
                                                     destinationCidr=cidr
                                                 /]
                                             [/#list]
@@ -224,7 +224,7 @@
                                                             id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
                                                             routeTableId=zoneRouteTableId
                                                             destinationType="gateway"
-                                                            destinationAttribtue=getReference(IGWId)
+                                                            destinationAttribute=getReference(IGWId)
                                                             destinationCidr=cidr
                                                             dependencies=IGWAttachementId
                                                         /]
@@ -262,7 +262,7 @@
                                                     id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
                                                     routeTableId=zoneRouteTableId
                                                     destinationType=endpointType
-                                                    destinationAttribtue=gateway.EndpointAttribute
+                                                    destinationAttribute=gateway.EndpointAttribute
                                                     destinationCidr=cidr
                                                 /]
                                             [/#list]

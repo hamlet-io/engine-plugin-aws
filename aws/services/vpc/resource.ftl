@@ -385,7 +385,7 @@
             id,
             routeTableId,
             destinationType,
-            destinationAttribtue,
+            destinationAttribute,
             destinationCidr,
             dependencies=""]
 
@@ -399,7 +399,7 @@
         [#case "gateway"]
             [#local properties +=
                 {
-                    "GatewayId" : destinationAttribtue
+                    "GatewayId" : destinationAttribute
                 }
             ]
             [#break]
@@ -407,7 +407,7 @@
         [#case "instance"]
             [#local properties +=
                 {
-                    "InstanceId" : destinationAttribtue
+                    "InstanceId" : destinationAttribute
                 }
             ]
             [#break]
@@ -415,7 +415,7 @@
         [#case "networkinterface" ]
             [#local properties +=
                 {
-                    "NetworkInterfaceId" : destinationAttribtue
+                    "NetworkInterfaceId" : destinationAttribute
                 }
             ]
             [#break]
@@ -423,7 +423,7 @@
         [#case "nat"]
             [#local properties +=
                 {
-                    "NatGatewayId" : destinationAttribtue
+                    "NatGatewayId" : destinationAttribute
                 }
             ]
             [#break]
@@ -431,7 +431,7 @@
         [#case "peering" ]
             [#local properties +=
                 {
-                    "VpcPeeringConnectionId" : destinationAttribtue
+                    "VpcPeeringConnectionId" : destinationAttribute
                 }
             ]
             [#break]
@@ -439,7 +439,7 @@
         [#case "transit" ]
             [#local properties +=
                 {
-                    "TransitGatewayId" : destinationAttribtue
+                    "TransitGatewayId" : destinationAttribute
                 }
             ]
             [#break]

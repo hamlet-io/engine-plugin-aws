@@ -223,7 +223,7 @@
                                 id=legacyIGWRouteId
                                 routeTableId=routeTableId
                                 destinationType="gateway"
-                                destinationAttribtue=getReference(legacyIGWResourceId)
+                                destinationAttribute=getReference(legacyIGWResourceId)
                                 destinationCidr="0.0.0.0/0"
                             /]
                         [/#if]
