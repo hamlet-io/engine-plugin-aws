@@ -187,11 +187,11 @@
                     [#local resources = mergeObjects( resources, {
                         "vpcEndpoints" : {
                             "vpcEndpoint" + id : {
-                                "Id" : formatResourceId(AWS_VPC_VPCENDPOINNT_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(id, "X")),
+                                "Id" : formatResourceId(AWS_VPC_VPCENDPOINT_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(id, "X")),
                                 "EndpointType" : networkEndpoint.Type?lower_case,
                                 "EndpointZones" : endpointZones[id],
                                 "ServiceName" : networkEndpoint.ServiceName,
-                                "Type" : AWS_VPC_VPCENDPOINNT_RESOURCE_TYPE
+                                "Type" : AWS_VPC_VPCENDPOINT_RESOURCE_TYPE
                             }
                         }
                     })]
