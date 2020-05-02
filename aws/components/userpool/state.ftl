@@ -163,6 +163,10 @@
     [#local parentAttributes = parent.State.Attributes ]
     [#local parentResources = parent.State.Resources ]
 
+    [#local encryptionScheme = (solution.EncryptionScheme)?has_content?then(
+                    solution.EncryptionScheme?ensure_ends_with(":"),
+                    "" )]
+
     [#if core.SubComponent.Id == "default" && (parentResources["client"]!{})?has_content ]
         [#local userPoolClientId    = parentResources["client"].Id ]
         [#local userPoolClientName  = parentResources["client"].Name ]
@@ -186,7 +190,7 @@
             attributeIfTrue(
                 "SECRET",
                 solution.ClientGenerateSecret,
-                getExistingReference(userPoolClientId. KEY_ATTRIBUTE_TYPE)
+                getExistingReference(userPoolClientId, KEY_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme)
             ),
             "Roles" : {
                 "Inbound" : {},
