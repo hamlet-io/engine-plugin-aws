@@ -384,20 +384,22 @@
 [#macro createRoute
             id,
             routeTableId,
-            route
+            destinationType,
+            destinationAttribtue,
+            destinationCidr,
             dependencies=""]
 
     [#local properties =
         {
             "RouteTableId" : getReference(routeTableId),
-            "DestinationCidrBlock" : route.CIDR
+            "DestinationCidrBlock" : destinationCidr
         }
     ]
-    [#switch route.Type]
+    [#switch (destinationType)?lower_case ]
         [#case "gateway"]
             [#local properties +=
                 {
-                    "GatewayId" : getReference(route.IgwId)
+                    "GatewayId" : destinationAttribtue
                 }
             ]
             [#break]
@@ -405,7 +407,15 @@
         [#case "instance"]
             [#local properties +=
                 {
-                    "InstanceId" : getReference(route.InstanceId)
+                    "InstanceId" : destinationAttribtue
+                }
+            ]
+            [#break]
+
+        [#case "networkinterface" ]
+            [#local properties +=
+                {
+                    "NetworkInterfaceId" : destinationAttribtue
                 }
             ]
             [#break]
@@ -413,10 +423,27 @@
         [#case "nat"]
             [#local properties +=
                 {
-                    "NatGatewayId" : getReference(route.NatId)
+                    "NatGatewayId" : destinationAttribtue
                 }
             ]
             [#break]
+
+        [#case "peering" ]
+            [#local properties +=
+                {
+                    "VpcPeeringConnectionId" : destinationAttribtue
+                }
+            ]
+            [#break]
+
+        [#case "transit" ]
+            [#local properties +=
+                {
+                    "TransitGatewayId" : destinationAttribtue
+                }
+            ]
+            [#break]
+
 
     [/#switch]
     [@cfResource

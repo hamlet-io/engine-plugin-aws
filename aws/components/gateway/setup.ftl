@@ -208,12 +208,9 @@
                                                 [@createRoute
                                                     id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
                                                     routeTableId=zoneRouteTableId
-                                                    route=
-                                                        {
-                                                            "Type" : "nat",
-                                                            "NatId" : natGatewayId,
-                                                            "CIDR" : cidr
-                                                        }
+                                                    destinationType="nat"
+                                                    destinationAttribtue=getReference(natGatewayId)
+                                                    destinationCidr=cidr
                                                 /]
                                             [/#list]
                                             [#break]
@@ -226,12 +223,9 @@
                                                         [@createRoute
                                                             id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
                                                             routeTableId=zoneRouteTableId
-                                                            route=
-                                                                {
-                                                                    "Type" : "gateway",
-                                                                    "IgwId" : IGWId,
-                                                                    "CIDR" : cidr
-                                                                }
+                                                            destinationType="gateway"
+                                                            destinationAttribtue=getReference(IGWId)
+                                                            destinationCidr=cidr
                                                             dependencies=IGWAttachementId
                                                         /]
                                                     [/#list]
@@ -242,6 +236,37 @@
                                                     /]
                                                 [/#if]
                                             [/#if]
+                                            [#break]
+
+                                        [#case "endpoint" ]
+                                            [#local endpointScope = gwSolution.EndpointScope ]
+                                            [#local endpointType = gwSolution.EndpointType ]
+
+                                            [#switch endpointScope ]
+                                                [#case "zone" ]
+                                                    [#local zoneResources = gwResources["Zones"]]
+                                                    [#if multiAZ ]
+                                                        [#local gateway = zoneResources[zone]["endpoint"] ]
+                                                    [#else]
+                                                        [#local gateway = zoneResources[zones[0]]["endpoint"] ]
+                                                    [/#if]
+                                                    [#break]
+
+                                                [#case "network" ]
+                                                    [#local gateway = gwResources["endpoint"]]
+                                                    [#break]
+                                            [/#switch]
+
+                                            [#list cidrs as cidr ]
+                                                [@createRoute
+                                                    id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
+                                                    routeTableId=zoneRouteTableId
+                                                    destinationType=endpointType
+                                                    destinationAttribtue=gateway.EndpointAttribute
+                                                    destinationCidr=cidr
+                                                /]
+                                            [/#list]
+
                                             [#break]
                                         [/#switch]
                                     [/#if]

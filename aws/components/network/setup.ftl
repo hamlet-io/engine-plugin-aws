@@ -222,12 +222,9 @@
                             [@createRoute
                                 id=legacyIGWRouteId
                                 routeTableId=routeTableId
-                                route=
-                                    {
-                                        "Type" : "gateway",
-                                        "IgwId" : legacyIGWResourceId,
-                                        "CIDR" : "0.0.0.0/0"
-                                    }
+                                destinationType="gateway"
+                                destinationAttribtue=getReference(legacyIGWResourceId)
+                                destinationCidr="0.0.0.0/0"
                             /]
                         [/#if]
 

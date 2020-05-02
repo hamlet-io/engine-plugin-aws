@@ -83,6 +83,53 @@
                 }]
             [#break]
 
+        [#case "endpoint" ]
+
+            [#local scope = solution.EndpointScope]
+
+            [#list solution.Endpoints as id,endpoint ]
+                [#local endpointLink = getLinkTarget(occurrence, endpoint.Link)]
+
+                [#if endpointLink?has_content ]
+                    [#switch scope ]
+
+                        [#case "zone" ]
+
+                            [#local endpointZone = zones[endpoint.Zone] ]
+
+                            [#if asArray(zoneResources)?seq_contains( endpointZone.Id )]
+                                [#local zoneResources = mergeObjects(
+                                        zoneResources,
+                                        {
+                                            endpointZone.Id : {
+                                                "endpoint" : {
+                                                    "Id" : formatResourceId( AWS_VPC_ENDPOINT_RESOURCE_TYPE, core.Id, endpointZone.Id),
+                                                    "EndpointAttribute" : (endpointLink.State.Attributes[endpoint.Attribute])!"",
+                                                    "Type" : AWS_VPC_ENDPOINT_RESOURCE_TYPE
+                                                }
+                                            }
+                                        }
+                                )]
+                            [/#if]
+                            [#break]
+
+                        [#case "network" ]
+                            [#local resources = mergeObjects(
+                                    resources,
+                                    {
+                                        "endpoint" : {
+                                            "Id" : formatResourceId( AWS_VPC_ENDPOINT_RESOURCE_TYPE, core.Id ),
+                                            "EndpointAttribute" : (endpointLink.State.Attributes[endpoint.Attribute])!"",
+                                            "Type" : AWS_VPC_ENDPOINT_RESOURCE_TYPE
+                                        }
+                                    }
+                            )]
+                            [#break]
+                    [/#switch]
+                [/#if]
+            [/#list]
+            [#break]
+
         [#default]
             [@fatal
                 message="Unknown Engine Type"
@@ -125,9 +172,8 @@
 
     [#switch engine ]
         [#case "natgw"]
-            [#break]
-
         [#case "igw"]
+        [#case "endpoint" ]
             [#break]
 
         [#case "vpcendpoint"]
@@ -141,11 +187,11 @@
                     [#local resources = mergeObjects( resources, {
                         "vpcEndpoints" : {
                             "vpcEndpoint" + id : {
-                                "Id" : formatResourceId(AWS_VPC_ENDPOINNT_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(id, "X")),
+                                "Id" : formatResourceId(AWS_VPC_VPCENDPOINNT_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(id, "X")),
                                 "EndpointType" : networkEndpoint.Type?lower_case,
                                 "EndpointZones" : endpointZones[id],
                                 "ServiceName" : networkEndpoint.ServiceName,
-                                "Type" : AWS_VPC_ENDPOINNT_RESOURCE_TYPE
+                                "Type" : AWS_VPC_VPCENDPOINNT_RESOURCE_TYPE
                             }
                         }
                     })]

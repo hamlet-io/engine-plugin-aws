@@ -20,10 +20,9 @@
 
 [#assign AWS_VPC_IGW_RESOURCE_TYPE = "igw" ]
 [#assign AWS_VPC_IGW_ATTACHMENT_TYPE = formatId( AWS_VPC_IGW_RESOURCE_TYPE, "attachment") ]
-
 [#assign AWS_VPC_NAT_GATEWAY_RESOURCE_TYPE = "natGateway" ]
-
-[#assign AWS_VPC_ENDPOINNT_RESOURCE_TYPE = "vpcEndPoint"]
+[#assign AWS_VPC_VPCENDPOINNT_RESOURCE_TYPE = "vpcEndPoint"]
+[#assign AWS_VPC_ENDPOINT_RESOURCE_TYPE = "endpointGateway" ]
 
 [#function formatSecurityGroupId ids...]
     [#return formatResourceId(
@@ -195,14 +194,7 @@
 
 [#function formatVPCEndPointId service extensions...]
     [#return formatSegmentResourceId(
-        AWS_VPC_ENDPOINNT_RESOURCE_TYPE,
+        AWS_VPC_VPCENDPOINNT_RESOURCE_TYPE,
         service,
         extensions)]
 [/#function]
-
-
-
-
-
-
-
