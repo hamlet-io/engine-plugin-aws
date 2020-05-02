@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_userpool_cf_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets=["template" ] /]
+    [@addDefaultGenerationContract subsets=["template", "epilogue" ] /]
 [/#macro]
 
 [#macro aws_userpool_cf_setup_solution occurrence ]
@@ -9,6 +9,12 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
     [#local resources = occurrence.State.Resources]
+
+    [#-- Baseline component lookup --]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local cmkKeyId = baselineComponentIds["Encryption"]!"" ]
+    [#local cmkKeyArn = getReference(cmkKeyId, ARN_ATTRIBUTE_TYPE)]
 
     [#local userPoolId                 = resources["userpool"].Id]
     [#local userPoolName               = resources["userpool"].Name]
@@ -634,6 +640,29 @@
                     callbackUrls=callbackUrls
                     logoutUrls=logoutUrls
                     dependencies=clientDepedencies
+                /]
+            [/#if]
+            [#if deploymentSubsetRequired("epilogue", false) && subSolution.ClientGenerateSecret ]
+                [@addToDefaultBashScriptOutput
+                    content=
+                    [
+                        r'case ${STACK_OPERATION} in',
+                        r'  create|update)',
+                        r'    user_pool_id="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + userPoolId + r' "ref" || return $?)"',
+                        r'    client_id="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + userPoolClientId + r' "ref" || return $?)"',
+                        r'    client_secret="$(aws --region "' + regionId + r'" --output text cognito-idp describe-user-pool-client --user-pool-id "${user_pool_id}" --client-id "${client_id}" --query "UserPoolClient.ClientSecret" || return $?)"',
+                        r'    encrypted_client_secret="$(encrypt_kms_string "' + regionId + r'" ' + r' "${client_secret}" ' + r' "' + cmkKeyArn + r'" || return $?)"'
+                    ] +
+                    pseudoStackOutputScript(
+                        "Userpool Client secret",
+                        {
+                            formatId(userPoolClientId, "key") : r'${encrypted_client_secret}'
+                        },
+                        userPoolClientId
+                    ) +
+                    [
+                        "esac"
+                    ]
                 /]
             [/#if]
         [/#if]

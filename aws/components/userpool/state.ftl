@@ -182,7 +182,12 @@
             {
                 "CLIENT" : getExistingReference(userPoolClientId),
                 "LB_OAUTH_SCOPE" : (solution.OAuth.Scopes)?join(" ")
-            },
+            } +
+            attributeIfTrue(
+                "SECRET",
+                solution.ClientGenerateSecret,
+                getExistingReference(userPoolClientId. KEY_ATTRIBUTE_TYPE)
+            ),
             "Roles" : {
                 "Inbound" : {},
                 "Outbound" : {}
