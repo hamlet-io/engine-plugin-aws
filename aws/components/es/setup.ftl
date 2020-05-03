@@ -98,8 +98,8 @@
     [#local cognitoIntegration = false ]
     [#local cognitoConfig = {
             "Enabled" : false,
-            "RoleArn" : getExistingReference(esServiceRoleId, ARN_ATTRIBUTE_TYPE)
-    } ]
+            "RoleArn" : getReference(esServiceRoleId, ARN_ATTRIBUTE_TYPE)
+    }]
 
     [#local esPolicyStatements = [] ]
 
