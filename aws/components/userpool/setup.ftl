@@ -363,6 +363,26 @@
                 }]
             [/#list]
 
+            [#local requiredProviderName = ""]
+            [#switch authProviderEngine]
+                [#case "Facebook"]
+                [#case "Google"]
+                    [#local requiredProviderName = authProviderEngine ]
+                    [#break]
+                [#case "Amazon"]
+                    [#local requiredProviderName = "LoginWithAmazon" ]
+                    [#break]
+            [/#switch]
+
+            [#if requiredProviderName?has_content && (requiredProviderName != authProviderName) ]
+                [@fatal
+                    message="The \"" + authProviderEngine + "\" auth provider requires a fixed value of \"" + requiredProviderName + "\" for the provider name"
+                    context=authProviderEngine
+                    detail=authProviderName
+                /]
+                [#continue]
+            [/#if]
+
             [#switch authProviderEngine ]
                 [#case "Google"]
                 [#case "Amazon"]
