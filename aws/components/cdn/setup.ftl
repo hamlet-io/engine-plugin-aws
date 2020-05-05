@@ -199,11 +199,7 @@
                 [#local spaBaselineComponentIds = getBaselineComponentIds(spaBaselineLinks)]
                 [#local cfAccess = getExistingReference(spaBaselineComponentIds["CDNOriginKey"]!"")]
 
-                [#if isPresent(originLinkTargetConfiguration.Solution.Website) ]
-                    [#local originBucket = (originLinkTargetAttributes["WEBSITE_URL"])?remove_beginning("http://") ]
-                [#else]
-                    [#local originBucket = originLinkTargetAttributes["NAME"] ]
-                [/#if]
+                [#local originBucket = originLinkTargetAttributes["NAME"] ]
 
                 [#local origin =
                     getCFS3Origin(
