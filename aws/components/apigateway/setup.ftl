@@ -416,7 +416,7 @@
                 certificate=valueIfContent(
                     getCFCertificate(
                         cfResources["distribution"].CertificateId,
-                        securityProfile.HTTPSProfile,
+                        securityProfile.CDNHTTPSProfile,
                         solution.CloudFront.AssumeSNI),
                     cfResources["distribution"].CertificateId!"")
                 comment=cfResources["distribution"].Name
@@ -454,7 +454,8 @@
                 type="AWS::ApiGateway::DomainName"
                 properties=
                     {
-                        "DomainName" : value["domain"].Name
+                        "DomainName" : value["domain"].Name,
+                        "SecurityPolicy" : securityProfile.GatewayHTTPSProfile
                     } +
                     valueIfTrue(
                         {
