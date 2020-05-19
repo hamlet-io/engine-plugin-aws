@@ -288,6 +288,22 @@
 
     [#local executionRoleId = formatDependentRoleId(taskId, "execution")]
 
+    [#local secGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id )]
+
+    [#local occurrenceNetwork = getOccurrenceNetwork(parent) ]
+    [#local networkLink = occurrenceNetwork.Link!{} ]
+
+    [#local networkLinkTarget = getLinkTarget(parent, networkLink ) ]
+    [#if ! networkLinkTarget?has_content ]
+        [@fatal message="Network could not be found" context=networkLink /]
+        [#return]
+    [/#if]
+
+    [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
+    [#local networkResources = networkLinkTarget.State.Resources ]
+
+    [#local subnet = (getSubnets(core.Tier, networkResources))[0]]
+
     [#local lgId = formatDependentLogGroupId(taskId) ]
     [#local lgName = core.FullAbsolutePath ]
 
@@ -365,7 +381,7 @@
                 "securityGroup",
                 solution.NetworkMode == "awsvpc",
                 {
-                    "Id" : formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ),
+                    "Id" : secGroupId,
                     "Name" : core.FullName,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }) +
@@ -385,6 +401,16 @@
                 "DEFINITION",
                 solution.FixedName,
                 taskName
+            ) +
+            attributeIfTrue(
+                "SECURITY_GROUP",
+                solution.NetworkMode == "awsvpc",
+                getExistingReference(secGroupId)
+            ) +
+            attributeIfTrue(
+                "SUBNET",
+                solution.NetworkMode == "awsvpc",
+                subnet
             ),
             "Roles" : {
                 "Inbound" : {
