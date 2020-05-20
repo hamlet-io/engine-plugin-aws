@@ -14,7 +14,7 @@
     }
 ]
 
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_DYNAMODB_TABLE_RESOURCE_TYPE
     mappings=DYNAMODB_OUTPUT_MAPPINGS
@@ -110,6 +110,9 @@
         billingMode
         attributes
         keys
+        encrypted
+        ttlKey=""
+        kmsKeyId=""
         name=""
         streamEnabled=false
         streamViewType=""
@@ -157,6 +160,23 @@
                 streamEnabled,
                 {
                     "StreamViewType" : streamViewType
+                }
+            ) +
+            attributeIfTrue(
+                "SSESpecification",
+                encrypted,
+                {
+                    "KMSMasterKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE),
+                    "SSEEnabled" : true,
+                    "SSEType" : "KMS"
+                }
+            ) +
+            attributeIfContent(
+                "TimeToLiveSpecification",
+                ttlKey,
+                {
+                "AttributeName" : ttlKey,
+                "Enabled" : true
                 }
             )
         outputs=DYNAMODB_OUTPUT_MAPPINGS +

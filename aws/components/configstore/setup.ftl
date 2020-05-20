@@ -15,8 +15,10 @@
     [#local tableSortKey = parentResources["table"].SortKey!"" ]
 
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
+
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
 
@@ -240,6 +242,8 @@
             billingMode=parentSolution.Table.Billing
             writeCapacity=parentSolution.Table.Capacity.Write
             readCapacity=parentSolution.Table.Capacity.Read
+            encrypted=parentSolution.Table.Encrypted
+            kmsKeyId=kmsKeyId
             attributes=dynamoTableKeyAttributes
             keys=dynamoTableKeys
         /]
