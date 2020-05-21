@@ -17,6 +17,7 @@
             "Resources" : {
                 "table" : {
                     "Id" : id,
+                    "Name" : core.FullName,
                     "Key" : key,
                     "SortKey" : sortKey,
                     "Type" : AWS_DYNAMODB_TABLE_RESOURCE_TYPE

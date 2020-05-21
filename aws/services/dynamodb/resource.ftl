@@ -111,6 +111,7 @@
         attributes
         keys
         encrypted
+        name=""
         ttlKey=""
         kmsKeyId=""
         name=""
@@ -140,6 +141,10 @@
                 "KeySchema" : asArray(keys),
                 "Tags" : getCfTemplateCoreTags(name)
             } +
+            attributeIfContent(
+                "TableName",
+                name
+            ) +
             attributeIfTrue(
                 "PointInTimeRecoverySpecification",
                 backupEnabled,

@@ -11,6 +11,7 @@
     [#local resources = occurrence.State.Resources]
 
     [#local tableId = resources["table"].Id ]
+    [#local tableName = resources["table"].Name ]
     [#local tableKey = resources["table"].Key ]
     [#local tableSortKey = resources["table"].SortKey!"" ]
 
@@ -32,6 +33,7 @@
     [#if deploymentSubsetRequired(GLOBALDB_COMPONENT_TYPE, true) ]
         [@createDynamoDbTable
             id=tableId
+            name=tableName
             backupEnabled=solution.Table.Backup.Enabled
             billingMode=solution.Table.Billing
             writeCapacity=solution.Table.Capacity.Write
