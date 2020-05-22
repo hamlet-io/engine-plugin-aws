@@ -50,7 +50,7 @@
 ]
 
 [#list ecsMappings as type, mappings]
-    [@addOutputMapping 
+    [@addOutputMapping
         provider=AWS_PROVIDER
         resourceType=type
         mappings=mappings
@@ -171,7 +171,12 @@
                     {
                         "ContainerPort" : ports[portMapping.ContainerPort].Port,
                         "HostPort" : portMapping.DynamicHostPort?then(0, ports[portMapping.HostPort].Port)
-                    }
+                    } +
+                    attributeIfTrue(
+                        "Protocol",
+                        (ports[portMapping.ContainerPort].IPProtocol == "udp"),
+                        "udp"
+                    )
                 ]
             ]
         [/#list]
@@ -348,4 +353,3 @@
         outputs=ECS_SERVICE_OUTPUT_MAPPINGS
     /]
 [/#macro]
-
