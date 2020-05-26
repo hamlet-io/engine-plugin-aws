@@ -33,6 +33,31 @@
             transitGateway=getReference(transitGatewayId)
         /]
 
-    [/#if]
+        [#if solution["aws:ResourceSharing"].Enabled ]
 
+            [#local resourceShareId = resources["resourceShare"].Id ]
+            [#local resourceShareName = resources["resourceShare"].Name ]
+
+            [#local transitGatewayArn = formatRegionalArn(
+                "ec2",
+                {
+                    "Fn::Join": [
+                        "/",
+                        [
+                            "transit-gateway",
+                            getReference(transitGatewayId)
+                        ]
+                    ]
+                }
+                )]
+
+            [@createResourceAccessShare
+                id=resourceShareId
+                name=resourceShareName
+                allowNonOrgPrincipals=solution["aws:ResourceSharing"].AllowExternalPrincipals
+                principals=solution["aws:ResourceSharing"].AccountPrincipals
+                resourceArns=[ transitGatewayArn ]
+            /]
+        [/#if]
+    [/#if]
 [/#macro]

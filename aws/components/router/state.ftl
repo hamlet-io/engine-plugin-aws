@@ -20,7 +20,16 @@
                     "Name" : core.FullName,
                     "Type" : AWS_TRANSITGATEWAY_ROUTETABLE_RESOURCE_TYPE
                 }
-            },
+            } +
+            attributeIfTrue(
+                "resourceShare",
+                solution["aws:ResourceSharing"].Enabled,
+                {
+                    "Id" : formatResourceId(AWS_RESOURCEACCESS_SHARE_RESOURCE_TYPE),
+                    "Name" : core.FullName,
+                    "Type" : AWS_RESOURCEACCESS_SHARE_RESOURCE_TYPE
+                }
+            ),
             "Attributes" : {
             },
             "Roles" : {

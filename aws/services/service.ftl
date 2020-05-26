@@ -22,6 +22,7 @@
 [#assign AWS_KINESIS_SERVICE = "kinesis"]
 [#assign AWS_LAMBDA_SERVICE = "lambda"]
 [#assign AWS_RELATIONAL_DATABASE_SERVICE = "rds"]
+[#assign AWS_RESOURCE_ACCESS_SERVICE = "resourceaccess" ]
 [#assign AWS_ROUTE53_SERVICE = "dns"]
 [#assign AWS_SIMPLE_STORAGE_SERVICE = "s3"]
 [#assign AWS_SIMPLE_EMAIL_SERVICE = "ses"]
