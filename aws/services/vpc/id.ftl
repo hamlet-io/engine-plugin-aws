@@ -14,6 +14,7 @@
 [#assign AWS_VPC_NETWORK_ACL_ASSOCIATION_TYPE = "association" ]
 
 [#assign AWS_VPC_SUBNET_TYPE = "subnet"]
+[#assign AWS_VPC_SUBNETLIST_TYPE = "subnetList" ]
 
 [#assign AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE = "securityGroup" ]
 [#assign AWS_VPC_SECURITY_GROUP_INGRESS_RESOURCE_TYPE = "securityGroupIngress" ]

@@ -22,10 +22,10 @@
                                     solution.Logging.EnableFlowLogs ]
 
     [#local vpcFlowLogEnabled = isPresent(segmentObject.Operations)?then(
-        isPresent(environmentObject.Operations.FlowLogs) || 
+        isPresent(environmentObject.Operations.FlowLogs) ||
         isPresent(segmentObject.Operations.FlowLogs) ||
         solution.Logging.EnableFlowLogs,
-        isPresent(environmentObject.Operations.FlowLogs) || 
+        isPresent(environmentObject.Operations.FlowLogs) ||
         solution.Logging.EnableFlowLogs
     )]
 

@@ -168,7 +168,7 @@
                     [/#if]
                 [/#list]
 
-                [#local tierListId = formatId( "subnetList", core.Id, tierId) ]
+                [#local tierListId = formatId( AWS_VPC_SUBNETLIST_TYPE, core.Id, tierId) ]
                 [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
                     [@cfOutput
                             tierListId,
