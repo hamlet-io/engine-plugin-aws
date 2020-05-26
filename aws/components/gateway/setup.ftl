@@ -112,6 +112,16 @@
             [#case "vpcendpoint"]
             [#break]
 
+            [#case "router"]
+                [#local transitGatewayId = ""]
+                [#local routerFound = false]
+
+                [#local transitGatewayAttachementId = gwResources["transitGatewayAttachement"].Id ]
+                [#local transitGatewayAttachementName = gwResources["transitGatewayAttachement"].Name ]
+                [#local transitGatewayRoutePropogationId = gwResources["routePropogation"].Id ]
+                [#local routeTableAssociationId = gwResources["routeAssociation"].Id ]
+                [#break]
+
         [/#switch]
 
         [#-- Security Group Creation --]
@@ -148,6 +158,77 @@
                 [/#if]
                 [#break]
         [/#switch]
+
+        [#list gwSolution.Links?values as link]
+            [#if link?is_hash]
+
+                [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+                [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                [#if !linkTarget?has_content]
+                    [#continue]
+                [/#if]
+
+                [#local linkTargetCore = linkTarget.Core ]
+                [#local linkTargetConfiguration = linkTarget.Configuration ]
+                [#local linkTargetResources = linkTarget.State.Resources ]
+                [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+                [#switch linkTargetCore.Type]
+
+                    [#case NETWORK_ROUTER_COMPONENT_TYPE]
+                        [#if gwSolution.Engine == "router" ]
+
+                            [#if routerFound ]
+                                [@fatal
+                                    message="Multiple routers found, only one per gateway is supported"
+                                    context=gwSolution.Links
+                                /]
+                                [#continue]
+                            [/#if]
+
+                            [#local routerFound = true]
+                            [#local attachementSubnets = [] ]
+                            [#list networkResources["subnets"][gwCore.Tier.Id] as zone,resources]
+                                [#local attachementSubnets += [ resources["subnet"].Id ] ]
+                            [/#list]
+
+                            [#local transitGatewayId = linkTargetResources["transitGateway"].Id ]
+                            [#local transitGatewayRouteTableId = linkTargetResources["routeTable"].Id ]
+
+                            [@createTransitGatewayAttachment
+                                id=transitGatewayAttachementId
+                                name=transitGatewayAttachementName
+                                transitGatewayId=transitGatewayId
+                                subnetIds=attachementSubnets
+                                vpcId=vpcId
+                            /]
+
+                            [@createTransitGatewayRouteTablePropogation
+                                id=transitGatewayRoutePropogationId
+                                transitGatewayAttachmentId=transitGatewayAttachementId
+                                transitGatewayRouteTableId=transitGatewayRouteTableId
+                            /]
+
+                            [@createTransitGatewayRouteTableAssociation
+                                id=routeTableAssociationId
+                                transitGatewayAttachmentId=transitGatewayAttachementId
+                                transitGatewayRouteTableId=transitGatewayRouteTableId
+                            /]
+
+                        [/#if]
+                        [#break]
+                [/#switch]
+            [/#if]
+        [/#list]
+
+        [#if engine == "router" && ! routerFound ]
+            [@fatal
+                message="Router not found - make sure the router is deployed and a link has been added"
+                context=gwSolution.Links
+            /]
+        [/#if]
 
         [#list occurrence.Occurrences![] as subOccurrence]
 
@@ -236,6 +317,19 @@
                                                     /]
                                                 [/#if]
                                             [/#if]
+                                            [#break]
+
+                                        [#case "router"]
+                                            [#list cidrs as cidr ]
+                                                [@createRoute
+                                                    id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
+                                                    routeTableId=zoneRouteTableId
+                                                    destinationType="transit"
+                                                    destinationAttribute=getReference(transitGatewayId)
+                                                    destinationCidr=cidr
+                                                    dependencies=transitGatewayAttachementId
+                                                /]
+                                            [/#list]
                                             [#break]
 
                                         [#case "endpoint" ]

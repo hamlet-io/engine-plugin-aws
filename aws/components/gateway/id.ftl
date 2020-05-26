@@ -7,7 +7,8 @@
     services=
         [
             AWS_ELASTIC_COMPUTE_SERVICE,
-            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE,
+            AWS_TRANSIT_GATEWAY_SERVICE
         ]
 /]
 
@@ -18,6 +19,7 @@
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=
         [
-            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE,
+            AWS_TRANSIT_GATEWAY_SERVICE
         ]
 /]

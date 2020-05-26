@@ -73,6 +73,34 @@
             [/#if]
             [#break]
 
+        [#case "router" ]
+            [#local resources += {
+                "transitGatewayAttachement" : {
+                        "Id" : formatResourceId(
+                            AWS_TRANSITGATEWAY_ATTACHMENT_RESOURCE_TYPE,
+                            core.Id
+                        ),
+                        "Name" : core.FullName,
+                        "Type" : AWS_TRANSITGATEWAY_ATTACHMENT_RESOURCE_TYPE
+                },
+                "routePropogation" : {
+                        "Id" : formatResourceId(
+                            AWS_TRANSITGATEWAY_ROUTETABLE_PROPOGATION_TYPE,
+                            core.Id
+                        ),
+                        "Type" : AWS_TRANSITGATEWAY_ROUTETABLE_PROPOGATION_TYPE
+                },
+                "routeAssociation" : {
+                    "Id" : formatResourceId(
+                        AWS_TRANSITGATEWAY_ROUTETABLE_ASSOCIATION_TYPE,
+                        core.Id
+                    ),
+                    "Type" : AWS_TRANSITGATEWAY_ROUTETABLE_ASSOCIATION_TYPE
+                }
+
+            }]
+            [#break]
+
         [#case "vpcendpoint"]
                 [#local resources += {
                     "sg" : {
@@ -174,6 +202,7 @@
         [#case "natgw"]
         [#case "igw"]
         [#case "endpoint" ]
+        [#case "router" ]
             [#break]
 
         [#case "vpcendpoint"]
