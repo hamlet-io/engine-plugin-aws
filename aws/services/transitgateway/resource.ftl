@@ -119,7 +119,7 @@
     /]
 [/#macro]
 
-[#macro createTransitGatewayRouteTablePropogation
+[#macro createTransitGatewayRouteTablePropagation
             id
             transitGatewayAttachment
             transitGatewayRouteTable

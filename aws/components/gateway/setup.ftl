@@ -243,7 +243,7 @@
                     vpc=getReference(vpcId)
                 /]
 
-                [@createTransitGatewayRouteTablePropogation
+                [@createTransitGatewayRouteTablePropagation
                     id=transitGatewayRoutePropogationId
                     transitGatewayAttachment=getReference(transitGatewayAttachementId)
                     transitGatewayRouteTable=transitGatewayRouteTable
