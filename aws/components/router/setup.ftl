@@ -30,7 +30,7 @@
         [@createTransitGatewayRouteTable
             id=routeTableId
             name=routeTableName
-            transitGatewayId=transitGatewayId
+            transitGateway=getReference(transitGatewayId)
         /]
 
     [/#if]

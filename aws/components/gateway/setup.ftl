@@ -113,8 +113,15 @@
             [#break]
 
             [#case "router"]
-                [#local transitGatewayId = ""]
+                [#local transitGateway = ""]
+                [#local transitGatewayRouteTable = ""]
+
                 [#local routerFound = false]
+
+                [#local attachementSubnets = [] ]
+                [#list networkResources["subnets"][gwCore.Tier.Id] as zone,resources]
+                    [#local attachementSubnets += [ resources["subnet"].Id ] ]
+                [/#list]
 
                 [#local transitGatewayAttachementId = gwResources["transitGatewayAttachement"].Id ]
                 [#local transitGatewayAttachementName = gwResources["transitGatewayAttachement"].Name ]
@@ -188,47 +195,67 @@
                                 [#continue]
                             [/#if]
 
-                            [#local routerFound = true]
-                            [#local attachementSubnets = [] ]
-                            [#list networkResources["subnets"][gwCore.Tier.Id] as zone,resources]
-                                [#local attachementSubnets += [ resources["subnet"].Id ] ]
-                            [/#list]
+                            [#local routerFound = true ]
+                            [#local transitGateway = getExistingReference( linkTargetResources["transitGateway"].Id ) ]
+                            [#local transitGatewayRouteTableId = getExistingReference( linkTargetResources["routeTable"].Id ) ]
 
-                            [#local transitGatewayId = linkTargetResources["transitGateway"].Id ]
-                            [#local transitGatewayRouteTableId = linkTargetResources["routeTable"].Id ]
+                        [/#if]
+                        [#break]
 
-                            [@createTransitGatewayAttachment
-                                id=transitGatewayAttachementId
-                                name=transitGatewayAttachementName
-                                transitGatewayId=transitGatewayId
-                                subnetIds=attachementSubnets
-                                vpcId=vpcId
-                            /]
+                    [#case EXTERNALSERVICE_COMPONENT_TYPE]
+                        [#if gwSolution.Engine == "router" ]
+                            [#local transitGateway = linkTargetAttributes["TRANSIT_GATEWAY_ID"]!"" ]
+                            [#local transitGatewayRouteTable = linkTargetAttributes["ROUTE_TABLE_ID"]!"" ]
 
-                            [@createTransitGatewayRouteTablePropogation
-                                id=transitGatewayRoutePropogationId
-                                transitGatewayAttachmentId=transitGatewayAttachementId
-                                transitGatewayRouteTableId=transitGatewayRouteTableId
-                            /]
-
-                            [@createTransitGatewayRouteTableAssociation
-                                id=routeTableAssociationId
-                                transitGatewayAttachmentId=transitGatewayAttachementId
-                                transitGatewayRouteTableId=transitGatewayRouteTableId
-                            /]
-
+                            [#if transitGateway?has_content && transitGatewayRouteTable?has_content ]
+                                [#local routerFound = true ]
+                            [#else]
+                                [@fatal
+                                    message="Could not find Attributes for external Transit Gateway or multiple gateways set"
+                                    context={
+                                        "TRANSIT_GATEWAY_ID" : linkTargetAttributes["TRANSIT_GATEWAY_ID"]!"",
+                                        "ROUTE_TABLE_ID" : linkTargetAttributes["ROUTE_TABLE_ID"]!""
+                                    }
+                                /]
+                                [#continue]
+                            [/#if]
                         [/#if]
                         [#break]
                 [/#switch]
             [/#if]
         [/#list]
 
-        [#if engine == "router" && ! routerFound ]
-            [@fatal
-                message="Router not found - make sure the router is deployed and a link has been added"
-                context=gwSolution.Links
-            /]
-        [/#if]
+        [#-- processing based on links --]
+        [#switch gwSolution.Engine ]
+            [#case "router"]
+                [#if ! routerFound ]
+                    [@fatal
+                        message="Router not found - make sure the router is deployed and a link has been added"
+                        context=gwSolution.Links
+                    /]
+                [/#if]
+
+                [@createTransitGatewayAttachment
+                    id=transitGatewayAttachementId
+                    name=transitGatewayAttachementName
+                    transitGateway=transitGateway
+                    subnets=getReferences(attachementSubnets)
+                    vpc=getReference(vpcId)
+                /]
+
+                [@createTransitGatewayRouteTablePropogation
+                    id=transitGatewayRoutePropogationId
+                    transitGatewayAttachment=getReference(transitGatewayAttachementId)
+                    transitGatewayRouteTable=transitGatewayRouteTable
+                /]
+
+                [@createTransitGatewayRouteTableAssociation
+                    id=routeTableAssociationId
+                    transitGatewayAttachment=getReference(transitGatewayAttachementId)
+                    transitGatewayRouteTable=transitGatewayRouteTable
+                /]
+                [#break]
+        [/#switch]
 
         [#list occurrence.Occurrences![] as subOccurrence]
 
@@ -325,7 +352,7 @@
                                                     id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
                                                     routeTableId=zoneRouteTableId
                                                     destinationType="transit"
-                                                    destinationAttribute=getReference(transitGatewayId)
+                                                    destinationAttribute=transitGateway
                                                     destinationCidr=cidr
                                                     dependencies=transitGatewayAttachementId
                                                 /]

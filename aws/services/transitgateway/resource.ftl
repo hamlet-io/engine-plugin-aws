@@ -36,9 +36,9 @@
 [#macro createTransitGatewayAttachment
             id
             name
-            transitGatewayId
-            subnetIds
-            vpcId
+            transitGateway
+            subnets
+            vpc
     ]
 
     [@cfResource
@@ -46,9 +46,9 @@
         type="AWS::EC2::TransitGatewayAttachment"
         properties=
             {
-                "SubnetIds" : getReferences(subnetIds),
-                "TransitGatewayId" : getReference(transitGatewayId),
-                "VpcId" : getReference(vpcId)
+                "SubnetIds" : subnets,
+                "VpcId" : vpc,
+                "TransitGatewayId" : transitGateway
             }
         tags=getCfTemplateCoreTags(name)
     /]
@@ -56,8 +56,8 @@
 
 [#macro createTransitGatewayRoute
             id
-            transitGatewayRouteTableId
-            transitGatewayAttachmentId=""
+            transitGatewayRouteTable
+            transitGatewayAttachment=""
             destinationCidr=""
             blackhole=false
     ]
@@ -67,7 +67,7 @@
         type="AWS::EC2::TransitGatewayRoute"
         properties=
             {
-                "TransitGatewayRouteTableId" : getReference(transitGatewayRouteTableId)
+                "TransitGatewayRouteTableId" : transitGatewayRouteTable
             } +
             attributeIfContent(
                 "DestinationCidrBlock",
@@ -79,7 +79,7 @@
             ) +
             attributeIfContent(
                 "TransitGatewayAttachmentId",
-                getReference(transitGatewayAttachmentId)
+                transitGatewayAttachment
             )
     /]
 [/#macro]
@@ -87,7 +87,7 @@
 [#macro createTransitGatewayRouteTable
             id
             name
-            transitGatewayId
+            transitGateway
     ]
 
     [@cfResource
@@ -95,7 +95,7 @@
         type="AWS::EC2::TransitGatewayRouteTable"
         properties=
             {
-                "TransitGatewayId" : getReference(transitGatewayId)
+                "TransitGatewayId" : transitGateway
             }
         tags=getCfTemplateCoreTags(name)
     /]
@@ -104,8 +104,8 @@
 
 [#macro createTransitGatewayRouteTableAssociation
             id
-            transitGatewayAttachmentId
-            transitGatewayRouteTableId
+            transitGatewayAttachment
+            transitGatewayRouteTable
     ]
 
     [@cfResource
@@ -113,16 +113,16 @@
         type="AWS::EC2::TransitGatewayRouteTableAssociation"
         properties=
             {
-                "TransitGatewayAttachmentId" : getReference(transitGatewayAttachmentId),
-                "TransitGatewayRouteTableId" : getReference(transitGatewayRouteTableId)
+                "TransitGatewayAttachmentId" : transitGatewayAttachment,
+                "TransitGatewayRouteTableId" : transitGatewayRouteTable
             }
     /]
 [/#macro]
 
 [#macro createTransitGatewayRouteTablePropogation
             id
-            transitGatewayAttachmentId
-            transitGatewayRouteTableId
+            transitGatewayAttachment
+            transitGatewayRouteTable
     ]
 
     [@cfResource
@@ -130,8 +130,8 @@
         type="AWS::EC2::TransitGatewayRouteTablePropagation"
         properties=
             {
-                "TransitGatewayAttachmentId" : getReference(transitGatewayAttachmentId),
-                "TransitGatewayRouteTableId" : getReference(transitGatewayRouteTableId)
+                "TransitGatewayAttachmentId" : transitGatewayAttachment,
+                "TransitGatewayRouteTableId" : transitGatewayRouteTable
             }
     /]
 [/#macro]
