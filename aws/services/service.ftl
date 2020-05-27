@@ -30,6 +30,7 @@
 [#assign AWS_SIMPLE_QUEUEING_SERVICE = "sqs"]
 [#assign AWS_SYSTEMS_MANAGER_SERVICE = "ssm"]
 [#assign AWS_TRANSIT_GATEWAY_SERVICE = "transitgateway" ]
+[#assign AWS_VPN_GATEWAY_SERVICE = "vpngateway" ]
 [#assign AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE = "vpc"]
 [#assign AWS_WEB_APPLICATION_FIREWALL_SERVICE = "waf"]
 [#assign AWS_AUTOSCALING_SERVICE="autoscaling"]

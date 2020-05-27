@@ -1,0 +1,21 @@
+[#ftl]
+[@addResourceGroupInformation
+    type=EXTERNALNETWORK_COMPONENT_TYPE
+    attributes=[]
+    provider=AWS_PROVIDER
+    resourceGroup=DEFAULT_RESOURCE_GROUP
+    services=
+        [
+        ]
+/]
+
+[@addResourceGroupInformation
+    type=EXTERNALNETWORK_CONNECTION_COMPONENT_TYPE
+    attributes=[]
+    provider=AWS_PROVIDER
+    resourceGroup=DEFAULT_RESOURCE_GROUP
+    services=
+        [
+            AWS_VPN_GATEWAY_SERVICE
+        ]
+/]
