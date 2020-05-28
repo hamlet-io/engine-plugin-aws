@@ -169,6 +169,13 @@
                                 ),
                                 "Name" : core.FullName,
                                 "Type" : AWS_VPNGATEWAY_VIRTUAL_GATEWAY_RESOURCE_TYPE
+                            },
+                            "privateGatewayAttachment" : {
+                                "Id" : formatResourceId(
+                                            AWS_VPNGATEWAY_VIRTUAL_GATEWAY_ATTACHMENT_RESOURCE_TYPE,
+                                            core.Id
+                                ),
+                                "Type" : AWS_VPNGATEWAY_VIRTUAL_GATEWAY_ATTACHMENT_RESOURCE_TYPE
                             }
                         }
             )]
@@ -219,6 +226,7 @@
         [#case "igw"]
         [#case "endpoint" ]
         [#case "router" ]
+        [#case "private"]
             [#break]
 
         [#case "vpcendpoint"]

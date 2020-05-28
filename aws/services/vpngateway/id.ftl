@@ -3,4 +3,7 @@
 [#-- Resources --]
 [#assign AWS_VPNGATEWAY_CUSTOMER_GATEWAY_RESOURCE_TYPE = "vpnCustomerGateway" ]
 [#assign AWS_VPNGATEWAY_VIRTUAL_GATEWAY_RESOURCE_TYPE = "vpnVirtualGateway" ]
+[#assign AWS_VPNGATEWAY_VIRTUAL_GATEWAY_ATTACHMENT_RESOURCE_TYPE = "vpnVirtualGatewayAttachment" ]
+[#assign AWS_VPNGATEWAY_VIRTUAL_GATEWAY_PROPOGATION_RESOURCE_TYPE = "vpnVirtualGatewayPropogation" ]
 [#assign AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE = "vpnConnection" ]
+[#assign AWS_VPNGATEWAY_VPN_CONNECTION_ROUTE_RESOURCE_TYPE = "vpnConnectionRoute" ]

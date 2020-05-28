@@ -43,11 +43,28 @@
     /]
 [/#macro]
 
+[#macro createVPNGatewayAttachment
+            id
+            vpcId
+            vpnGatewayId]
+    [@cfResource
+        id=id
+        type="AWS::EC2::VPCGatewayAttachment"
+        properties=
+            {
+                "VpnGatewayId" : getReference(vpnGatewayId),
+                "VpcId" : getReference(vpcId)
+            }
+        outputs={}
+    /]
+[/#macro]
+
 [#macro createVPNConnection
             id
             name
             staticRoutesOnly
             customerGateway
+            preSharedKey=""
             transitGateway=""
             vpnGateway=""
     ]
@@ -70,5 +87,37 @@
                 vpnGateway
             )
         tags=getCfTemplateCoreTags(name)
+    /]
+[/#macro]
+
+[#macro createVPNConnectionRoute
+        id
+        destinationCidr
+        vpnConnectionId
+    ]
+
+    [@cfResource
+        id=id
+        type="AWS::EC2::VPNConnectionRoute"
+        properties={
+            "DestinationCidrBlock" : destinationCidr,
+            "VpnConnectionId" : getReference(vpnConnectionId)
+        }
+    /]
+[/#macro]
+
+[#macro createVPNGatewayRoutePropogation
+        id
+        routeTableIds
+        vpnGatewayId
+    ]
+
+    [@cfResource
+        id=id
+        type="AWS::EC2::VPNGatewayRoutePropagation"
+        properties={
+            "RouteTableIds" : getReferences(routeTableIds),
+            "VpnGatewayId" : getReference(vpnGatewayId)
+        }
     /]
 [/#macro]

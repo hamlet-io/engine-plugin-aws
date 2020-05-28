@@ -132,12 +132,19 @@
             [#case "private" ]
                 [#local privateGatewayId = gwResources["privateGateway"].Id ]
                 [#local privateGatewayName = gwResources["privateGateway"].Name ]
+                [#local privateGatewayAttachmentId = gwResources["privateGatewayAttachment"].Id ]
 
                 [@createVPNVirtualGateway
                     id=privateGatewayId
                     name=privateGatewayName
-                    bgpEnabled=solution.BGP.Enabled
-                    amznSideAsn=solution.BGP.ASN
+                    bgpEnabled=gwSolution.BGP.Enabled
+                    amznSideAsn=gwSolution.BGP.ASN
+                /]
+
+                [@createVPNGatewayAttachment
+                    id=privateGatewayAttachmentId
+                    vpcId=vpcId
+                    vpnGatewayId=privateGatewayId
                 /]
                 [#break]
 
@@ -294,6 +301,7 @@
             [#local cidrs = getGroupCIDRs(destinationIPAddressGroups, true, subOccurrence)]
 
             [#local routeTableIds = []]
+            [#local privateGatewayDependencies = []]
 
             [#list solution.Links?values as link]
                 [#if link?is_hash]
@@ -311,16 +319,16 @@
                     [#local linkTargetResources = linkTarget.State.Resources ]
                     [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
-                    [#local privateGatewayDependencies = []]
-
                     [#switch linkTargetCore.Type]
 
                         [#case EXTERNALNETWORK_CONNECTION_COMPONENT_TYPE ]
-                            [#switch linkTargetConfiguration.Engine ]
+                            [#switch linkTargetConfiguration.Solution.Engine ]
 
-                                [#switch "SiteToSite" ]
+                                [#case "SiteToSite" ]
 
                                     [#local customerGateway = linkTargetAttributes["CUSTOMER_GATEWAY_ID"]]
+                                    [#local externalNetworkCIDRs = linkTargetAttributes["NETWORK_ADDRESSES"]?split(",")]
+
                                     [#local vpnConnectionId = formatResourceId(
                                                 AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE,
                                                 core.Id,
@@ -330,17 +338,57 @@
                                     [@createVPNConnection
                                             id=vpnConnectionId
                                             name=formatName(core.FullName, linkTargetCore.Name)
-                                            staticRoutesOnly=( ! linkTargetConfiguration.BGP.Enabled )
+                                            staticRoutesOnly=( ! (linkTargetAttributes["BGP_ASN"]!"")?has_content)
                                             customerGateway=customerGateway
                                             vpnGateway=getReference(privateGatewayId)
                                     /]
+
+                                    [#list externalNetworkCIDRs as externalNetworkCIDR ]
+                                        [#local vpnConnectionRouteId = formatResourceId(
+                                                AWS_VPNGATEWAY_VPN_CONNECTION_ROUTE_RESOURCE_TYPE,
+                                                core.Id,
+                                                linkTarget.Core.Id,
+                                                externalNetworkCIDR?index
+                                        )]
+
+                                        [@createVPNConnectionRoute
+                                            id=vpnConnectionRouteId
+                                            vpnConnectionId=vpnConnectionId
+                                            destinationCidr=externalNetworkCIDR
+                                        /]
+                                    [/#list]
 
                                     [#local privateGatewayDependencies += [ vpnConnectionId ]]
 
                                     [#break]
 
+                            [/#switch]
                             [#break]
 
+                    [/#switch]
+                [/#if]
+            [/#list]
+
+
+
+            [#-- Second round of processing for routes as they depend on other links --]
+            [#list solution.Links?values as link]
+                [#if link?is_hash]
+
+                    [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+                    [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                    [#if !linkTarget?has_content]
+                        [#continue]
+                    [/#if]
+
+                    [#local linkTargetCore = linkTarget.Core ]
+                    [#local linkTargetConfiguration = linkTarget.Configuration ]
+                    [#local linkTargetResources = linkTarget.State.Resources ]
+                    [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+                    [#switch linkTargetCore.Type]
                         [#case NETWORK_ROUTE_TABLE_COMPONENT_TYPE]
 
                             [#local publicRouteTable = linkTargetConfiguration.Solution.Public ]
@@ -408,16 +456,28 @@
                                             [#break]
 
                                         [#case "private" ]
-                                            [#list cidrs as cidr ]
-                                                [@createRoute
-                                                    id=formatRouteId(zoneRouteTableId, core.Id, cidr?index )
-                                                    routeTableId=zoneRouteTableId
-                                                    destinationType="gateway"
-                                                    destinationAttribute=getReference(privateGatewayId)
-                                                    destinationCidr=cidr
-                                                    dependencies=privateGatewayDependencies
+                                            [#if solution.DynamicRouting ]
+                                                [@createVPNGatewayRoutePropogation
+                                                    id=formatResourceId(
+                                                        AWS_VPNGATEWAY_VIRTUAL_GATEWAY_PROPOGATION_RESOURCE_TYPE,
+                                                        core.Id,
+                                                        zoneRouteTableId
+                                                    )
+                                                    routeTableIds=zoneRouteTableId
+                                                    vpnGatewayId=privateGatewayId
                                                 /]
-                                            [/#list]
+                                            [#else]
+                                                [#list cidrs as cidr ]
+                                                    [@createRoute
+                                                        id=formatRouteId(zoneRouteTableId, core.Id, cidr?index )
+                                                        routeTableId=zoneRouteTableId
+                                                        destinationType="gateway"
+                                                        destinationAttribute=getReference(privateGatewayId)
+                                                        destinationCidr=cidr
+                                                        dependencies=privateGatewayDependencies
+                                                    /]
+                                                [/#list]
+                                            [/#if]
                                             [#break]
 
                                         [#case "endpoint" ]

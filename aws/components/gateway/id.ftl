@@ -8,7 +8,8 @@
         [
             AWS_ELASTIC_COMPUTE_SERVICE,
             AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE,
-            AWS_TRANSIT_GATEWAY_SERVICE
+            AWS_TRANSIT_GATEWAY_SERVICE,
+            AWS_VPN_GATEWAY_SERVICE
         ]
 /]
 
@@ -20,6 +21,7 @@
     services=
         [
             AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE,
-            AWS_TRANSIT_GATEWAY_SERVICE
+            AWS_TRANSIT_GATEWAY_SERVICE,
+            AWS_VPN_GATEWAY_SERVICE
         ]
 /]

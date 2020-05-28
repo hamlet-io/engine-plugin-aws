@@ -4,9 +4,7 @@
     attributes=[]
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
-    services=
-        [
-        ]
+    services=[]
 /]
 
 [@addResourceGroupInformation

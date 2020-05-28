@@ -4,17 +4,19 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
 
+    [#local networkCIDRs = getGroupCIDRs(solution.IPAddressGroups, true, occurrence)]
+
     [#assign componentState =
         {
-            "Resources" : {
-                "externalNetwork" : {
-                    "Id" : formatResourceId(SHARED_EXTERNALNETWORK_RESOURCE_TYPE, core.Id ),
-                    "Deployed" : true,
-                    "Type" : SHARED_EXTERNALNETWORK_RESOURCE_TYPE
-                }
-            },
+            "Resources" : {},
             "Attributes" : {
-            },
+                "NETWORK_ADDRESSES" : networkCIDRs?join(",")
+            } +
+            attributeIfTrue(
+                "BGP_ASN",
+                solution.BGP.Enabled,
+                solution.BGP.ASN
+            ),
             "Roles" : {
                 "Inbound" : {},
                 "Outbound" : {}
@@ -25,6 +27,9 @@
 
 
 [#macro aws_externalnetworkconnection_cf_state occurrence parent={} ]
+
+    [#local parentAttributes = parent.State.Attributes]
+
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
 
@@ -45,6 +50,7 @@
                                     AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE,
                                     core.Id
                         ),
+                        "Name" : core.FullName,
                         "Type" : AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE
                     },
                     "customerGateway" : {
@@ -54,7 +60,6 @@
                     }
                 }
             )]
-            [/#list]
             [#break]
     [/#switch]
 
@@ -63,6 +68,7 @@
             "Resources" : resources,
             "Attributes" : {
             } +
+            parentAttributes +
             attributeIfTrue(
                 "CUSTOMER_GATEWAY_ID",
                 ( engine == "SiteToSite" ),

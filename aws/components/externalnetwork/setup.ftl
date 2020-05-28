@@ -32,21 +32,23 @@
                 [#local vpnGatewayId = resources["vpnConnection"].Id ]
                 [#local vpnGatewayName = resources["vpnConnection"].Name ]
 
-                [#local vpnPublicIP = (solution.VPN.SiteToSite.PublicIP)!"" ]
+                [#local vpnPublicIP = (solution.SiteToSite.PublicIP)!"" ]
 
                 [#if ! vpnPublicIP?has_content ]
                     [@fatal
                         message="VPN Public IP Address not found"
-                        context={ "VPN" : solution.VPN }
+                        context={ "SiteToSite" : solution.SiteToSite }
                     /]
                 [/#if]
 
-                [@createVPNCustomerGateway
-                    id=customerGatewayId
-                    name=customerGatewayName
-                    custSideAsn=BGPASN
-                    custVPNIP=vpnPublicIP
-                /]
+                [#if deploymentSubsetRequired(EXTERNALNETWORK_COMPONENT_TYPE, true)]
+                    [@createVPNCustomerGateway
+                        id=customerGatewayId
+                        name=customerGatewayName
+                        custSideAsn=BGPASN
+                        custVPNIP=vpnPublicIP
+                    /]
+                [/#if]
                 [#break]
         [/#switch]
 
@@ -68,20 +70,8 @@
 
                 [#switch linkTargetCore.Type]
 
-                    [#case "NETWORK_GATEWAY_COMPONENT_TYPE" ]
-                        [#if linkTargetCore.Engine == "private" ]
-
-                            [#local vpnGatewayId = linkTargetResources["privateGateway"].Id ]
-
-                            [@createVPNConnection
-                                id=vpnGatewayId
-                                name=vpnGatewayName
-                                staticRoutesOnly=( ! solution.BGP.Enabled )
-                                customerGateway=getReference(customerGatewayId)
-                                vpnGateway=getReference(vpnGatewayId)
-                            /]
-                        [#break]
                 [/#switch]
+            [/#if]
         [/#list]
     [/#list]
 [/#macro]
