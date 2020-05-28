@@ -73,8 +73,9 @@
                 "DestinationCidrBlock",
                 destinationCidr
             ) +
-            attributeIftrue(
+            attributeIfTrue(
                 "Blackhole",
+                blackhole,
                 blackhole
             ) +
             attributeIfContent(

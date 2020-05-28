@@ -329,6 +329,8 @@
                                     [#local customerGateway = linkTargetAttributes["CUSTOMER_GATEWAY_ID"]]
                                     [#local externalNetworkCIDRs = linkTargetAttributes["NETWORK_ADDRESSES"]?split(",")]
 
+                                    [#local BGPEnabled = (linkTargetAttributes["BGP_ASN"]!"")?has_content ]
+
                                     [#local vpnConnectionId = formatResourceId(
                                                 AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE,
                                                 core.Id,
@@ -336,27 +338,30 @@
                                             )]
 
                                     [@createVPNConnection
-                                            id=vpnConnectionId
-                                            name=formatName(core.FullName, linkTargetCore.Name)
-                                            staticRoutesOnly=( ! (linkTargetAttributes["BGP_ASN"]!"")?has_content)
-                                            customerGateway=customerGateway
-                                            vpnGateway=getReference(privateGatewayId)
+                                        id=vpnConnectionId
+                                        name=formatName(core.FullName, linkTargetCore.Name)
+                                        staticRoutesOnly=( ! BGPEnabled )
+                                        customerGateway=customerGateway
+                                        vpnGateway=getReference(privateGatewayId)
                                     /]
 
-                                    [#list externalNetworkCIDRs as externalNetworkCIDR ]
-                                        [#local vpnConnectionRouteId = formatResourceId(
-                                                AWS_VPNGATEWAY_VPN_CONNECTION_ROUTE_RESOURCE_TYPE,
-                                                core.Id,
-                                                linkTarget.Core.Id,
-                                                externalNetworkCIDR?index
-                                        )]
 
-                                        [@createVPNConnectionRoute
-                                            id=vpnConnectionRouteId
-                                            vpnConnectionId=vpnConnectionId
-                                            destinationCidr=externalNetworkCIDR
-                                        /]
-                                    [/#list]
+                                    [#if ( ! BGPEnabled ) ]
+                                        [#list externalNetworkCIDRs as externalNetworkCIDR ]
+                                            [#local vpnConnectionRouteId = formatResourceId(
+                                                    AWS_VPNGATEWAY_VPN_CONNECTION_ROUTE_RESOURCE_TYPE,
+                                                    core.Id,
+                                                    linkTarget.Core.Id,
+                                                    externalNetworkCIDR?index
+                                            )]
+
+                                            [@createVPNConnectionRoute
+                                                id=vpnConnectionRouteId
+                                                vpnConnectionId=vpnConnectionId
+                                                destinationCidr=externalNetworkCIDR
+                                            /]
+                                        [/#list]
+                                    [/#if]
 
                                     [#local privateGatewayDependencies += [ vpnConnectionId ]]
 
