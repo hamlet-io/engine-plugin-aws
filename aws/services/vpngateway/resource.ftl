@@ -23,7 +23,8 @@
 [#macro createVPNVirtualGateway
             id
             name
-            amznSideAsn
+            bgpEnabled
+            amznSideAsn=""
     ]
 
     [@cfResource
@@ -31,9 +32,13 @@
         type="AWS::EC2::VPNGateway"
         properties=
             {
-                "AmazonSideAsn" : amznSideAsn,
                 "Type" : "ipsec.1"
-            }
+            } +
+            attributeIfTrue(
+                "AmazonSideAsn",
+                bgpEnabled,
+                amznSideAsn
+            )
         tags=getCfTemplateCoreTags(name)
     /]
 [/#macro]

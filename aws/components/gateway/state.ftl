@@ -158,6 +158,22 @@
             [/#list]
             [#break]
 
+        [#case "private" ]
+            [#local resources = mergeObjects(
+                        resources,
+                        {
+                            "privateGateway" : {
+                                "Id" : formatResourceId(
+                                            AWS_VPNGATEWAY_VIRTUAL_GATEWAY_RESOURCE_TYPE,
+                                            core.Id
+                                ),
+                                "Name" : core.FullName,
+                                "Type" : AWS_VPNGATEWAY_VIRTUAL_GATEWAY_RESOURCE_TYPE
+                            }
+                        }
+            )]
+            [#break]
+
         [#default]
             [@fatal
                 message="Unknown Engine Type"

@@ -35,6 +35,9 @@
     [#switch engine ]
         [#case "SiteToSite"]
 
+            [#local customerGatewayId = formatResourceId(
+                                            AWS_VPNGATEWAY_CUSTOMER_GATEWAY_RESOURCE_TYPE,
+                                            core.Id)]
             [#local resources = mergeObjects( resources,
                 {
                     "vpnConnection" : {
@@ -45,10 +48,7 @@
                         "Type" : AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE
                     },
                     "customerGateway" : {
-                        "Id" : formatResourceId(
-                                AWS_VPNGATEWAY_CUSTOMER_GATEWAY_RESOURCE_TYPE,
-                                core.Id
-                        ),
+                        "Id" : customerGatewayId,
                         "Name" : core.FullName,
                         "Type" : AWS_VPNGATEWAY_CUSTOMER_GATEWAY_RESOURCE_TYPE
                     }
@@ -62,7 +62,12 @@
         {
             "Resources" : resources,
             "Attributes" : {
-            },
+            } +
+            attributeIfTrue(
+                "CUSTOMER_GATEWAY_ID",
+                ( engine == "SiteToSite" ),
+                getExistingReference(customerGatewayId)
+            ),
             "Roles" : {
                 "Inbound" : {},
                 "Outbound" : {}

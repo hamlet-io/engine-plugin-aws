@@ -129,6 +129,19 @@
                 [#local routeTableAssociationId = gwResources["routeAssociation"].Id ]
                 [#break]
 
+            [#case "private" ]
+                [#local privateGatewayId = gwResources["privateGateway"].Id ]
+                [#local privateGatewayName = gwResources["privateGateway"].Name ]
+
+                [@createVPNVirtualGateway
+                    id=privateGatewayId
+                    name=privateGatewayName
+                    bgpEnabled=solution.BGP.Enabled
+                    amznSideAsn=solution.BGP.ASN
+                /]
+                [#break]
+
+
         [/#switch]
 
         [#-- Security Group Creation --]
@@ -183,6 +196,13 @@
                 [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
                 [#switch linkTargetCore.Type]
+
+                    [#case EXTERNALNETWORK_CONNECTION_COMPONENT_TYPE ]
+                        [#if gwSolution.Engine == "private" ]
+
+                        [/#if]
+
+                        [#break]
 
                     [#case NETWORK_ROUTER_COMPONENT_TYPE]
                         [#if gwSolution.Engine == "router" ]
@@ -291,7 +311,35 @@
                     [#local linkTargetResources = linkTarget.State.Resources ]
                     [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
+                    [#local privateGatewayDependencies = []]
+
                     [#switch linkTargetCore.Type]
+
+                        [#case EXTERNALNETWORK_CONNECTION_COMPONENT_TYPE ]
+                            [#switch linkTargetConfiguration.Engine ]
+
+                                [#switch "SiteToSite" ]
+
+                                    [#local customerGateway = linkTargetAttributes["CUSTOMER_GATEWAY_ID"]]
+                                    [#local vpnConnectionId = formatResourceId(
+                                                AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE,
+                                                core.Id,
+                                                linkTarget.Core.Id
+                                            )]
+
+                                    [@createVPNConnection
+                                            id=vpnConnectionId
+                                            name=formatName(core.FullName, linkTargetCore.Name)
+                                            staticRoutesOnly=( ! linkTargetConfiguration.BGP.Enabled )
+                                            customerGateway=customerGateway
+                                            vpnGateway=getReference(privateGatewayId)
+                                    /]
+
+                                    [#local privateGatewayDependencies += [ vpnConnectionId ]]
+
+                                    [#break]
+
+                            [#break]
 
                         [#case NETWORK_ROUTE_TABLE_COMPONENT_TYPE]
 
@@ -355,6 +403,19 @@
                                                     destinationAttribute=transitGateway
                                                     destinationCidr=cidr
                                                     dependencies=transitGatewayAttachementId
+                                                /]
+                                            [/#list]
+                                            [#break]
+
+                                        [#case "private" ]
+                                            [#list cidrs as cidr ]
+                                                [@createRoute
+                                                    id=formatRouteId(zoneRouteTableId, core.Id, cidr?index )
+                                                    routeTableId=zoneRouteTableId
+                                                    destinationType="gateway"
+                                                    destinationAttribute=getReference(privateGatewayId)
+                                                    destinationCidr=cidr
+                                                    dependencies=privateGatewayDependencies
                                                 /]
                                             [/#list]
                                             [#break]
