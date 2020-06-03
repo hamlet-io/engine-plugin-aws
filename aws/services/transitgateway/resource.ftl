@@ -3,7 +3,6 @@
 [#macro createTransitGateway
             id
             name
-            bgpEnabled
             amznSideAsn
             ecmpSupport
     ]
@@ -14,13 +13,9 @@
         properties=
             {
                 "DefaultRouteTableAssociation" : "disable",
-                "DefaultRouteTablePropagation" : "disable"
+                "DefaultRouteTablePropagation" : "disable",
+                "AmazonSideAsn" : amznSideAsn
             } +
-            attributeIfTrue(
-                "AmazonSideAsn",
-                bgpEnabled,
-                amznSideAsn
-            ) +
             attributeIfTrue(
                 "VpnEcmpSupport",
                 bgpEnabled,
