@@ -22,8 +22,13 @@
 [#assign AWS_VPC_IGW_RESOURCE_TYPE = "igw" ]
 [#assign AWS_VPC_IGW_ATTACHMENT_TYPE = formatId( AWS_VPC_IGW_RESOURCE_TYPE, "attachment") ]
 [#assign AWS_VPC_NAT_GATEWAY_RESOURCE_TYPE = "natGateway" ]
+
 [#assign AWS_VPC_VPCENDPOINT_RESOURCE_TYPE = "vpcEndPoint"]
 [#assign AWS_VPC_ENDPOINT_RESOURCE_TYPE = "endpointGateway" ]
+
+[#assign AWS_VPC_ENDPOINT_SERVICE_RESOURCE_TYPE = "vpcEndPointSerivce" ]
+[#assign AWS_VPC_ENDPOINT_SERVICE_PERMISSION_RESOURCE_TYPE = "vpcEndPointServicePermission" ]
+[#assign AWS_VPC_ENDPOINT_SERVICE_NOTIFICATION_RESOURCE_TYPE = "vpcEndpontServiceNotification" ]
 
 [#function formatSecurityGroupId ids...]
     [#return formatResourceId(

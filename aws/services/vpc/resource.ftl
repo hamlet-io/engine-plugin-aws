@@ -664,3 +664,67 @@
         outputs={}
     /]
 [/#macro]
+
+[#macro createVPCEndpointService
+    id
+    loadBalancerIds
+    acceptanceRequired
+    dependencies=""
+]
+
+    [@cfResource
+        id=id
+        type="AWS::EC2::VPCEndpointService"
+        properties={
+            "AcceptanceRequired" : acceptanceRequired,
+            "NetworkLoadBalancerArns" : getReferences(loadBalancerIds, ARN_ATTRIBUTE_TYPE)
+        }
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#macro createVPCEndpointServicePermission
+    id
+    vpcEndpointServiceId
+    principalArns=[]
+    dependencies=""
+]
+    [@cfResource
+        id=id
+        type="AWS::EC2::VPCEndpointServicePermissions"
+        properties={
+            "ServiceId" : getReference(vpcEndpointServiceId),
+            "AllowedPrincipals" : principalArns
+        }
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#macro createVPCEndpointServiceNotification
+    id
+    events
+    notificationEndpointId
+    vpcEndpointServiceId=""
+    vpcEndpointId=""
+    dependencies=""
+]
+    [@cfResource
+        id=id
+        type="AWS::EC2::VPCEndpointConnectionNotification"
+        properties={
+            "ConnectionEvents" : asArray(events),
+            "ConnectionNotificationArn" : getArn(notificationEndpointId)
+        } +
+        attributeIfContent(
+            "ServiceId",
+            vpcEndpointServiceId,
+            getReference(vpcEndpointServiceId)
+        ) +
+        attributeIfContent(
+            "VPCEndpointId",
+            vpcEndpointId,
+            getReference(vpcEndpointId)
+        )
+        dependencies=dependencies
+    /]
+[/#macro]

@@ -1,0 +1,11 @@
+[#ftl]
+[@addResourceGroupInformation
+    type=PRIVATE_SERVICE_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    resourceGroup=DEFAULT_RESOURCE_GROUP
+    attributes=[]
+    services=
+        [
+            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+        ]
+/]
