@@ -29,7 +29,8 @@
         [#local userPoolCustomDomainName = resources["customdomain"].Name ]
         [#local userPoolCustomDomainCertArn = resources["customdomain"].CertificateArn]
 
-        [#if ! userPoolCustomDomainCertArn?has_content ]
+        [#-- Certificate required ifnot doing the iam subset --]
+        [#if (! userPoolCustomDomainCertArn?has_content) && deploymentSubsetRequired(USERPOOL_COMPONENT_TYPE, true) ]
             [@fatal
                 message="ACM Certificate required in us-east-1"
                 context=resources

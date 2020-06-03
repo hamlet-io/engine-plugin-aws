@@ -77,7 +77,9 @@
     [#if (otaCDNURL!"")?has_content ]
         [#local otaURL = otaCDNURL ]
     [#else]
-        [#local otaURL = otaS3URL ]
+        [#if (otaS3URL!"")?has_content ]
+            [#local otaURL = otaS3URL ]
+        [/#if]
     [/#if]
 
     [#assign componentState =
