@@ -22,7 +22,6 @@
         [@createTransitGateway
             id=transitGatewayId
             name=transitGatewayName
-            bgpEnabled=BGPConfiguration.Enabled
             amznSideAsn=BGPConfiguration.ASN
             ecmpSupport=BGPConfiguration.ECMP
         /]

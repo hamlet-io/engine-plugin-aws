@@ -14,16 +14,12 @@
             {
                 "DefaultRouteTableAssociation" : "disable",
                 "DefaultRouteTablePropagation" : "disable",
-                "AmazonSideAsn" : amznSideAsn
-            } +
-            attributeIfTrue(
-                "VpnEcmpSupport",
-                bgpEnabled,
-                ecmpSupport?then(
+                "AmazonSideAsn" : amznSideAsn,
+                "VpnEcmpSupport" : ecmpSupport?then(
                     "enable",
                     "disable"
                 )
-            )
+            }
         tags=getCfTemplateCoreTags(name)
     /]
 [/#macro]
