@@ -25,7 +25,7 @@
                 "resourceShare",
                 solution["aws:ResourceSharing"].Enabled,
                 {
-                    "Id" : formatResourceId(AWS_RESOURCEACCESS_SHARE_RESOURCE_TYPE),
+                    "Id" : formatResourceId(AWS_RESOURCEACCESS_SHARE_RESOURCE_TYPE, core.Id),
                     "Name" : core.FullName,
                     "Type" : AWS_RESOURCEACCESS_SHARE_RESOURCE_TYPE
                 }
