@@ -286,14 +286,12 @@
                                 souceCidr?index
                         )]
 
-                        [#if deploymentSubsetRequired(EXTERNALNETWORK_COMPONENT_TYPE, true)]
-                            [@createTransitGatewayRoute
-                                    id=vpcRouteId
-                                    transitGatewayRouteTable=transitGatewayRouteTable
-                                    transitGatewayAttachment=getReference(transitGatewayAttachementId)
-                                    destinationCidr=souceCidr
-                            /]
-                        [/#if]
+                        [@createTransitGatewayRoute
+                                id=vpcRouteId
+                                transitGatewayRouteTable=transitGatewayRouteTable
+                                transitGatewayAttachment=getReference(transitGatewayAttachementId)
+                                destinationCidr=souceCidr
+                        /]
                     [/#list]
                 [/#if]
                 [#break]
