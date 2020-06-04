@@ -134,18 +134,20 @@
                 [#local privateGatewayName = gwResources["privateGateway"].Name ]
                 [#local privateGatewayAttachmentId = gwResources["privateGatewayAttachment"].Id ]
 
-                [@createVPNVirtualGateway
-                    id=privateGatewayId
-                    name=privateGatewayName
-                    bgpEnabled=gwSolution.BGP.Enabled
-                    amznSideAsn=gwSolution.BGP.ASN
-                /]
+                [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
+                    [@createVPNVirtualGateway
+                        id=privateGatewayId
+                        name=privateGatewayName
+                        bgpEnabled=gwSolution.BGP.Enabled
+                        amznSideAsn=gwSolution.BGP.ASN
+                    /]
 
-                [@createVPNGatewayAttachment
-                    id=privateGatewayAttachmentId
-                    vpcId=vpcId
-                    vpnGatewayId=privateGatewayId
-                /]
+                    [@createVPNGatewayAttachment
+                        id=privateGatewayAttachmentId
+                        vpcId=vpcId
+                        vpnGatewayId=privateGatewayId
+                    /]
+                [/#if]
                 [#break]
 
 
@@ -262,25 +264,27 @@
                     /]
                 [/#if]
 
-                [@createTransitGatewayAttachment
-                    id=transitGatewayAttachementId
-                    name=transitGatewayAttachementName
-                    transitGateway=transitGateway
-                    subnets=getReferences(attachementSubnets)
-                    vpc=getReference(vpcId)
-                /]
+                [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
+                    [@createTransitGatewayAttachment
+                        id=transitGatewayAttachementId
+                        name=transitGatewayAttachementName
+                        transitGateway=transitGateway
+                        subnets=getReferences(attachementSubnets)
+                        vpc=getReference(vpcId)
+                    /]
 
-                [@createTransitGatewayRouteTablePropagation
-                    id=transitGatewayRoutePropogationId
-                    transitGatewayAttachment=getReference(transitGatewayAttachementId)
-                    transitGatewayRouteTable=transitGatewayRouteTable
-                /]
+                    [@createTransitGatewayRouteTablePropagation
+                        id=transitGatewayRoutePropogationId
+                        transitGatewayAttachment=getReference(transitGatewayAttachementId)
+                        transitGatewayRouteTable=transitGatewayRouteTable
+                    /]
 
-                [@createTransitGatewayRouteTableAssociation
-                    id=routeTableAssociationId
-                    transitGatewayAttachment=getReference(transitGatewayAttachementId)
-                    transitGatewayRouteTable=transitGatewayRouteTable
-                /]
+                    [@createTransitGatewayRouteTableAssociation
+                        id=routeTableAssociationId
+                        transitGatewayAttachment=getReference(transitGatewayAttachementId)
+                        transitGatewayRouteTable=transitGatewayRouteTable
+                    /]
+                [/#if]
                 [#break]
         [/#switch]
 
@@ -337,30 +341,33 @@
                                                 linkTarget.Core.Id
                                             )]
 
-                                    [@createVPNConnection
-                                        id=vpnConnectionId
-                                        name=formatName(core.FullName, linkTargetCore.Name)
-                                        staticRoutesOnly=( ! BGPEnabled )
-                                        customerGateway=customerGateway
-                                        vpnGateway=getReference(privateGatewayId)
-                                    /]
+                                    [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
+                                        [@createVPNConnection
+                                            id=vpnConnectionId
+                                            name=formatName(core.FullName, linkTargetCore.Name)
+                                            staticRoutesOnly=( ! BGPEnabled )
+                                            customerGateway=customerGateway
+                                            vpnGateway=getReference(privateGatewayId)
+                                        /]
 
 
-                                    [#if ( ! BGPEnabled ) ]
-                                        [#list externalNetworkCIDRs as externalNetworkCIDR ]
-                                            [#local vpnConnectionRouteId = formatResourceId(
-                                                    AWS_VPNGATEWAY_VPN_CONNECTION_ROUTE_RESOURCE_TYPE,
-                                                    core.Id,
-                                                    linkTarget.Core.Id,
-                                                    externalNetworkCIDR?index
-                                            )]
+                                        [#if ( ! BGPEnabled ) ]
+                                            [#list externalNetworkCIDRs as externalNetworkCIDR ]
+                                                [#local vpnConnectionRouteId = formatResourceId(
+                                                        AWS_VPNGATEWAY_VPN_CONNECTION_ROUTE_RESOURCE_TYPE,
+                                                        core.Id,
+                                                        linkTarget.Core.Id,
+                                                        externalNetworkCIDR?index
+                                                )]
 
-                                            [@createVPNConnectionRoute
-                                                id=vpnConnectionRouteId
-                                                vpnConnectionId=vpnConnectionId
-                                                destinationCidr=externalNetworkCIDR
-                                            /]
-                                        [/#list]
+                                                [@createVPNConnectionRoute
+                                                    id=vpnConnectionRouteId
+                                                    vpnConnectionId=vpnConnectionId
+                                                    destinationCidr=externalNetworkCIDR
+                                                /]
+                                            [/#list]
+                                        [/#if]
+
                                     [/#if]
 
                                     [#local privateGatewayDependencies += [ vpnConnectionId ]]
