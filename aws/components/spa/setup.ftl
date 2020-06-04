@@ -80,7 +80,7 @@
         [/#switch]
     [/#list]
 
-    [#if ! distributions?has_content ]
+    [#if (! distributions?has_content) && deploymentSubsetRequired("epilogue", false) ]
         [@fatal
             message="An SPA must have at least 1 CDN Route component link - Add an inbound CDN Route link to the SPA"
             context=solution
