@@ -20,7 +20,9 @@
                     "disable"
                 )
             }
-        tags=getCfTemplateCoreTags(name)
+        tags=[
+            { "Key" : "Name", "Value" : name }
+        ]
     /]
 [/#macro]
 
@@ -41,7 +43,9 @@
                 "VpcId" : vpc,
                 "TransitGatewayId" : transitGateway
             }
-        tags=getCfTemplateCoreTags(name)
+        tags=[
+            { "Key" : "Name", "Value" : name }
+        ]
     /]
 [/#macro]
 
@@ -89,7 +93,9 @@
             {
                 "TransitGatewayId" : transitGateway
             }
-        tags=getCfTemplateCoreTags(name)
+        tags=[
+            { "Key" : "Name", "Value" : name }
+        ]
     /]
 [/#macro]
 
