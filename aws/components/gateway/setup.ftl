@@ -227,17 +227,15 @@
                     [#case EXTERNALSERVICE_COMPONENT_TYPE]
                         [#if gwSolution.Engine == "router" ]
                             [#local transitGateway = linkTargetAttributes["TRANSIT_GATEWAY_ID"]!"" ]
-                            [#local transitGatewayRouteTable = linkTargetAttributes["ROUTE_TABLE_ID"]!"" ]
 
-                            [#if transitGateway?has_content && transitGatewayRouteTable?has_content ]
+                            [#if transitGateway?has_content ]
                                 [#local routerFound = true  ]
                                 [#local localRouter = false ]
                             [#else]
                                 [@fatal
                                     message="Could not find Attributes for external Transit Gateway or multiple gateways set"
                                     context={
-                                        "TRANSIT_GATEWAY_ID" : linkTargetAttributes["TRANSIT_GATEWAY_ID"]!"",
-                                        "ROUTE_TABLE_ID" : linkTargetAttributes["ROUTE_TABLE_ID"]!""
+                                        "TRANSIT_GATEWAY_ID" : linkTargetAttributes["TRANSIT_GATEWAY_ID"]!""
                                     }
                                 /]
                                 [#continue]
