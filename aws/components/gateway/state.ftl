@@ -4,7 +4,8 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
     [#local engine = solution.Engine ]
-    [#local resources = {} ]
+    [#local resources = {}]
+    [#local attributes = {}]
     [#local zoneResources = {}]
 
     [#if multiAZ!false ]
@@ -74,12 +75,15 @@
             [#break]
 
         [#case "router" ]
-            [#local resources += {
-                "transitGatewayAttachement" : {
-                        "Id" : formatResourceId(
+
+            [#local transitGatewayAttachementId = formatResourceId(
                             AWS_TRANSITGATEWAY_ATTACHMENT_RESOURCE_TYPE,
                             core.Id
-                        ),
+                        )]
+
+            [#local resources += {
+                "transitGatewayAttachement" : {
+                        "Id" : transitGatewayAttachementId,
                         "Name" : core.FullName,
                         "Type" : AWS_TRANSITGATEWAY_ATTACHMENT_RESOURCE_TYPE
                 },
@@ -98,6 +102,10 @@
                     "Type" : AWS_TRANSITGATEWAY_ROUTETABLE_ASSOCIATION_TYPE
                 }
 
+            }]
+
+            [#local attributes += {
+                "TRANSIT_GATEWAY_ATTACHMENT" : getExistingReference(transitGatewayAttachementId)
             }]
             [#break]
 
@@ -195,8 +203,7 @@
                 {
                     "Zones" : zoneResources
                 },
-            "Attributes" : {
-            },
+            "Attributes" : attributes,
             "Roles" : {
                 "Inbound" : {},
                 "Outbound" : {}

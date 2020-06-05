@@ -59,4 +59,93 @@
             /]
         [/#if]
     [/#if]
+
+    [#list occurrence.Occurrences![] as subOccurrence]
+
+        [#local core = subOccurrence.Core ]
+        [#local solution = subOccurrence.Configuration.Solution ]
+        [#local resources = subOccurrence.State.Resources ]
+
+        [#local destinationCidrs = getGroupCIDRs(solution.IPAddressGroups, true, occurrence)]
+
+        [#switch solution.Action ]
+            [#case "forward" ]
+                [#list solution.Links?values as link]
+                    [#if link?is_hash]
+
+                        [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+                        [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                        [#if !linkTarget?has_content]
+                            [#continue]
+                        [/#if]
+
+                        [#local linkTargetCore = linkTarget.Core ]
+                        [#local linkTargetConfiguration = linkTarget.Configuration ]
+                        [#local linkTargetResources = linkTarget.State.Resources ]
+                        [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+                        [#switch linkTargetCore.Type]
+                            [#case EXTERNALSERVICE_COMPONENT_TYPE ]
+
+                                [#local transitGatewayAttachment = (linkTargetAttributes["TRANSIT_GATEWAY_ATTACHMENT"])!""]
+
+                                [@debug message="Attachement" context=linkTargetAttributes enabled=true /]
+                                [#if ! transitGatewayAttachment?has_content ]
+                                    [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
+                                        [@fatal
+                                            message="Could not find transit Gateway Attachment Id"
+                                            detail="Add setting TRANSIT_GATEWAY_ATTACHMENT as the transit gateawy attachement for the route"
+                                            enabled=false
+                                        /]
+                                    [/#if]
+                                [/#if]
+
+                                [#local routeTableAssociationId = resources["routeAssociations"][linkTargetCore.Id].Id]
+
+                                [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
+                                [@createTransitGatewayRouteTableAssociation
+                                    id=routeTableAssociationId
+                                    transitGatewayAttachment=transitGatewayAttachment
+                                    transitGatewayRouteTable=getReference(routeTableId)
+                                /]
+                                [/#if]
+
+                                [#list destinationCidrs as destinationCidr ]
+                                    [#local destinationCidrId = replaceAlphaNumericOnly(destinationCidr)]
+                                    [#local routeId = resources["routes"][linkTargetCore.Id][destinationCidrId].Id ]
+
+                                    [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
+                                        [@createTransitGatewayRoute
+                                                id=routeId
+                                                transitGatewayRouteTable=getReference(routeTableId)
+                                                transitGatewayAttachment=transitGatewayAttachment
+                                                destinationCidr=destinationCidr
+                                        /]
+                                    [/#if]
+                                [/#list]
+                                [#break]
+                        [/#switch]
+                    [/#if]
+                [/#list]
+                [#break]
+
+            [#case "blackhole" ]
+                [#list destinationCidrs as destinationCidr ]
+                    [#local destinationCidrId = replaceAlphaNumericOnly(destinationCidr)]
+                    [#local routeId = resources["routes"][destinationCidrId].Id ]
+
+                    [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
+                        [@createTransitGatewayRoute
+                                id=routeId
+                                transitGatewayRouteTable=getReference(routeTableId)
+                                blackhole=true
+                                destinationCidr=destinationCidr
+                        /]
+                    [/#if]
+                [/#list]
+                [#break]
+        [/#switch]
+    [/#list]
 [/#macro]

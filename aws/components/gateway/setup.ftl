@@ -116,6 +116,7 @@
                 [#local transitGateway = ""]
                 [#local transitGatewayRouteTable = ""]
 
+                [#local localRouter = true]
                 [#local routerFound = false]
 
                 [#local attachementSubnets = [] ]
@@ -206,16 +207,8 @@
 
                 [#switch linkTargetCore.Type]
 
-                    [#case EXTERNALNETWORK_CONNECTION_COMPONENT_TYPE ]
-                        [#if gwSolution.Engine == "private" ]
-
-                        [/#if]
-
-                        [#break]
-
                     [#case NETWORK_ROUTER_COMPONENT_TYPE]
                         [#if gwSolution.Engine == "router" ]
-
                             [#if routerFound ]
                                 [@fatal
                                     message="Multiple routers found, only one per gateway is supported"
@@ -237,7 +230,8 @@
                             [#local transitGatewayRouteTable = linkTargetAttributes["ROUTE_TABLE_ID"]!"" ]
 
                             [#if transitGateway?has_content && transitGatewayRouteTable?has_content ]
-                                [#local routerFound = true ]
+                                [#local routerFound = true  ]
+                                [#local localRouter = false ]
                             [#else]
                                 [@fatal
                                     message="Could not find Attributes for external Transit Gateway or multiple gateways set"
@@ -273,26 +267,28 @@
                         vpc=getReference(vpcId)
                     /]
 
-                    [@createTransitGatewayRouteTableAssociation
-                        id=routeTableAssociationId
-                        transitGatewayAttachment=getReference(transitGatewayAttachementId)
-                        transitGatewayRouteTable=transitGatewayRouteTable
-                    /]
-
-                    [#list sourceCidrs as souceCidr ]
-                        [#local vpcRouteId = formatResourceId(
-                                AWS_TRANSITGATEWAY_ROUTE_RESOURCE_TYPE,
-                                gwCore.Id,
-                                souceCidr?index
-                        )]
-
-                        [@createTransitGatewayRoute
-                                id=vpcRouteId
-                                transitGatewayRouteTable=transitGatewayRouteTable
-                                transitGatewayAttachment=getReference(transitGatewayAttachementId)
-                                destinationCidr=souceCidr
+                    [#if localRouter ]
+                        [@createTransitGatewayRouteTableAssociation
+                            id=routeTableAssociationId
+                            transitGatewayAttachment=getReference(transitGatewayAttachementId)
+                            transitGatewayRouteTable=transitGatewayRouteTable
                         /]
-                    [/#list]
+
+                        [#list sourceCidrs as souceCidr ]
+                            [#local vpcRouteId = formatResourceId(
+                                    AWS_TRANSITGATEWAY_ROUTE_RESOURCE_TYPE,
+                                    gwCore.Id,
+                                    souceCidr?index
+                            )]
+
+                            [@createTransitGatewayRoute
+                                    id=vpcRouteId
+                                    transitGatewayRouteTable=transitGatewayRouteTable
+                                    transitGatewayAttachment=getReference(transitGatewayAttachementId)
+                                    destinationCidr=souceCidr
+                            /]
+                        [/#list]
+                    [/#if]
                 [/#if]
                 [#break]
         [/#switch]
@@ -464,16 +460,18 @@
                                             [#break]
 
                                         [#case "router"]
-                                            [#list cidrs as cidr ]
-                                                [@createRoute
-                                                    id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
-                                                    routeTableId=zoneRouteTableId
-                                                    destinationType="transit"
-                                                    destinationAttribute=transitGateway
-                                                    destinationCidr=cidr
-                                                    dependencies=transitGatewayAttachementId
-                                                /]
-                                            [/#list]
+                                            [#if localRouter ]
+                                                [#list cidrs as cidr ]
+                                                    [@createRoute
+                                                        id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
+                                                        routeTableId=zoneRouteTableId
+                                                        destinationType="transit"
+                                                        destinationAttribute=transitGateway
+                                                        destinationCidr=cidr
+                                                        dependencies=transitGatewayAttachementId
+                                                    /]
+                                                [/#list]
+                                            [/#if]
                                             [#break]
 
                                         [#case "private" ]
