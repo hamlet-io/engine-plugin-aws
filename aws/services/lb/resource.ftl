@@ -183,6 +183,12 @@
 
 [#macro createALBListener id port albId defaultTargetGroupId certificateId="" sslPolicy="" ]
 
+    [#if port.Protocol == "SSL" ]
+        [#local protocol = "TLS" ]
+    [#else]
+        [#local protocol = port.Protocol]
+    [/#if]
+
     [@cfResource
         id=id
         type="AWS::ElasticLoadBalancingV2::Listener"
@@ -196,7 +202,7 @@
                 ],
                 "LoadBalancerArn" : getReference(albId),
                 "Port" : port.Port,
-                "Protocol" : port.Protocol
+                "Protocol" : protocol
             } +
             valueIfTrue(
                 {
