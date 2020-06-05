@@ -52,18 +52,17 @@
         [/#if]
     [/#list]
 
-    [#if ! loadBalancerIds?has_content ]
-
-        [@fatal
-            message="No Network Load Balancers found - at least one link to a network load balancer required"
-            context={
-                "Links" : solution.Links
-            }
-        /]
-
-    [/#if]
-
     [#if deploymentSubsetRequired(PRIVATE_SERVICE_COMPONENT_TYPE, true)]
+        [#if ! loadBalancerIds?has_content ]
+
+            [@fatal
+                message="No Network Load Balancers found - at least one link to a network load balancer required"
+                context={
+                    "Links" : solution.Links
+                }
+            /]
+
+        [/#if]
 
         [@createVPCEndpointService
             id=vpcEndpointServiceId
