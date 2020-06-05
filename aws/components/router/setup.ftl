@@ -91,12 +91,11 @@
 
                                 [#local transitGatewayAttachment = (linkTargetAttributes["TRANSIT_GATEWAY_ATTACHMENT"])!""]
 
-                                [@debug message="Attachement" context=linkTargetAttributes enabled=true /]
                                 [#if ! transitGatewayAttachment?has_content ]
                                     [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
                                         [@fatal
                                             message="Could not find transit Gateway Attachment Id"
-                                            detail="Add setting TRANSIT_GATEWAY_ATTACHMENT as the transit gateawy attachement for the route"
+                                            detail="Add setting TRANSIT_GATEWAY_ATTACHMENT as the transit gateawy attachment for the route"
                                             enabled=false
                                         /]
                                     [/#if]

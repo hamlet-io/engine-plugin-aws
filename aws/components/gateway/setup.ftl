@@ -93,7 +93,7 @@
                 [#if !legacyIGW ]
                     [#local IGWId = gwResources["internetGateway"].Id ]
                     [#local IGWName = gwResources["internetGateway"].Name ]
-                    [#local IGWAttachementId = gwResources["internetGatewayAttachement"].Id ]
+                    [#local IGWAttachmentId = gwResources["internetGatewayAttachment"].Id ]
 
                     [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                         [@createIGW
@@ -101,7 +101,7 @@
                             name=IGWName
                         /]
                         [@createIGWAttachment
-                            id=IGWAttachementId
+                            id=IGWAttachmentId
                             vpcId=vpcId
                             igwId=IGWId
                         /]
@@ -119,13 +119,13 @@
                 [#local localRouter = true]
                 [#local routerFound = false]
 
-                [#local attachementSubnets = [] ]
+                [#local attachmentSubnets = [] ]
                 [#list networkResources["subnets"][gwCore.Tier.Id] as zone,resources]
-                    [#local attachementSubnets += [ resources["subnet"].Id ] ]
+                    [#local attachmentSubnets += [ resources["subnet"].Id ] ]
                 [/#list]
 
-                [#local transitGatewayAttachementId = gwResources["transitGatewayAttachement"].Id ]
-                [#local transitGatewayAttachementName = gwResources["transitGatewayAttachement"].Name ]
+                [#local transitGatewayAttachmentId = gwResources["transitGatewayAttachment"].Id ]
+                [#local transitGatewayAttachmentName = gwResources["transitGatewayAttachment"].Name ]
                 [#local transitGatewayRoutePropogationId = gwResources["routePropogation"].Id ]
                 [#local routeTableAssociationId = gwResources["routeAssociation"].Id ]
                 [#break]
@@ -258,17 +258,17 @@
 
                 [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                     [@createTransitGatewayAttachment
-                        id=transitGatewayAttachementId
-                        name=transitGatewayAttachementName
+                        id=transitGatewayAttachmentId
+                        name=transitGatewayAttachmentName
                         transitGateway=transitGateway
-                        subnets=getReferences(attachementSubnets)
+                        subnets=getReferences(attachmentSubnets)
                         vpc=getReference(vpcId)
                     /]
 
                     [#if localRouter ]
                         [@createTransitGatewayRouteTableAssociation
                             id=routeTableAssociationId
-                            transitGatewayAttachment=getReference(transitGatewayAttachementId)
+                            transitGatewayAttachment=getReference(transitGatewayAttachmentId)
                             transitGatewayRouteTable=transitGatewayRouteTable
                         /]
 
@@ -282,7 +282,7 @@
                             [@createTransitGatewayRoute
                                     id=vpcRouteId
                                     transitGatewayRouteTable=transitGatewayRouteTable
-                                    transitGatewayAttachment=getReference(transitGatewayAttachementId)
+                                    transitGatewayAttachment=getReference(transitGatewayAttachmentId)
                                     destinationCidr=souceCidr
                             /]
                         [/#list]
@@ -445,7 +445,7 @@
                                                             destinationType="gateway"
                                                             destinationAttribute=getReference(IGWId)
                                                             destinationCidr=cidr
-                                                            dependencies=IGWAttachementId
+                                                            dependencies=IGWAttachmentId
                                                         /]
                                                     [/#list]
                                                 [#else]
@@ -466,7 +466,7 @@
                                                         destinationType="transit"
                                                         destinationAttribute=transitGateway
                                                         destinationCidr=cidr
-                                                        dependencies=transitGatewayAttachementId
+                                                        dependencies=transitGatewayAttachmentId
                                                     /]
                                                 [/#list]
                                             [/#if]

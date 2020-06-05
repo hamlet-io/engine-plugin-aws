@@ -66,7 +66,7 @@
                         "Name" : core.FullName,
                         "Type" : AWS_VPC_IGW_RESOURCE_TYPE
                     },
-                    "internetGatewayAttachement" : {
+                    "internetGatewayAttachment" : {
                         "Id" : formatId(AWS_VPC_IGW_ATTACHMENT_TYPE, core.Id),
                         "Type" : AWS_VPC_IGW_ATTACHMENT_TYPE
                     }
@@ -76,14 +76,14 @@
 
         [#case "router" ]
 
-            [#local transitGatewayAttachementId = formatResourceId(
+            [#local transitGatewayAttachmentId = formatResourceId(
                             AWS_TRANSITGATEWAY_ATTACHMENT_RESOURCE_TYPE,
                             core.Id
                         )]
 
             [#local resources += {
-                "transitGatewayAttachement" : {
-                        "Id" : transitGatewayAttachementId,
+                "transitGatewayAttachment" : {
+                        "Id" : transitGatewayAttachmentId,
                         "Name" : core.FullName,
                         "Type" : AWS_TRANSITGATEWAY_ATTACHMENT_RESOURCE_TYPE
                 },
@@ -105,7 +105,7 @@
             }]
 
             [#local attributes += {
-                "TRANSIT_GATEWAY_ATTACHMENT" : getExistingReference(transitGatewayAttachementId)
+                "TRANSIT_GATEWAY_ATTACHMENT" : getExistingReference(transitGatewayAttachmentId)
             }]
             [#break]
 
