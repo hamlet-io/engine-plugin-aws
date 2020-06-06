@@ -473,7 +473,6 @@
                             [#local endpointAddresses += getHostsFromNetwork(endpointCIDR) ]
                         [/#list]
 
-                        [@debug message="IPs" context={ "endpointCIDRS" : endpointCIDRS, "endpointAddresses" : endpointAddresses} enabled=true /]
                         [#list endpointAddresses as endpointAddress ]
                             [#local staticTargets += getTargetGroupTarget("ip", endpointAddress, endpointPort, true)]
                         [/#list]
