@@ -39,7 +39,24 @@
         [#local legacyIGW = (networkResources["legacyIGW"]!{})?has_content]
 
         [#local vpcId = networkResources["vpc"].Id ]
-        [#local vpcPrivateDNS = networkConfiguration.DNS.UseProvider && networkConfiguration.DNS.GenerateHostNames]
+
+        [#if gwSolution.DNSSupport?is_boolean ]
+            [#local vpcPrivateDNS = gwSolution.DNSSupport]
+        [#else]
+            [#switch gwSolution.DNSSupport ]
+                [#case "UseNetworkConfig" ]
+                    [#local vpcPrivateDNS = networkConfiguration.DNS.UseProvider && networkConfiguration.DNS.GenerateHostNames]
+                    [#break]
+
+                [#case "Enabled" ]
+                    [#local vpcPrivateDNS = true ]
+                    [#break]
+
+                [#case "Disabled" ]
+                    [#local vpcPrivateDNS = false]
+                    [#break]
+            [/#switch]
+        [/#if]
 
         [#local sourceIPAddressGroups = gwSolution.SourceIPAddressGroups ]
         [#local sourceCidrs = getGroupCIDRs(sourceIPAddressGroups, true, occurrence)]
