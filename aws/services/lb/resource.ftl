@@ -218,7 +218,35 @@
     /]
 [/#macro]
 
-[#macro createTargetGroup id name tier component destination attributes vpcId targetType=""]
+
+[#function getTargetGroupTarget targetType targetAddress port="" external=false  ]
+
+    [#local target = {
+        "Id" : targetAddress
+    }]
+
+    [#if targetType == "lambda" ]
+        [#local target += {
+            "AvailabilityZone" : "all"
+        }]
+    [/#if]
+
+    [#if targetType == "ip" && external ]
+        [#local target += {
+            "AvailabilityZone" : "all"
+        }]
+    [/#if]
+
+    [#if targetType == "ip" || targetType == "instance" ]
+        [#local target += {
+            "Port" : port
+        }]
+    [/#if]
+
+    [#return [ target ]]
+[/#function]
+
+[#macro createTargetGroup id name tier component destination attributes vpcId targetType="" targets=[] ]
 
     [#local healthCheckProtocol = ((destination.HealthCheck.Protocol)!destination.Protocol)?upper_case]
 
@@ -276,6 +304,10 @@
                     "UnhealthyThresholdCount" : destination.HealthCheck.HealthyThreshold?number
                 }
 
+            ) +
+            attributeIfContent(
+                "Targets",
+                targets
             )
         tags= getCfTemplateCoreTags(name, tier, component)
         outputs=ALB_TARGET_GROUP_OUTPUT_MAPPINGS

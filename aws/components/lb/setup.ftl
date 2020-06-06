@@ -229,6 +229,8 @@
 
         [#local listenerRuleActions = [] ]
 
+        [#local staticTargets = []]
+
         [#-- Path processing --]
         [#switch engine ]
             [#case "application"]
@@ -442,6 +444,44 @@
                 [#break]
         [/#switch]
 
+        [#list solution.Forward.StaticEndpoints.Links as id,link ]
+            [#if link?is_hash]
+                [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+                [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                [#if !linkTarget?has_content]
+                    [#continue]
+                [/#if]
+
+                [#local linkTargetCore = linkTarget.Core ]
+                [#local linkTargetConfiguration = linkTarget.Configuration ]
+                [#local linkTargetResources = linkTarget.State.Resources ]
+                [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+                [#switch linkTargetCore.Type]
+                    [#case EXTERNALSERVICE_ENDPOINT_COMPONENT_TYPE]
+                        [#local endpointPort = ports[linkTargetConfiguration.Solution.Port].Port ]
+
+                        [#local endpointAddresses = []]
+                        [#local endpointCIDRS = getGroupCIDRs(
+                                                        linkTargetConfiguration.Solution.IPAddressGroups,
+                                                        true,
+                                                        subOccurrence)] ]
+
+                        [#list endpointCIDRS as endpointCIDR ]
+                            [#local endpointAddresses += getHostsFromNetwork(endpointCIDR) ]
+                        [/#list]
+
+                        [@debug message="IPs" context={ "endpointCIDRS" : endpointCIDRS, "endpointAddresses" : endpointAddresses} enabled=true /]
+                        [#list endpointAddresses as endpointAddress ]
+                            [#local staticTargets += getTargetGroupTarget("ip", endpointAddress, endpointPort, true)]
+                        [/#list]
+                        [#break]
+                [/#switch]
+            [/#if]
+        [/#list]
+
         [#-- Process the mapping --]
         [#switch engine ]
             [#case "application"]
@@ -513,6 +553,7 @@
                             attributes=tgAttributes
                             targetType=solution.Forward.TargetType
                             vpcId=vpcId
+                            targets=staticTargets
                         /]
                     [/#if]
                 [/#if]
@@ -530,6 +571,7 @@
                         attributes=tgAttributes
                         targetType=solution.Forward.TargetType
                         vpcId=vpcId
+                        staticTargets=staticTargets
                     /]
                 [/#if]
 
