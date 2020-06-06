@@ -127,6 +127,7 @@
             [#break]
 
             [#case "vpcendpoint"]
+            [#case "privateservice"]
             [#break]
 
             [#case "router"]
@@ -178,8 +179,11 @@
 
         [#switch gwSolution.Engine ]
             [#case "vpcendpoint" ]
+            [#case "privateservice"]
                 [#local securityGroupId = gwResources["sg"].Id]
                 [#local securityGroupName = gwResources["sg"].Name ]
+
+                [#local destinationPorts = gwSolution.DestinationPorts ]
 
                 [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                     [@createSecurityGroup
@@ -187,20 +191,23 @@
                         name=securityGroupName
                         occurrence=occurrence
                         vpcId=vpcId
-                        /]
-
-                    [#list sourceCidrs as cidr ]
-
-                        [@createSecurityGroupIngress
-                            id=
-                                formatDependentSecurityGroupIngressId(
-                                    securityGroupId,
-                                    replaceAlphaNumericOnly(cidr)
-                                )
-                            port=""
-                            cidr=cidr
-                            groupId=securityGroupId
                     /]
+
+                    [#list destinationPorts as destinationPort ]
+
+                        [#list sourceCidrs as cidr ]
+                            [@createSecurityGroupIngress
+                                id=
+                                    formatDependentSecurityGroupIngressId(
+                                        securityGroupId,
+                                        destinationPort,
+                                        replaceAlphaNumericOnly(cidr)
+                                    )
+                                port=destinationPort
+                                cidr=cidr
+                                groupId=securityGroupId
+                            /]
+                        [/#list]
                     [/#list]
                 [/#if]
                 [#break]
@@ -555,6 +562,7 @@
 
             [#switch gwSolution.Engine ]
                 [#case "vpcendpoint" ]
+                [#case "privateservice" ]
                     [#local vpcEndpointResources = resources["vpcEndpoints"]!{} ]
                     [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
 

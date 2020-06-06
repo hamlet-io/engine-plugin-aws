@@ -110,6 +110,7 @@
             [#break]
 
         [#case "vpcendpoint"]
+        [#case "privateservice"]
                 [#local resources += {
                     "sg" : {
                         "Id" : formatDependentSecurityGroupId(core.Id),
@@ -220,7 +221,7 @@
     [#local parentSolution = parent.Configuration.Solution ]
     [#local engine = parentSolution.Engine ]
 
-    [#if multiAZ!false || engine == "vpcendpoint" ]
+    [#if multiAZ!false || ( engine == "vpcendpoint" || engine == "privateservice" ) ]
         [#local resourceZones = zones ]
     [#else]
         [#local resourceZones = [zones[0]] ]
@@ -237,6 +238,7 @@
             [#break]
 
         [#case "vpcendpoint"]
+        [#case "privateservice"]
 
             [#local endpointZones = {} ]
             [#list resourceZones as zone]

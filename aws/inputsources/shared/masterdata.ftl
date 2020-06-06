@@ -1174,7 +1174,7 @@
             "vpcendpoint"
           ],
           "gateway": {
-            "Engine": "vpcendpoint",
+            "Engine": "privateservice",
             "Destinations": {
               "default": {
                 "NetworkEndpointGroups": [
