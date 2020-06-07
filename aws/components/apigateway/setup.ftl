@@ -546,10 +546,9 @@
     [#local docs = resources["docs"]!{} ]
     [#list docs as key,value]
 
-        [#local bucketName = value["bucket"].Name]
         [#if deploymentSubsetRequired("prologue", false)  ]
             [#-- Clear out bucket content if deleting api gateway so buckets will delete --]
-            [#if getExistingReference(bucketId)?has_content ]
+            [#if getExistingReference(value["bucket"].Id)?has_content ]
                 [@addToDefaultBashScriptOutput
                     content=
                         [
@@ -558,7 +557,7 @@
                         syncFilesToBucketScript(
                             "clear_bucket_files",
                             regionId,
-                            bucketName,
+                            value["bucket"].Name,
                             ""
                         )
                 /]
@@ -769,12 +768,13 @@
 
     [#if deploymentSubsetRequired("prologue", false)]
         [#-- Copy the final openAPI definition to the ops bucket --]
+        [#-- Don't remove older versions in case the stack needs to be rolled back --]
         [@addToDefaultBashScriptOutput
             content=
                 getLocalFileScript(
                     "configFiles",
                     "$\{CONFIG}",
-                    "openapi_" + commandLineOptions.Run.Id + ".json"
+                    openapiFileName
                 ) +
                 syncFilesToBucketScript(
                     "configFiles",
@@ -782,7 +782,30 @@
                     operationsBucket,
                     formatRelativePath(
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
-                        "config"))
+                        "config"),
+                    false
+                )
+        /]
+    [/#if]
+
+    [#if deploymentSubsetRequired("epilogue", false)]
+        [#-- Assume stack update was successful so delete other files --]
+        [@addToDefaultBashScriptOutput
+            content=
+                getLocalFileScript(
+                    "configFiles",
+                    "$\{CONFIG}",
+                    openapiFileName
+                ) +
+                syncFilesToBucketScript(
+                    "configFiles",
+                    regionId,
+                    operationsBucket,
+                    formatRelativePath(
+                        getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
+                        "config"),
+                    true
+                )
         /]
     [/#if]
 [/#macro]

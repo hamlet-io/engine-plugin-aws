@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_lambda_cf_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=["prologue", "template", "config"] /]
+    [@addDefaultGenerationContract subsets=["prologue", "template", "config", "epilogue"] /]
 [/#macro]
 
 [#macro aws_lambda_cf_setup_application occurrence ]
@@ -16,7 +16,7 @@
     [@debug message="Entering" context=occurrence enabled=false /]
 
     [#if deploymentSubsetRequired("generationcontract", false)]
-        [@addDefaultGenerationContract subsets=["prologue", "template", "config"] /]
+        [@addDefaultGenerationContract subsets=["prologue", "template", "config", "epilogue"] /]
         [#return]
     [/#if]
 
@@ -461,7 +461,8 @@
                         "filesToSync",
                         regionId,
                         operationsBucket,
-                        getOccurrenceSettingValue(fn, "SETTINGS_PREFIX")
+                        getOccurrenceSettingValue(fn, "SETTINGS_PREFIX"),
+                        false
                     ) /]
         [/#if]
         [#if solution.Environment.AsFile]
@@ -479,7 +480,8 @@
                         formatRelativePath(
                             getOccurrenceSettingValue(fn, "SETTINGS_PREFIX"),
                             "config"
-                        )
+                        ),
+                        false
                     ) /]
         [/#if]
         [@addToDefaultBashScriptOutput
@@ -504,4 +506,42 @@
             )
         /]
     [/#if]
+
+    [#if deploymentSubsetRequired("epilogue", false)]
+        [#-- Assume stack update was successful so delete other files --]
+        [#local asFiles = getAsFileSettings(fn.Configuration.Settings.Product) ]
+        [#if asFiles?has_content]
+            [@debug message="Asfiles" context=asFiles enabled=false /]
+            [@addToDefaultBashScriptOutput
+                content=
+                    findAsFilesScript("filesToSync", asFiles) +
+                    syncFilesToBucketScript(
+                        "filesToSync",
+                        regionId,
+                        operationsBucket,
+                        getOccurrenceSettingValue(fn, "SETTINGS_PREFIX"),
+                        true
+                    ) /]
+        [/#if]
+        [#if solution.Environment.AsFile]
+            [@addToDefaultBashScriptOutput
+                content=
+                    getLocalFileScript(
+                        "configFiles",
+                        "$\{CONFIG}",
+                        "config_" + commandLineOptions.Run.Id + ".json"
+                    ) +
+                    syncFilesToBucketScript(
+                        "configFiles",
+                        regionId,
+                        operationsBucket,
+                        formatRelativePath(
+                            getOccurrenceSettingValue(fn, "SETTINGS_PREFIX"),
+                            "config"
+                        ),
+                        true
+                    ) /]
+        [/#if]
+    [/#if]
+
 [/#macro]
