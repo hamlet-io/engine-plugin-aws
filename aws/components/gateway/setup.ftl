@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_gateway_cf_generationcontract_segment occurrence ]
-    [@addDefaultGenerationContract subsets="template" /]
+    [@addDefaultGenerationContract subsets=["template", "cli", "epilogue"] /]
 [/#macro]
 
 [#macro aws_gateway_cf_setup_segment occurrence ]
@@ -152,6 +152,8 @@
                 [#local privateGatewayId = gwResources["privateGateway"].Id ]
                 [#local privateGatewayName = gwResources["privateGateway"].Name ]
                 [#local privateGatewayAttachmentId = gwResources["privateGatewayAttachment"].Id ]
+
+                [#local vpnOptionsCommand = "vpnOptions"]]
 
                 [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                     [@createVPNVirtualGateway
@@ -331,6 +333,8 @@
             [#local destinationIPAddressGroups = solution.IPAddressGroups ]
             [#local cidrs = getGroupCIDRs(destinationIPAddressGroups, true, subOccurrence)]
 
+            [#local vpnSecurityProfile = getSecurityProfile(solution.Profiles.Security, "IPSecVPN")]
+
             [#local routeTableIds = []]
             [#local privateGatewayDependencies = []]
 
@@ -396,6 +400,33 @@
                                         [/#if]
 
                                     [/#if]
+
+                                    [#if deploymentSubsetRequired("cli", false) ]
+                                        [@addCliToDefaultJsonOutput
+                                            id=vpnConnectionId
+                                            command=vpnOptionsCommand
+                                            content=getVPNTunnelOptionsCli(vpnSecurityProfile)
+                                        /]
+                                    [/#if]
+
+                                    [#if deploymentSubsetRequired("epilogue", false)]
+                                        [@addToDefaultBashScriptOutput
+                                            content=
+                                                [
+                                                    r'       # Get cli config file',
+                                                    r'       split_cli_file "${CLI}" "${tmpdir}" || return $?',
+                                                    r'       # Create Data pipeline',
+                                                    r'       info "Applying cli level configurtion"',
+                                                    r'       update_vpn_options ' +
+                                                    r'       "' + region + r'" ' +
+                                                    r'       "${STACK_NAME}"' +
+                                                    r'       "' + vpnConnectionId + r'" ' +
+                                                    r'       "${tmpdir}/cli-' +
+                                                                vpnConnectionId + "-" + vpnOptionsCommand + r'.json" || return $?'
+                                                ]
+                                        /]
+                                    [/#if]
+
 
                                     [#local privateGatewayDependencies += [ vpnConnectionId ]]
 

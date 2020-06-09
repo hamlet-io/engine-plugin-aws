@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_externalnetwork_cf_generationcontract_segment occurrence ]
-    [@addDefaultGenerationContract subsets=[ "template", "epilogue" ] /]
+    [@addDefaultGenerationContract subsets=[ "template", "cli", "epilogue" ] /]
 [/#macro]
 
 [#macro aws_externalnetwork_cf_setup_segment occurrence ]
@@ -33,6 +33,9 @@
                 [#local vpnGatewayName = resources["vpnConnection"].Name ]
 
                 [#local vpnPublicIP = (solution.SiteToSite.PublicIP)!"" ]
+
+                [#local vpnOptionsCommand = "vpnOptions"]]
+                [#local vpnSecurityProfile = getSecurityProfile(solution.Profiles.Security, "IPSecVPN")]
 
                 [#if ! vpnPublicIP?has_content ]
                     [@fatal
@@ -91,6 +94,31 @@
                                         staticRoutesOnly=( ! parentSolution.BGP.Enabled )
                                         customerGateway=getReference(customerGatewayId)
                                         transitGateway=transitGateway
+                                    /]
+                                [/#if]
+
+                                [#if deploymentSubsetRequired("cli", false) ]
+                                    [@addCliToDefaultJsonOutput
+                                        id=vpnConnectionId
+                                        command=vpnOptionsCommand
+                                        content=getVPNTunnelOptionsCli(vpnSecurityProfile)
+                                    /]
+                                [/#if]
+
+                                [#if deploymentSubsetRequired("epilogue", false)]
+                                    [@addToDefaultBashScriptOutput
+                                        content=
+                                            [
+                                                "       # Get cli config file",
+                                                "       split_cli_file \"$\{CLI}\" \"$\{tmpdir}\" || return $?",
+                                                "       # Create Data pipeline",
+                                                "       info \"Applying cli level configurtion\""
+                                                "       update_vpn_options " +
+                                                "       \"" + region + "\" " +
+                                                "       \"" + vpnConnectionId + "\" " +
+                                                "       \"$\{tmpdir}/cli-" +
+                                                            vpnConnectionId + "-" + vpnOptionsCommand + ".json\" || return $?"
+                                            ]
                                     /]
                                 [/#if]
 

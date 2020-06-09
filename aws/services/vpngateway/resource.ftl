@@ -121,3 +121,49 @@
         }
     /]
 [/#macro]
+
+[#function getVPNTunnelOptionsCli securityProfile ]
+
+    [#local ikeVersions =
+                (securityProfile.IKEVersions)?map( version -> { "Value" : version }) ]
+
+    [#local phase1EncryptionAlgorithms =
+                (securityProfile.Phase1.EncryptionAlgorithms)?map( algorithm -> { "Value" : algorithm})]
+
+    [#local phase2EncryptionAlgorithms =
+                (securityProfile.Phase2.EncryptionAlgorithms)?map( algorithm -> { "Value" : algorithm})]
+
+    [#local phase1IntegrityAlgorithms =
+                (securityProfile.Phase1.IntegrityAlgorithms)?map( algorithm -> { "Value" : algorithm})]
+
+    [#local phase2IntegrityAlgorithms =
+                (securityProfile.Phase2.IntegrityAlgorithms)?map( algorithm -> { "Value" : algorithm})]
+
+    [#local phase1DHGroupNumbers =
+                (securityProfile.Phase1.DiffeHellmanGroups)?map( groupNumber -> { "Value" : groupNumber})]
+
+    [#local phase2DHGroupNumbers =
+                (securityProfile.Phase1.DiffeHellmanGroups)?map( groupNumber -> { "Value" : groupNumber})]
+
+    [#return
+        {
+            "TunnelOptions": {
+                "RekeyMarginTimeSeconds": securityProfile.Rekey.MarginTime,
+                "RekeyFuzzPercentage": securityProfile.Rekey.FuzzPercentage,
+                "ReplayWindowSize": securityProfile.ReplayWindowSize,
+                "DPDTimeoutSeconds": securityProfile.DeadPeerDetectionTimeout,
+                "IKEVersions": ikeVersions,
+
+                "Phase1LifetimeSeconds": securityProfile.Phase1.Lifetime,
+                "Phase1EncryptionAlgorithms": phase1EncryptionAlgorithms,
+                "Phase1IntegrityAlgorithms": phase1IntegrityAlgorithms,
+                "Phase1DHGroupNumbers": phase1DHGroupNumbers,
+
+                "Phase2LifetimeSeconds": securityProfile.Phase2.Lifetime,
+                "Phase2EncryptionAlgorithms": phase2EncryptionAlgorithms,
+                "Phase2IntegrityAlgorithms": phase2IntegrityAlgorithms,
+                "Phase2DHGroupNumbers": phase2DHGroupNumbers
+            }
+        }
+    ]
+[/#function]
