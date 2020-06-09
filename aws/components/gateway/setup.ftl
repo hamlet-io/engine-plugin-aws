@@ -413,6 +413,8 @@
                                         [@addToDefaultBashScriptOutput
                                             content=
                                                 [
+                                                    r'case ${STACK_OPERATION} in',
+                                                    r'  create|update)',
                                                     r'       # Get cli config file',
                                                     r'       split_cli_file "${CLI}" "${tmpdir}" || return $?',
                                                     r'       # Create Data pipeline',
@@ -423,10 +425,11 @@
                                                     r'       "' + vpnConnectionId + r'" ' +
                                                     r'       "${tmpdir}/cli-' +
                                                                 vpnConnectionId + "-" + vpnOptionsCommand + r'.json" || return $?'
+                                                    r'       ;;',
+                                                    r' esac'
                                                 ]
                                         /]
                                     [/#if]
-
 
                                     [#local privateGatewayDependencies += [ vpnConnectionId ]]
 

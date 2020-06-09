@@ -109,18 +109,24 @@
                                     [@addToDefaultBashScriptOutput
                                         content=
                                             [
-                                                "       # Get cli config file",
-                                                "       split_cli_file \"$\{CLI}\" \"$\{tmpdir}\" || return $?",
-                                                "       # Create Data pipeline",
-                                                "       info \"Applying cli level configurtion\""
-                                                "       update_vpn_options " +
-                                                "       \"" + region + "\" " +
-                                                "       \"" + vpnConnectionId + "\" " +
-                                                "       \"$\{tmpdir}/cli-" +
-                                                            vpnConnectionId + "-" + vpnOptionsCommand + ".json\" || return $?"
+                                                r'case ${STACK_OPERATION} in',
+                                                r'  create|update)',
+                                                r'       # Get cli config file',
+                                                r'       split_cli_file "${CLI}" "${tmpdir}" || return $?',
+                                                r'       # Create Data pipeline',
+                                                r'       info "Applying cli level configurtion"',
+                                                r'       update_vpn_options ' +
+                                                r'       "' + region + r'" ' +
+                                                r'       "${STACK_NAME}"' +
+                                                r'       "' + vpnConnectionId + r'" ' +
+                                                r'       "${tmpdir}/cli-' +
+                                                            vpnConnectionId + "-" + vpnOptionsCommand + r'.json" || return $?'
+                                                r'       ;;',
+                                                r' esac'
                                             ]
                                     /]
                                 [/#if]
+
 
                                 [#if getExistingReference(transGatewayAttachmentId)?has_content ]
 
