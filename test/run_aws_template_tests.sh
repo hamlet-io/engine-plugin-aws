@@ -8,7 +8,7 @@ TEST_OUTPUT_DIR="${TEST_OUTPUT_DIR:-"./hamlet_tests"}"
 
 if [[ -d "${TEST_OUTPUT_DIR}" ]]; then
     rm -r "${TEST_OUTPUT_DIR}"
-    mrkdir "${TEST_OUTPUT_DIR}"
+    mkdir "${TEST_OUTPUT_DIR}"
 else
     mkdir -p "${TEST_OUTPUT_DIR}"
 fi
