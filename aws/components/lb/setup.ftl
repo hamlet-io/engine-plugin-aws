@@ -570,7 +570,7 @@
                         attributes=tgAttributes
                         targetType=solution.Forward.TargetType
                         vpcId=vpcId
-                        staticTargets=staticTargets
+                        targets=staticTargets
                     /]
                 [/#if]
 
