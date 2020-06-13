@@ -117,3 +117,8 @@
                 component,
                 extensions)]
 [/#function]
+
+
+[#function formatEC2AccountVolumeEncryptionId ]
+    [#return formatAccountResourceId("volumeencrypt")]
+[/#function]
