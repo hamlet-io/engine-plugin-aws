@@ -127,21 +127,23 @@
                     [
                         getPolicyDocument(
                             ec2IPAddressUpdatePermission() +
-                                s3ListPermission(codeBucket) +
-                                s3ReadPermission(codeBucket) +
-                                cwLogsProducePermission(computeClusterLogGroupName),
-                            "basic")
+                            s3ListPermission(codeBucket) +
+                            s3ReadPermission(codeBucket) +
+                            cwLogsProducePermission(bastionLgName) +
+                            ssmSessionManagerPermission(
+                                baselineComponentIds["AccountEncryption"],
+                                bastionOS
+                            ),
+                            "basic"
+                        ),
+                        getPolicyDocument(
+                            ssmSessionManagerPermission(bastionOS),
+                            "ssm"
+                        )
                     ] +
                     arrayIfContent(
                         [getPolicyDocument(_context.Policy, "fragment")],
-                        _context.Policy) +
-                    consoleOnly?then(
-                        [getPolicyDocument(
-                            ec2SSMSessionManagerPermission() +
-                            ec2SSMAgentUpdatePermission(bastionOS),
-                            "ssm")],
-                        []
-                    )
+                        _context.Policy)
                 managedArns=_context.ManagedPolicy
             /]
         [/#if]

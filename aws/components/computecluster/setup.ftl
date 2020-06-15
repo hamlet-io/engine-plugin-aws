@@ -173,7 +173,11 @@
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +
                         cwLogsProducePermission(computeClusterLogGroupName),
-                        "basic")
+                        "basic"),
+                    getPolicyDocument(
+                        ssmSessionManagerPermission(),
+                        "ssm"
+                    )
                 ] +
                 targetGroupPermission?then(
                     [

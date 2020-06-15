@@ -266,7 +266,12 @@
                         s3WritePermission(operationsBucket, "Backups") +
                         cwLogsProducePermission(ec2LogGroupName) +
                         ec2EBSVolumeReadPermission(),
-                        "basic")
+                        "basic"
+                    ),
+                    getPolicyDocument(
+                        ssmSessionManagerPermission(),
+                        "ssm"
+                    )
                 ] + targetGroupPermission?then(
                     [
                         getPolicyDocument(

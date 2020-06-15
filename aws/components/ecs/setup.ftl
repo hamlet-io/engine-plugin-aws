@@ -162,8 +162,13 @@
                             (solution.VolumeDrivers?seq_contains("ebs"))?then(
                                 ec2EBSVolumeUpdatePermission(),
                                 []
-                            ) ,
-                        "docker")
+                            ),
+                        "docker"
+                    ),
+                    getPolicyDocument(
+                        ssmSessionManagerPermission(),
+                        "ssm"
+                    )
                 ] +
                 arrayIfContent(
                     [getPolicyDocument(_context.Policy, "fragment")],
