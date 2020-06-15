@@ -293,6 +293,9 @@
 /]
 
 [#macro createS3Bucket id name tier="" component=""
+                        encrypted=false
+                        encryptionMode="aws:kms"
+                        kmsKeyId=""
                         lifecycleRules=[]
                         notifications=[]
                         versioning=false
@@ -345,6 +348,23 @@
             }]
     [/#list]
 
+    [#if encrypted ]
+        [#local bucketEncryption = {
+            "ServerSideEncryptionConfiguration" : [
+                {
+                    "ServerSideEncryptionByDefault" : {
+                        "SSEAlgorithm" : encryptionMode
+                    } +
+                    attributeIfTrue(
+                        "KMSMasterKeyID",
+                        ( encryptionMode == "aws:kms" ),
+                        getExistingReference(kmsKeyId)
+                    )
+                }
+            ]
+        }]
+    [/#if]
+
     [@cfResource
         id=id
         type="AWS::S3::Bucket"
@@ -388,6 +408,11 @@
             attributeIfContent(
                 "ReplicationConfiguration",
                 replicationConfiguration
+            ) +
+            attributeIfTrue(
+                "BucketEncryption",
+                encrypted,
+                bucketEncryption
             )
         tags=getCfTemplateCoreTags("", tier, component, "", false, false, 7)
         outputs=S3_OUTPUT_MAPPINGS

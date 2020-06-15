@@ -15,18 +15,18 @@
         }
     }
 ]
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_SSM_DOCUMENT_RESOURCE_TYPE
     mappings=AWS_SSM_DOCUMENT_OUTPUT_MAPPINGS
 /]
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_SSM_MAINTENANCE_WINDOW_RESOURCE_TYPE
     mappings=AWS_SSM_MAINTENANCE_WINDOW_OUTPUT_MAPPINGS
 /]
 
-[#macro createSSMDocument id content tags documentType="" dependencies="" ]
+[#macro createSSMDocument id content tags name="" documentType="" dependencies="" ]
     [@cfResource
         id=id
         type="AWS::SSM::Document"
@@ -35,7 +35,11 @@
                 "Content" : content,
                 "DocumentType" : documentType,
                 "Tags" : tags
-            }
+            } +
+            attributeIfContent(
+                "Name",
+                name
+            )
         outputs=SSM_DOCUMENT_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]

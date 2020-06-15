@@ -72,8 +72,7 @@
                     "ssmmessages:CreateControlChannel",
                     "ssmmessages:CreateDataChannel",
                     "ssmmessages:OpenControlChannel",
-                    "ssmmessages:OpenDataChannel",
-                    "s3:GetEncryptionConfiguration"
+                    "ssmmessages:OpenDataChannel"
                 ]
             )
         ]
