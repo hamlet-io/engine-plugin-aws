@@ -1175,6 +1175,7 @@
           ],
           "gateway": {
             "Engine": "privateservice",
+            "DestinationPorts" : [ "http", "https" ],
             "Destinations": {
               "default": {
                 "NetworkEndpointGroups": [
