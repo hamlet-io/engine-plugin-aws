@@ -516,18 +516,16 @@
                                             [#break]
 
                                         [#case "router"]
-                                            [#if localRouter ]
-                                                [#list cidrs as cidr ]
-                                                    [@createRoute
-                                                        id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
-                                                        routeTableId=zoneRouteTableId
-                                                        destinationType="transit"
-                                                        destinationAttribute=transitGateway
-                                                        destinationCidr=cidr
-                                                        dependencies=transitGatewayAttachmentId
-                                                    /]
-                                                [/#list]
-                                            [/#if]
+                                            [#list cidrs as cidr ]
+                                                [@createRoute
+                                                    id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
+                                                    routeTableId=zoneRouteTableId
+                                                    destinationType="transit"
+                                                    destinationAttribute=transitGateway
+                                                    destinationCidr=cidr
+                                                    dependencies=transitGatewayAttachmentId
+                                                /]
+                                            [/#list]
                                             [#break]
 
                                         [#case "private" ]
