@@ -348,8 +348,9 @@
             }]
     [/#list]
 
+    [#local bucketEncryptionConfig = {} ]
     [#if encrypted ]
-        [#local bucketEncryption = {
+        [#local bucketEncryptionConfig = {
             "ServerSideEncryptionConfiguration" : [
                 {
                     "ServerSideEncryptionByDefault" : {
@@ -412,7 +413,7 @@
             attributeIfTrue(
                 "BucketEncryption",
                 encrypted,
-                bucketEncryption
+                bucketEncryptionConfig
             )
         tags=getCfTemplateCoreTags("", tier, component, "", false, false, 7)
         outputs=S3_OUTPUT_MAPPINGS
