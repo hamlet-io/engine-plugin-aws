@@ -16,6 +16,9 @@
     [#local lbLogs = solution.Logs ]
     [#local lbSecurityGroupIds = [] ]
 
+    [#local wafAclResources = resources["wafacl"]!{} ]
+    [#local wafSolution = solution.WAF]
+
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
@@ -675,9 +678,32 @@
     [/#if]
 
     [#switch engine ]
-        [#case "network"]
         [#case "application"]
+            [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+                [#-- Create a WAF ACL if required --]
+                [#if wafAclResources?has_content ]
+                    [@createWAFAclFromSecurityProfile
+                        id=wafAclResources.acl.Id
+                        name=wafAclResources.acl.Name
+                        metric=wafAclResources.acl.Name
+                        wafSolution=wafSolution
+                        securityProfile=securityProfile
+                        occurrence=occurrence
+                        regional=true
+                    /]
 
+                    [#if !cfResources?has_content]
+                        [#-- Attach to API Gateway if no CloudFront distribution --]
+                        [@createWAFAclAssociation
+                            id=wafAclResources.association.Id
+                            wafaclId=wafAclResources.acl.Id
+                            endpointId=getReference(lbId)
+                        /]
+                    [/#if]
+                [/#if]
+            [/#if]
+
+        [#case "network"]
             [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                 [@createALB
                     id=lbId

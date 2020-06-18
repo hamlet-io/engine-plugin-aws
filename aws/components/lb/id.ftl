@@ -6,7 +6,8 @@
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=
         [
-            AWS_ELASTIC_LOAD_BALANCER_SERVICE
+            AWS_ELASTIC_LOAD_BALANCER_SERVICE,
+            AWS_WEB_APPLICATION_FIREWALL_SERVICE
         ]
 /]
 

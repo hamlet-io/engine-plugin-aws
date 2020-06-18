@@ -10,6 +10,34 @@
         [#local id = formatResourceId(AWS_LB_RESOURCE_TYPE, core.Id) ]
     [/#if]
 
+    [#local wafPresent = isPresent(solution.WAF) ]
+
+    [#local wafResources = {} ]
+    [#if wafPresent && solution.Engine == "application" ]
+        [#local wafResources =
+            {
+                "acl" : {
+                    "Id" : formatDependentWAFAclId(id),
+                    "Name" : formatComponentWAFAclName(core.Tier, core.Component, occurrence),
+                    "Type" : AWS_WAF_ACL_RESOURCE_TYPE
+                },
+                "association" : {
+                    "Id" : formatDependentWAFAclAssociationId(id),
+                    "Type" : AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE
+                }
+            } ]
+    [/#if]
+
+    [#if wafPresent && solution.Engine != "application" ]
+        [@fatal
+            message="WAF not supported on this engine type"
+            detail={
+                "LbId" : id,
+                "WAF" : solution.WAF
+            }
+        /]
+    [/#if]
+
     [#switch solution.Engine ]
         [#case "application" ]
             [#local resourceType = AWS_LB_APPLICATION_RESOURCE_TYPE ]
@@ -37,7 +65,8 @@
                     "Type" : resourceType,
                     "Monitored" : true
                 }
-            },
+            } +
+            attributeIfContent("wafacl", wafResources),
             "Attributes" : {
                 "INTERNAL_FQDN" : getExistingReference(id, DNS_ATTRIBUTE_TYPE)
             },
