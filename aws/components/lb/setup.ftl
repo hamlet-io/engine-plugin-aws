@@ -691,15 +691,11 @@
                         occurrence=occurrence
                         regional=true
                     /]
-
-                    [#if !cfResources?has_content]
-                        [#-- Attach to API Gateway if no CloudFront distribution --]
-                        [@createWAFAclAssociation
-                            id=wafAclResources.association.Id
-                            wafaclId=wafAclResources.acl.Id
-                            endpointId=getReference(lbId)
-                        /]
-                    [/#if]
+                    [@createWAFAclAssociation
+                        id=wafAclResources.association.Id
+                        wafaclId=wafAclResources.acl.Id
+                        endpointId=getReference(lbId)
+                    /]
                 [/#if]
             [/#if]
 
