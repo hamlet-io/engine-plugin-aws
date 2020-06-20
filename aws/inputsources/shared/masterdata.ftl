@@ -1365,7 +1365,6 @@
       "Active": false,
       "IPAddressGroups": []
     },
-    "ConsoleOnly": false,
     "S3": {
       "IncludeTenant": false
     },
@@ -1742,6 +1741,22 @@
         "s3",
         "dynamodb"
       ]
+    }
+  },
+  "NetworkProfiles" :{
+    "default" : {
+      "BaseSecurityGroup" : {
+        "Links" : {
+          "sshBastion" : {
+            "Tier" : "mgmt",
+            "Component" : "ssh",
+            "Instance" : "",
+            "Version" : "",
+            "Direction" : "inbound",
+            "Role" : "networkacl"
+          }
+        }
+      }
     }
   },
   "BaselineProfiles": {
