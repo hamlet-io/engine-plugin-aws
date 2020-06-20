@@ -106,6 +106,18 @@
     [#local defaultTargetGroupId = formatResourceId(AWS_ALB_TARGET_GROUP_RESOURCE_TYPE, "default", parentCore.Id, sourcePortId ) ]
     [#local defaultTargetGroupName = formatName("default", parentCore.FullName, sourcePortId )]
 
+    [#local securityGroupId = formatDependentSecurityGroupId(listenerId) ]
+
+    [#switch engine ]
+        [#case "application" ]
+        [#case "classic" ]
+            [#local securityGroupRequired = true ]
+            [#break]
+
+        [#default]
+            [#local securityGroupRequired = false]
+    [/#switch]
+
     [#local domainRedirectRules = {} ]
     [#if (sourcePort.Certificate)!false ]
         [#local certificateObject = getCertificateObject(solution.Certificate, segmentQualifiers, sourcePortId, sourcePortName ) ]
@@ -165,11 +177,6 @@
                     "Id" : listenerId,
                     "Type" : AWS_ALB_LISTENER_RESOURCE_TYPE
                 },
-                "sg" : {
-                    "Id" : formatDependentSecurityGroupId(listenerId),
-                    "Name" : formatName(parentCore.FullName, sourcePortId),
-                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
-                },
                 "listenerRule" : {
                     "Id" : formatResourceId(AWS_ALB_LISTENER_RULE_RESOURCE_TYPE, parentCore.Id, sourcePortId, solution.Priority),
                     "Priority" : solution.Priority,
@@ -186,7 +193,17 @@
                     "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE
                 }
             } +
-            attributeIfContent("domainRedirectRules", domainRedirectRules),
+            attributeIfContent("domainRedirectRules", domainRedirectRules)+
+            attributeIfTrue(
+                "sg",
+                securityGroupRequired,
+                {
+                    "Id" : securityGroupId,
+                    "Ports" : source,
+                    "Name" : formatName(parentCore.FullName, sourcePortId),
+                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+                }
+            ),
             "Attributes" : {
                 "LB" : lbId,
                 "ENGINE" : engine,
@@ -203,8 +220,25 @@
                 "TARGET_GROUP_ARN" : targetGroupArn
             },
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {} +
+                attributeIfTrue(
+                    "networkacl",
+                    securityGroupRequired,
+                    {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                ),
+                "Outbound" : {} +
+                attributeIfTrue(
+                    "networkacl",
+                    securityGroupRequired,
+                    {
+                        "Ports" : [ source ],
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                )
             }
         }
     ]

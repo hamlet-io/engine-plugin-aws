@@ -5,6 +5,7 @@
     [#local solution = occurrence.Configuration.Solution ]
 
     [#local pipelineId = formatResourceId( AWS_DATA_PIPELINE_RESOURCE_TYPE, core.Id )]
+    [#local securityGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id )]
 
     [#-- The ec2 Role and Instance profile must have the same name --]
     [#local resourceRoleName = formatName(core.FullName, "resource")]
@@ -35,7 +36,7 @@
                     "Type" : AWS_EC2_INSTANCE_PROFILE_RESOURCE_TYPE
                 },
                 "securityGroup" : {
-                    "Id" : formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ),
+                    "Id" : securityGroupId,
                     "Name" : core.FullName,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }
@@ -44,8 +45,19 @@
                 "ID" : getExistingReference( pipelineId )
             },
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ "ssh" ],
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]

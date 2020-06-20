@@ -1,9 +1,9 @@
 [#ftl]
-[#macro aws_ec2_cf_solution occurrence ]
+[#macro aws_ec2_cf_generationcontract_solution occurrence ]
     [@addDefaultGenerationContract subsets="template" /]
 [/#macro]
 
-[#macro aws_ec2_cf_solution occurrence ]
+[#macro aws_ec2_cf_setup_solution occurrence ]
     [@debug message="Entering" context=occurrence enabled=false /]
 
     [#local core = occurrence.Core]
@@ -17,15 +17,18 @@
 
     [#local ec2SecurityGroupId     = resources["sg"].Id]
     [#local ec2SecurityGroupName   = resources["sg"].Name]
+    [#local ec2SecurityGroupPorts  = resources["sg"].Ports ]
     [#local ec2RoleId              = resources["ec2Role"].Id]
     [#local ec2InstanceProfileId   = resources["instanceProfile"].Id]
     [#local ec2LogGroupId          = resources["lg"].Id]
     [#local ec2LogGroupName        = resources["lg"].Name]
 
+
     [#local processorProfile       = getProcessor(occurrence, "EC2")]
     [#local storageProfile         = getStorage(occurrence, "EC2")]
     [#local logFileProfile         = getLogFileProfile(occurrence, "EC2")]
     [#local bootstrapProfile       = getBootstrapProfile(occurrence, "EC2")]
+    [#local networkProfile         = getNetworkProfile(solution.Profiles.Network)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -81,14 +84,11 @@
             [/#if]
             [#local links += lbLink]
         [#else]
-            [#local portCIDRs = getGroupCIDRs(port.IPAddressGroups, true, occurrence) ]
-            [#if portCIDRs?has_content]
-                [#local ingressRules +=
-                    [{
-                        "Port" : port.Name,
-                        "CIDR" : portCIDRs
-                    }]]
-            [/#if]
+            [#local ingressRules +=
+                [{
+                    "Ports" : port.Name,
+                    "IPAddressGroups" : port.IPAddressGroups
+                }]]
         [/#if]
     [/#list]
 
@@ -147,6 +147,15 @@
         [#local linkTargetConfiguration = linkTarget.Configuration ]
         [#local linkTargetResources = linkTarget.State.Resources ]
         [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+        [#if deploymentSubsetRequired(EC2_COMPONENT_TYPE, true)]
+            [@createSecurityGroupRulesFromLink
+                occurrence=occurrence
+                groupId=computeClusterSecurityGroupId
+                linkTarget=linkTarget
+                inboundPorts=ec2SecurityGroupPorts
+            /]
+        [/#if]
 
         [#local sourceSecurityGroupIds = []]
         [#local sourceIPAddressGroups = [] ]
@@ -306,14 +315,29 @@
             ec2LogGroupName
         )]
 
-    [#if deploymentSubsetRequired("ec2", true)]
+    [#if deploymentSubsetRequired(EC2_COMPONENT_TYPE, true)]
 
         [@createSecurityGroup
             id=ec2SecurityGroupId
             name=ec2SecurityGroupName
+            vpcId=vpcId
             occurrence=occurrence
-            ingressRules=ingressRules
-            vpcId=vpcId /]
+        /]
+
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=occurrence
+            groupId=ec2SecurityGroupId
+            networkProfile=networkProfile
+            inboundPorts=ec2SecurityGroupPorts
+        /]
+
+        [#list ingressRules as ingressRule ]
+            [@createSecurityGroupIngressFromNetworkRule
+                occurrence=occurrence
+                groupId=ec2SecurityGroupId
+                networkRule=ingressRule
+            /]
+        [/#list]
 
         [@cfResource
             id=ec2InstanceProfileId

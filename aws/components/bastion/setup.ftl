@@ -13,8 +13,6 @@
     [#local bastionRoleId = resources["role"].Id ]
     [#local bastionEIPId = resources["eip"].Id ]
     [#local bastionEIPName = resources["eip"].Name ]
-    [#local bastionSecurityGroupFromId = resources["securityGroupFrom"].Id]
-    [#local bastionSecurityGroupFromName = resources["securityGroupFrom"].Name]
     [#local bastionSecurityGroupToId = resources["securityGroupTo"].Id]
     [#local bastionSecurityGroupToName = resources["securityGroupTo"].Name]
     [#local bastionInstanceProfileId = resources["instanceProfile"].Id]
@@ -27,7 +25,6 @@
     [#local bastionOS = solution.OS ]
     [#local bastionType = occurrence.Core.Type]
     [#local configSetName = bastionType]
-    [#local sshInVpc = getExistingReference(bastionSecurityGroupFromId, "", "", "vpc")?has_content ]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -65,6 +62,7 @@
     [#local storageProfile = getStorage(occurrence, BASTION_COMPONENT_TYPE)]
     [#local logFileProfile = getLogFileProfile(occurrence, BASTION_COMPONENT_TYPE)]
     [#local bootstrapProfile = getBootstrapProfile(occurrence, BASTION_COMPONENT_TYPE)]
+    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
 
     [#local processorProfile = getProcessor(occurrence, "bastion")]
 
@@ -113,11 +111,25 @@
         getInitConfigEnvFacts(environmentVariables, false) +
         getInitConfigDirsFiles(_context.Files, _context.Directories) ]
 
-    [#if sshEnabled &&
-        (
-            (bastionType == "bastion") ||
-            ((bastionType == "vpc") && sshInVpc)
-        )]
+    [#if sshEnabled ]
+
+        [#list _context.Links as linkId,linkTarget]
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetConfiguration = linkTarget.Configuration ]
+            [#local linkTargetResources = linkTarget.State.Resources ]
+            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+            [#local linkTargetRoles = linkTarget.State.Roles]
+
+            [#if deploymentSubsetRequired("bastion", true)]
+                [@createSecurityGroupRulesFromLink
+                    occurrence=occurrence
+                    groupId=bastionSecurityGroupToId
+                    linkTarget=linkTarget
+                    inboundPorts=[ "ssh" ]
+                /]
+            [/#if]
+
+        [/#list]
 
         [#if deploymentSubsetRequired("iam", true) &&
                 isPartOfCurrentDeploymentUnit(bastionRoleId)]
@@ -173,6 +185,13 @@
                     ))]
         [/#if]
 
+        [#local configSets +=
+            getInitConfigEIPAllocation(
+                getReference(
+                    bastionEIPId,
+                    ALLOCATION_ATTRIBUTE_TYPE
+                ))]
+
         [#if deploymentSubsetRequired("lg", true) &&
                 isPartOfCurrentDeploymentUnit(bastionLgId) ]
             [@createLogGroup
@@ -190,39 +209,34 @@
             [@createSecurityGroup
                 id=bastionSecurityGroupToId
                 name=bastionSecurityGroupToName
-                occurrence=occurrence
-                description="Security Group for inbound SSH to the SSH Proxy"
-                ingressRules=
-                    [
-                        {
-                            "Port" : "ssh",
-                            "CIDR" :
-                                (sshEnabled)?then(
-                                    getGroupCIDRs(
-                                        (segmentObject.SSH.IPAddressGroups)!
-                                            (segmentObject.IPAddressGroups)!
-                                            (segmentObject.Bastion.IPAddressGroups)![]),
-                                    []
-                                )
-                        }
-                    ]
                 vpcId=vpcId
+                description="Security Group for inbound SSH to the SSH Proxy"
+                occurrence=occurrence
             /]
 
-            [@createSecurityGroup
-                id=bastionSecurityGroupFromId
-                name=bastionSecurityGroupFromName
-                tier="all"
+            [@createSecurityGroupRulesFromNetworkProfile
                 occurrence=occurrence
-                description="Security Group for SSH access from the SSH Proxy"
-                ingressRules=
-                    [
-                        {
-                            "Port" : "ssh",
-                            "CIDR" : [bastionSecurityGroupToId]
-                        }
-                    ]
-                vpcId=vpcId
+                groupId=bastionSecurityGroupToId
+                networkProfile=networkProfile
+                inboundPorts=[ "ssh" ]
+            /]
+
+            [#local bastionSSHNetworkRule = {
+                        "Ports" : [ "ssh" ],
+                        "IPAddressGroups" :
+                            sshEnabled?then(
+                                (segmentObject.SSH.IPAddressGroups)!
+                                (segmentObject.IPAddressGroups)!
+                                (segmentObject.Bastion.IPAddressGroups)![],
+                                []
+                            ),
+                        "Description" : "Bastion Access Groups"
+            }]
+
+            [@createSecurityGroupIngressFromNetworkRule
+                occurrence=occurrence
+                groupId=bastionSecurityGroupToId
+                networkRule=bastionSSHNetworkRule
             /]
 
             [@cfResource

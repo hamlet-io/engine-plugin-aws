@@ -1,8 +1,50 @@
 [#ftl]
 [#macro aws_cache_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
+    [#local solution = occurrence.Configuration.Solution ]
 
     [#local id = formatResourceId(AWS_CACHE_RESOURCE_TYPE, core.Id) ]
+    [#local securityGroupId = formatDependentSecurityGroupId(id)]
+
+    [#local engine = solution.Engine ]
+
+    [#switch engine]
+        [#case "memcached"]
+            [#local engineVersion =
+                valueIfContent(
+                    solution.EngineVersion!"",
+                    solution.EngineVersion!"",
+                    "1.4.24"
+                )
+            ]
+            [#local familyVersionIndex = engineVersion?last_index_of(".") - 1]
+            [#local family = "memcached" + engineVersion[0..familyVersionIndex]]
+            [#local port = solution.Port!"memcached" ]
+            [#break]
+
+        [#case "redis"]
+            [#local engineVersion =
+                valueIfContent(
+                    solution.EngineVersion!"",
+                    solution.EngineVersion!"",
+                    "2.8.24"
+                )
+            ]
+            [#local familyVersionIndex = engineVersion?last_index_of(".") - 1]
+            [#local family = "redis" + engineVersion[0..familyVersionIndex]]
+            [#local port = solution.Port!"redis" ]
+            [#break]
+
+        [#default]
+            [@precondition
+                function="setup_cache"
+                context=occurrence
+                detail="Unsupported engine provided"
+            /]
+            [#local engineVersion = "unknown" ]
+            [#local family = "unknown" ]
+            [#local port = "unknown" ]
+    [/#switch]
 
     [#assign componentState =
         {
@@ -11,6 +53,9 @@
                     "Id" : id,
                     "Name" : core.FullName,
                     "Type" : AWS_CACHE_RESOURCE_TYPE,
+                    "Port" : port,
+                    "Family" : family,
+                    "EngineVersion" : engineVersion,
                     "Monitored" : true
                 },
                 "subnetGroup" : {
@@ -22,18 +67,19 @@
                     "Type" : AWS_CACHE_PARAMETER_GROUP_RESOURCE_TYPE
                 },
                 "sg" : {
-                    "Id" : formatDependentSecurityGroupId(id),
+                    "Id" : securityGroupId,
+                    "Name" : core.FullName,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }
             },
             "Attributes" : {
-                "ENGINE" : occurrence.Configuration.Solution.Engine,
+                "ENGINE" : engine,
                 "FQDN"  : getExistingReference(id, DNS_ATTRIBUTE_TYPE),
                 "PORT" : getExistingReference(id, PORT_ATTRIBUTE_TYPE),
                 "URL" :
                     valueIfTrue(
                         "redis://",
-                        occurrence.Configuration.Solution.Engine == "redis",
+                        engine == "redis",
                         "memcached://"
                     ) +
                     getExistingReference(id, DNS_ATTRIBUTE_TYPE) +
@@ -41,8 +87,19 @@
                     getExistingReference(id, PORT_ATTRIBUTE_TYPE)
             },
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ port ],
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]

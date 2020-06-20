@@ -15,6 +15,10 @@
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
 
+    [#local networkProfile = getNetworkProfile(gwSolution.Profiles.Network)]
+
+    [#local securityGroupEnabled = false]
+
     [#if !networkLink?has_content ]
         [@fatal
             message="Tier Network configuration incomplete"
@@ -188,11 +192,19 @@
                 [#local destinationPorts = gwSolution.DestinationPorts ]
 
                 [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
+                    [#local securityGroupEnabled = true ]
                     [@createSecurityGroup
                         id=securityGroupId
                         name=securityGroupName
-                        occurrence=occurrence
                         vpcId=vpcId
+                        occurrence=occurrence
+                    /]
+
+                    [@createSecurityGroupRulesFromNetworkProfile
+                        occurrence=occurrence
+                        groupId=securityGroupId
+                        networkProfile=networkProfile
+                        inboundPorts=destinationPorts
                     /]
 
                     [#list destinationPorts as destinationPort ]
@@ -230,6 +242,18 @@
                 [#local linkTargetConfiguration = linkTarget.Configuration ]
                 [#local linkTargetResources = linkTarget.State.Resources ]
                 [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+                [#local linkTargetRoles = linkTarget.State.Roles]
+
+                [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true) &&
+                        securityGroupEnabled]
+                    [@createSecurityGroupRulesFromLink
+                        occurrence=occurrence
+                        groupId=securityGroupId
+                        linkTarget=linkTarget
+                        inboundPorts=destinationPorts
+                    /]
+                [/#if]
 
                 [#switch linkTargetCore.Type]
 

@@ -24,65 +24,27 @@
     [#local vpcId = networkResources["vpc"].Id ]
 
     [#local engine = solution.Engine]
-    [#switch engine]
-        [#case "memcached"]
-            [#local engineVersion =
-                valueIfContent(
-                    solution.EngineVersion!"",
-                    solution.EngineVersion!"",
-                    "1.4.24"
-                )
-            ]
-            [#local familyVersionIndex = engineVersion?last_index_of(".") - 1]
-            [#local family = "memcached" + engineVersion[0..familyVersionIndex]]
-            [#local port = solution.Port!"memcached" ]
-            [#if (ports[port].Port)?has_content]
-                [#local port = ports[port].Port ]
-            [#else]
-                [@fatal message="Unknown Port" context=port /]
-            [/#if]
-            [#break]
-
-        [#case "redis"]
-            [#local engineVersion =
-                valueIfContent(
-                    solution.EngineVersion!"",
-                    solution.EngineVersion!"",
-                    "2.8.24"
-                )
-            ]
-            [#local familyVersionIndex = engineVersion?last_index_of(".") - 1]
-            [#local family = "redis" + engineVersion[0..familyVersionIndex]]
-            [#local port = solution.Port!"redis" ]
-            [#if (ports[port].Port)?has_content]
-                [#local port = ports[port].Port ]
-            [#else]
-                [@fatal message="Unknown Port" context=port /]
-            [/#if]
-            [#break]
-
-        [#default]
-            [@precondition
-                function="solution_cache"
-                context=occurrence
-                detail="Unsupported engine provided"
-            /]
-            [#local engineVersion = "unknown" ]
-            [#local family = "unknown" ]
-            [#local port = "unknown" ]
-    [/#switch]
 
     [#local cacheId = resources["cache"].Id ]
     [#local cacheFullName = resources["cache"].Name ]
     [#local cacheSubnetGroupId = resources["subnetGroup"].Id ]
     [#local cacheParameterGroupId = resources["parameterGroup"].Id ]
     [#local cacheSecurityGroupId = resources["sg"].Id ]
+    [#local cacheSecurityGroupName = resources["sg"].Name ]
 
-    [#local cacheSecurityGroupIngressId = formatDependentSecurityGroupIngressId(
-                                            cacheSecurityGroupId,
-                                            port)]
+    [#local port = resources["cache"].Port ]
+    [#local family = resources["cache"].Family ]
+    [#local engineVersion = resources["cache"].EngineVersion ]
 
+    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
     [#local processorProfile = getProcessor(occurrence, "cache")]
+
+    [#if (ports[port].Port)?has_content]
+        [#local portObject = ports[port] ]
+    [#else]
+        [@fatal message="Unknown Port" context=port /]
+    [/#if]
+
     [#local countPerZone = processorProfile.CountPerZone]
     [#local awsZones = [] ]
     [#list zones as zone]
@@ -93,20 +55,59 @@
 
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
 
+    [#list solution.Links?values as link]
+        [#if link?is_hash]
+            [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+            [#if !linkTarget?has_content]
+                [#continue]
+            [/#if]
+
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetConfiguration = linkTarget.Configuration ]
+            [#local linkTargetResources = linkTarget.State.Resources ]
+            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+            [#if deploymentSubsetRequired("cache", true)]
+                [@createSecurityGroupRulesFromLink
+                    occurrence=occurrence
+                    groupId=cacheSecurityGroupId
+                    linkTarget=linkTarget
+                    inboundPorts=[ port ]
+                /]
+            [/#if]
+
+        [/#if]
+    [/#list]
+
     [#if deploymentSubsetRequired("cache", true)]
 
-        [@createDependentSecurityGroup
-            resourceId=cacheId
-            resourceName=cacheFullName
-            occurrence=occurrence
+        [@createSecurityGroup
+            id=cacheSecurityGroupId
+            name=cacheSecurityGroupName
             vpcId=vpcId
+            networkProfile=networkProfile
+            occurrence=occurrence
         /]
 
-        [@createSecurityGroupIngress
-            id=cacheSecurityGroupIngressId
-            port=port
-            cidr="0.0.0.0/0"
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=occurrence
             groupId=cacheSecurityGroupId
+            networkProfile=networkProfile
+            inboundPorts=[ port ]
+        /]
+
+        [#local ingressNetworkRule = {
+                "Ports" : [ port ],
+                "IPAddressGroups" : solution.IPAddressGroups
+        }]
+
+        [@createSecurityGroupIngressFromNetworkRule
+            occurrence=occurrence
+            groupId=cacheSecurityGroupId
+            networkRule=ingressNetworkRule
         /]
 
         [@cfResource
@@ -176,7 +177,7 @@
                         "Engine": engine,
                         "EngineVersion": engineVersion,
                         "CacheNodeType" : processorProfile.Processor,
-                        "Port" : port,
+                        "Port" : portObject.Port,
                         "CacheParameterGroupName": getReference(cacheParameterGroupId),
                         "CacheSubnetGroupName": getReference(cacheSubnetGroupId),
                         "VpcSecurityGroupIds":[getReference(cacheSecurityGroupId)]

@@ -3,6 +3,8 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
 
+    [#local securityGroupToId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id )]
+
     [#assign componentState =
         {
             "Resources" : {
@@ -12,13 +14,8 @@
                     "Type" : AWS_EIP_RESOURCE_TYPE
                 },
                 "securityGroupTo" : {
-                    "Id" : formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ),
+                    "Id" : securityGroupToId,
                     "Name" : core.FullName,
-                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
-                },
-                "securityGroupFrom" : {
-                    "Id" : formatSSHFromProxySecurityGroupId(),
-                    "Name" : formatName( formatSegmentFullName(), "all", core.Component.Name),
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 },
                 "role" : {
@@ -53,8 +50,19 @@
             "Attributes" : {
             },
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(securityGroupToId),
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports": [ "ssh" ],
+                        "SecurityGroups" : getExistingReference(securityGroupToId),
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]

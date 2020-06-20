@@ -27,6 +27,7 @@
     [#local storageProfile   = getStorage(occurrence, "ComputeCluster")]
     [#local logFileProfile   = getLogFileProfile(occurrence, "ComputeCluster")]
     [#local bootstrapProfile = getBootstrapProfile(occurrence, "ComputeCluster")]
+    [#local networkProfile   = getNetworkProfile(solution.Profiles.Network)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -81,14 +82,11 @@
             [/#if]
             [#local links += lbLink]
         [#else]
-            [#local portCIDRs = getGroupCIDRs(port.IPAddressGroups, true, occurrence) ]
-            [#if portCIDRs?has_content]
-                [#local ingressRules +=
-                    [{
-                        "Port" : port.Name,
-                        "CIDR" : portCIDRs
-                    }]]
-            [/#if]
+            [#local ingressRules +=
+                [{
+                    "Ports" : port.Name,
+                    "IPAddressGroups" : port.IPAddressGroups
+                }]]
         [/#if]
     [/#list]
 
@@ -222,6 +220,15 @@
 
         [#local sourceSecurityGroupIds = []]
         [#local sourceIPAddressGroups = [] ]
+
+        [#if deploymentSubsetRequired(COMPUTECLUSTER_COMPONENT_TYPE, true)]
+            [@createSecurityGroupRulesFromLink
+                occurrence=occurrence
+                groupId=computeClusterSecurityGroupId
+                linkTarget=linkTarget
+                inboundPorts=[ "ssh" ]
+            /]
+        [/#if]
 
         [#switch linkTargetCore.Type]
             [#case LB_PORT_COMPONENT_TYPE]
@@ -472,21 +479,26 @@
             [/#list]
         [/#if]
 
-
         [@createSecurityGroup
-            occurrence=occurrence
             id=computeClusterSecurityGroupId
             name=computeClusterSecurityGroupName
-            vpcId=vpcId /]
+            vpcId=vpcId
+            occurrence=occurrence
+        /]
 
-        [#list ingressRules as rule ]
-            [@createSecurityGroupIngress
-                    id=formatDependentSecurityGroupIngressId(
-                        computeClusterSecurityGroupId,
-                        rule.Port)
-                    port=rule.Port
-                    cidr=rule.CIDR
-                    groupId=computeClusterSecurityGroupId /]
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=occurrence
+            groupId=computeClusterSecurityGroupId
+            networkProfile=networkProfile
+            inboundPorts=[ "ssh" ]
+        /]
+
+        [#list ingressRules as ingressRule ]
+            [@createSecurityGroupIngressFromNetworkRule
+                occurrence=occurrence
+                groupId=computeClusterSecurityGroupId
+                networkRule=ingressRule
+            /]
         [/#list]
 
         [@cfResource

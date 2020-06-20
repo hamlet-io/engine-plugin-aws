@@ -70,6 +70,7 @@
     [#local classicConnectionDrainingTimeouts = []]
 
     [#local ruleCleanupScript = []]
+    [#local cliCleanUpRequired = false ]
 
     [#local classicHTTPSPolicyName = "ELBSecurityPolicy"]
     [#if engine == "classic" ]
@@ -165,6 +166,8 @@
         [#local solution = subOccurrence.Configuration.Solution ]
         [#local resources = subOccurrence.State.Resources ]
 
+        [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+
         [#-- Determine if this is the first mapping for the source port --]
         [#-- The assumption is that all mappings for a given port share --]
         [#-- the same listenerId, so the same port number shouldn't be  --]
@@ -193,12 +196,23 @@
 
         [#-- Determine the IP whitelisting required --]
         [#local portIpAddressGroups = solution.IPAddressGroups ]
-        [#if !solution.IPAddressGroups?seq_contains("_localnet") && !publicRouteTable ]
-            [#local portIpAddressGroups += [ "_localnet"] ]
-        [/#if]
         [#local cidrs = getGroupCIDRs(portIpAddressGroups, true, subOccurrence)]
-        [#local securityGroupId = resources["sg"].Id]
-        [#local securityGroupName = resources["sg"].Name]
+
+        [#switch engine ]
+            [#case "application"]
+            [#case "classic"]
+                [#local securityGroupRequired = true ]
+                [#break]
+
+            [#default]
+                [#local securityGroupRequired = false ]
+        [/#switch]
+
+        [#if securityGroupRequired ]
+            [#local securityGroupId = resources["sg"].Id]
+            [#local securityGroupName = resources["sg"].Name]
+            [#local securityGroupPorts = resources["sg"].Ports ]
+        [/#if]
 
         [#-- Check source and destination ports --]
         [#local mapping = solution.Mapping!core.SubComponent.Name ]
@@ -279,7 +293,6 @@
                                     "#\{query}")
                             conditions=getListenerRuleHostCondition(rule.RedirectFrom)
                             priority=rule.Priority
-                            dependencies=listenerId
                         /]
                     [/#if]
 
@@ -306,7 +319,6 @@
                                         solution.Redirect.Permanent)
                         conditions=listenerRuleConditions
                         priority=listenerRulePriority
-                        dependencies=listenerId
                     /]
                 [/#if]
             [/#if]
@@ -334,7 +346,6 @@
                                         solution.Fixed.StatusCode))
                             conditions=listenerRuleConditions
                             priority=listenerRulePriority
-                            dependencies=listenerId
                         /]
                 [/#if]
             [/#if]
@@ -366,6 +377,16 @@
                 [#local linkTargetConfiguration = linkTarget.Configuration ]
                 [#local linkTargetResources = linkTarget.State.Resources ]
                 [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+                [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true)
+                        && securityGroupRequired ]
+                    [@createSecurityGroupRulesFromLink
+                        occurrence=subOccurrence
+                        groupId=securityGroupId
+                        linkTarget=linkTarget
+                        inboundPorts=[ securityGroupPorts ]
+                    /]
+                [/#if]
 
                 [#switch linkTargetCore.Type]
 
@@ -399,7 +420,6 @@
                                         getListenerRuleForwardAction(targetGroupId, 2)
                                 conditions=listenerRuleConditions
                                 priority=listenerRulePriority
-                                dependencies=listenerId
                             /]
                         [/#if]
                         [#break]
@@ -420,7 +440,6 @@
                                             false)
                                 conditions=listenerRuleConditions
                                 priority=listenerRulePriority
-                                dependencies=listenerId
                             /]
                         [/#if]
                         [#break]
@@ -429,23 +448,37 @@
         [/#list]
 
         [#-- Create the security group for the listener --]
-        [#switch engine ]
-            [#case "application"]
-            [#case "classic"]
-                [#if firstMappingForPort &&
-                    deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-                    [@createSecurityGroup
-                        id=securityGroupId
-                        name=securityGroupName
-                        occurrence=occurrence
-                        ingressRules=[ {"Port" : sourcePort.Port, "CIDR" : cidrs} ]
-                        egressRules=[ { "Port" : "any",  "CIDR" : "0.0.0.0/0" }]
-                        vpcId=vpcId
-                    /]
+        [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) &&
+                securityGroupRequired ]
 
-                [/#if]
-                [#break]
-        [/#switch]
+            [#local lbSecurityGroupIds = combineEntities( lbSecurityGroupIds, [securityGroupId], UNIQUE_COMBINE_BEHAVIOUR) ]
+
+            [@createSecurityGroup
+                id=securityGroupId
+                name=securityGroupName
+                vpcId=vpcId
+                occurrence=subOccurrence
+            /]
+
+            [@createSecurityGroupRulesFromNetworkProfile
+                occurrence=subOccurrence
+                groupId=securityGroupId
+                networkProfile=networkProfile
+                inboundPorts=securityGroupPorts
+            /]
+
+            [#local ingressNetworkRule = {
+                    "Ports" : [ securityGroupPorts ],
+                    "IPAddressGroups" : portIpAddressGroups
+            }]
+
+            [@createSecurityGroupIngressFromNetworkRule
+                occurrence=subOccurrence
+                groupId=securityGroupId
+                networkRule=ingressNetworkRule
+            /]
+
+        [/#if]
 
         [#list solution.Forward.StaticEndpoints.Links as id,link ]
             [#if link?is_hash]
@@ -461,6 +494,16 @@
                 [#local linkTargetConfiguration = linkTarget.Configuration ]
                 [#local linkTargetResources = linkTarget.State.Resources ]
                 [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+                [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true)
+                        && securityGroupRequired ]
+                    [@createSecurityGroupRulesFromLink
+                        occurrence=subOccurrence
+                        groupId=securityGroupId
+                        linkTarget=linkTarget
+                        inboundPorts=[ securityGroupPorts ]
+                    /]
+                [/#if]
 
                 [#switch linkTargetCore.Type]
                     [#case EXTERNALSERVICE_ENDPOINT_COMPONENT_TYPE]
@@ -522,7 +565,6 @@
                                 actions=getListenerRuleForwardAction(targetGroupId)
                                 conditions=listenerRuleConditions
                                 priority=listenerRulePriority
-                                dependencies=listenerId
                             /]
                     [/#if]
                 [/#if]
@@ -534,8 +576,6 @@
                     }]
 
                 [#if firstMappingForPort ]
-
-                    [#local lbSecurityGroupIds += [securityGroupId] ]
                     [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                         [@createALBListener
                             id=listenerId
@@ -581,7 +621,6 @@
 
             [#case "classic"]
                 [#if firstMappingForPort ]
-                    [#local lbSecurityGroupIds += [securityGroupId] ]
                     [#local classicListenerPolicyNames = []]
                     [#local classicSSLRequired = sourcePort.Certificate!false ]
 

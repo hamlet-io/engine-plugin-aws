@@ -5,6 +5,9 @@
 
     [#local id = formatEFSId( core.Tier, core.Component, occurrence) ]
 
+    [#local securityGroupId = formatDependentSecurityGroupId(id) ]
+    [#local availablePorts = [ "nfs" ]]
+
     [#local zoneResources = {} ]
     [#list zones as zone ]
         [#local zoneResources +=
@@ -28,7 +31,8 @@
                     "Type" : AWS_EFS_RESOURCE_TYPE
                 },
                 "sg" : {
-                    "Id" : formatDependentSecurityGroupId(id),
+                    "Id" : securityGroupId,
+                    "Ports" : availablePorts,
                     "Name" : core.FullName,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 },
@@ -36,6 +40,21 @@
             },
             "Attributes" : {
                 "EFS" : getExistingReference(id)
+            },
+            "Roles" : {
+                "Inbound" : {
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ availablePorts ],
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]
@@ -46,13 +65,22 @@
 
     [#local efsId = parent.State.Attributes["EFS"] ]
 
+    [#local parentRoles = parent.State.Roles ]
+
     [#assign componentState =
         {
             "Resources" : {},
             "Attributes" : {
                 "EFS" : efsId,
                 "DIRECTORY" : configuration.Directory
-
+            },
+            "Roles" : {
+                "Inbound" : {
+                    "networkacl" : parentRoles["networkacl"]
+                },
+                "Outbound" : {
+                    "networkacl" : parentRoles["networkacl"]
+                }
             }
         }
     ]

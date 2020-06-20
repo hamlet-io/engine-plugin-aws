@@ -40,6 +40,8 @@
     [#local lgId = formatLogGroupId(core.Id)]
     [#local lgName = formatAbsolutePath("aws", "lambda", core.FullName)]
 
+    [#local securityGroupId = formatDependentSecurityGroupId(id)]
+
     [#local fixedCodeVersion = isPresent(solution.FixedCodeVersion) ]
 
     [#local logMetrics = {} ]
@@ -81,6 +83,15 @@
                     "ResourceId" : versionId,
                     "Type" : AWS_LAMBDA_VERSION_RESOURCE_TYPE
                 }
+            ) +
+            attributeIfTrue(
+                "securityGroup",
+                solution.VPCAccess,
+                {
+                    "Id" : formatDependentSecurityGroupId(id),
+                    "Name" : formatName("lambda", core.FullName),
+                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+                }
             ),
             "Attributes" : {
                 "REGION" : region,
@@ -104,7 +115,15 @@
                         "Principal" : "logs." + region + ".amazonaws.com",
                         "LogGroupIds" : [ lgId ]
                     }
-                },
+                } +
+                attributeIfTrue(
+                    "networkacl",
+                    solution.VPCAccess,
+                    {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                ),
                 "Outbound" : {
                     "default" : "invoke",
                     "invoke" : lambdaInvokePermission(id),

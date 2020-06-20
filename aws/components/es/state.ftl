@@ -40,6 +40,25 @@
         [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ] )]
         [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
+        [#local securityProfile = getSecurityProfile(solution.Profiles.Security, "es")]
+
+        [#local securityGroupId = formatSecurityGroupId(core.Id)]
+        [#local availablePorts = []]
+
+        [#switch securityProfile.ProtocolPolicy!("COTFatal: Could not find Security profile - " + solution.Profiles.Security) ]
+            [#case "https-only" ]
+                [#local availablePorts += [ "https" ] ]
+                [#break]
+
+            [#case "http-https" ]
+                [#local availablePorts += [ "http", "https" ]]
+                [#break]
+
+            [#case "http-only" ]
+                [#local availablePorts += [ "http"]]
+                [#break]
+        [/#switch]
+
         [#assign componentState =
             {
                 "Resources" : {
@@ -75,6 +94,7 @@
                     solution.VPCAccess,
                     {
                         "Id" : formatSecurityGroupId(core.Id),
+                        "Ports" : availablePorts,
                         "Name" : core.FullName,
                         "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                     }
@@ -99,9 +119,26 @@
                                         iamPassRolePermission(
                                             getExistingReference(esSnapshotRoleId, ARN_ATTRIBUTE_TYPE)
                                         )
-                    },
+                    } +
+                    attributeIfTrue(
+                        "networkacl",
+                        solution.VPCAccess,
+                        {
+                            "Ports" : [ availablePorts ],
+                            "SecurityGroups" : getExistingReference(securityGroupId),
+                            "Description" : core.FullName
+                        }
+                    ),
                     "Inbound" : {
-                    }
+                    } +
+                    attributeIfTrue(
+                        "networkacl",
+                        solution.VPCAccess,
+                        {
+                            "SecurityGroups" : getExistingReference(securityGroupId),
+                            "Description" : core.FullName
+                        }
+                    )
                 }
             }
         ]

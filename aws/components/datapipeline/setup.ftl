@@ -26,6 +26,7 @@
 
     [#local ec2ProcessorProfile = getProcessor(occurrence, "EC2")]
     [#local emrProcessorProfile = getProcessor(occurrence, "EMR")]
+    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -106,6 +107,24 @@
     [#assign _context += getFinalEnvironment(occurrence, _context ) ]
     [#local parameterValues += _context.Environment ]
 
+    [#list _context.Links as linkId,linkTarget]
+        [#local linkTargetCore = linkTarget.Core ]
+        [#local linkTargetConfiguration = linkTarget.Configuration ]
+        [#local linkTargetResources = linkTarget.State.Resources ]
+        [#local linkTargetAttributes = linkTarget.State.Attributes ]
+        [#local linkTargetRoles = linkTarget.State.Roles]
+
+        [#if deploymentSubsetRequired(DATAPIPELINE_COMPONENT_TYPE, true)]
+            [@createSecurityGroupRulesFromLink
+                occurrence=occurrence
+                groupId=securityGroupId
+                linkTarget=linkTarget
+                inboundPorts=[ "ssh" ]
+            /]
+        [/#if]
+
+    [/#list]
+
     [#local myParameterValues = {}]
     [#list parameterValues as key,value ]
         [#local myParameterValues +=
@@ -171,8 +190,6 @@
     [/#if]
 
     [#if deploymentSubsetRequired(DATAPIPELINE_COMPONENT_TYPE, true)]
-
-
         [@cfResource
                 id=resourceInstanceProfileId
                 type="AWS::IAM::InstanceProfile"
@@ -187,19 +204,28 @@
 
         [@createSecurityGroup
             id=securityGroupId
+            vpcId=vpcId
             name=securityGroupName
             occurrence=occurrence
-            vpcId=vpcId
         /]
 
-        [@createSecurityGroupIngress
-            id=formatDependentSecurityGroupIngressId(
-                securityGroupId,
-                "local")
-            port="any"
-            cidr=securityGroupId
-            groupId=securityGroupId /]
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=occurrence
+            groupId=securityGroupId
+            networkProfile=networkProfile
+            inboundPorts=[ "ssh" ]
+        /]
 
+        [#local ingressNetworkRule = {
+            "Ports" : "any",
+            "SecurityGroup" : securityGroupId
+        }]
+
+        [@createSecurityGroupIngressFromNetworkRule
+            occurrence=occurrence
+            groupId=securityGroupId
+            networkRule=ingressNetworkRule
+        /]
     [/#if]
 
     [#if deploymentSubsetRequired("cli", false)]

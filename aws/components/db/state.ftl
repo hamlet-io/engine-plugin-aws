@@ -13,20 +13,30 @@
         [#case "mysql"]
             [#local family = "mysql" + engineVersion]
             [#local scheme = "mysql" ]
+            [#local port = solution.Port!"mysql" ]
             [#break]
         [#case "postgres" ]
             [#local family = "postgres" + engineVersion]
             [#local scheme = "postgres" ]
+            [#local port = solution.Port!"postgresql" ]
             [#break]
         [#case "aurora-postgresql" ]
             [#local family = "aurora-postgresql" + engineVersion]
             [#local scheme = "postgres" ]
             [#local auroraCluster = true ]
+            [#local port = solution.Port!"postgresql"]
             [#break]
         [#default]
             [#local family = engine + engineVersion]
             [#local scheme = engine ]
+            [#local port = solution.Port ]
     [/#switch]
+
+    [#if (ports[port])?has_content]
+        [#local portObject = ports[port] ]
+    [#else]
+        [@fatal message="Unknown Port" context=port /]
+    [/#if]
 
     [#if auroraCluster ]
         [#local id = formatResourceId(AWS_RDS_CLUSTER_RESOURCE_TYPE, core.Id) ]
@@ -34,9 +44,10 @@
         [#local id = formatResourceId(AWS_RDS_RESOURCE_TYPE, core.Id) ]
     [/#if]
 
+    [#local securityGroupId = formatDependentComponentSecurityGroupId(core.Tier, core.Component, id)]
+
     [#local fqdn = getExistingReference(id, DNS_ATTRIBUTE_TYPE)]
 
-    [#local port = getExistingReference(id, PORT_ATTRIBUTE_TYPE)]
     [#local name = getExistingReference(id, DATABASENAME_ATTRIBUTE_TYPE)]
     [#local region = getExistingReference(id, REGION_ATTRIBUTE_TYPE)]
     [#local encryptionScheme = (solution.GenerateCredentials.EncryptionScheme)?has_content?then(
@@ -58,10 +69,10 @@
         [#-- don't flag an error if credentials missing but component is not enabled --]
         [#local masterUsername = getOccurrenceSettingValue(occurrence, "MASTER_USERNAME", !solution.Enabled) ]
         [#local masterPassword = getOccurrenceSettingValue(occurrence, "MASTER_PASSWORD", !solution.Enabled) ]
-        [#local url = scheme + "://" + masterUsername + ":" + masterPassword + "@" + fqdn + ":" + port + "/" + name]
+        [#local url = scheme + "://" + masterUsername + ":" + masterPassword + "@" + fqdn + ":" + portObject.Port + "/" + name]
 
         [#if auroraCluster ]
-            [#local readUrl = scheme + "://" + masterUsername + ":" + masterPassword + "@" + readfqdn + ":" + port + "/" + name ]
+            [#local readUrl = scheme + "://" + masterUsername + ":" + masterPassword + "@" + readfqdn + ":" + portObject.Port + "/" + name ]
         [/#if]
     [/#if]
 
@@ -72,6 +83,7 @@
             "dbCluster" : {
                 "Id" : id,
                 "Name" : core.FullName,
+                "Port" : port,
                 "Type" : AWS_RDS_CLUSTER_RESOURCE_TYPE,
                 "Monitored" : true
             },
@@ -163,6 +175,7 @@
                 "db" : {
                     "Id" : id,
                     "Name" : core.FullName,
+                    "Port" : port,
                     "Type" : AWS_RDS_RESOURCE_TYPE,
                     "Monitored" : true
                 }
@@ -187,7 +200,7 @@
                     "Type" : AWS_RDS_OPTION_GROUP_RESOURCE_TYPE
                 },
                 "securityGroup" : {
-                    "Id" : formatDependentComponentSecurityGroupId(core.Tier, core.Component, id),
+                    "Id" : securityGroupId,
                     "Name" : core.FullName,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }
@@ -208,7 +221,7 @@
                 "TYPE" : auroraCluster?then("cluster", "instance"),
                 "SCHEME" : scheme,
                 "FQDN" : fqdn,
-                "PORT" : port,
+                "PORT" : portObject.Port,
                 "NAME" : name,
                 "URL" : url,
                 "USERNAME" : masterUsername,
@@ -224,8 +237,19 @@
                 auroraCluster
             ),
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ port ],
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]

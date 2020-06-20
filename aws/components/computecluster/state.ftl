@@ -6,6 +6,7 @@
     [#local buildReference = getOccurrenceBuildReference(occurrence) ]
 
     [#local autoScaleGroupId = formatResourceId( AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, core.Id )]
+    [#local securityGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id )]
 
     [#local autoScaling = {}]
     [#if solution.ScalingPolicies?has_content ]
@@ -39,7 +40,7 @@
         {
             "Resources" : {
                 "securityGroup" : {
-                    "Id" : formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ),
+                    "Id" : securityGroupId,
                     "Name" : core.FullName,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 },
@@ -86,8 +87,19 @@
             "Attributes" : {
             },
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ "ssh" ],
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]

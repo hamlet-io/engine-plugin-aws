@@ -21,23 +21,6 @@
 
     [#local vpcAccess = solution.VPCAccess]
 
-    [#local securityProfile = getSecurityProfile(solution.Profiles.Security, "es")]
-
-    [#local ports = []]
-    [#switch securityProfile.ProtocolPolicy!("COTFatal: Could not find Security profile - " + solution.Profiles.Security) ]
-        [#case "https-only" ]
-            [#local ports += [ "https" ] ]
-            [#break]
-
-        [#case "http-https" ]
-            [#local ports += [ "http", "https" ]]
-            [#break]
-
-        [#case "http-only" ]
-            [#local ports += [ "http"]]
-            [#break]
-    [/#switch]
-
     [#local networkConfiguration = {} ]
     [#if vpcAccess ]
         [#local networkLink = getOccurrenceNetwork(occurrence).Link!{} ]
@@ -53,6 +36,9 @@
 
         [#local sgId = resources["sg"].Id ]
         [#local sgName = resources["sg"].Name ]
+        [#local ports = resources["sg"].Ports ]
+
+        [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
 
         [#local networkConfiguration = {
                     "SecurityGroupIds" : [ getReference(sgId) ],
@@ -248,6 +234,17 @@
             [#local linkTargetConfiguration = linkTarget.Configuration ]
             [#local linkTargetResources = linkTarget.State.Resources ]
             [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+            [#if deploymentSubsetRequired(ES_COMPONENT_TYPE, true)
+                        && vpcAccess]
+                [@createSecurityGroupRulesFromLink
+                    occurrence=occurrence
+                    groupId=sgId
+                    linkTarget=linkTarget
+                    inboundPorts=[ ports ]
+                /]
+            [/#if]
+
             [#switch linkTargetCore.Type]
 
                 [#case USERPOOL_COMPONENT_TYPE]
@@ -387,18 +384,23 @@
                 occurrence=occurrence
             /]
 
-            [#list ports as port ]
-                [@createSecurityGroupIngress
-                    id=formatDependentSecurityGroupIngressId(
-                                sgId,
-                                port
-                        )
-                    port=port
-                    cidr=esCIDRs
-                    groupId=sgId
-                /]
-            [/#list]
+            [@createSecurityGroupRulesFromNetworkProfile
+                occurrence=occurrence
+                groupId=sgId
+                networkProfile=networkProfile
+                inboundPorts=ports
+            /]
 
+            [#local ingressNetworkRule = {
+                    "Ports" : ports,
+                    "IPAddressGroups" : solution.IPAddressGroups
+            }]
+
+            [@createSecurityGroupIngressFromNetworkRule
+                occurrence=occurrence
+                groupId=sgId
+                networkRule=ingressNetworkRule
+            /]
         [/#if]
 
         [@cfResource

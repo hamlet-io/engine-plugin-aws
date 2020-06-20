@@ -6,6 +6,8 @@
     [#local engine = solution.Engine ]
     [#local resources = {}]
     [#local attributes = {}]
+    [#local networkOutboundAclRules = {}]
+    [#local networkInboundAclRules = {}]
     [#local zoneResources = {}]
 
     [#if multiAZ!false ]
@@ -111,12 +113,24 @@
 
         [#case "vpcendpoint"]
         [#case "privateservice"]
+                [#local sgGroupId = formatDependentSecurityGroupId(core.Id) ]
                 [#local resources += {
                     "sg" : {
-                        "Id" : formatDependentSecurityGroupId(core.Id),
+                        "Id" : sgGroupId,
                         "Name" : core.FullName,
                         "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                     }
+                }]
+
+                [#local networkOutboundAclRules += {
+                    "Ports" : solution.DestinationPorts,
+                    "SecurityGroups" : getExistingReference(sgGroupId),
+                    "Description" : core.FullName
+                }]
+
+                [#local networkInboundAclRules += {
+                    "SecurityGroups" : getExistingReference(sgGroupId),
+                    "Description" : core.FullName
                 }]
             [#break]
 
@@ -206,8 +220,12 @@
                 },
             "Attributes" : attributes,
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {
+                    "networkacl" : networkInboundAclRules
+                },
+                "Outbound" : {
+                    "networkacl" : networkOutboundAclRules
+                }
             }
         }
     ]

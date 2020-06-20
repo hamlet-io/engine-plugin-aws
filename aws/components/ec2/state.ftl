@@ -1,9 +1,17 @@
 [#ftl]
 
 [#macro aws_ec2_cf_state occurrence parent={} ]
-    [#local core = occurrence.Core]
+    [#local core = occurrence.Core ]
+     [#local solution = occurrence.Configuration.Solution ]
 
     [#local zoneResources = {}]
+
+    [#local securityGroupId = formatComponentSecurityGroupId(core.Tier, core.Component)]
+
+    [#local availablePorts = [ "ssh" ]]
+    [#list solution.Ports as id,port ]
+        [#local availablePorts += [ port.Name ]]
+    [/#list]
 
     [#list zones as zone ]
         [#local zoneResources +=
@@ -41,7 +49,8 @@
                     "Type" : AWS_EC2_INSTANCE_PROFILE_RESOURCE_TYPE
                 },
                 "sg" : {
-                    "Id" : formatComponentSecurityGroupId(core.Tier, core.Component),
+                    "Id" : securityGroupId,
+                    "Ports" : availablePorts,
                     "Name" : core.FullName,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 },
@@ -61,8 +70,19 @@
             "Attributes" : {
             },
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ availablePorts ],
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]

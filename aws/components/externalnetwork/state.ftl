@@ -18,8 +18,19 @@
                 solution.BGP.ASN
             ),
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {
+                    "networkacl" : {
+                        "IPAddressGroups" : solution.IPAddressGroups,
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : solution.Ports,
+                        "IPAddressGroups" : solution.IPAddressGroups,
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]

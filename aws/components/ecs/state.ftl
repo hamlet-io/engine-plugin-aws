@@ -35,6 +35,8 @@
     [#local lgInstanceLogId = formatLogGroupId(core.Id, "instancelog") ]
     [#local lgInstanceLogName = formatAbsolutePath( core.FullAbsolutePath, "instancelog") ]
 
+    [#local sgGroupId = formatComponentSecurityGroupId(core.Tier, core.Component)]
+
     [#local logMetrics = {} ]
     [#list solution.LogMetrics as name,logMetric ]
         [#local logMetrics += {
@@ -107,7 +109,8 @@
                     "Monitored" : true
                 },
                 "securityGroup" : {
-                    "Id" : formatComponentSecurityGroupId(core.Tier, core.Component),
+                    "Id" : sgGroupId,
+                    "Name" : formatComponentFullName(core.Tier, core.Component ),
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 },
                 "role" : {
@@ -150,8 +153,19 @@
                 "ARN" : getExistingReference(clusterId, ARN_ATTRIBUTE_TYPE)
             },
             "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {}
+                "Inbound" : {
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(sgGroupId),
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ "ssh" ],
+                        "SecurityGroups" : getExistingReference(sgGroupId),
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]
@@ -161,6 +175,14 @@
     [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
 
+    [#local parentResources = parent.State.Resources ]
+
+    [#if solution.NetworkMode == "awsvpc" ]
+        [#local securityGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ) ]
+    [#else]
+        [#local securityGroupId = parentResources["securityGroup"].Id ]
+    [/#if]
+
     [#local serviceId = formatResourceId(AWS_ECS_SERVICE_RESOURCE_TYPE, core.Id)]
     [#local taskId = formatResourceId(AWS_ECS_TASK_RESOURCE_TYPE, core.Id) ]
     [#local taskName = core.Name]
@@ -169,6 +191,14 @@
     [#local lgName = core.FullAbsolutePath ]
 
     [#local region = getExistingReference(serviceId, REGION_ATTRIBUTE_TYPE )!regionId ]
+
+    [#local availablePorts = [  ]]
+
+    [#list solution.Containers as id,container ]
+        [#list container.Ports as id,port ]
+            [#local availablePorts += [ port.Name ]]
+        [/#list]
+    [/#list]
 
     [#local logMetrics = {} ]
     [#list solution.LogMetrics as name,logMetric ]
@@ -245,8 +275,9 @@
                 "securityGroup",
                 solution.NetworkMode == "awsvpc",
                 {
-                    "Id" : formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ),
+                    "Id" : securityGroupId,
                     "Name" : core.FullName,
+                    "Ports" : availablePorts,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }) +
             attributeIfTrue(
@@ -267,9 +298,19 @@
                     "logwatch" : {
                         "Principal" : "logs." + region + ".amazonaws.com",
                         "LogGroupIds" : [ lgId ]
+                    },
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
                     }
                 },
-                "Outbound" : {}
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ availablePorts ],
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    }
+                }
             }
         }
     ]
@@ -288,8 +329,6 @@
 
     [#local executionRoleId = formatDependentRoleId(taskId, "execution")]
 
-    [#local secGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id )]
-
     [#local occurrenceNetwork = getOccurrenceNetwork(parent) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
 
@@ -303,6 +342,20 @@
     [#local networkResources = networkLinkTarget.State.Resources ]
 
     [#local subnet = (getSubnets(core.Tier, networkResources))[0]]
+
+    [#if solution.NetworkMode == "awsvpc" ]
+        [#local securityGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ) ]
+    [#else]
+        [#local securityGroupId = parentResources["securityGroup"].Id ]
+    [/#if]
+
+    [#local availablePorts = []]
+
+    [#list solution.Containers as id,container ]
+        [#list container.Ports as id,port ]
+            [#local availablePorts += [ port.Name ]]
+        [/#list]
+    [/#list]
 
     [#local lgId = formatDependentLogGroupId(taskId) ]
     [#local lgName = core.FullAbsolutePath ]
@@ -381,7 +434,7 @@
                 "securityGroup",
                 solution.NetworkMode == "awsvpc",
                 {
-                    "Id" : secGroupId,
+                    "Id" : securityGroupId,
                     "Name" : core.FullName,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }) +
@@ -405,7 +458,7 @@
             attributeIfTrue(
                 "SECURITY_GROUP",
                 solution.NetworkMode == "awsvpc",
-                getExistingReference(secGroupId)
+                getExistingReference(securityGroupId)
             ) +
             attributeIfTrue(
                 "SUBNET",
@@ -417,9 +470,18 @@
                     "logwatch" : {
                         "Principal" : "logs." + region + ".amazonaws.com",
                         "LogGroupIds" : [ lgId ]
+                    },
+                    "networkacl" : {
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
                     }
                 },
                 "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ availablePorts ],
+                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "Description" : core.FullName
+                    },
                     "run" :
                         ecsTaskRunPermission(ecsId) +
                         solution.UseTaskRole?then(

@@ -17,6 +17,7 @@
     [#local ecsAutoScaleGroupId = resources["autoScaleGroup"].Id ]
     [#local ecsLaunchConfigId = resources["launchConfig"].Id ]
     [#local ecsSecurityGroupId = resources["securityGroup"].Id ]
+    [#local ecsSecurityGroupName = resources["securityGroup"].Name ]
     [#local ecsLogGroupId = resources["lg"].Id ]
     [#local ecsLogGroupName = resources["lg"].Name ]
     [#local ecsInstanceLogGroupId = resources["lgInstanceLog"].Id]
@@ -71,6 +72,8 @@
     [#local routeTableLinkTarget = getLinkTarget(occurrence, networkLink + { "RouteTable" : occurrenceNetwork.RouteTable })]
     [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
     [#local publicRouteTable = routeTableConfiguration.Public ]
+
+    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
 
     [#local ecsTags = getOccurrenceCoreTags(occurrence, ecsName, "", true)]
 
@@ -232,6 +235,14 @@
             [#local linkTargetConfiguration = linkTarget.Configuration ]
             [#local linkTargetResources = linkTarget.State.Resources ]
             [#local linkTargetAttributes = linkTarget.State.Attributes ]
+            [#local linkTargetRoles = linkTarget.State.Roles]
+
+            [@createSecurityGroupRulesFromLink
+                occurrence=occurrence
+                groupId=ecsSecurityGroupId
+                linkTarget=linkTarget
+                inboundPorts=[ "ssh" ]
+            /]
 
             [#switch linkTargetCore.Type]
 
@@ -247,9 +258,18 @@
             [/#switch]
         [/#list]
 
-        [@createComponentSecurityGroup
-            occurrence=occurrence
+        [@createSecurityGroup
+            id=ecsSecurityGroupId
+            name=ecsSecurityGroupName
             vpcId=vpcId
+            occurrence=occurrence
+        /]
+
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=occurrence
+            groupId=ecsSecurityGroupId
+            networkProfile=networkProfile
+            inboundPorts=[ "ssh" ]
         /]
 
         [#list resources.logMetrics!{} as logMetricName,logMetric ]
@@ -677,6 +697,8 @@
                 getSubnets(core.Tier, networkResources)[0..0]
             )]
 
+        [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+
         [#if engine == "fargate" && networkMode != "awsvpc" ]
             [@fatal
                 message="Fargate containers only support the awsvpc network mode"
@@ -710,8 +732,21 @@
                 [@createSecurityGroup
                     id=ecsSecurityGroupId
                     name=ecsSecurityGroupName
-                    occurrence=occurrence
-                    vpcId=vpcId /]
+                    vpcId=vpcId
+                    occurrence=subOccurrence
+                /]
+
+                [#local inboundPorts = []]
+                [#list containers as container ]
+                    [#local inboundPorts = combineEntities( inboundPorts, container.InboundPorts, UNIQUE_COMBINE_BEHAVIOUR) ]
+                [/#list]
+
+                [@createSecurityGroupRulesFromNetworkProfile
+                    occurrence=subOccurrence
+                    groupId=ecsSecurityGroupId
+                    networkProfile=networkProfile
+                    inboundPorts=inboundPorts
+                /]
             [/#if]
         [/#if]
 
@@ -918,6 +953,16 @@
                                     cidr=ingressRule.cidr
                                     groupId=ecsSecurityGroupId
                                 /]
+                        [/#list]
+                    [/#if]
+
+                    [#if container.EgressRules?has_content ]
+                        [#list container.EgressRules as egressRule ]
+                            [@createSecurityGroupEgressFromNetworkRule
+                                occurrence=subOccurrence
+                                groupId=ecsSecurityGroupId
+                                networkRule=egressRule
+                            /]
                         [/#list]
                     [/#if]
                 [/#list]

@@ -48,31 +48,13 @@
     [#switch engine]
         [#case "mysql"]
             [#local engineVersion = concatenate([majorVersion, minorVersion],".")]
-            [#local port = solution.Port!"mysql" ]
-            [#if (ports[port].Port)?has_content]
-                [#local port = ports[port].Port ]
-            [#else]
-                [@fatal message="Unknown Port" context=port /]
-            [/#if]
             [#break]
 
         [#case "postgres"]
-            [#local port = solution.Port!"postgresql" ]
-            [#if (ports[port].Port)?has_content]
-                [#local port = ports[port].Port ]
-            [#else]
-                [@fatal message="Unknown Port" context=port /]
-            [/#if]
             [#break]
 
         [#case "aurora-postgresql" ]
             [#local auroraCluster = true ]
-            [#local port = solution.Port!"postgresql"]
-            [#if (ports[port].Port)?has_content]
-                [#local port = ports[port].Port ]
-            [#else]
-                [@fatal message="Unknown Port" context=port /]
-            [/#if]
             [#break]
 
         [#default]
@@ -83,7 +65,7 @@
             /]
             [#local engineVersion = "unknown" ]
             [#local family = "unknown" ]
-            [#local port = "unknown" ]
+
             [#break]
     [/#switch]
 
@@ -93,10 +75,16 @@
         [#local rdsClusterParameterGroupId = resources["dbClusterParamGroup"].Id ]
         [#local rdsClusterParameterGroupFamily = resources["dbClusterParamGroup"].Family ]
         [#local rdsClusterDbInstances = resources["dbInstances"]]
+
+        [#local port = resources["dbCluster"].Port ]
     [#else]
         [#local rdsId = resources["db"].Id ]
         [#local rdsFullName = resources["db"].Name ]
+
+        [#local port = resources["db"].Port ]
     [/#if]
+
+    [#local portObject = ports[port] ]
 
     [#local hostType = attributes['TYPE'] ]
     [#local dbScheme = attributes['SCHEME']]
@@ -107,9 +95,7 @@
     [#local rdsOptionGroupId = resources["optionGroup"].Id ]
 
     [#local rdsSecurityGroupId = resources["securityGroup"].Id ]
-    [#local rdsSecurityGroupIngressId = formatDependentSecurityGroupIngressId(
-                                            rdsSecurityGroupId,
-                                            port)]
+    [#local rdsSecurityGroupName = resources["securityGroup"].Name ]
 
     [#local rdsDatabaseName = solution.DatabaseName!productName]
     [#local passwordEncryptionScheme = (solution.GenerateCredentials.EncryptionScheme?has_content)?then(
@@ -199,8 +185,36 @@
     [/#list]
 
     [#local processorProfile = getProcessor(occurrence, "db" )]
+    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
     [#local securityProfile = getSecurityProfile(solution.Profiles.Security, "db" )]
     [#local requiredRDSCA = securityProfile["SSLCertificateAuthority"]!"COTFatal: SSLCertificateAuthority not found in security profile: " + solution.Profiles.Security ]
+
+    [#list solution.Links?values as link]
+        [#if link?is_hash]
+            [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+            [#if !linkTarget?has_content]
+                [#continue]
+            [/#if]
+
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetConfiguration = linkTarget.Configuration ]
+            [#local linkTargetResources = linkTarget.State.Resources ]
+            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+            [#if deploymentSubsetRequired("rds", true)]
+                [@createSecurityGroupRulesFromLink
+                    occurrence=occurrence
+                    groupId=securityGroupId
+                    linkTarget=linkTarget
+                    inboundPorts=[ port ]
+                /]
+            [/#if]
+
+        [/#if]
+    [/#list]
 
     [#if solution.Monitoring.DetailedMetrics.Enabled ]
         [#local monitoringRoleId = resources["monitoringRole"].Id ]
@@ -291,18 +305,29 @@
 
     [#if deploymentSubsetRequired("rds", true)]
 
-        [@createDependentComponentSecurityGroup
-            occurrence=occurrence
-            resourceId=rdsId
-            resourceName=rdsFullName
+        [@createSecurityGroup
+            id=rdsSecurityGroupId
+            name=rdsSecurityGroupName
             vpcId=vpcId
+            occurrence=occurrence
         /]
 
-        [@createSecurityGroupIngress
-            id=rdsSecurityGroupIngressId
-            port=port
-            cidr="0.0.0.0/0"
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=occurrence
             groupId=rdsSecurityGroupId
+            networkProfile=networkProfile
+            inboundPorts=[ port ]
+        /]
+
+        [#local ingressNetworkRule = {
+                "Ports" : [ port ],
+                "IPAddressGroups" : solution.IPAddressGroups
+        }]
+
+        [@createSecurityGroupIngressFromNetworkRule
+            occurrence=occurrence
+            groupId=rdsSecurityGroupId
+            networkRule=ingressNetworkRule
         /]
 
         [@cfResource
@@ -663,7 +688,7 @@
                     name=rdsFullName
                     engine=engine
                     engineVersion=engineVersion
-                    port=port
+                    port=portObject.Port
                     encrypted=solution.Encrypted
                     kmsKeyId=cmkKeyId
                     masterUsername=rdsUsername
@@ -686,7 +711,7 @@
                         availabilityZone=dbInstance.AvailabilityZone
                         engine=engine
                         processor=processorProfile.Processor
-                        port=port
+                        port=portObject.Port
                         subnetGroupId=rdsSubnetGroupId
                         parameterGroupId=rdsParameterGroupId
                         optionGroupId=rdsOptionGroupId
@@ -717,7 +742,7 @@
                         engineVersion=engineVersion
                         processor=processorProfile.Processor
                         size=solution.Size
-                        port=port
+                        port=portObject.Port
                         multiAZ=multiAZ
                         availabilityZone=zones[0].AWSZone
                         encrypted=solution.Encrypted
@@ -807,7 +832,7 @@
                         " \"" + rdsUsername + "\" " +
                         " \"$\{master_password}\" " +
                         " \"$\{rds_hostname}\" " +
-                        " \"" + port?c + "\" " +
+                        " \"" + (portObject.Port)?c + "\" " +
                         " \"" + rdsDatabaseName + "\" || return $?)\"",
                         "encrypted_rds_url=\"$(encrypt_kms_string" +
                         " \"" + region + "\" " +
@@ -822,7 +847,7 @@
                             " \"" + rdsUsername + "\" " +
                             " \"$\{master_password}\" " +
                             " \"$\{rds_read_hostname}\" " +
-                            " \"" + port?c + "\" " +
+                            " \"" + (portObject.Port)?c + "\" " +
                             " \"" + rdsDatabaseName + "\" || return $?)\"",
                             "encrypted_rds_read_url=\"$(encrypt_kms_string" +
                             " \"" + region + "\" " +
@@ -866,7 +891,7 @@
                         " \"" + rdsUsername + "\" " +
                         " \"$\{master_password}\" " +
                         " \"$\{rds_hostname}\" " +
-                        " \"" + port?c + "\" " +
+                        " \"" + (portObject.Port)?c + "\" " +
                         " \"" + rdsDatabaseName + "\" || return $?)\"",
                         "encrypted_rds_url=\"$(encrypt_kms_string" +
                         " \"" + region + "\" " +
@@ -881,7 +906,7 @@
                             " \"" + rdsUsername + "\" " +
                             " \"$\{master_password}\" " +
                             " \"$\{rds_read_hostname}\" " +
-                            " \"" + port?c + "\" " +
+                            " \"" + (portObject.Port)?c + "\" " +
                             " \"" + rdsDatabaseName + "\" || return $?)\"",
                             "encrypted_rds_read_url=\"$(encrypt_kms_string" +
                             " \"" + region + "\" " +

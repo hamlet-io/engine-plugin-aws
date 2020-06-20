@@ -58,8 +58,13 @@
         [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
         [#local networkResources = networkLinkTarget.State.Resources ]
 
+        [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+
         [#local vpcId = networkResources["vpc"].Id ]
         [#local vpc = getExistingReference(vpcId)]
+
+        [#local securityGroupId = resources["securityGroup"].Id ]
+        [#local securityGroupName = resources["securityGroup"].Name ]
     [/#if]
 
     [#local fragment = getOccurrenceFragmentBase(fn) ]
@@ -105,6 +110,13 @@
             [#local linkTargetRoles = linkTarget.State.Roles ]
             [#local linkDirection = linkTarget.Direction ]
             [#local linkRole = linkTarget.Role]
+
+            [@createSecurityGroupRulesFromLink
+                occurrence=fn
+                groupId=securityGroupId
+                linkTarget=linkTarget
+                inboundPorts=[]
+            /]
 
             [#switch linkDirection ]
                 [#case "inbound" ]
@@ -273,11 +285,19 @@
     [#if deploymentSubsetRequired("lambda", true)]
         [#-- VPC config uses an ENI so needs an SG - create one without restriction --]
         [#if vpcAccess ]
-            [@createDependentSecurityGroup
-                resourceId=fnId
-                resourceName=formatName("lambda", fnName)
+            [@createSecurityGroup
+                id=securityGroupId
+                name=securityGroupName
+                vpcId=vpcId
                 occurrence=fn
-                vpcId=vpcId/]
+            /]
+
+            [@createSecurityGroupRulesFromNetworkProfile
+                occurrence=fn
+                groupId=securityGroupId
+                networkProfile=networkProfile
+                inboundPorts=[]
+            /]
         [/#if]
 
         [#if solution.PredefineLogGroup && deploymentType == "REGIONAL"]
