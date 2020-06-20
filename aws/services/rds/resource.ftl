@@ -122,12 +122,12 @@
         } +
         valueIfTrue(
             {
-                "AllocatedStorage": size,
+                "AllocatedStorage": size?c?string,
                 "StorageType" : "gp2",
                 "BackupRetentionPeriod" : retentionPeriod,
                 "DBInstanceIdentifier": name,
                 "VPCSecurityGroups": asArray( getReference(securityGroupId)),
-                "Port" : port,
+                "Port" : port?c?string,
                 "EngineVersion": engineVersion
             },
             ( !clusterMember ),
