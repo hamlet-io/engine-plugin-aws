@@ -1,215 +1,301 @@
 [#ftl]
 
-[#function getSecurityGroupRules port cidr groupId=""]
+[#function getSecurityGroupPortRule port ]
+    [#return
+        port?is_number?then(
+        (port == 0)?then(
+            {
+                "IpProtocol": "tcp",
+                "FromPort": 32768,
+                "ToPort" : 65535
+            },
+            {
+                "IpProtocol": "tcp",
+                "FromPort": port,
+                "ToPort" : port
+            }
+        ),
+        {
+            "IpProtocol": ports[port]?has_content?then(
+                                (ports[port].IPProtocol == "all")?then(
+                                    "-1",
+                                    ports[port].IPProtocol
+                                ),
+                                -1),
+
+            "FromPort": ports[port]?has_content?then(
+                                ports[port].PortRange.Configured?then(
+                                        ports[port].PortRange.From,
+                                        ports[port].Port
+                                ),
+                                1),
+
+            "ToPort": ports[port]?has_content?then(
+                                ports[port].PortRange.Configured?then(
+                                    ports[port].PortRange.To,
+                                    ports[port].Port
+                                ),
+                                65535)
+        }
+    )
+    ]
+[/#function]
+
+[#function getSecurityGroupRules port cidrs=[] groups=[] direction="ingress" description="" ]
     [#local rules = [] ]
-    [#list asArray(cidr) as cidrBlock]
-        [#local rule =
-            port?is_number?then(
-                (port == 0)?then(
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": 32768,
-                        "ToPort" : 65535
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": port,
-                        "ToPort" : port
-                    }
-                ),
-                {
-                    "IpProtocol": ports[port]?has_content?then(
-                                        (ports[port].IPProtocol == "all")?then(
-                                            "-1",
-                                            ports[port].IPProtocol
-                                        ),
-                                        -1),
 
-                    "FromPort": ports[port]?has_content?then(
-                                        ports[port].PortRange.Configured?then(
-                                                ports[port].PortRange.From,
-                                                ports[port].Port
-                                        ),
-                                        1),
+    [#local baseRule = {} +
+        getSecurityGroupPortRule(port) +
+        attributeIfContent(
+            "Description",
+            description
+        )]
 
-                    "ToPort": ports[port]?has_content?then(
-                                        ports[port].PortRange.Configured?then(
-                                            ports[port].PortRange.To,
-                                            ports[port].Port
-                                        ),
-                                        65535)
-                }
-            )
-        ]
+    [#if groups?has_content ]
+        [#list asArray(groups) as group]
 
-        [#if groupId?has_content]
-            [#local rule +=
-                {
-                    "GroupId": getReference(groupId)
-                }
-            ]
-        [/#if]
-        [#if cidrBlock?contains("X")]
-            [#local rule +=
-                {
-                    "SourceSecurityGroupId": getReference(cidrBlock)
-                }
-            ]
-        [#else]
+            [#local existingGroup = group?starts_with("pl-") || group?starts_with("sg-") ]
+            [#switch direction ]
+                [#case "ingress" ]
+
+                    [#if existingGroup && group?starts_with("pl-") ]
+                        [#local rule =
+                            {
+                                "SourcePrefixListId" : group
+                            }
+                        ]
+                    [#else]
+                        [#local rule =
+                            {
+                                "SourceSecurityGroupId" : existingGroup?then(
+                                                                group,
+                                                                getReference(group)
+                                                            )
+                            }
+                        ]
+                    [/#if]
+                    [#break]
+
+                [#case "egress" ]
+                    [#if existingGroup && group?starts_with("pl-") ]
+                        [#local rule =
+                            {
+                                "DestinationPrefixListId" : group
+                            }
+                        ]
+                    [#else]
+                        [#local rule =
+                            {
+                                "DestinationSecurityGroupId" : existingGroup?then(
+                                                                    group,
+                                                                    getReference(group)
+                                                                )
+                            }]
+                    [/#if]
+                    [#break]
+            [/#switch]
+            [#local rules += [ mergeObjects(baseRule, rule) ] ]
+        [/#list]
+    [/#if]
+
+    [#if cidrs?has_content]
+        [#list asArray(cidrs) as cidrBlock]
             [#if cidrBlock?contains(":") ]
-                [#local rule +=
+                [#local rule =
                     {
                         "CidrIpv6": cidrBlock
                     }
                 ]
             [#else]
-                [#local rule +=
+                [#local rule =
                     {
                         "CidrIp": cidrBlock
                     }
                 ]
             [/#if]
-        [/#if]
-        [#local rules += [rule] ]
-    [/#list]
+            [#local rules += [ mergeObjects(baseRule, rule) ] ]
+        [/#list]
+    [/#if]
     [#return rules]
 [/#function]
 
-[#macro createSecurityGroupIngress id port cidr groupId]
-    [#local cidrs = asArray(cidr) ]
-    [#list cidrs as cidrBlock]
-        [@cfResource
-            id=
-                formatId(
-                    id,
-                    (cidrs?size > 1)?then(
-                        cidrBlock?index,
-                        ""
-                    )
-                )
-            type="AWS::EC2::SecurityGroupIngress"
-            properties=
-                getSecurityGroupRules(port, cidrBlock, groupId)[0]
+[#macro createSecurityGroupRulesFromLink occurrence groupId inboundPorts linkTarget ]
+
+    [#local linkTargetRoles = linkTarget.State.Roles ]
+    [#local linkDirection = linkTarget.Direction ]
+    [#local linkRole = linkTarget.Role]
+
+    [#if (linkTargetRoles.Inbound["networkacl"]!{})?has_content
+            && linkDirection == "inbound"
+            && linkRole == "networkacl" ]
+
+        [#local linkTargetInboundRule = mergeObjects(
+                                        linkTargetRoles.Inbound["networkacl"],
+                                        {
+                                            "Ports" : inboundPorts
+                                        }
+                                    )]
+
+        [@createSecurityGroupIngressFromNetworkRule
+            occurrence=occurrence
+            groupId=groupId
+            networkRule=linkTargetInboundRule
         /]
+    [/#if]
+
+    [#if (linkTargetRoles.Outbound["networkacl"]!{})?has_content
+            && linkTarget.Direction == "outbound" ]
+        [@createSecurityGroupEgressFromNetworkRule
+            occurrence=occurrence
+            groupId=groupId
+            networkRule=linkTargetRoles.Outbound["networkacl"]
+        /]
+    [/#if]
+[/#macro]
+
+[#macro createSecurityGroupRulesFromNetworkProfile occurrence groupId networkProfile inboundPorts ]
+    [@createSecurityGroupEgressFromNetworkRule
+        occurrence=occurrence
+        groupId=groupId
+        networkRule=networkProfile.BaseSecurityGroup.Outbound
+    /]
+
+    [#list networkProfile.BaseSecurityGroup.Links?values as link]
+        [#if link?is_hash]
+            [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+            [#if !linkTarget?has_content]
+                [#continue]
+            [/#if]
+
+            [@createSecurityGroupRulesFromLink
+                occurrence=occurrence
+                groupId=groupId
+                linkTarget=linkTarget
+                inboundPorts=inboundPorts
+            /]
+        [/#if]
     [/#list]
 [/#macro]
 
-[#macro createSecurityGroup id name vpcId tier={} component={} occurrence={} description="" ingressRules=[] egressRules=[] ]
-    [#local nonemptyIngressRules = [] ]
-    [#list asFlattenedArray(ingressRules) as ingressRule]
-        [#if ingressRule.CIDR?has_content]
-            [#local nonemptyIngressRules +=
-                        getSecurityGroupRules(
-                            ingressRule.Port,
-                            ingressRule.CIDR) ]
+[#macro createSecurityGroupIngressFromNetworkRule occurrence groupId networkRule ]
+
+    [#-- validate provide rule against configuration --]
+    [#local networkRule = getCompositeObject(networkRuleChildConfiguration, networkRule) ]
+    [#list networkRule.Ports as port ]
+        [#if networkRule.IPAddressGroups?has_content ]
+            [#list getGroupCIDRs(networkRule.IPAddressGroups, true, occurrence ) as cidr ]
+                [@createSecurityGroupIngress
+                    id=formatDependentSecurityGroupIngressId(groupId, port, replaceAlphaNumericOnly(cidr))
+                    groupId=groupId
+                    port=port
+                    cidr=cidr
+                    description=networkRule.Description
+                /]
+            [/#list]
+        [/#if]
+
+        [#if networkRule.SecurityGroups?has_content ]
+            [#list networkRule.SecurityGroups as securityGroup ]
+                [@createSecurityGroupIngress
+                    id=formatDependentSecurityGroupIngressId(groupId, port, replaceAlphaNumericOnly(securityGroup))
+                    groupId=groupId
+                    port=port
+                    group=securityGroup
+                    description=networkRule.Description
+                /]
+            [/#list]
         [/#if]
     [/#list]
+[/#macro]
 
-    [#local nonemptyEgressRules = [] ]
-    [#list asFlattenedArray(egressRules) as egressRule]
-        [#if egressRule.CIDR?has_content]
-            [#local nonemptyEgressRules +=
-                        getSecurityGroupRules(
-                            egressRule.Port,
-                            egressRule.CIDR) ]
+[#macro createSecurityGroupIngress id groupId port cidr="" group="" description="" ]
+    [@cfResource
+        id=id
+        type="AWS::EC2::SecurityGroupIngress"
+        properties=
+            {
+                "GroupId" : getReference(groupId)
+            } +
+            getSecurityGroupRules(port, cidr, group, "ingress", description )[0]
+        outputs={}
+    /]
+[/#macro]
+
+[#macro createSecurityGroupEgressFromNetworkRule occurrence groupId networkRule ]
+
+    [#-- validate provide rule against configuration --]
+    [#local networkRule = getCompositeObject(networkRuleChildConfiguration, networkRule) ]
+
+    [#list networkRule.Ports as port ]
+        [#if networkRule.IPAddressGroups?has_content ]
+            [#list getGroupCIDRs(networkRule.IPAddressGroups, true, occurrence ) as cidr ]
+                [@createSecurityGroupEgress
+                    id=formatDependentSecurityGroupEgressId(groupId, port, replaceAlphaNumericOnly(cidr))
+                    groupId=groupId
+                    port=port
+                    cidr=cidr
+                    description=networkRule.Description
+                /]
+            [/#list]
+        [/#if]
+
+        [#if networkRule.SecurityGroups?has_content ]
+            [#list networkRule.SecurityGroups as securityGroup ]
+                [@createSecurityGroupEgress
+                    id=formatDependentSecurityGroupEgressId(groupId, port, replaceAlphaNumericOnly(securityGroup))
+                    groupId=groupId
+                    port=port
+                    group=securityGroup
+                    description=networkRule.Description
+                /]
+            [/#list]
         [/#if]
     [/#list]
+[/#macro]
 
-    [#local properties =
-        {
-            "GroupDescription" : description?has_content?then(description, name),
-            "VpcId" : (vpcId?has_content)?then(
-                            getReference(vpcId),
-                            vpc
-                      )
-        } +
-        attributeIfContent(
-            "SecurityGroupIngress",
-            nonemptyIngressRules
-        ) +
-        attributeIfContent(
-            "SecurityGroupEgress",
-            nonemptyEgressRules
-        )
-    ]
+[#macro createSecurityGroupEgress id groupId port cidr="" group="" description="" ]
+    [@cfResource
+        id=id
+        type="AWS::EC2::SecurityGroupEgress"
+        properties=
+            {
+                "GroupId" : getReference(groupId)
+            } +
+            getSecurityGroupRules(port, cidr, group, "egress", description )[0]
+        outputs={}
+    /]
+[/#macro]
 
+[#macro createSecurityGroup id name vpcId occurrence description="" ]
     [@cfResource
         id=id
         type="AWS::EC2::SecurityGroup"
-        properties=properties
+        properties=
+            {
+                "GroupDescription" : description?has_content?then(description, name),
+                "VpcId" : (vpcId?has_content)?then(
+                                getReference(vpcId),
+                                vpc
+                            ),
+                "SecurityGroupEgress" : getSecurityGroupRules(
+                                            "any",
+                                            "127.0.0.1/32",
+                                            "",
+                                            "egress",
+                                            "Override default allow"
+                                        )
+            }
         tags=
             getCfTemplateCoreTags(
                 name,
-                contentIfContent(tier,occurrence.Core.Tier),
-                contentIfContent(component,occurrence.Core.Component))
+                occurrence.Core.Tier,
+                occurrence.Core.Component
+            )
     /]
-[/#macro]
 
-[#macro createDependentSecurityGroup
-            resourceId
-            resourceName
-            vpcId
-            tier={}
-            component={}
-            occurrence={}
-            ingressRules=[]]
-    [@createSecurityGroup
-        id=formatDependentSecurityGroupId(resourceId)
-        name=resourceName
-        vpcId=vpcId
-        tier=tier
-        component=component
-        occurrence=occurrence
-        description="Security Group for " + resourceName
-        ingressRules=ingressRules
-        /]
-[/#macro]
-
-[#macro createComponentSecurityGroup
-            occurrence
-            vpcId=vpcId
-            extensions=""
-            ingressRules=[] ]
-    [@createSecurityGroup
-        id=formatComponentSecurityGroupId(
-            occurrence.Core.Tier,
-            occurrence.Core.Component,
-            extensions)
-        name=formatComponentFullName(
-            occurrence.Core.Tier,
-            occurrence.Core.Component,
-            extensions)
-        vpcId=vpcId
-        occurrence=occurrence
-        ingressRules=ingressRules
-    /]
-[/#macro]
-
-[#macro createDependentComponentSecurityGroup
-            resourceId
-            resourceName
-            occurrence
-            extensions=""
-            vpcId=vpcId
-            ingressRules=[] ]
-    [#local legacyId = formatComponentSecurityGroupId(
-                        occurrence.Core.Tier,
-                        occurrence.Core.Component,
-                        extensions)]
-    [#if getExistingReference(legacyId)?has_content]
-        [@createComponentSecurityGroup
-            vpcId=vpcId
-            occurrence=occurrence
-            extensions=extensions
-            ingressRules=ingressRules /]
-    [#else]
-        [@createDependentSecurityGroup
-            resourceId=resourceId
-            resourceName=resourceName
-            occurrence=occurrence
-            vpcId=vpcId
-            ingressRules=ingressRules /]
-    [/#if]
 [/#macro]
 
 [#macro createFlowLog

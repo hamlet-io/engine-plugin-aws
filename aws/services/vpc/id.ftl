@@ -18,6 +18,7 @@
 
 [#assign AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE = "securityGroup" ]
 [#assign AWS_VPC_SECURITY_GROUP_INGRESS_RESOURCE_TYPE = "securityGroupIngress" ]
+[#assign AWS_VPC_SECURITY_GROUP_EGRESS_RESOURCE_TYPE = "securityGroupEgress" ]
 
 [#assign AWS_VPC_IGW_RESOURCE_TYPE = "igw" ]
 [#assign AWS_VPC_IGW_ATTACHMENT_TYPE = formatId( AWS_VPC_IGW_RESOURCE_TYPE, "attachment") ]
@@ -67,12 +68,6 @@
         )]
 [/#function]
 
-[#function formatSecurityGroupIngressId ids...]
-    [#return formatResourceId(
-                AWS_VPC_SECURITY_GROUP_INGRESS_RESOURCE_TYPE,
-                ids)]
-[/#function]
-
 [#-- Use the associated security group where possible as the dependent --]
 [#-- resource. (It may well in turn be a dependent resource)           --]
 [#-- As nothing depends in ingress resources, Cloud Formation will     --]
@@ -80,6 +75,13 @@
 [#function formatDependentSecurityGroupIngressId resourceId extensions...]
     [#return formatDependentResourceId(
                 "ingress",
+                resourceId,
+                extensions)]
+[/#function]
+
+[#function formatDependentSecurityGroupEgressId resourceId extensions...]
+    [#return formatDependentResourceId(
+                AWS_VPC_SECURITY_GROUP_EGRESS_RESOURCE_TYPE,
                 resourceId,
                 extensions)]
 [/#function]
