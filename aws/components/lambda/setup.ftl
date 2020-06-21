@@ -168,7 +168,11 @@
     [#if deploymentType == "EDGE" ]
             [#assign _context += {
             "DefaultEnvironment" : {},
-            "Environment" : {}
+            "Environment" : {},
+            "DefaultCoreVariables" : false,
+            "DefaultEnvironmentVariables" : false,
+            "DefaultLinkVariables" : false,
+            "DefaultBaselineVariables" : false
         }]
     [/#if]
 
@@ -248,11 +252,10 @@
     [#if isPresent(solution.FixedCodeVersion) ]
         [#local versionId = resources["version"].Id  ]
         [#local versionResourceId = resources["version"].ResourceId ]
-        [#local codeHash = _context.CodeHash!solution.FixedCodeVersion.CodeHash ]
 
         [#if !(core.Version?has_content)]
             [@fatal
-                message="A version must be defined for Fixed Code Version deployments"
+                message="A component version must be defined for Fixed Code Version deployments"
                 context=core
             /]
         [/#if]
@@ -330,7 +333,7 @@
                 [@fatal
                     message="EDGE based deployments must be deployed as Fixed code version deployments"
                     context=_context
-                    detail="Lambda@Edge deployments are based on a snapshot of lambda code and a specific codeontap version is requried "
+                    detail="Lambda@Edge deployments are based on a snapshot of lambda code and a specific hamlet version is required "
                 /]
             [/#if]
 
