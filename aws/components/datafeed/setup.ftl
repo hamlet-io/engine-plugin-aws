@@ -154,7 +154,7 @@
                     [
                         getPolicyDocument(
                             encrypted?then(
-                                s3EncryptionPermission(
+                                s3EncryptionKinesisPermission(
                                         cmkKeyId,
                                         dataBucket,
                                         dataBucketPrefix,

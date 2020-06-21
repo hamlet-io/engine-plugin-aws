@@ -261,6 +261,11 @@
                     getPolicyDocument(
                         s3ListPermission(codeBucket) +
                         s3ReadPermission(codeBucket) +
+                        s3AccountEncryptionReadPermission(
+                            codeBucket,
+                            "*",
+                            codeBucketRegion
+                        ) +
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +

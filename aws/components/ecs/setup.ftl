@@ -150,11 +150,21 @@
                     getPolicyDocument(
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(credentialsBucket, accountId + "/alm/docker") +
+                            s3AccountEncryptionReadPermission(
+                                credentialsBucket,
+                                "*",
+                                credentialsBucketRegion
+                            ) +
                             fixedIP?then(
                                 ec2IPAddressUpdatePermission(),
                                 []
                             ) +
                             s3ReadPermission(codeBucket) +
+                            s3AccountEncryptionReadPermission(
+                                codeBucket,
+                                "*",
+                                codeBucketRegion
+                            ) +
                             s3ListPermission(operationsBucket) +
                             s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
                             s3WritePermission(operationsBucket, "DOCKERLogs") +

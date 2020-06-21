@@ -107,6 +107,7 @@
     [#include fragmentList?ensure_starts_with("/")]
 
     [#local environmentVariables = getFinalEnvironment(occurrence, _context).Environment ]
+    [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
     [#local configSets +=
         getInitConfigEnvFacts(environmentVariables, false) +
@@ -129,11 +130,12 @@
                             ec2IPAddressUpdatePermission() +
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(codeBucket) +
-                            cwLogsProducePermission(bastionLgName) +
-                            ssmSessionManagerPermission(
-                                baselineComponentIds["AccountEncryption"],
-                                bastionOS
-                            ),
+                            s3AccountEncryptionReadPermission(
+                                codeBucket,
+                                "*",
+                                codeBucketRegion
+                            ) +
+                            cwLogsProducePermission(bastionLgName),
                             "basic"
                         ),
                         getPolicyDocument(
@@ -143,12 +145,15 @@
                     ] +
                     arrayIfContent(
                         [getPolicyDocument(_context.Policy, "fragment")],
-                        _context.Policy)
+                        _context.Policy) +
+                    arrayIfContent(
+                        [getPolicyDocument(linkPolicies, "links")],
+                        linkPolicies)
                 managedArns=_context.ManagedPolicy
             /]
         [/#if]
 
-        [#if !consoleOnly ]
+        [#if publicRouteTable ]
             [#if deploymentSubsetRequired("eip", true) &&
                     isPartOfCurrentDeploymentUnit(bastionEIPId)]
                 [@createEIP
@@ -192,7 +197,7 @@
                         {
                             "Port" : "ssh",
                             "CIDR" :
-                                (sshEnabled && !consoleOnly)?then(
+                                (sshEnabled)?then(
                                     getGroupCIDRs(
                                         (segmentObject.SSH.IPAddressGroups)!
                                             (segmentObject.IPAddressGroups)!
