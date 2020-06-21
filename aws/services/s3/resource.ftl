@@ -294,7 +294,7 @@
 
 [#macro createS3Bucket id name tier="" component=""
                         encrypted=false
-                        encryptionMode="aws:kms"
+                        encryptionSource="aws:kms"
                         kmsKeyId=""
                         lifecycleRules=[]
                         notifications=[]
@@ -306,11 +306,15 @@
                         dependencies=""
                         outputId=""]
 
-    [#assign loggingConfiguration = {} ]
-    [#if getExistingReference(formatAccountS3Id("audit"), "", regionId )?has_content ]
-        [#assign loggingConfiguration = getS3LoggingConfiguration(
-                                getExistingReference(formatAccountS3Id("audit")),
-                                name) ]
+    [#local loggingConfiguration = {} ]
+
+    [#-- Enabling logging on the audit bucket would cause an infinite loop --]
+    [#if formatAccountS3Id("audit") != id ]
+        [#if getExistingReference(formatAccountS3Id("audit"), "", regionId )?has_content ]
+            [#local loggingConfiguration = getS3LoggingConfiguration(
+                                    getExistingReference(formatAccountS3Id("audit")),
+                                    name) ]
+        [/#if]
     [/#if]
 
     [#local versionConfiguration={}]
@@ -320,11 +324,11 @@
         } ]
     [/#if]
 
-    [#assign CORSRules = [] ]
+    [#local CORSRules = [] ]
     [#list CORSBehaviours as behaviour ]
-        [#assign CORSBehaviour = CORSProfiles[behaviour] ]
+        [#local CORSBehaviour = CORSProfiles[behaviour] ]
         [#if CORSBehaviour?has_content ]
-            [#assign CORSRules += [
+            [#local CORSRules += [
                 {
                     "Id" : behaviour,
                     "AllowedHeaders" : CORSBehaviour.AllowedHeaders,
@@ -349,7 +353,31 @@
     [/#list]
 
     [#local bucketEncryptionConfig = {} ]
+    [#local encryptionMode = ""]
     [#if encrypted ]
+
+        [#switch encryptionSource?lower_case ]
+            [#case "localservice" ]
+            [#case "aes256" ]
+                [#local encryptionMode = "AES256" ]
+                [#break]
+
+            [#case "encryptionservice" ]
+            [#case "aws:kms" ]
+                [#local encryptionMode = "aws:kms" ]
+                [#break]
+
+            [#default]
+                [@fatal
+                    message="Unsupported S3 Encryption Source"
+                    detail={
+                        "BucketId" : id,
+                        "Name" : name,
+                        "EncryptionSource": encryptionSource
+                    }
+                /]
+        [/#switch]
+
         [#local bucketEncryptionConfig = {
             "ServerSideEncryptionConfiguration" : [
                 {
@@ -359,7 +387,7 @@
                     attributeIfTrue(
                         "KMSMasterKeyID",
                         ( encryptionMode == "aws:kms" ),
-                        getExistingReference(kmsKeyId)
+                        getArn(kmsKeyId)
                     )
                 }
             ]
