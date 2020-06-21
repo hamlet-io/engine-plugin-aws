@@ -25,9 +25,11 @@
     [#local replicationBucket = ""]
 
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "CDNOriginKey" ])]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "CDNOriginKey", "Encryption" ])]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local cfAccessId  = getExistingReference(baselineComponentIds["CDNOriginKey"]!"", CANONICAL_ID_ATTRIBUTE_TYPE) ]
+
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local dependencies = [] ]
 
@@ -320,6 +322,9 @@
             versioning=versioningEnabled
             CORSBehaviours=solution.CORSBehaviours
             replicationConfiguration=replicationConfiguration
+            encrypted=solution.Encryption.Enabled
+            encryptionSource=solution.Encryption.EncryptionSource
+            kmsKeyId=kmsKeyId
             dependencies=dependencies
         /]
     [/#if]

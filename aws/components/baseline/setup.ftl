@@ -53,9 +53,8 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ], false, false )]
 
     [#local cmkResources = baselineLinks["Encryption"].State.Resources ]
+    [#local cmkId = cmkResources["cmk"].Id ]
     [#local cmkAlias = cmkResources["cmkAlias"].Name ]
-
-    [@debug message={ "KeyAlias" : cmkAlias } enabled=true /]
 
     [#-- Subcomponents --]
     [#list occurrence.Occurrences![] as subOccurrence]
@@ -214,6 +213,9 @@
                     versioning=subSolution.Versioning
                     lifecycleRules=lifecycleRules
                     notifications=notifications
+                    encrypted=subSolution.Encryption.Enabled
+                    encryptionSource=subSolution.Encryption.EncryptionSource
+                    kmsKeyId=cmkId
                     dependencies=bucketDependencies
                 /]
 
@@ -320,6 +322,16 @@
                                         {
                                             "AWS": formatAccountPrincipalArn()
                                         }
+                                    ),
+                                    getPolicyStatement(
+                                        "kms:GenerateDataKey",
+                                        "*"
+                                        {
+                                            "Service" : "delivery.logs.amazonaws.com"
+                                        },
+                                        "",
+                                        true,
+                                        "Allow CloudFront Flow Logs to use the key"
                                     )
                                 ]
                             outputId=cmkId

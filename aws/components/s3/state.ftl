@@ -14,6 +14,29 @@
         [/#if]
     [/#list]
 
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ])]
+    [#local baselineIds = getBaselineComponentIds(baselineLinks)]
+
+    [#local s3AllEncryptionPolicy = []]
+    [#local s3ReadEncryptionPolicy = []]
+    [#if solution.Encryption.Enabled &&
+           solution.Encryption.EncryptionSource == "EncryptionService" ]
+
+        [#local s3AllEncryptionPolicy  = s3EncryptionAllPermission(
+                baselineIds["Encryption"],
+                name,
+                "*",
+                getExistingReference(id, REGION_ATTRIBUTE_TYPE)
+            )]
+
+        [#local s3ReadEncryptionPolicy  = s3EncryptionReadPermission(
+                baselineIds["Encryption"],
+                name,
+                "*",
+                getExistingReference(id, REGION_ATTRIBUTE_TYPE)
+            )]
+    [/#if]
+
     [#assign componentState =
         {
             "Resources" : {
@@ -51,10 +74,10 @@
                     }
                 },
                 "Outbound" : {
-                    "all" : s3AllPermission(id),
-                    "produce" : s3ProducePermission(id),
-                    "consume" : s3ConsumePermission(id),
-                    "replicadestination" : s3ReplicaDestinationPermission(id),
+                    "all" : s3AllPermission(id) + s3AllEncryptionPolicy,
+                    "produce" : s3ProducePermission(id) + s3AllEncryptionPolicy,
+                    "consume" : s3ConsumePermission(id) + s3ReadEncryptionPolicy,
+                    "replicadestination" : s3ReplicaDestinationPermission(id) + s3ReadEncryptionPolicy,
                     "replicasource" : {},
                     "datafeed" : s3KinesesStreamPermission(id)
                }
