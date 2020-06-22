@@ -26,6 +26,8 @@
     [#local bastionType = occurrence.Core.Type]
     [#local configSetName = bastionType]
 
+    [#local publicRouteTable = false ]
+
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
@@ -184,13 +186,6 @@
                         ALLOCATION_ATTRIBUTE_TYPE
                     ))]
         [/#if]
-
-        [#local configSets +=
-            getInitConfigEIPAllocation(
-                getReference(
-                    bastionEIPId,
-                    ALLOCATION_ATTRIBUTE_TYPE
-                ))]
 
         [#if deploymentSubsetRequired("lg", true) &&
                 isPartOfCurrentDeploymentUnit(bastionLgId) ]
