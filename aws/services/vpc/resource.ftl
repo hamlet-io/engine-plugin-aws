@@ -164,8 +164,6 @@
         [#if link?is_hash]
             [#local linkTarget = getLinkTarget(occurrence, link) ]
 
-            [@debug message="Link Target" context=linkTarget enabled=false /]
-
             [#if !linkTarget?has_content]
                 [#continue]
             [/#if]
@@ -185,8 +183,8 @@
     [#-- validate provide rule against configuration --]
     [#local networkRule = getCompositeObject(networkRuleChildConfiguration, networkRule) ]
     [#list networkRule.Ports as port ]
-        [#if networkRule.IPAddressGroups?has_content ]
-            [#list getGroupCIDRs(networkRule.IPAddressGroups, true, occurrence ) as cidr ]
+        [#if (networkRule.IPAddressGroups)?has_content ]
+            [#list (getGroupCIDRs(networkRule.IPAddressGroups, true, occurrence ))?filter(cidr -> cidr?has_content) as cidr ]
                 [@createSecurityGroupIngress
                     id=formatDependentSecurityGroupIngressId(groupId, port, replaceAlphaNumericOnly(cidr))
                     groupId=groupId
@@ -197,8 +195,8 @@
             [/#list]
         [/#if]
 
-        [#if networkRule.SecurityGroups?has_content ]
-            [#list networkRule.SecurityGroups as securityGroup ]
+        [#if (networkRule.SecurityGroups)?has_content ]
+            [#list (networkRule.SecurityGroups)?filter(group -> group?has_content) as securityGroup ]
                 [@createSecurityGroupIngress
                     id=formatDependentSecurityGroupIngressId(groupId, port, replaceAlphaNumericOnly(securityGroup))
                     groupId=groupId
@@ -230,8 +228,8 @@
     [#local networkRule = getCompositeObject(networkRuleChildConfiguration, networkRule) ]
 
     [#list networkRule.Ports as port ]
-        [#if networkRule.IPAddressGroups?has_content ]
-            [#list getGroupCIDRs(networkRule.IPAddressGroups, true, occurrence ) as cidr ]
+        [#if (networkRule.IPAddressGroups)?has_content ]
+            [#list (getGroupCIDRs(networkRule.IPAddressGroups, true, occurrence ))?filter(cidr -> cidr?has_content) as cidr ]
                 [@createSecurityGroupEgress
                     id=formatDependentSecurityGroupEgressId(groupId, port, replaceAlphaNumericOnly(cidr))
                     groupId=groupId
@@ -242,8 +240,8 @@
             [/#list]
         [/#if]
 
-        [#if networkRule.SecurityGroups?has_content ]
-            [#list networkRule.SecurityGroups as securityGroup ]
+        [#if (networkRule.SecurityGroups)?has_content ]
+            [#list (networkRule.SecurityGroups)?filter(group -> group?has_content) as securityGroup ]
                 [@createSecurityGroupEgress
                     id=formatDependentSecurityGroupEgressId(groupId, port, replaceAlphaNumericOnly(securityGroup))
                     groupId=groupId
