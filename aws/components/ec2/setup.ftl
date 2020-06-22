@@ -248,7 +248,7 @@
                             destinationPort
                         )
                     port=destinationPort
-                    cidr=group
+                    group=group
                     groupId=ec2SecurityGroupId
                 /]
             [/#list]

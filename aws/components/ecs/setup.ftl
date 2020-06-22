@@ -885,7 +885,7 @@
                                             )
                                         )
                                     port=portMapping.DynamicHostPort?then(0, portMapping.HostPort)
-                                    cidr=group
+                                    group=group
                                     groupId=ecsSecurityGroupId
                                 /]
                             [/#list]

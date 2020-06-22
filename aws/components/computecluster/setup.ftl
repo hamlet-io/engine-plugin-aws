@@ -298,7 +298,7 @@
                             destinationPort
                         )
                     port=destinationPort
-                    cidr=group
+                    group=group
                     groupId=computeClusterSecurityGroupId
                 /]
             [/#list]
