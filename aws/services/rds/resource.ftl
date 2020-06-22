@@ -122,7 +122,10 @@
         } +
         valueIfTrue(
             {
-                "AllocatedStorage": size?c?string,
+                "AllocatedStorage": size?is_string?then(
+                                        size,
+                                        size?c?string
+                                    ),
                 "StorageType" : "gp2",
                 "BackupRetentionPeriod" : retentionPeriod,
                 "DBInstanceIdentifier": name,
