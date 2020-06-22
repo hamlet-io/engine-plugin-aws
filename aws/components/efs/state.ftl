@@ -76,10 +76,10 @@
             },
             "Roles" : {
                 "Inbound" : {
-                    "networkacl" : parentRoles["networkacl"]
+                    "networkacl" : parentRoles.Inbound["networkacl"]
                 },
                 "Outbound" : {
-                    "networkacl" : parentRoles["networkacl"]
+                    "networkacl" : parentRoles.Outbound["networkacl"]
                 }
             }
         }
