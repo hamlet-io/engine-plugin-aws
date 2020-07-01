@@ -111,12 +111,14 @@
             [#local linkDirection = linkTarget.Direction ]
             [#local linkRole = linkTarget.Role]
 
-            [@createSecurityGroupRulesFromLink
-                occurrence=fn
-                groupId=securityGroupId
-                linkTarget=linkTarget
-                inboundPorts=[]
-            /]
+            [#if vpcAccess ]
+                [@createSecurityGroupRulesFromLink
+                    occurrence=fn
+                    groupId=securityGroupId
+                    linkTarget=linkTarget
+                    inboundPorts=[]
+                /]
+            [/#if]
 
             [#switch linkDirection ]
                 [#case "inbound" ]
