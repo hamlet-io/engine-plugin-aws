@@ -5,9 +5,7 @@
             ( ((ports[port].IPProtocol)!"") == "all")  ]
 
             [#return {
-                "IpProtocol" : "-1",
-                "FromPort" : -1,
-                "ToPort" : -1
+                "IpProtocol" : "-1"
             }]
 
     [#else]
