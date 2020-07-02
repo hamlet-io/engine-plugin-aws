@@ -1,44 +1,53 @@
 [#ftl]
 
 [#function getSecurityGroupPortRule port ]
-    [#return
-        port?is_number?then(
-        (port == 0)?then(
-            {
-                "IpProtocol": "tcp",
-                "FromPort": 32768,
-                "ToPort" : 65535
-            },
-            {
-                "IpProtocol": "tcp",
-                "FromPort": port,
-                "ToPort" : port
-            }
-        ),
-        {
-            "IpProtocol": ports[port]?has_content?then(
-                                (ports[port].IPProtocol == "all")?then(
-                                    "-1",
-                                    ports[port].IPProtocol
-                                ),
-                                -1),
+    [#if port?is_string &&
+            ( ((ports[port].IPProtocol)!"") == "all")  ]
 
-            "FromPort": ports[port]?has_content?then(
-                                ports[port].PortRange.Configured?then(
-                                        ports[port].PortRange.From,
+            [#return {
+                "IpProtocol" : "-1",
+                "FromPort" : -1,
+                "ToPort" : -1
+            }]
+
+    [#else]
+        [#return
+            port?is_number?then(
+            (port == 0)?then(
+                {
+                    "IpProtocol": "tcp",
+                    "FromPort": 32768,
+                    "ToPort" : 65535
+                },
+                {
+                    "IpProtocol": "tcp",
+                    "FromPort": port,
+                    "ToPort" : port
+                }
+            ),
+            {
+                "IpProtocol": ports[port]?has_content?then(
+                                    ports[port].IPProtocol,
+                                    -1
+                                ),
+
+                "FromPort": ports[port]?has_content?then(
+                                    ports[port].PortRange.Configured?then(
+                                            ports[port].PortRange.From,
+                                            ports[port].Port
+                                    ),
+                                    1),
+
+                "ToPort": ports[port]?has_content?then(
+                                    ports[port].PortRange.Configured?then(
+                                        ports[port].PortRange.To,
                                         ports[port].Port
-                                ),
-                                1),
-
-            "ToPort": ports[port]?has_content?then(
-                                ports[port].PortRange.Configured?then(
-                                    ports[port].PortRange.To,
-                                    ports[port].Port
-                                ),
-                                65535)
-        }
-    )
-    ]
+                                    ),
+                                    65535)
+            }
+        )
+        ]
+    [/#if]
 [/#function]
 
 [#function getSecurityGroupRules port cidrs=[] groups=[] direction="ingress" description="" ]
