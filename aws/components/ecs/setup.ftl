@@ -242,6 +242,7 @@
                 groupId=ecsSecurityGroupId
                 linkTarget=linkTarget
                 inboundPorts=[ "ssh" ]
+                networkProfile=networkProfile
             /]
 
             [#switch linkTargetCore.Type]
@@ -960,7 +961,8 @@
                         [/#list]
                     [/#if]
 
-                    [#if container.EgressRules?has_content ]
+                    [#if !(networkProfile.BaseSecurityGroup.Outbound.GlobalAllow)
+                            && container.EgressRules?has_content ]
                         [#list container.EgressRules as egressRule ]
                             [@createSecurityGroupEgressFromNetworkRule
                                 occurrence=subOccurrence

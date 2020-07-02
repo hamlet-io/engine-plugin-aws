@@ -65,6 +65,7 @@
                     groupId=efsSecurityGroupId
                     linkTarget=linkTarget
                     inboundPorts=[ port ]
+                    networkProfile=networkProfile
                 /]
             [/#if]
 

@@ -227,6 +227,7 @@
                 groupId=computeClusterSecurityGroupId
                 linkTarget=linkTarget
                 inboundPorts=[ "ssh" ]
+                networkProfile=networkProfile
             /]
         [/#if]
 

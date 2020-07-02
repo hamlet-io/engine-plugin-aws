@@ -154,6 +154,7 @@
                 groupId=computeClusterSecurityGroupId
                 linkTarget=linkTarget
                 inboundPorts=ec2SecurityGroupPorts
+                networkProfile=networkProfile
             /]
         [/#if]
 

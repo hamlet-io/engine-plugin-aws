@@ -385,6 +385,7 @@
                         groupId=securityGroupId
                         linkTarget=linkTarget
                         inboundPorts=[ securityGroupPorts ]
+                        networkProfile=networkProfile
                     /]
                 [/#if]
 
@@ -502,6 +503,7 @@
                         groupId=securityGroupId
                         linkTarget=linkTarget
                         inboundPorts=[ securityGroupPorts ]
+                        networkProfile=networkProfile
                     /]
                 [/#if]
 

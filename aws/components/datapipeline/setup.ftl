@@ -120,6 +120,7 @@
                 groupId=securityGroupId
                 linkTarget=linkTarget
                 inboundPorts=[ "ssh" ]
+                networkProfile=networkProfile
             /]
         [/#if]
 

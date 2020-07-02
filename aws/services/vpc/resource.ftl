@@ -126,11 +126,12 @@
     [#return rules]
 [/#function]
 
-[#macro createSecurityGroupRulesFromLink occurrence groupId inboundPorts linkTarget ]
+[#macro createSecurityGroupRulesFromLink occurrence groupId inboundPorts linkTarget networkProfile ]
 
     [#local linkTargetRoles = linkTarget.State.Roles ]
     [#local linkDirection = linkTarget.Direction ]
     [#local linkRole = linkTarget.Role]
+    [#local globalAllow = networkProfile.BaseSecurityGroup.Outbound.GlobalAllow ]
 
     [#if (linkTargetRoles.Inbound["networkacl"]!{})?has_content
             && linkDirection == "inbound"
@@ -151,7 +152,8 @@
     [/#if]
 
     [#if (linkTargetRoles.Outbound["networkacl"]!{})?has_content
-            && linkTarget.Direction == "outbound" ]
+            && linkTarget.Direction == "outbound"
+            && ! globalAllow ]
         [@createSecurityGroupEgressFromNetworkRule
             occurrence=occurrence
             groupId=groupId
@@ -161,11 +163,26 @@
 [/#macro]
 
 [#macro createSecurityGroupRulesFromNetworkProfile occurrence groupId networkProfile inboundPorts ]
-    [@createSecurityGroupEgressFromNetworkRule
-        occurrence=occurrence
-        groupId=groupId
-        networkRule=networkProfile.BaseSecurityGroup.Outbound
-    /]
+
+    [#if !(networkProfile.BaseSecurityGroup.Outbound.GlobalAllow) ]
+        [@createSecurityGroupEgressFromNetworkRule
+            occurrence=occurrence
+            groupId=groupId
+            networkRule={
+                "Ports" : [ "any" ],
+                "IPAddressGroups" : [ "_localhost" ],
+                "Description" : "Explicit outbound base rule"
+            }
+        /]
+
+        [#list networkProfile.BaseSecurityGroup.Outbound.NetworkRules?values as networkRule ]
+            [@createSecurityGroupEgressFromNetworkRule
+                occurrence=occurrence
+                groupId=groupId
+                networkRule=networkRule
+            /]
+        [/#list]
+    [/#if]
 
     [#list networkProfile.BaseSecurityGroup.Links?values as link]
         [#if link?is_hash]
@@ -180,6 +197,7 @@
                 groupId=groupId
                 linkTarget=linkTarget
                 inboundPorts=inboundPorts
+                networkProfile=networkProfile
             /]
         [/#if]
     [/#list]
@@ -284,14 +302,7 @@
                 "VpcId" : (vpcId?has_content)?then(
                                 getReference(vpcId),
                                 vpc
-                            ),
-                "SecurityGroupEgress" : getSecurityGroupRules(
-                                            "any",
-                                            "127.0.0.1/32",
-                                            "",
-                                            "egress",
-                                            "Override default allow"
-                                        )
+                            )
             }
         tags=
             getCfTemplateCoreTags(

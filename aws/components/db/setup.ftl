@@ -210,6 +210,7 @@
                     groupId=securityGroupId
                     linkTarget=linkTarget
                     inboundPorts=[ port ]
+                    networkProfile=networkProfile
                 /]
             [/#if]
 

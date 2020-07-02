@@ -242,6 +242,7 @@
                     groupId=sgId
                     linkTarget=linkTarget
                     inboundPorts=[ ports ]
+                    networkProfile=networkProfile
                 /]
             [/#if]
 

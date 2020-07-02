@@ -117,6 +117,7 @@
                     groupId=securityGroupId
                     linkTarget=linkTarget
                     inboundPorts=[]
+                    networkProfile=networkProfile
                 /]
             [/#if]
 

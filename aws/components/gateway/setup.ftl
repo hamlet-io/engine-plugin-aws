@@ -252,6 +252,7 @@
                         groupId=securityGroupId
                         linkTarget=linkTarget
                         inboundPorts=destinationPorts
+                        networkProfile=networkProfile
                     /]
                 [/#if]
 
