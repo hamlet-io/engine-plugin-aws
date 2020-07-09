@@ -285,7 +285,7 @@
         properties=
             {
                 "AlarmDescription" : description?has_content?then(description,name),
-                "AlarmName" : severity?upper_case + "-" + resourceName + "-" + alertName,
+                "AlarmName" : concatenate( [ severity?upper_case,resourceName, alertName ], "|"),
                 "ComparisonOperator" : operator,
                 "EvaluationPeriods" : evaluationPeriods,
                 "MetricName" : metric,

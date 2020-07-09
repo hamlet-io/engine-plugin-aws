@@ -5,7 +5,8 @@
     [#local solution = occurrence.Configuration.Solution]
 
     [#local id = formatOccurrenceS3Id(occurrence)]
-    [#local name = formatOccurrenceBucketName(occurrence) ]
+    [#local name = (formatOccurrenceBucketName(occurrence))?truncate_c(63, '') ]
+
     [#local publicAccessEnabled = false ]
     [#list solution.PublicAccess?values as publicPrefixConfiguration]
         [#if publicPrefixConfiguration.Enabled]

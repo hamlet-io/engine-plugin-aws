@@ -1055,7 +1055,7 @@
                                     [@createAlarm
                                         id=formatDependentAlarmId(scalingPolicyId, monitoredResource.Id )
                                         severity="Scaling"
-                                        resourceName=scalingTargetCore.FullName
+                                        resourceName=concatenate( [ core.FullName, scalingTargetCore.FullName], "|" )
                                         alertName=scalingMetricTrigger.Name
                                         actions=getReference( scalingPolicyId )
                                         reportOK=false
