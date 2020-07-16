@@ -55,18 +55,13 @@
             [#local resourceType = "COTFatal: Unknown LB Engine" ]
     [/#switch]
 
-    [#local lbShortName = (core.ShortFullName?length < 32)?then(
-                                    core.ShortFullName,
-                                    core.ShortFullName?truncate_c(32, '')
-                                )]
-
     [#assign componentState =
         {
             "Resources" : {
                 "lb" : {
                     "Id" : id,
                     "Name" : core.FullName,
-                    "ShortName" : lbShortName,
+                    "ShortName" : (core.ShortFullName)?truncate_c(32, ''),
                     "Type" : resourceType,
                     "Monitored" : true
                 }
