@@ -144,6 +144,12 @@
     [#local emailVerificationSubject =
         getOccurrenceSettingValue(occurrence, ["UserPool", "EmailVerificationSubject"], true) ]
 
+    [#local emailVerificationMessageByLink =
+        getOccurrenceSettingValue(occurrence, ["UserPool", "EmailVerificationMessageByLink"], true) ]
+
+    [#local emailVerificationSubjectByLink =
+        getOccurrenceSettingValue(occurrence, ["UserPool", "EmailVerificationSubjectByLink"], true) ]
+
     [#local smsVerificationMessage =
         getOccurrenceSettingValue(occurrence, ["UserPool", "SMSVerificationMessage"], true) ]
 
@@ -773,9 +779,6 @@
             userActivityTracking=solution.Security.ActivityTracking
             adminCreatesUser=solution.AdminCreatesUser
             schema=schema
-            emailVerificationMessage=emailVerificationMessage
-            emailVerificationSubject=emailVerificationSubject
-            smsVerificationMessage=smsVerificationMessage
             smsAuthenticationMessage=smsAuthenticationMessage
             smsInviteMessage=smsInviteMessage
             emailInviteMessage=emailInviteMessage
@@ -795,6 +798,15 @@
                     solution.UnusedAccountTimeout)
             userAccountRecovery=solution.PasswordPolicy.AllowUserRecovery
             smsConfiguration=smsConfig
+            verificationMessageTemplate=getUserPoolVerificationMessageTemplate(
+                    solution.VerificationEmailType,
+                    emailVerificationMessage,
+                    emailVerificationSubject
+                    emailVerificationMessageByLink,
+                    emailVerificationSubjectByLink,
+                    smsVerificationMessage
+                )
+
         /]
 
         [@createUserPoolDomain

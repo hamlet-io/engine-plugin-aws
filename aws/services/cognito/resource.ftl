@@ -220,6 +220,50 @@
     ]
 [/#function]
 
+[#function getUserPoolVerificationMessageTemplate
+    verificationEmailType
+    emailVerificationMessage
+    emailVerificationSubject
+    emailVerificationMessageByLink
+    emailVerificationSubjectByLink
+    smsVerificationMessage
+]
+    [#assign defaultEmailOption = ""]
+    [#if verificationEmailType == "code" ]
+        [#assign defaultEmailOption = "CONFIRM_WITH_CODE"]
+    [#elseif verificationEmailType == "link" ]
+        [#assign defaultEmailOption = "CONFIRM_WITH_LINK"]
+    [/#if]
+
+    [#return
+        {} +
+        attributeIfContent(
+            "DefaultEmailOption",
+            defaultEmailOption
+        ) +
+        attributeIfContent(
+            "EmailMessage",
+            emailVerificationMessage
+        ) +
+        attributeIfContent(
+            "EmailSubject",
+            emailVerificationSubject
+        ) +
+        attributeIfContent(
+            "EmailMessageByLink",
+            emailVerificationMessageByLink
+        ) +
+        attributeIfContent(
+            "EmailSubjectByLink",
+            emailVerificationSubjectByLink
+        ) +
+        attributeIfContent(
+            "SmsMessage",
+            smsVerificationMessage
+        )
+    ]
+[/#function]
+
 [#macro createUserPool id name
     mfa
     adminCreatesUser
@@ -231,6 +275,7 @@
     smsVerificationMessage=""
     emailVerificationMessage=""
     emailVerificationSubject=""
+    verificationMessageTemplate={}
     smsInviteMessage=""
     emailInviteMessage=""
     emailInviteSubject=""
@@ -392,6 +437,10 @@
              attributeIfContent(
                  "DeviceConfiguration",
                  userDeviceTracking
+             ) +
+             attributeIfContent(
+                 "VerificationMessageTemplate",
+                 verificationMessageTemplate
              )
         outputs=USERPOOL_OUTPUT_MAPPINGS
         outputId=outputId
