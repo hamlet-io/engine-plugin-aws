@@ -334,7 +334,6 @@
 
     [#local networkLinkTarget = getLinkTarget(parent, networkLink ) ]
     [#if ! networkLinkTarget?has_content ]
-        [@fatal message="Network could not be found" context=networkLink /]
         [#return]
     [/#if]
 

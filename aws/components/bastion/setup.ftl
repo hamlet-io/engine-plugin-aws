@@ -47,7 +47,9 @@
         [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
 
         [#if ! networkLinkTarget?has_content ]
-            [@fatal message="Network could not be found" context=networkLink /]
+            [#if deploymentSubsetRequired(BASTION_COMPONENT_TYPE, false)]
+                [@fatal message="Network could not be found" context=networkLink /]
+            [/#if]
             [#return]
         [/#if]
 

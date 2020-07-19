@@ -33,7 +33,11 @@
 
         [#local networkLinkTarget = getLinkTarget(occurrence, networkLink, false) ]
         [#if ! networkLinkTarget?has_content ]
-            [@fatal message="Network could not be found" context=networkLink /]
+
+            [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, false)]
+                [@fatal message="Network could not be found" context=networkLink /]
+            [/#if]
+
             [#return]
         [/#if]
 
