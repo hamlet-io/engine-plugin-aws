@@ -291,7 +291,7 @@
             ) +
             autoScaling,
             "Attributes" : {
-                "Name" : core.Name
+                "ARN": getArn(serviceId)
             },
             "Roles" : {
                 "Inbound" : {
