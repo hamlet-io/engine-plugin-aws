@@ -40,6 +40,15 @@
                     "s3:GetEncryptionConfiguration"
                 ],
                 logBucketId
+            )+
+            getExistingReference(accountEncryptionKeyId)?has_content?then(
+                s3EncryptionAllPermission(
+                    accountEncryptionKeyId,
+                    logBucketId,
+                    logBucketPrefix,
+                    getExistingReference(logBucketId, REGION_ATTRIBUTE_TYPE)
+                ),
+                []
             ),
             []
         ) +
