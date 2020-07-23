@@ -57,15 +57,17 @@
                                 [#local resourceId = linkTargetResources["queue"].Id ]
                                 [#local resourceType = linkTargetResources["queue"].Type ]
                                 [#if ! (notification["aws:QueuePermissionMigration"]) ]
-                                    [@fatal
-                                        message="Queue Permissions update required"
-                                        detail=[
-                                            "SQS policies have been migrated to the queue component",
-                                            "For each S3 bucket add an inbound-invoke link from the Queue to the bucket",
-                                            "When this is completed update the configuration of this notification to QueuePermissionMigration : true"
-                                        ]
-                                        context=notification
-                                    /]
+                                    [#if deploymentSubsetRequired(S3_COMPONENT_TYPE, true)]
+                                        [@fatal
+                                            message="Queue Permissions update required"
+                                            detail=[
+                                                "SQS policies have been migrated to the queue component",
+                                                "For each S3 bucket add an inbound-invoke link from the Queue to the bucket",
+                                                "When this is completed update the configuration of this notification to QueuePermissionMigration : true"
+                                            ]
+                                            context=notification
+                                        /]
+                                    [/#if]
                                 [/#if]
                                 [#break]
 
