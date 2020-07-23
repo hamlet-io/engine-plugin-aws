@@ -3,11 +3,12 @@
 pipeline {
     options {
         timestamps()
-        disableConcurrentBuilds()
         quietPeriod(30)
     }
 
-    agent none
+    agent {
+        label 'hamlet-latest'
+    }
 
     stages {
         stage('Run AWS Template Tests') {
@@ -27,12 +28,12 @@ pipeline {
         stage('Trigger Docker Build') {
             when {
                 branch 'master'
-                beforeAgent true
             }
-            agent none
+
             steps {
                 build (
-                    job: '../docker-hamlet/master'
+                    job: '../docker-hamlet/master',
+                    wait: false
                 )
             }
         }
