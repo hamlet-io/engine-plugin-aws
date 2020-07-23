@@ -229,16 +229,22 @@
                         "Description" : core.FullName
                     }
                 ),
-                "Outbound" : {} +
-                attributeIfTrue(
-                    "networkacl",
-                    securityGroupRequired,
-                    {
+                "Outbound" : {
+                    "networkacl" : {
                         "Ports" : [ source ],
-                        "SecurityGroups" : getExistingReference(securityGroupId),
                         "Description" : core.FullName
-                    }
-                )
+                    } +
+                    attributeIfTrue(
+                        "SecurityGroups",
+                        securityGroupRequired
+                        getExistingReference(securityGroupId)
+                    ) +
+                    attributeIfTrue(
+                        "IPAddressGroups",
+                        (engine == "network"),
+                        [ "_tier:" + core.Tier.Id ]
+                    )
+                }
             }
         }
     ]
