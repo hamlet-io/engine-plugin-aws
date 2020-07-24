@@ -144,6 +144,8 @@
     [#local emailVerificationSubject =
         getOccurrenceSettingValue(occurrence, ["UserPool", "EmailVerificationSubject"], true) ]
 
+    [#local emailConfiguration = {} ]
+
     [#local emailVerificationMessageByLink =
         getOccurrenceSettingValue(occurrence, ["UserPool", "EmailVerificationMessageByLink"], true) ]
 
@@ -223,6 +225,21 @@
         [#local linkTargetAttributes = linkTarget.State.Attributes]
 
         [#switch linkTargetCore.Type]
+
+            [#case EXTERNALSERVICE_COMPONENT_TYPE]
+                [#local fromArn = linkTargetAttributes["FROM_ADDRESS_ARN"]!"" ]
+                [#local from = fromArn?keep_after("/") ]
+                [#local replyTo = linkTargetAttributes["REPLY_ADDRESS"]!"" ]
+
+                [#if fromArn?has_content ]
+                    [#local emailConfiguration =
+                        getUserPoolEmailConfiguration(
+                            fromArn,
+                            from,
+                            replyTo
+                        ) ]
+                [/#if]
+                [#break]
 
             [#case LAMBDA_FUNCTION_COMPONENT_TYPE]
 
@@ -783,6 +800,7 @@
             smsInviteMessage=smsInviteMessage
             emailInviteMessage=emailInviteMessage
             emailInviteSubject=emailInviteSubject
+            emailConfiguration=emailConfiguration
             lambdaTriggers=userPoolTriggerConfig
             autoVerify=(solution.VerifyEmail || smsVerification)?then(
                 getUserPoolAutoVerification(solution.VerifyEmail, smsVerification),

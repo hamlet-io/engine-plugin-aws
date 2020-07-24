@@ -264,6 +264,20 @@
     ]
 [/#function]
 
+[#function getUserPoolEmailConfiguration fromId from replyTo="" ]
+    [#return
+        {
+            "EmailSendingAccount" : "DEVELOPER",
+            "SourceArn" : getArn(fromId),
+            "From" : from
+        } +
+        attributeIfContent(
+            "ReployToEmailAddress",
+            replyTo
+        )
+    ]
+[/#function]
+
 [#macro createUserPool id name
     mfa
     adminCreatesUser
@@ -275,6 +289,7 @@
     smsVerificationMessage=""
     emailVerificationMessage=""
     emailVerificationSubject=""
+    emailConfiguration={}
     verificationMessageTemplate={}
     smsInviteMessage=""
     emailInviteMessage=""
@@ -405,6 +420,10 @@
             attributeIfContent (
                 "EmailVerificationSubject",
                 emailVerificationSubject
+             ) +
+            attributeIfContent (
+                "EmailConfiguration",
+                emailConfiguration
              ) +
              attributeIfContent (
                 "SmsVerificationMessage",
