@@ -16,9 +16,11 @@
 [#assign AWSTEST_PROVIDER = "awstest"]
 
 [#assign testScenarios = [
+    "apigateway",
     "db",
     "filetransfer",
-    "lb"
+    "lb",
+    "s3"
 ]]
 
 [@updateScenarioList
