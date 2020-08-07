@@ -2,6 +2,8 @@
 
 [#macro awstest_scenario_apigateway ]
 
+
+    [#-- Base apigateway setup - No solution parameters --]
     [@addDefinition
         definition={
             "appXapigatewaybase" : {
@@ -27,7 +29,6 @@
         }
     /]
 
-    [#-- Base apigateway setup --]
     [@addScenario
         settingSets=[
             {

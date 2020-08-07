@@ -1,9 +1,8 @@
 [#ftl]
 
-[#-- Get stack output --]
 [#macro awstest_scenario_s3 ]
 
-    [#-- Base database setup --]
+    [#-- Base S3 - No default parameters --]
     [@addScenario
         blueprint={
             "Tiers" : {
