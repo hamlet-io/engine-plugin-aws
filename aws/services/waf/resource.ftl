@@ -36,10 +36,16 @@
             id=id
             type=formatWAFResourceType(WAFConditions[type].ResourceType, regional)
             properties=
-                {
-                    "Name": name,
-                    WAFConditions[type].TuplesAttributeKey : result
-                }
+                    {
+                        "Name": name
+                    } +
+                    contentIfContent(
+                        attributeIfContent(
+                            WAFConditions[type].TuplesAttributeKey!"",
+                            result
+                        ),
+                        result
+                    )
         /]
     [/#if]
 [/#macro]
@@ -108,9 +114,10 @@
         regional=regional /]
 [/#macro]
 
-[#macro createWAFRule id name metric conditions=[] valueSet={} regional=false]
+[#macro createWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit=""]
     [#local predicates = [] ]
     [#list asArray(conditions) as condition]
+        [#local rateBased = (rateKey?has_content && rateLimit?has_content)]
         [#local conditionId = condition.Id!""]
         [#local conditionName = condition.Name!conditionId]
         [#-- Generate id/name from rule equivalents if not provided --]
@@ -135,7 +142,7 @@
                 {
                     "DataId" : getReference(conditionId),
                     "Negated" : (condition.Negated)!false,
-                    "Type" : condition.Type
+                    "Type" : rateBased?then("IPMatch", condition.Type)
                 }
             ]
         ]
@@ -143,13 +150,16 @@
 
     [@cfResource
         id=id
-        type=formatWAFResourceType("Rule", regional)
+        type=formatWAFResourceType(rateBased?then("RateBasedRule", "Rule"), regional)
         properties=
             {
                 "MetricName" : metric?replace("-","X"),
-                "Name": name,
-                "Predicates" : predicates
-            }
+                "Name": name
+            } + 
+            attributeIfTrue("MatchPredicates", rateBased, predicates) +
+            attributeIfTrue("Predicates", (!rateBased), predicates) +
+            attributeIfContent("RateKey", rateKey) +
+            attributeIfContent("RateLimit", rateLimit)
     /]
 [/#macro]
 
@@ -194,7 +204,9 @@
                     metric=ruleMetric
                     conditions=rule.Conditions
                     valueSet=valueSet
-                    regional=regional /]
+                    regional=regional
+                    rateKey=rule.RateKey!""
+                    rateLimit=rule.RateLimit!"" /]
             [/#if]
             [#local aclRules +=
                 [
@@ -286,8 +298,38 @@
                 "DefaultAction" : "ALLOW"
             } ]
     [/#if]
+    [#local rules = getWAFProfileRules(wafProfile, wafRuleGroups, wafRules, wafConditions)]
 
-    [#local rules=getWAFProfileRules(wafProfile, wafRuleGroups, wafRules, wafConditions) ]
+    [#if wafSolution.RateLimits?has_content]
+
+        [#-- IP-based rate-limiting --]
+        [#if wafSolution.RateLimits.IP?has_content]
+            [#list wafSolution.RateLimits.IP as id,rateConfig]
+                [#local wafValueSet += { id : getGroupCIDRs(rateConfig.IPAddressGroups, true, occurrence) }]
+                [#local rules = combineEntities(
+                    rules,
+                    [
+                        {
+                            "Name" : id,
+                            "RateKey" : "IP",
+                            "RateLimit" : rateConfig.Limit,
+                            "Conditions" : [
+                                {
+                                    "Type" : "IPMatch",
+                                    "Filters" : [ { "Targets" : [ id ] }],
+                                    "Negated" : false
+                                }
+                            ],
+                            "Action" : "BLOCK"
+                        }
+                    ],
+                    ADD_COMBINE_BEHAVIOUR
+                )]
+
+            [/#list]
+        [/#if]
+    [/#if]
+
     [@createWAFAcl
         id=id
         name=name
