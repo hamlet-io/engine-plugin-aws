@@ -28,6 +28,13 @@
     subsets=[ "template" ]
 /]
 
+[#-- override iam level to include pregen for apigw --]
+[@addResourceLabel
+    label=RESOURCE_LABEL_IAM
+    description="IAM Roles and Policies"
+    levels="application"
+    subsets=[ "pregeneration", "template" ]
+/]
 
 [#-- Backwards compatability support for baseline resources --]
 [#assign RESOURCE_LABEL_S3      = "s3" ]
