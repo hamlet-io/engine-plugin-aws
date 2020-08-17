@@ -433,7 +433,7 @@
                         [@createLogSubscription
                             id=formatDependentLogSubscriptionId(fnId, logWatcherLink.Id, logGroupId?index)
                             logGroupName=getExistingReference(logGroupId)
-                            filter=logFilter
+                            logFilterId=logFilter
                             destination=fnId
                             dependencies=fnId
                         /]
