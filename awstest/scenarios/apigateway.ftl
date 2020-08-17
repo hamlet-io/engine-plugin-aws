@@ -109,7 +109,7 @@
                                     "Type" : "AWS::ApiGateway::RestApi"
                                 },
                                 "Deployment" : {
-                                    "Name" : "apiDeployXappXapigatewaybaseXj2xuero56t",
+                                    "Name" : "apiDeployXappXapigatewaybaseXrunId098",
                                     "Type" : "AWS::ApiGateway::Deployment"
                                 }
                             },
