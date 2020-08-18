@@ -149,6 +149,7 @@
 
     [#local wafAclResources        = resources["wafacl"]!{} ]
     [#local cfResources            = resources["cf"]!{} ]
+    [#local planResources          = resources["plan"]!{} ]
     [#local customDomainResources  = resources["customDomains"]!{} ]
 
     [#local apiPolicyStatements    = _context.Policy ]
@@ -303,6 +304,13 @@
             outputs={}
             dependencies=apiId
         /]
+
+        [#-- Throttling Configuration --]
+        [#local throttleSettings = getApiThrottlingSettings(occurrence)]
+        [#local apiThrottle = throttleSettings.API]
+        [#local stageThrottle = throttleSettings.Versions[stageName]!{}]
+        [#local methodThrottles = throttleSettings.Methods?values]
+
         [@cfResource
             id=stageId
             type="AWS::ApiGateway::Stage"
@@ -316,7 +324,15 @@
                             "ResourcePath": "/*",
                             "LoggingLevel": "INFO",
                             "DataTraceEnabled": true
-                        }
+                        } +
+                        attributeIfContent(
+                            "ThrottlingBurstLimit", 
+                            stageThrottle,
+                            stageThrottle.BurstLimit!{}) +
+                        attributeIfContent(
+                            "ThrottlingRateLimit",
+                            stageThrottle,
+                            stageThrottle.RateLimit!{})
                     ],
                     "StageName" : stageName,
                     "AccessLogSetting" : {
@@ -404,15 +420,37 @@
                 restrictions=restrictions
                 wafAclId=(wafAclResources.acl.Id)!""
             /]
+        [/#if]
+
+        [#if planResources?has_content]
+
+            [#-- Method-level throttling merged with Stage --]
+            [#local methodThrottleConfiguration = 
+                mergeObjects(
+                    methodThrottles
+                        ?map(m -> { 
+                            formatPath(true, m.Path, m.Operation) : {
+                                "BurstLimit" : m.BurstLimit,
+                                "RateLimit" : m.RateLimit
+                            }
+                        })
+                )
+            ]
+
             [@createAPIUsagePlan
-                id=cfResources["usageplan"].Id
-                name=cfResources["usageplan"].Name
+                id=planResources["usageplan"].Id
+                name=planResources["usageplan"].Name
                 stages=[
                     {
                         "ApiId" : getReference(apiId),
                         "Stage" : stageName
-                    }
+                    } +
+                    attributeIfContent(
+                        "Throttle",
+                        methodThrottleConfiguration
+                    )
                 ]
+                apiThrottle=apiThrottle
                 dependencies=stageId
             /]
         [/#if]
