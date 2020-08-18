@@ -100,6 +100,35 @@
         /]
     [/#if]
 
+    [#list solution.Links?values as link]
+        [#if link?is_hash]
+            [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+            [#if !linkTarget?has_content]
+                [#continue]
+            [/#if]
+
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetConfiguration = linkTarget.Configuration ]
+            [#local linkTargetResources = linkTarget.State.Resources ]
+            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+            [#if deploymentSubsetRequired(FILETRANSFER_COMPONENT_TYPE, true)]
+                [@createSecurityGroupRulesFromLink
+                    occurrence=occurrence
+                    groupId=securityGroupId
+                    linkTarget=linkTarget
+                    inboundPorts=securityGroupPorts
+                    networkProfile=networkProfile
+                /]
+            [/#if]
+
+        [/#if]
+    [/#list]
+
+
     [#if deploymentSubsetRequired(FILETRANSFER_COMPONENT_TYPE, true) ]
 
         [@createSecurityGroup
