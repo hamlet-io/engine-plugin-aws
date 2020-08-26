@@ -682,7 +682,7 @@
                     tokenValidity=subSolution.ClientTokenValidity
                     oAuthFlows=subSolution.OAuth.Flows
                     oAuthScopes=oAuthScopes
-                    oAuthEnabled=true
+                    oAuthEnabled=subSolution.OAuth.Enabled
                     identityProviders=identityProviders
                     callbackUrls=callbackUrls
                     logoutUrls=logoutUrls

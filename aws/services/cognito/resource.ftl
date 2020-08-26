@@ -493,13 +493,17 @@
                 "AllowedOAuthFlowsUserPoolClient" : oAuthEnabled,
                 "PreventUserExistenceErrors" : "ENABLED"
             } +
-            attributeIfContent(
-                "AllowedOAuthFlows",
-                oAuthFlows
-            ) +
-            attributeIfContent(
-                "AllowedOAuthScopes",
-                oAuthScopes
+            oAuthEnabled?then(
+                {} +
+                attributeIfContent(
+                    "AllowedOAuthFlows",
+                    oAuthFlows
+                ) +
+                attributeIfContent(
+                    "AllowedOAuthScopes",
+                    oAuthScopes
+                ),
+                {}
             ) +
             attributeIfContent(
                 "SupportedIdentityProviders",
