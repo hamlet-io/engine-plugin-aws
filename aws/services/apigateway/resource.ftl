@@ -96,7 +96,7 @@
     mappings=APIGATEWAY_USAGEPLAN_OUTPUT_MAPPINGS
 /]
 
-[#macro createAPIUsagePlan id name stages=[] dependencies="" apiThrottle={}]
+[#macro createAPIUsagePlan id name stages=[] quotaSettings={} dependencies="" ]
     [@cfResource
         id=id
         type="AWS::ApiGateway::UsagePlan"
@@ -104,8 +104,8 @@
             {
                 "ApiStages" : stages,
                 "UsagePlanName" : name
-            } +
-            attributeIfContent("Throttle", apiThrottle)
+            } + 
+            attributeIfContent("Quota", quotaSettings)
         outputs=APIGATEWAY_USAGEPLAN_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]

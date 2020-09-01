@@ -307,9 +307,6 @@
 
         [#-- Throttling Configuration --]
         [#local throttleSettings = getApiThrottlingSettings(occurrence)]
-        [#local apiThrottle = throttleSettings.API]
-        [#local stageThrottle = throttleSettings.Versions[stageName]!{}]
-        [#local methodThrottles = throttleSettings.Methods?values]
 
         [@cfResource
             id=stageId
@@ -327,12 +324,10 @@
                         } +
                         attributeIfContent(
                             "ThrottlingBurstLimit", 
-                            stageThrottle,
-                            stageThrottle.BurstLimit!{}) +
+                            throttleSettings.BurstLimit) +
                         attributeIfContent(
                             "ThrottlingRateLimit",
-                            stageThrottle,
-                            stageThrottle.RateLimit!{})
+                            throttleSettings.RateLimit)
                     ],
                     "StageName" : stageName,
                     "AccessLogSetting" : {
@@ -424,14 +419,13 @@
 
         [#if planResources?has_content]
 
-            [#-- Method-level throttling merged with Stage --]
-            [#local methodThrottleConfiguration = 
+            [#local patternThrottleConfiguration = 
                 mergeObjects(
-                    methodThrottles
-                        ?map(m -> { 
-                            formatPath(true, m.Path, m.Operation) : {
-                                "BurstLimit" : m.BurstLimit,
-                                "RateLimit" : m.RateLimit
+                    throttleSettings.Patterns
+                        ?map(p -> { 
+                            formatPath(true, p.Path, p.Verb) : {
+                                "BurstLimit" : p.BurstLimit,
+                                "RateLimit" : p.RateLimit
                             }
                         })
                 )
@@ -447,10 +441,10 @@
                     } +
                     attributeIfContent(
                         "Throttle",
-                        methodThrottleConfiguration
+                        patternThrottleConfiguration
                     )
                 ]
-                apiThrottle=apiThrottle
+                quotaSettings=throttleSettings.Quota
                 dependencies=stageId
             /]
         [/#if]
