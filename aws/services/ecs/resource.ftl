@@ -270,7 +270,8 @@
                 attributeIfContent("WorkingDirectory", container.WorkingDirectory!"") +
                 attributeIfContent("Links", container.ContainerNetworkLinks![] ) +
                 attributeIfContent("EntryPoint", container.EntryPoint![]) +
-                attributeIfContent("Command", container.Command![])
+                attributeIfContent("Command", container.Command![]) +
+                attributeIfContent("HealthCheck", container.HealthCheck!{})
             ]
         ]
     [/#list]
