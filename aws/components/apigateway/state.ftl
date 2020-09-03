@@ -83,10 +83,7 @@ created in either case.
 
     [#local certificatePresent = isPresent(solution.Certificate) ]
     [#local cfPresent          = isPresent(solution.CloudFront) ]
-    [#local usagePlanRequired  = cfPresent || getApiThrottlingSettings(occurrence)
-                                                ?values
-                                                ?map(v -> v?has_content)
-                                                ?seq_contains(true)]
+    [#local cfPresent          = isPresent(solution.CloudFront) ]
     [#local wafPresent         = isPresent(solution.WAF) ]
     [#local mappingPresent     = isPresent(solution.Mapping) &&
                                      (!cfPresent || solution.CloudFront.Mapping) ]
@@ -244,21 +241,13 @@ created in either case.
                     "Id" : "apigateway",
                     "Fqdn" : signingFqdn,
                     "Type" : AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE
+                },
+                "usageplan" : {
+                    "Id" : formatDependentResourceId(AWS_APIGATEWAY_USAGEPLAN_RESOURCE_TYPE, cfId),
+                    "Name" : formatComponentFullName(core.Tier, core.Component, occurrence),
+                    "Type" : AWS_APIGATEWAY_USAGEPLAN_RESOURCE_TYPE
                 }
             } ]
-    [/#if]
-
-    [#-- Usage Plan if Required --]
-    [#local planResources = {}]
-    [#if usagePlanRequired]
-        [#local planId = cfId!apiId]
-        [#local planResources = {
-            "usageplan" : {
-                "Id" : formatDependentResourceId(AWS_APIGATEWAY_USAGEPLAN_RESOURCE_TYPE, planId),
-                "Name" : formatComponentFullName(core.Tier, core.Component, occurrence),
-                "Type" : AWS_APIGATEWAY_USAGEPLAN_RESOURCE_TYPE
-            }
-        }]
     [/#if]
 
     [#local wafResources = {} ]
@@ -367,7 +356,6 @@ created in either case.
             } +
             attributeIfContent("logMetrics", logMetrics) +
             attributeIfContent("cf", cfResources) +
-            attributeIfContent("plan", planResources) +
             attributeIfContent("wafacl", wafResources) +
             attributeIfContent("docs", docsResources) +
             attributeIfContent("customDomains", customDomainResources),

@@ -149,7 +149,6 @@
 
     [#local wafAclResources        = resources["wafacl"]!{} ]
     [#local cfResources            = resources["cf"]!{} ]
-    [#local planResources          = resources["plan"]!{} ]
     [#local customDomainResources  = resources["customDomains"]!{} ]
 
     [#local apiPolicyStatements    = _context.Policy ]
@@ -306,7 +305,46 @@
         /]
 
         [#-- Throttling Configuration --]
-        [#local throttleSettings = getApiThrottlingSettings(occurrence)]
+        [#local openapiIntegrations = 
+            getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true)]
+
+        [#local methodSettings = [
+            {
+                "HttpMethod": "*",
+                "ResourcePath": "/*",
+                "LoggingLevel": "INFO",
+                "DataTraceEnabled": true
+            } +
+            attributeIfContent(
+                "ThrottlingBurstLimit", 
+                openapiIntegrations.Throttling.BurstLimit) +
+            attributeIfContent(
+                "ThrottlingRateLimit",
+                openapiIntegrations.Throttling.RateLimit)
+        ]]
+
+        [#-- Integration Patterns (as Regex) into Matching Method Throttling (as explicit paths) --]
+        [#if definitionsObject[core.Id]?? ]
+            [#list definitionsObject[core.Id].paths as path,pathConfig]
+                [#list pathConfig?keys as verb]
+                    [#list openapiIntegrations.Patterns as pattern]
+                        [#if path?matches(pattern.Path)] 
+                            [#local methodSettings = combineEntities(
+                                methodSettings,
+                                [
+                                    {
+                                        "ResourcePath" : path,
+                                        "HttpMethod": pattern.Verb
+                                    } +
+                                    attributeIfContent("ThrottlingBurstLimit", pattern.BurstLimit) +
+                                    attributeIfContent("ThrottlingRateLimit", pattern.RateLimit)
+                                ],
+                                ADD_COMBINE_BEHAVIOUR)]
+                        [/#if]
+                    [/#list]
+                [/#list]
+            [/#list]
+        [/#if]
 
         [@cfResource
             id=stageId
@@ -315,20 +353,7 @@
                 {
                     "DeploymentId" : getReference(deployId),
                     "RestApiId" : getReference(apiId),
-                    "MethodSettings": [
-                        {
-                            "HttpMethod": "*",
-                            "ResourcePath": "/*",
-                            "LoggingLevel": "INFO",
-                            "DataTraceEnabled": true
-                        } +
-                        attributeIfContent(
-                            "ThrottlingBurstLimit", 
-                            throttleSettings.BurstLimit) +
-                        attributeIfContent(
-                            "ThrottlingRateLimit",
-                            throttleSettings.RateLimit)
-                    ],
+                    "MethodSettings": methodSettings,
                     "StageName" : stageName,
                     "AccessLogSetting" : {
                         "DestinationArn" : getArn(accessLgId),
@@ -415,36 +440,16 @@
                 restrictions=restrictions
                 wafAclId=(wafAclResources.acl.Id)!""
             /]
-        [/#if]
-
-        [#if planResources?has_content]
-
-            [#local patternThrottleConfiguration = 
-                mergeObjects(
-                    throttleSettings.Patterns
-                        ?map(p -> { 
-                            formatPath(true, p.Path, p.Verb) : {
-                                "BurstLimit" : p.BurstLimit,
-                                "RateLimit" : p.RateLimit
-                            }
-                        })
-                )
-            ]
 
             [@createAPIUsagePlan
-                id=planResources["usageplan"].Id
-                name=planResources["usageplan"].Name
+                id=cfResources["usageplan"].Id
+                name=cfResources["usageplan"].Name
                 stages=[
                     {
                         "ApiId" : getReference(apiId),
                         "Stage" : stageName
-                    } +
-                    attributeIfContent(
-                        "Throttle",
-                        patternThrottleConfiguration
-                    )
+                    }
                 ]
-                quotaSettings=throttleSettings.Quota
                 dependencies=stageId
             /]
         [/#if]
