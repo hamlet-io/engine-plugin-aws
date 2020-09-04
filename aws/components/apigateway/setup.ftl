@@ -305,23 +305,26 @@
         /]
 
         [#-- Throttling Configuration --]
+        [#local methodSettings = []]
         [#local openapiIntegrations = 
             getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true)]
 
-        [#local methodSettings = [
-            {
-                "HttpMethod": "*",
-                "ResourcePath": "/*",
-                "LoggingLevel": "INFO",
-                "DataTraceEnabled": true
-            } +
-            attributeIfContent(
-                "ThrottlingBurstLimit", 
-                openapiIntegrations.Throttling.BurstLimit) +
-            attributeIfContent(
-                "ThrottlingRateLimit",
-                openapiIntegrations.Throttling.RateLimit)
-        ]]
+        [#if openapiIntegrations.Throttling?has_content]
+            [#local methodSettings = [
+                {
+                    "HttpMethod": "*",
+                    "ResourcePath": "/*",
+                    "LoggingLevel": "INFO",
+                    "DataTraceEnabled": true
+                } +
+                attributeIfContent(
+                    "ThrottlingBurstLimit", 
+                    openapiIntegrations.Throttling.BurstLimit) +
+                attributeIfContent(
+                    "ThrottlingRateLimit",
+                    openapiIntegrations.Throttling.RateLimit)
+            ]]
+        [/#if]
 
         [#-- Integration Patterns (as Regex) into Matching Method Throttling (as explicit paths) --]
         [#if definitionsObject[core.Id]?? ]
@@ -329,17 +332,15 @@
                 [#list pathConfig?keys as verb]
                     [#list openapiIntegrations.Patterns as pattern]
                         [#if path?matches(pattern.Path)] 
-                            [#local methodSettings = combineEntities(
-                                methodSettings,
-                                [
-                                    {
-                                        "ResourcePath" : path,
-                                        "HttpMethod": pattern.Verb
-                                    } +
-                                    attributeIfContent("ThrottlingBurstLimit", pattern.BurstLimit) +
-                                    attributeIfContent("ThrottlingRateLimit", pattern.RateLimit)
-                                ],
-                                ADD_COMBINE_BEHAVIOUR)]
+                            [#local methodSettings += 
+                            [
+                                {
+                                    "ResourcePath" : path,
+                                    "HttpMethod": pattern.Verb
+                                } +
+                                attributeIfContent("ThrottlingBurstLimit", pattern.BurstLimit) +
+                                attributeIfContent("ThrottlingRateLimit", pattern.RateLimit) 
+                            ]]
                         [/#if]
                     [/#list]
                 [/#list]
@@ -353,13 +354,13 @@
                 {
                     "DeploymentId" : getReference(deployId),
                     "RestApiId" : getReference(apiId),
-                    "MethodSettings": methodSettings,
                     "StageName" : stageName,
                     "AccessLogSetting" : {
                         "DestinationArn" : getArn(accessLgId),
                         "Format" : "$context.identity.sourceIp $context.identity.caller $context.identity.user $context.identity.userArn [$context.requestTime] $context.apiId $context.httpMethod $context.resourcePath $context.protocol $context.status $context.responseLength $context.requestId"
                     }
                 } +
+                attributeIfContent("MethodSettings", methodSettings) +
                 attributeIfContent("Variables", stageVariables) +
                 attributeIfTrue(
                     "TracingEnabled",

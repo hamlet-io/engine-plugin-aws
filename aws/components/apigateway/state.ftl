@@ -83,7 +83,6 @@ created in either case.
 
     [#local certificatePresent = isPresent(solution.Certificate) ]
     [#local cfPresent          = isPresent(solution.CloudFront) ]
-    [#local cfPresent          = isPresent(solution.CloudFront) ]
     [#local wafPresent         = isPresent(solution.WAF) ]
     [#local mappingPresent     = isPresent(solution.Mapping) &&
                                      (!cfPresent || solution.CloudFront.Mapping) ]
