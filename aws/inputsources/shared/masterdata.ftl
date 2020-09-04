@@ -1790,7 +1790,7 @@
         "Level" : "segment",
         "ResourceSets" : {
           "iam" : {
-            "Enabled" : false,
+            "Enabled" : true,
             "DeploymentUnit" : "iam",
             "ResourceLabels" : [ "iam" ]
           },
