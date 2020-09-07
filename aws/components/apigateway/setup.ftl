@@ -324,21 +324,23 @@
         ]]
 
         [#-- Integration Patterns (as Regex) into Matching Method Throttling (as explicit paths) --]
-        [#if definitionsObject[core.Id]?has_content && 
-            openapiIntegrations.Throttling?has_content]
+        [#if definitionsObject[core.Id]?has_content]
             [#list definitionsObject[core.Id].paths as path,pathConfig]
                 [#list pathConfig?keys as verb]
                     [#list openapiIntegrations.Patterns as pattern]
-                        [#if path?matches(pattern.Path) && verb?matches(pattern.Verb)] 
-                            [#local methodSettings += 
-                            [
-                                {
-                                    "ResourcePath" : path,
-                                    "HttpMethod": pattern.Verb
-                                } +
-                                attributeIfContent("ThrottlingBurstLimit", pattern.BurstLimit) +
-                                attributeIfContent("ThrottlingRateLimit", pattern.RateLimit) 
-                            ]]
+                        [#if path?matches(pattern.Path) && verb?matches(pattern.Verb)]
+                            [#if pattern?keys?seq_contains("BurstLimit") || 
+                                pattern?keys?seq_contains("RateLimit")]
+                                [#local methodSettings += 
+                                [
+                                    {
+                                        "ResourcePath" : path,
+                                        "HttpMethod": pattern.Verb
+                                    } +
+                                    attributeIfContent("ThrottlingBurstLimit", pattern.BurstLimit) +
+                                    attributeIfContent("ThrottlingRateLimit", pattern.RateLimit) 
+                                ]]
+                            [/#if]
                         [/#if]
                     [/#list]
                 [/#list]
