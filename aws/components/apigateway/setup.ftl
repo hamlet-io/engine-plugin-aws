@@ -305,26 +305,23 @@
         /]
 
         [#-- Throttling Configuration --]
-        [#local methodSettings = []]
         [#local openapiIntegrations = 
             getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true)]
 
-        [#if openapiIntegrations.Throttling?has_content]
-            [#local methodSettings = [
-                {
-                    "HttpMethod": "*",
-                    "ResourcePath": "/*",
-                    "LoggingLevel": "INFO",
-                    "DataTraceEnabled": true
-                } +
-                attributeIfContent(
-                    "ThrottlingBurstLimit", 
-                    openapiIntegrations.Throttling.BurstLimit) +
-                attributeIfContent(
-                    "ThrottlingRateLimit",
-                    openapiIntegrations.Throttling.RateLimit)
-            ]]
-        [/#if]
+        [#local methodSettings = [
+            {
+                "HttpMethod": "*",
+                "ResourcePath": "/*",
+                "LoggingLevel": "INFO",
+                "DataTraceEnabled": true
+            } +
+            attributeIfContent(
+                "ThrottlingBurstLimit", 
+                openapiIntegrations.Throttling.BurstLimit) +
+            attributeIfContent(
+                "ThrottlingRateLimit",
+                openapiIntegrations.Throttling.RateLimit)
+        ]]
 
         [#-- Integration Patterns (as Regex) into Matching Method Throttling (as explicit paths) --]
         [#if definitionsObject[core.Id]?? ]
