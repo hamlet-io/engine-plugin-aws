@@ -305,7 +305,7 @@
         /]
 
         [#-- Throttling Configuration --]
-        [#local openapiIntegrations = 
+        [#local openapiIntegrations =
             getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true)]
 
         [#local methodSettings = [
@@ -316,7 +316,7 @@
                 "DataTraceEnabled": true
             } +
             attributeIfContent(
-                "ThrottlingBurstLimit", 
+                "ThrottlingBurstLimit",
                 openapiIntegrations.Throttling.BurstLimit) +
             attributeIfContent(
                 "ThrottlingRateLimit",
@@ -327,17 +327,17 @@
         [#if definitionsObject[core.Id]?has_content]
             [#list definitionsObject[core.Id].paths as path,pathConfig]
                 [#list pathConfig?keys as verb]
-                    [#list openapiIntegrations.Patterns as pattern]
+                    [#list openapiIntegrations.Patterns![] as pattern]
                         [#if path?matches(pattern.Path) && verb?matches(pattern.Verb)]
                             [#if pattern.Throttling?has_content]
-                                [#local methodSettings += 
+                                [#local methodSettings +=
                                 [
                                     {
                                         "ResourcePath" : path,
                                         "HttpMethod": verb
                                     } +
                                     attributeIfContent("ThrottlingBurstLimit", pattern.Throttling.BurstLimit) +
-                                    attributeIfContent("ThrottlingRateLimit", pattern.Throttling.RateLimit) 
+                                    attributeIfContent("ThrottlingRateLimit", pattern.Throttling.RateLimit)
                                 ]]
                             [/#if]
                         [/#if]
