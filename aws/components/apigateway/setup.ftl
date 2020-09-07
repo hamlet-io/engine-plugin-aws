@@ -329,13 +329,12 @@
                 [#list pathConfig?keys as verb]
                     [#list openapiIntegrations.Patterns as pattern]
                         [#if path?matches(pattern.Path) && verb?matches(pattern.Verb)]
-                            [#if pattern?keys?seq_contains("BurstLimit") || 
-                                pattern?keys?seq_contains("RateLimit")]
+                            [#if pattern.Throttling?has_content]
                                 [#local methodSettings += 
                                 [
                                     {
                                         "ResourcePath" : path,
-                                        "HttpMethod": pattern.Verb
+                                        "HttpMethod": verb
                                     } +
                                     attributeIfContent("ThrottlingBurstLimit", pattern.BurstLimit) +
                                     attributeIfContent("ThrottlingRateLimit", pattern.RateLimit) 
