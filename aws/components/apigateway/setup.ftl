@@ -336,8 +336,8 @@
                                         "ResourcePath" : path,
                                         "HttpMethod": verb
                                     } +
-                                    attributeIfContent("ThrottlingBurstLimit", pattern.BurstLimit) +
-                                    attributeIfContent("ThrottlingRateLimit", pattern.RateLimit) 
+                                    attributeIfContent("ThrottlingBurstLimit", pattern.Throttling.BurstLimit) +
+                                    attributeIfContent("ThrottlingRateLimit", pattern.Throttling.RateLimit) 
                                 ]]
                             [/#if]
                         [/#if]
