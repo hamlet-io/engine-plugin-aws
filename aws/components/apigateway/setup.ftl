@@ -328,7 +328,7 @@
             [#list definitionsObject[core.Id].paths as path,pathConfig]
                 [#list pathConfig?keys as verb]
                     [#list openapiIntegrations.Patterns as pattern]
-                        [#if path?matches(pattern.Path)] 
+                        [#if path?matches(pattern.Path) && verb?matches(pattern.Verb)] 
                             [#local methodSettings += 
                             [
                                 {
