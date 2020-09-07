@@ -324,7 +324,8 @@
         ]]
 
         [#-- Integration Patterns (as Regex) into Matching Method Throttling (as explicit paths) --]
-        [#if definitionsObject[core.Id]?? ]
+        [#if definitionsObject[core.Id]?has_content && 
+            openapiIntegrations.Throttling?has_content]
             [#list definitionsObject[core.Id].paths as path,pathConfig]
                 [#list pathConfig?keys as verb]
                     [#list openapiIntegrations.Patterns as pattern]
