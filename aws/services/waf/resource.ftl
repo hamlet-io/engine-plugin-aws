@@ -304,7 +304,7 @@
 
         [#-- IP-based rate-limiting --]
         [#if wafSolution.RateLimits.IP?has_content]
-            [#list wafSolution.RateLimits.IP as id,rateConfig]
+            [#list wafSolution.RateLimits as id,rateConfig]
                 [#local wafValueSet += { id : getGroupCIDRs(rateConfig.IPAddressGroups, true, occurrence) }]
                 [#local rules = combineEntities(
                     rules,
