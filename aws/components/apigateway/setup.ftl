@@ -317,10 +317,12 @@
             } +
             attributeIfContent(
                 "ThrottlingBurstLimit",
-                openapiIntegrations.Throttling.BurstLimit) +
+                (openapiIntegrations.Throttling.BurstLimit)!""
+            ) +
             attributeIfContent(
                 "ThrottlingRateLimit",
-                openapiIntegrations.Throttling.RateLimit)
+                (openapiIntegrations.Throttling.RateLimit)!""
+            )
         ]]
 
         [#-- Integration Patterns (as Regex) into Matching Method Throttling (as explicit paths) --]
@@ -336,8 +338,8 @@
                                         "ResourcePath" : path,
                                         "HttpMethod": verb
                                     } +
-                                    attributeIfContent("ThrottlingBurstLimit", pattern.Throttling.BurstLimit) +
-                                    attributeIfContent("ThrottlingRateLimit", pattern.Throttling.RateLimit)
+                                    attributeIfContent("ThrottlingBurstLimit", (pattern.Throttling.BurstLimit)!"") +
+                                    attributeIfContent("ThrottlingRateLimit", (pattern.Throttling.RateLimit)!"")
                                 ]]
                             [/#if]
                         [/#if]
