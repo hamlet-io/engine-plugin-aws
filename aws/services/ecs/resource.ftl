@@ -272,7 +272,8 @@
                 attributeIfContent("Links", container.ContainerNetworkLinks![] ) +
                 attributeIfContent("EntryPoint", container.EntryPoint![]) +
                 attributeIfContent("Command", container.Command![]) +
-                attributeIfContent("HealthCheck", container.HealthCheck!{})
+                attributeIfContent("HealthCheck", container.HealthCheck!{}) +
+                attributeIfContent("Hostname" , (container.Hostname)!"")
             ]
         ]
     [/#list]
