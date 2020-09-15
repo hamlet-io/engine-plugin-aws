@@ -151,17 +151,18 @@
                                 },
                                 {}
                             ) +
-                            (volume.Driver != "local")?then(
-                                {
-                                    "Driver" : volume.Driver
-                                },
-                                {}
+                            attributeIfContent(
+                                "DriverOpts",
+                                (volume.DriverOpts)!{}
                             ) +
-                            (volume.DriverOpts?has_content)?then(
-                                {
-                                    "DriverOpts" : volume.DriverOpts
-                                },
-                                {}
+                            attributeIfTrue(
+                                "Driver",
+                                (volume.Driver != "local"),
+                                volume.Driver
+                            ) +
+                            attributeIfContent(
+                                "Scope",
+                                (volume.Scope)!""
                             )
                         ]
                 [/#switch]
