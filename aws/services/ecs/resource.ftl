@@ -108,6 +108,9 @@
 
     [#local memoryTotal = 0]
     [#local cpuTotal = 0]
+
+    [#local placementConstraints = []]
+
     [#list containers as container]
         [#local mountPoints = [] ]
         [#list (container.Volumes!{}) as name,volume]
@@ -153,7 +156,7 @@
                             ) +
                             attributeIfContent(
                                 "DriverOpts",
-                                (volume.DriverOpts)!{}
+                                volume.DriverOpts!{}
                             ) +
                             attributeIfTrue(
                                 "Driver",
@@ -162,7 +165,7 @@
                             ) +
                             attributeIfContent(
                                 "Scope",
-                                (volume.Scope)!""
+                                volume.Scope!""
                             )
                         ]
                 [/#switch]
@@ -229,6 +232,9 @@
                 ]
             ]
         [/#list]
+
+        [#local placementConstraints = combineEntities( placementConstraints, container.PlacementConstraints![], UNIQUE_COMBINE_BEHAVIOUR) ]
+
         [#if engine == "fargate" ]
             [#local memoryTotal += container.MaximumMemory]
             [#local cpuTotal += container.Cpu]
@@ -273,9 +279,20 @@
                 attributeIfContent("EntryPoint", container.EntryPoint![]) +
                 attributeIfContent("Command", container.Command![]) +
                 attributeIfContent("HealthCheck", container.HealthCheck!{}) +
-                attributeIfContent("Hostname" , (container.Hostname)!"")
+                attributeIfContent("Hostname", container.Hostname!"")
             ]
         ]
+    [/#list]
+
+    [#local placementConstraintProps = []]
+    [#list placementConstraints as placementConstraint ]
+        [#local placementConstraintProps +=
+                [
+                    {
+                        "Type" : "memberOf",
+                        "Expression" : placementConstraint
+                    }
+                ]]
     [/#list]
 
     [#local taskProperties = {
@@ -293,7 +310,8 @@
                 "Memory" : memoryTotal
             },
             (engine == "fargate")
-        )
+        ) +
+        attributeIfContent("PlacementConstraints", placementConstraintProps)
     ]
 
     [@cfResource
