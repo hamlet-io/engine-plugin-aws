@@ -17,7 +17,7 @@
     [#local codeSrcBucket = getRegistryEndPoint("scripts", occurrence)]
     [#local codeSrcPrefix = formatRelativePath(
                                 getRegistryPrefix("scripts", occurrence),
-                                    productName,
+                                    getOccurrenceBuildProduct(occurrence, productName),
                                     getOccurrenceBuildScopeExtension(occurrence),
                                     getOccurrenceBuildUnit(occurrence),
                                     getOccurrenceBuildReference(occurrence))]

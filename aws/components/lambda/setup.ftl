@@ -84,7 +84,7 @@
             "S3Key" :
                 formatRelativePath(
                     getRegistryPrefix("lambda", fn),
-                    productName,
+                    getOccurrenceBuildProduct(fn,productName),
                     getOccurrenceBuildScopeExtension(fn),
                     getOccurrenceBuildUnit(fn),
                     getOccurrenceBuildReference(fn),

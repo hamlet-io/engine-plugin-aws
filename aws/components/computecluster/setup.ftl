@@ -99,7 +99,7 @@
             formatRelativePath(
             getRegistryEndPoint("scripts", occurrence),
             getRegistryPrefix("scripts", occurrence),
-            productName,
+            getOccurrenceBuildProduct(occurrence, productName),
             getOccurrenceBuildScopeExtension(occurrence),
             getOccurrenceBuildUnit(occurrence),
             getOccurrenceBuildReference(occurrence)

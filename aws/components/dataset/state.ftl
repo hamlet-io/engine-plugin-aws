@@ -24,7 +24,7 @@
             [#local registryBucket = getRegistryEndPoint("dataset", occurrence) ]
             [#local registryPrefix = formatRelativePath(
                                                 getRegistryPrefix("dataset", occurrence),
-                                                productName,
+                                                getOccurrenceBuildProduct(occurrence, productName),
                                                 getOccurrenceBuildScopeExtension(occurrence),
                                                 getOccurrenceBuildUnit(occurrence))]
             [#local datasetPrefix = formatRelativePath(solution.Prefix)]

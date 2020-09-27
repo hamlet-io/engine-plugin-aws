@@ -51,7 +51,7 @@
                                     getRegistryEndPoint("contentnode", occurrence) + " " +
                                     formatRelativePath(
                                         getRegistryPrefix("contentnode", occurrence),
-                                        productName,
+                                        getOccurrenceBuildProduct(occurrence, productName),
                                         getOccurrenceBuildScopeExtension(occurrence),
                                         getOccurrenceBuildUnit(occurrence),
                                         getOccurrenceBuildReference(occurrence)) + " " +
