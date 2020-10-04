@@ -6,11 +6,7 @@
 
     [#local id = formatResourceId(AWS_DYNAMODB_TABLE_RESOURCE_TYPE, core.Id )]
     [#local key = solution.PrimaryKey ]
-
-    [#local sortKey = "" ]
-    [#if (solution.SecondaryKey!"")?has_content ]
-        [#local sortKey = "instance" ]
-    [/#if]
+    [#local sortKey = solution.SecondaryKey ]
 
     [#assign componentState =
         {
@@ -19,9 +15,12 @@
                     "Id" : id,
                     "Name" : core.FullName,
                     "Key" : key,
-                    "SortKey" : sortKey,
                     "Type" : AWS_DYNAMODB_TABLE_RESOURCE_TYPE
-                }
+                } +
+                attributeIfContent(
+                    "SortKey",
+                    sortKey
+                )
             },
             "Attributes" : {
                 "TABLE_NAME" : getExistingReference(id),

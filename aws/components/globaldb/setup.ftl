@@ -24,7 +24,7 @@
     [#local dynamoTableKeys = getDynamoDbTableKey(tableKey , "hash")]
     [#local dynamoTableKeyAttributes = getDynamoDbTableAttribute( tableKey, STRING_TYPE)]
 
-    [#if (solution.SecondaryKey!"")?has_content ]
+    [#if tableSortKey?has_content ]
         [#local dynamoTableKeys += getDynamoDbTableKey(tableSortKey, "range" )]
         [#local dynamoTableKeyAttributes += getDynamoDbTableAttribute(tableSortKey, STRING_TYPE)]
     [/#if]
