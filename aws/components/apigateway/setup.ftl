@@ -118,7 +118,8 @@
                                 link.Name : {
                                     "Name" : link.Name,
                                     "StageVariable" : stageVariableName,
-                                    "Default" : true
+                                    "Default" : true,
+                                    "SettingsPrefix" : getOccurrenceSettingValue(linkTarget, "SETTINGS_PREFIX")
                                 }
                             } ]
                     [/#if]
@@ -865,5 +866,32 @@
                     true
                 )
         /]
+
+        [#-- If using an authoriser, give it a copy of the openapi spec --]
+        [#if lambdaAuthorizers?has_content]
+            [#-- Copy the config file to a standard filename --]
+            [@addToDefaultBashScriptOutput
+                content=
+                    getLocalFileScript(
+                        "referenceFiles",
+                        "$\{CONFIG}",
+                        "openapi.json"
+                    )
+            /]
+            [#list lambdaAuthorizers?values as lambdaAuthorizer]
+                [@addToDefaultBashScriptOutput
+                    content=
+                        syncFilesToBucketScript(
+                            "referenceFiles",
+                            regionId,
+                            operationsBucket,
+                            formatRelativePath(
+                                lambdaAuthorizer.SettingsPrefix,
+                                "reference"),
+                            false
+                        )
+                /]
+            [/#list]
+        [/#if]
     [/#if]
 [/#macro]
