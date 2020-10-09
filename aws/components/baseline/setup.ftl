@@ -224,7 +224,6 @@
                                             /]
                                         [/#if]
                                         [#break]
-
                                 [/#switch]
                                 [#break]
 
