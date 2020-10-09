@@ -203,6 +203,7 @@
                     [/#if]
                     [#break]
 
+                [#case "baselinedata"]
                 [#case S3_COMPONENT_TYPE ]
                     [#switch linkTarget.Role ]
                         [#case  "replicadestination" ]
