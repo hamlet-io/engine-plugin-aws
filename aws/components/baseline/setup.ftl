@@ -63,12 +63,17 @@
         [#local subSolution = subOccurrence.Configuration.Solution ]
         [#local subResources = subOccurrence.State.Resources ]
 
+        [#local replicationEnabled = false]
+        [#local replicationConfiguration = {} ]
+        [#local replicationBucket = "" ]
+
         [#-- Storage bucket --]
         [#if subCore.Type == BASELINE_DATA_COMPONENT_TYPE ]
             [#local bucketId = subResources["bucket"].Id ]
             [#local bucketName = subResources["bucket"].Name ]
             [#local bucketPolicyId = subResources["bucketpolicy"].Id ]
             [#local legacyS3 = subResources["bucket"].LegacyS3 ]
+            [#local replicationRoleId = subResources["role"].Id]
 
             [#if ( deploymentSubsetRequired(BASELINE_COMPONENT_TYPE, true) && legacyS3 == false ) ||
                 ( deploymentSubsetRequired("s3") && legacyS3 == true) ]
@@ -192,9 +197,70 @@
                                     [#local cfAccessCanonicalIds += [ getReference( (linkTargetResources["originAccessId"].Id), CANONICAL_ID_ATTRIBUTE_TYPE )] ]
                                 [/#if]
                                 [#break]
+
+                            [#case S3_COMPONENT_TYPE]
+
+                                [#switch linkTarget.Role ]
+                                    [#case "replicadestination" ]
+                                        [#local replicationEnabled = true]
+                                        [#if !replicationBucket?has_content ]
+                                            [#local replicationBucket = linkTargetAttributes["ARN"]]
+                                            [#local linkPolicies = [linkTarget.Role] ]
+                                        [#else]
+                                            [@fatal
+                                                message="Only one replication destination is supported"
+                                                context=links
+                                            /]
+                                        [/#if]
+                                        [#break]
+                                [/#switch]
+                                [#break]
+
                         [/#switch]
                     [/#if]
                 [/#list]
+
+                [#-- Add Replication Rules --]
+                [#if replicationEnabled ]
+                    [#-- Only handle data replication after destination bucket exists --]
+                    [#if (subSolution.Replication!{})?has_content]
+                        [#local replicationRules = [] ]
+                        [#list subSolution.Replication.Prefixes as prefix ]
+                            [#local replicationRules +=
+                                [ getS3ReplicationRule(
+                                    replicationBucket,
+                                    subSolution.Replication.Enabled,
+                                    prefix,
+                                    false
+                                )]]
+                        [/#list]
+
+                        [#local replicationConfiguration = 
+                            getS3ReplicationConfiguration(replicationRoleId, replicationRules)]
+
+                        [#local rolePolicies =
+                                arrayIfContent(
+                                    [getPolicyDocument(linkPolicies, "links")],
+                                    linkPolicies) +
+                                arrayIfContent(
+                                    getPolicyDocument(
+                                        s3ReplicaSourcePermission(bucketId) +
+                                        s3ReplicationConfigurationPermission(bucketId),
+                                        "replication"),
+                                    replicationConfiguration
+                                )]
+
+                        [#if rolePolicies?has_content ]
+                            [@createRole
+                                id=replicationRoleId
+                                trustedServices=["s3.amazonaws.com"]
+                                policies=rolePolicies
+                            /]
+                        [/#if]
+           
+
+                    [/#if]
+                [/#if]
 
                 [@createS3Bucket
                     id=bucketId
@@ -204,6 +270,7 @@
                     notifications=notifications
                     encrypted=subSolution.Encryption.Enabled
                     encryptionSource=subSolution.Encryption.EncryptionSource
+                    replicationConfiguration=replicationConfiguration
                     kmsKeyId=cmkId
                     dependencies=bucketDependencies
                 /]
