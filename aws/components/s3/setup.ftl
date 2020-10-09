@@ -164,7 +164,6 @@
         [#if link?is_hash]
 
             [#local linkTarget = getLinkTarget(occurrence, link, false) ]
-
             [@debug message="Link Target" context=linkTarget enabled=false /]
 
             [#if !linkTarget?has_content]
@@ -203,21 +202,11 @@
                     [/#if]
                     [#break]
 
+                [#case "baselinedata"]
                 [#case S3_COMPONENT_TYPE ]
                     [#switch linkTarget.Role ]
                         [#case  "replicadestination" ]
                             [#local replicationEnabled = true]
-                            [#if linkTargetAttributes["REGION"] == regionId ]
-                                [@fatal
-                                    dmessageescription="Replication buckets must be in different regions"
-                                    context=
-                                        {
-                                            "SourceBucket" : regionId,
-                                            "DestinationBucket" : linkTargetAttributes["REGION"]
-                                        }
-                                /]
-                            [/#if]
-
                             [#local versioningEnabled = true]
 
                             [#if !replicationBucket?has_content ]
