@@ -48,7 +48,7 @@
     [#local legacyS3 = false]
 
     [#local bucketId = formatOccurrenceS3Id( occurrence) ]
-    [#local bucketName = formatOccurrenceBucketName( occurrence )]]
+    [#local bucketName = formatOccurrenceBucketName( occurrence )]
 
     [#switch core.SubComponent.Id ]
         [#case "appdata" ]
@@ -86,6 +86,11 @@
                 "bucketpolicy" : {
                     "Id" : bucketPolicyId,
                     "Type" : AWS_S3_BUCKET_POLICY_RESOURCE_TYPE
+                },
+                "role" : {
+                    "Id" : formatResourceId( AWS_IAM_ROLE_RESOURCE_TYPE, core.Id ),
+                    "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
+                    "IncludeInDeploymentState" : false 
                 }
             },
             "Attributes" : {
