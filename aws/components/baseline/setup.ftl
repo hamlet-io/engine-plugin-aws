@@ -74,6 +74,8 @@
             [#local bucketPolicyId = subResources["bucketpolicy"].Id ]
             [#local legacyS3 = subResources["bucket"].LegacyS3 ]
             [#local replicationRoleId = subResources["role"].Id]
+            [#local links = getLinkTargets(occurrence)]
+            [#local versioningEnabled = (subSolution.Replication!{})?has_content?then(true, subSolution.Versioning)]
 
             [#if ( deploymentSubsetRequired(BASELINE_COMPONENT_TYPE, true) && legacyS3 == false ) ||
                 ( deploymentSubsetRequired("s3") && legacyS3 == true) ]
@@ -205,7 +207,7 @@
                                         [#local replicationEnabled = true]
                                         [#if !replicationBucket?has_content ]
                                             [#local replicationBucket = linkTargetAttributes["ARN"]]
-                                            [#local linkPolicies = [linkTarget.Role] ]
+                                            [#local linkPolicies = getLinkTargetsOutboundRoles(links) ]
                                         [#else]
                                             [@fatal
                                                 message="Only one replication destination is supported"
@@ -265,7 +267,7 @@
                 [@createS3Bucket
                     id=bucketId
                     name=bucketName
-                    versioning=subSolution.Versioning
+                    versioning=versioningEnabled
                     lifecycleRules=lifecycleRules
                     notifications=notifications
                     encrypted=subSolution.Encryption.Enabled
