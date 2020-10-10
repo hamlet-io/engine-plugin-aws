@@ -156,7 +156,7 @@
             [#local adjustmentType = "PercentChangeInCapacity" ]
             [#break]
         [#default]
-            [#local adjustmentType = "COTFatal: Unsupported adjustmentType ${adjustmentType}" ]
+            [#local adjustmentType = "HamletFatal: Unsupported adjustmentType ${adjustmentType}" ]
     [/#switch]
 
     [#return
@@ -244,7 +244,7 @@
             [#local serviceRoleArn = formatServiceLinkedRoleArn(trustedService, "AWSServiceRoleForApplicationAutoScaling_RDSCluster") ]
             [#break]
         [#default]
-            [#local serviceNamespace = "COTFatal: Unsupported resource type for autoscaling" ]
+            [#local serviceNamespace = "HamletFatal: Unsupported resource type for autoscaling" ]
             [#local serviceRoleArn = "" ]
             [@fatal
                 message="Unsupported Resource Type"
@@ -389,7 +389,7 @@
                 [#local adjustmentType = "PercentChangeInCapacity" ]
                 [#break]
             [#default]
-                [#local adjustmentType = "COTFatal: Unsupported adjustmentType ${adjustmentType}" ]
+                [#local adjustmentType = "HamletFatal: Unsupported adjustmentType ${adjustmentType}" ]
         [/#switch]
     [/#if]
 

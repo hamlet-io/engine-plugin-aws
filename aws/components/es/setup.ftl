@@ -410,7 +410,7 @@
                             {
                                 "DedicatedMasterEnabled" : true,
                                 "DedicatedMasterCount" : master.Count,
-                                "DedicatedMasterType" : (master.Processor)!"COTFatal: No master processor type provided"
+                                "DedicatedMasterType" : (master.Processor)!"HamletFatal: No master processor type provided"
                             },
                             ( master.Count > 0 ),
                             {
@@ -443,7 +443,7 @@
                     attributeIfTrue(
                         "Iops",
                         volume.Type == "io1",
-                        volume.Iops!"COTFatal: Iops not defined for provisioned iops storage")
+                        volume.Iops!"HamletFatal: Iops not defined for provisioned iops storage")
                 ) +
                 attributeIfTrue(
                     "EncryptionAtRestOptions",

@@ -5,7 +5,7 @@
 
     [#if core.External!false]
         [#local attrUserPoolId = occurrence.State.Attributes["USERPOOL_ID"]!"" ]
-        [#local attrUserPoolArn = occurrence.State.Attributes["USERPOOL_ARN"]!"COTFatal: External Userpool ARN Not configured"]
+        [#local attrUserPoolArn = occurrence.State.Attributes["USERPOOL_ARN"]!"HamletFatal: External Userpool ARN Not configured"]
         [#local attrUserPoolName = occurrence.State.Attributes["USERPOOL_NAME"]!"" ]
         [#local attrUserPoolRegion = occurrence.State.Attributes["USERPOL_REGION"]!region ]
 

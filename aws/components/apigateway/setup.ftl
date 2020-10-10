@@ -12,7 +12,7 @@
     [#local resources = occurrence.State.Resources ]
     [#local attributes = occurrence.State.Attributes ]
     [#local buildSettings = occurrence.Configuration.Settings.Build ]
-    [#local buildRegistry = (buildSettings["BUILD_FORMATS"].Value[0])!"COT-Fatal No build format defined" ]
+    [#local buildRegistry = (buildSettings["BUILD_FORMATS"].Value[0])!"Hamlet-Fatal No build format defined" ]
     [#local roles = occurrence.State.Roles]
 
     [#local apiId      = resources["apigateway"].Id]
@@ -471,7 +471,7 @@
                             "RegionalCertificateArn":
                                 contentIfContent(
                                     getArn(value["domain"].CertificateId, true, regionId)
-                                    "COTFatal: Could not find certificate " + value["domain"].CertificateId
+                                    "HamletFatal: Could not find certificate " + value["domain"].CertificateId
                                 ),
                             "EndpointConfiguration" : {
                                 "Types" : [endpointType]
@@ -482,7 +482,7 @@
                             "CertificateArn":
                                 contentIfContent(
                                     getArn(value["domain"].CertificateId, true, "us-east-1"),
-                                    "COTFatal: Could not find certificate " + value["domain"].CertificateId
+                                    "HamletFatal: Could not find certificate " + value["domain"].CertificateId
                                 )
                         }
                     )

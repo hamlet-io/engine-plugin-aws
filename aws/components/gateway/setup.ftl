@@ -583,8 +583,8 @@
                                             [#break]
 
                                         [#case "endpoint" ]
-                                            [#local endpointScope = (gwSolution.EndpointScope)!"COTFatal: EndpointScope not defined - required for endpoint engine" ]
-                                            [#local endpointType = (gwSolution.EndpointType)!"COTFatal: EndpointType not defined - required for endpoint engine" ]
+                                            [#local endpointScope = (gwSolution.EndpointScope)!"HamletFatal: EndpointScope not defined - required for endpoint engine" ]
+                                            [#local endpointType = (gwSolution.EndpointType)!"HamletFatal: EndpointType not defined - required for endpoint engine" ]
 
                                             [#switch endpointScope ]
                                                 [#case "zone" ]

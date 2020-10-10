@@ -54,7 +54,7 @@
 
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
-    [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"COTFatal: sshKeyPairId not found" ]
+    [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]

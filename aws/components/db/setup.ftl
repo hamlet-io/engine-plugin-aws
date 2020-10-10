@@ -187,7 +187,7 @@
     [#local processorProfile = getProcessor(occurrence, "db" )]
     [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
     [#local securityProfile = getSecurityProfile(solution.Profiles.Security, "db" )]
-    [#local requiredRDSCA = securityProfile["SSLCertificateAuthority"]!"COTFatal: SSLCertificateAuthority not found in security profile: " + solution.Profiles.Security ]
+    [#local requiredRDSCA = securityProfile["SSLCertificateAuthority"]!"HamletFatal: SSLCertificateAuthority not found in security profile: " + solution.Profiles.Security ]
 
     [#list solution.Links?values as link]
         [#if link?is_hash]

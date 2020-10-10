@@ -73,7 +73,7 @@
                 [#local mfaConfig="OPTIONAL"]
                 [#break]
             [#default]
-                [#local mfaConfig="COTFatal: Unkown MFA config option" ]
+                [#local mfaConfig="HamletFatal: Unkown MFA config option" ]
         [/#switch]
 
     [#else ]
@@ -413,15 +413,15 @@
                     [#local providerDetails = {
                         "client_id" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "ID"],"_") ])!"",
-                                            (subSolution[authProviderEngine].ClientId)!"COTFatal: ClientId not defined"
+                                            (subSolution[authProviderEngine].ClientId)!"HamletFatal: ClientId not defined"
                         ),
                         "client_secret" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "SECRET"],"_") ])!"",
-                                            (subSolution[authProviderEngine].ClientSecret)!"COTFatal: ClientSecret not defined"
+                                            (subSolution[authProviderEngine].ClientSecret)!"HamletFatal: ClientSecret not defined"
                         ),
                         "authorize_scopes" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "SCOPES"],"_") ])!"",
-                                            (subSolution[authProviderEngine].Scopes)!"COTFatal: Scopes not defined"
+                                            (subSolution[authProviderEngine].Scopes)!"HamletFatal: Scopes not defined"
                         )
                     }]
                     [#break]
@@ -430,15 +430,15 @@
                     [#local providerDetails = {
                         "client_id" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "ID"],"_") ])!"",
-                                            (subSolution[authProviderEngine].ClientId)!"COTFatal: ClientId not defined"
+                                            (subSolution[authProviderEngine].ClientId)!"HamletFatal: ClientId not defined"
                         ),
                         "client_secret" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "SECRET"],"_") ])!"",
-                                            (subSolution[authProviderEngine].ClientSecret)!"COTFatal: ClientSecret not defined"
+                                            (subSolution[authProviderEngine].ClientSecret)!"HamletFatal: ClientSecret not defined"
                         ),
                         "authorize_scopes" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "SCOPES"],"_") ])!"",
-                                            (subSolution[authProviderEngine].Scopes)!"COTFatal: Scopes not defined"
+                                            (subSolution[authProviderEngine].Scopes)!"HamletFatal: Scopes not defined"
                         )
                     } +
                     attributeIfContent(
@@ -454,23 +454,23 @@
                     [#local providerDetails = {
                         "client_id" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "ID"],"_") ])!"",
-                                            (subSolution[authProviderEngine].ClientId)!"COTFatal: ClientId not defined"
+                                            (subSolution[authProviderEngine].ClientId)!"HamletFatal: ClientId not defined"
                         ),
                         "team_id" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "TEAM", "ID"],"_") ])!"",
-                                            (subSolution[authProviderEngine].TeamId)!"COTFatal: TeamId not defined"
+                                            (subSolution[authProviderEngine].TeamId)!"HamletFatal: TeamId not defined"
                         ),
                         "key_id" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "KEY", "ID"],"_") ])!"",
-                                            (subSolution[authProviderEngine].KeyId)!"COTFatal: KeyId not defined"
+                                            (subSolution[authProviderEngine].KeyId)!"HamletFatal: KeyId not defined"
                         ),
                         "private_key" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "PRIVATE", "KEY"],"_") ])!"",
-                                            (subSolution[authProviderEngine].PrivateKey)!"COTFatal: PrivateKey not defined"
+                                            (subSolution[authProviderEngine].PrivateKey)!"HamletFatal: PrivateKey not defined"
                         ),
                         "authorize_scopes" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "SCOPES"],"_") ])!"",
-                                            (subSolution[authProviderEngine].Scopes)!"COTFatal: Scopes not defined"
+                                            (subSolution[authProviderEngine].Scopes)!"HamletFatal: Scopes not defined"
                         )
                     }]
                     [#break]
@@ -479,7 +479,7 @@
                     [#local providerDetails = {
                         "MetadataURL" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "SAML", "METADATA", "URL"],"_") ])!"",
-                                            (subSolution[authProviderEngine].MetadataUrl)!"COTFatal: MetadataUrl not defined"
+                                            (subSolution[authProviderEngine].MetadataUrl)!"HamletFatal: MetadataUrl not defined"
                         ),
                         "IDPSignout" :  subSolution.SAML.EnableIDPSignOut
                     }]
@@ -490,23 +490,23 @@
                     [#local providerDetails = {
                         "client_id" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, "OIDC", "CLIENT", "ID"],"_") ])!"",
-                                            (subSolution.OIDC.ClientId)!"COTFatal: ClientId not defined"
+                                            (subSolution.OIDC.ClientId)!"HamletFatal: ClientId not defined"
                         ),
                         "client_secret" : contentIfContent(
                                             (environment[ concatenate([settingsPrefix, "OIDC", "CLIENT", "SECRET"],"_") ])!"",
-                                            (subSolution.OIDC.ClientSecret)!"COTFatal: ClientSecret not defined"
+                                            (subSolution.OIDC.ClientSecret)!"HamletFatal: ClientSecret not defined"
                         ),
                         "authorize_scopes" : contentIfContent(
                                                 (environment[ concatenate([settingsPrefix, "OIDC", "SCOPES"],"_") ])!"",
-                                                (subSolution.OIDC.Scopes?join(" "))!"COTFatal: Scopes not defined"
+                                                (subSolution.OIDC.Scopes?join(" "))!"HamletFatal: Scopes not defined"
                         ),
                         "attributes_request_method" : contentIfContent(
                                                 (environment[ concatenate([settingsPrefix, "OIDC", "ATTRIBUTES", "HTTP", "METHOD"],"_") ])!"",
-                                                (subSolution.OIDC.AttributesHttpMethod)!"COTFatal: AttributesHttpMethod not defined"
+                                                (subSolution.OIDC.AttributesHttpMethod)!"HamletFatal: AttributesHttpMethod not defined"
                         ),
                         "oidc_issuer" : contentIfContent(
                                                 (environment[ concatenate([settingsPrefix, "OIDC", "ISSUER"],"_") ])!"",
-                                                (subSolution.OIDC.Issuer)!"COTFatal: Issuer not defined"
+                                                (subSolution.OIDC.Issuer)!"HamletFatal: Issuer not defined"
                         )
                     } +
                     attributeIfContent(

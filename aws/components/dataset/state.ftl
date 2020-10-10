@@ -137,7 +137,7 @@
 
                     [#default]
                         [#local attributes += {
-                            "DATASET_ENGINE" : "COTFatal: DataSet Support not available for " + linkTargetCore.Type
+                            "DATASET_ENGINE" : "HamletFatal: DataSet Support not available for " + linkTargetCore.Type
                         }]
                 [/#switch]
             [/#if]
