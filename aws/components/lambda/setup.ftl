@@ -535,6 +535,17 @@
         /]
     [/#if]
 
+    [#-- Always exclude any reference files copied by other deployments      --]
+    [#-- An example use case is the api gateway copying an openapi.json file --]
+    [#-- for a lambda authoriser                                             --]
+    [#local syncExclusions =
+        ["reference/*"] +
+        arrayIfTrue(
+            "config/*",
+            solution.Environment.AsFile
+        )
+    ]
+
     [#if deploymentSubsetRequired("epilogue", false)]
         [#-- Assume stack update was successful so delete other files --]
         [#local asFiles = getAsFileSettings(fn.Configuration.Settings.Product) ]
@@ -548,7 +559,8 @@
                         regionId,
                         operationsBucket,
                         getOccurrenceSettingValue(fn, "SETTINGS_PREFIX"),
-                        true
+                        true,
+                        syncExclusions
                     ) /]
         [/#if]
         [#if solution.Environment.AsFile]
