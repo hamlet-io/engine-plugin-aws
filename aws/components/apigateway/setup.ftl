@@ -685,7 +685,7 @@
                                     "case $\{STACK_OPERATION} in",
                                     "  create|update)",
                                     "info \"Sending API Specification to " + id + "-" + publisherLinkTargetCore.FullName + "\"",
-                                    " cp \"$\{tmpdir}/" + openapiFileName + "\" \"$\{tmpdir}/" + fileName + "\" ",
+                                    " cp \"$\{tmpdir}/" + openapiFileName + "\" \"$\{tmpdir}/" + fileName + "\" || return $?",
                                     "  copy_contentnode_file \"$\{tmpdir}/" + fileName + "\" " +
                                     "\"" +    publisherLinkTargetAttributes.ENGINE + "\" " +
                                     "\"" +    publisherLinkTargetAttributes.REPOSITORY + "\" " +
@@ -868,6 +868,9 @@
         /]
 
         [#-- If using an authoriser, give it a copy of the openapi spec --]
+        [#-- Also include the definition because authorizers can't have --]
+        [#-- scopes but the authorizer relies on them. Thus give it the --]
+        [#-- definition file rather than the extended file              --]
         [#if lambdaAuthorizers?has_content]
             [#-- Copy the config file to a standard filename --]
             [@addToDefaultBashScriptOutput
@@ -876,6 +879,11 @@
                         "referenceFiles",
                         "$\{CONFIG}",
                         "openapi.json"
+                    ) +
+                    getLocalFileScript(
+                        "referenceFiles",
+                        "$\{DEFINITION}",
+                        "openapi-definition.json"
                     )
             /]
             [#list lambdaAuthorizers?values as lambdaAuthorizer]
