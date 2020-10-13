@@ -45,6 +45,130 @@
     /]
 [/#macro]
 
+[#macro setupFirehoseStream id occurrence loggingProfile streamNamePrefix="" dependencies=""]
+    
+    [#local streamDestinationConfiguration = {}]
+    [#local streamRolePolicies = []]
+    [#local streamProcessorArn = ""]
+
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local cmkKeyId = baselineComponentIds["Encryption"]]
+
+    [#-- Process Logging Profile Links --]
+    [#list loggingProfile.ForwardingRules!{} as id,forwardingRule ]
+        [#list forwardingRule.Links?values as link]
+            [#if link?is_hash]
+                [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+                [@debug message="Link Target" context=linkTarget enabled=false /]
+                [#if !linkTarget?has_content]
+                    [#continue]
+                [/#if]
+
+                [#local linkTargetCore = linkTarget.Core ]
+                [#local linkTargetConfiguration = linkTarget.Configuration ]
+                [#local linkTargetResources = linkTarget.State.Resources ]
+                [#local linkTargetAttributes = linkTarget.State.Attributes ]
+                [#local linkTargetSolution = linkTargetConfiguration.Solution]
+
+                [#switch linkTargetCore.Type]
+                    [#case LAMBDA_FUNCTION_COMPONENT_TYPE]
+                        [#if link.Role == "kinesis"]
+                            [#local streamProcessorArn = linkTargetAttributes["ARN"]]
+                        [/#if]
+                        [#break]
+
+                    [#case S3_COMPONENT_TYPE]
+                        
+                        [#local isEncrypted = linkTargetSolution.Encryption.Enabled]
+                        [#local bucket = linkTargetResources["bucket"] ]
+                        [#local prefix = formatRelativePath(occurrence.Core.FullRelativePath)]
+                        [#local bufferInterval = 60]
+                        [#local bufferSize = 1]
+                        [#local errorPrefix = formatRelativePath("error", occurrence.Core.FullRelativePath)] 
+                        [#local streamRoleId = formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, id)]
+                        [#break]
+
+                    [#default]
+                        [@fatal
+                            message="Invalid stream destination or destination not found"
+                            detail="Supported Destinations - S3"
+                            context=occurrence
+                        /]
+                        [#break]
+                [/#switch]
+            [/#if]
+        [/#list]
+    [/#list]
+
+    [#-- Validation --]
+    [#if !streamProcessorArn?has_content]
+        [@fatal
+            message="Invalid Logging Profile. Profiles must contain at least one Log Processor."
+            context={}
+        /]
+    [/#if]
+
+    [#local streamRolePolicies += [
+        getPolicyDocument(
+            isEncrypted?then(
+                s3EncryptionKinesisPermission(
+                    cmkKeyId,
+                    bucket.Name,
+                    prefix,
+                    region
+                ),
+                []
+            ) +
+            s3AllPermission(bucket.Name, bucketPrefix),
+            "apigwbase"
+        ),
+        getPolicyDocument(
+            s3KinesesStreamPermission(bucket.Id) +
+            lambdaKinesisPermission(streamProcessorArn),
+            "apigw"
+        )
+    ]]
+
+    [#local streamDestinationConfiguration = 
+        getFirehoseStreamS3Destination(
+            bucket.Id,
+            prefix,
+            errorPrefix,
+            bufferInterval,
+            bufferSize,
+            streamRoleId,
+            isEncrypted,
+            cmkKeyId,
+            getFirehoseStreamLoggingConfiguration(false),
+            false,
+            {},
+            [
+                getFirehoseStreamLambdaProcessor(
+                    streamProcessorArn,
+                    streamRoleId,
+                    bufferInterval,
+                    bufferSize
+                )
+            ]
+        )
+    ]
+    
+    [@createRole
+        id=streamRoleId
+        trustedServices=["firehose.amazonaws.com"]
+        policies=streamRolePolicies
+    /]
+
+    [@createFirehoseStream
+        id=formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, id)
+        name=formatName(streamNamePrefix, occurrence.Core.FullName)
+        destination=streamDestinationConfiguration
+        dependencies=dependencies
+    /]
+
+[/#macro]
+
 [#function getFirehoseStreamESDestination
         bufferInterval
         bufferSize

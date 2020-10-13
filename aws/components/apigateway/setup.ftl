@@ -22,6 +22,7 @@
     [#local deployId   = resources["apideploy"].Id]
     [#local stageId    = resources["apistage"].Id]
     [#local stageName  = resources["apistage"].Name]
+    [#local stageDependencies = [deployId]]
 
     [#-- Determine the stage variables required --]
     [#local stageVariables = {} ]
@@ -38,7 +39,6 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
 
     [#local contextLinks = getLinkTargets(occurrence) ]
     [#assign _context =
@@ -84,6 +84,7 @@
             [#local linkTargetConfiguration = linkTarget.Configuration ]
             [#local linkTargetResources = linkTarget.State.Resources ]
             [#local linkTargetAttributes = linkTarget.State.Attributes ]
+            [#local linkTargetSolution = linkTargetConfiguration.Solution]
 
             [#switch linkTargetCore.Type]
                 [#case LB_COMPONENT_TYPE ]
@@ -138,6 +139,7 @@
                             } ]
                     [/#if]
                     [#break]
+            
             [/#switch]
         [/#if]
     [/#list]
@@ -252,15 +254,49 @@
             ] ]
     [/#if]
 
-    [#local accessLgId   = resources["accesslg"].Id]
-    [#local accessLgName = resources["accesslg"].Name]
+    [#-- Process Logging Profile Links, ensuring the target is the Logstore --]
+    [#switch solution.LogStore?lower_case]
 
-    [@setupLogGroup
-        occurrence=occurrence
-        logGroupId=accessLgId
-        logGroupName=accessLgName
-        loggingProfile=loggingProfile
-    /]
+        [#case "aws:cloudwatch"]
+
+            [#-- Create the CW Log Group & Set APIGateway Stage to Log to CW --]
+            [#local accessLgId   = resources["accesslg"].Id]
+            [#local accessLgName = resources["accesslg"].Name]
+            [#local stageLogTarget = accessLgId]
+
+            [@setupLogGroup
+                occurrence=occurrence
+                logGroupId=accessLgId
+                logGroupName=accessLgName
+                loggingProfile=loggingProfile
+            /]
+            [#break]
+
+        [#case "aws:kinesis"]
+
+            [#-- Create Kinesis Firehose & connect Stage directly to it --]
+            [#local streamId = 
+                formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
+            [#local stageLogTarget = streamId]
+
+            [@setupFirehoseStream
+                id=core.Id
+                occurrence=occurrence
+                loggingProfile=loggingProfile
+                streamNamePrefix="amazon-apigateway-"
+            /]
+            
+            [#local stageDependencies += [streamId]]
+            [#break]
+
+        [#default]
+            [@fatal
+                message="Invalid LogStore type."
+                context={ "Type" : solution.LogStore }
+            /]
+            [#break]
+
+    [/#switch]
 
     [#if deploymentSubsetRequired("apigateway", true)]
         [#-- Assume extended openAPI specification is in the ops bucket --]
@@ -358,7 +394,7 @@
                     "RestApiId" : getReference(apiId),
                     "StageName" : stageName,
                     "AccessLogSetting" : {
-                        "DestinationArn" : getArn(accessLgId),
+                        "DestinationArn" : getArn(stageLogTarget),
                         "Format" : "$context.identity.sourceIp $context.identity.caller $context.identity.user $context.identity.userArn [$context.requestTime] $context.apiId $context.httpMethod $context.resourcePath $context.protocol $context.status $context.responseLength $context.requestId"
                     }
                 } +
@@ -369,7 +405,7 @@
                     solution.Tracing.Configured && solution.Tracing.Enabled && ((solution.Tracing.Mode!"") == "active"),
                     true)
             outputs={}
-            dependencies=deployId
+            dependencies=stageDependencies
         /]
 
         [#-- Create a CloudFront distribution if required --]
