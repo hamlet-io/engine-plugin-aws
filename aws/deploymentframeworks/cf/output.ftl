@@ -249,7 +249,7 @@
                     getOutputContent("outputs") +
                     getCFTemplateCoreOutputs()
             } +
-            attributeIfContent("COTMessages", logMessages)
+            attributeIfContent("HamletMessages", logMessages)
         /]
     [/#if]
 [/#macro]

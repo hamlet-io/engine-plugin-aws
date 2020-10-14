@@ -400,10 +400,10 @@
                         [#local userPoolSessionCookieName = solution.Authentication.SessionCookieName ]
                         [#local userPoolSessionTimeout = solution.Authentication.SessionTimeout ]
 
-                        [#local userPoolDomain = linkTargetAttributes["UI_FQDN"]!"COTFatal: Userpool FQDN not found" ]
-                        [#local userPoolArn = linkTargetAttributes["USER_POOL_ARN"]!"COTFatal: Userpool ARN not found" ]
-                        [#local userPoolClientId = linkTargetAttributes["CLIENT"]!"COTFatal: Userpool client id not found"  ]
-                        [#local userPoolOauthScope = linkTargetAttributes["LB_OAUTH_SCOPE"]!"COTFatal: Userpool OAuth scope not found"  ]
+                        [#local userPoolDomain = linkTargetAttributes["UI_FQDN"]!"HamletFatal: Userpool FQDN not found" ]
+                        [#local userPoolArn = linkTargetAttributes["USER_POOL_ARN"]!"HamletFatal: Userpool ARN not found" ]
+                        [#local userPoolClientId = linkTargetAttributes["CLIENT"]!"HamletFatal: Userpool client id not found"  ]
+                        [#local userPoolOauthScope = linkTargetAttributes["LB_OAUTH_SCOPE"]!"HamletFatal: Userpool OAuth scope not found"  ]
 
                         [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) && engine == "application" ]
                             [@createListenerRule

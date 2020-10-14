@@ -4,7 +4,7 @@
     [#local core = occurrence.Core]
 
     [#if core.External!false]
-        [#local esId = occurrence.State.Attributes["ES_DOMAIN_ARN"]!"COTFatal: Could not find ARN" ]
+        [#local esId = occurrence.State.Attributes["ES_DOMAIN_ARN"]!"HamletFatal: Could not find ARN" ]
         [#assign componentState =
             valueIfContent(
                 {
@@ -45,7 +45,7 @@
         [#local securityGroupId = formatSecurityGroupId(core.Id)]
         [#local availablePorts = []]
 
-        [#switch securityProfile.ProtocolPolicy!("COTFatal: Could not find Security profile - " + solution.Profiles.Security) ]
+        [#switch securityProfile.ProtocolPolicy!("HamletFatal: Could not find Security profile - " + solution.Profiles.Security) ]
             [#case "https-only" ]
                 [#local availablePorts += [ "https" ] ]
                 [#break]

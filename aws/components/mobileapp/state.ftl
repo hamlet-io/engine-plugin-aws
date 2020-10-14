@@ -1,13 +1,13 @@
 [#ftl]
 
 [#-- Resources --]
-[#assign COT_MOBILEAPP_RESOURCE_TYPE = "mobileapp"]
+[#assign HAMLET_MOBILEAPP_RESOURCE_TYPE = "mobileapp"]
 
 [#macro aws_mobileapp_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
 
-    [#local id = formatResourceId(COT_MOBILEAPP_RESOURCE_TYPE, core.Id)]
+    [#local id = formatResourceId(HAMLET_MOBILEAPP_RESOURCE_TYPE, core.Id)]
 
     [#local otaBucket = ""]
     [#local otaPrefix = core.RelativePath ]
@@ -87,7 +87,7 @@
             "Resources" : {
                 "mobileapp" : {
                     "Id" : id,
-                    "Type" : COT_MOBILEAPP_RESOURCE_TYPE,
+                    "Type" : HAMLET_MOBILEAPP_RESOURCE_TYPE,
                     "ConfigFilePath" : configFilePath,
                     "ConfigFileName" : configFileName,
                     "Deployed" : true

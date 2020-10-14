@@ -52,7 +52,7 @@
             [#break]
 
         [#default]
-            [#local resourceType = "COTFatal: Unknown LB Engine" ]
+            [#local resourceType = "HamletFatal: Unknown LB Engine" ]
     [/#switch]
 
     [#assign componentState =

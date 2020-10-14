@@ -12,7 +12,7 @@
     [#local resources = occurrence.State.Resources ]
     [#local attributes = occurrence.State.Attributes ]
     [#local buildSettings = occurrence.Configuration.Settings.Build ]
-    [#local buildRegistry = (buildSettings["BUILD_FORMATS"].Value[0])!"COT-Fatal No build format defined" ]
+    [#local buildRegistry = (buildSettings["BUILD_FORMATS"].Value[0])!"HamletFatal No build format defined" ]
     [#local roles = occurrence.State.Roles]
 
     [#local apiId      = resources["apigateway"].Id]
@@ -471,7 +471,7 @@
                             "RegionalCertificateArn":
                                 contentIfContent(
                                     getArn(value["domain"].CertificateId, true, regionId)
-                                    "COTFatal: Could not find certificate " + value["domain"].CertificateId
+                                    "HamletFatal: Could not find certificate " + value["domain"].CertificateId
                                 ),
                             "EndpointConfiguration" : {
                                 "Types" : [endpointType]
@@ -482,7 +482,7 @@
                             "CertificateArn":
                                 contentIfContent(
                                     getArn(value["domain"].CertificateId, true, "us-east-1"),
-                                    "COTFatal: Could not find certificate " + value["domain"].CertificateId
+                                    "HamletFatal: Could not find certificate " + value["domain"].CertificateId
                                 )
                         }
                     )
@@ -685,7 +685,7 @@
                                     "case $\{STACK_OPERATION} in",
                                     "  create|update)",
                                     "info \"Sending API Specification to " + id + "-" + publisherLinkTargetCore.FullName + "\"",
-                                    " cp \"$\{tmpdir}/" + openapiFileName + "\" \"$\{tmpdir}/" + fileName + "\" ",
+                                    " cp \"$\{tmpdir}/" + openapiFileName + "\" \"$\{tmpdir}/" + fileName + "\" || return $?",
                                     "  copy_contentnode_file \"$\{tmpdir}/" + fileName + "\" " +
                                     "\"" +    publisherLinkTargetAttributes.ENGINE + "\" " +
                                     "\"" +    publisherLinkTargetAttributes.REPOSITORY + "\" " +
@@ -868,6 +868,9 @@
         /]
 
         [#-- If using an authoriser, give it a copy of the openapi spec --]
+        [#-- Also include the definition because authorizers can't have --]
+        [#-- scopes but the authorizer relies on them. Thus give it the --]
+        [#-- definition file rather than the extended file              --]
         [#if lambdaAuthorizers?has_content]
             [#-- Copy the config file to a standard filename --]
             [@addToDefaultBashScriptOutput
@@ -876,6 +879,18 @@
                         "referenceFiles",
                         "$\{CONFIG}",
                         "openapi.json"
+                    ) +
+                    [
+                        "DEFINITION_FILE=$( get_openapi_definition_filename " +
+                                "\"" + core.Name + "\"" + " " +
+                                "\"" + accountId + "\"" + " " +
+                                "\"" + region + "\"" + " )",
+                        "#"
+                    ] +
+                    getLocalFileScript(
+                        "referenceFiles",
+                        "$\{DEFINITION_FILE}",
+                        "openapi-definition.json"
                     )
             /]
             [#list lambdaAuthorizers?values as lambdaAuthorizer]

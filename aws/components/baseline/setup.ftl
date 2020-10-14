@@ -74,7 +74,7 @@
             [#local bucketPolicyId = subResources["bucketpolicy"].Id ]
             [#local legacyS3 = subResources["bucket"].LegacyS3 ]
             [#local replicationRoleId = subResources["role"].Id]
-            [#local links = getLinkTargets(occurrence)]
+            [#local links = getLinkTargets(subOccurrence)]
             [#local versioningEnabled = (subSolution.Replication!{})?has_content?then(true, subSolution.Versioning)]
 
             [#if ( deploymentSubsetRequired(BASELINE_COMPONENT_TYPE, true) && legacyS3 == false ) ||

@@ -142,7 +142,7 @@
             [#elseif !(mapping.UseRef)!false ]
                 [#return
                     {
-                        "Mapping" : "COTFatal: Unknown Resource Type",
+                        "Mapping" : "HamletFatal: Unknown Resource Type",
                         "ResourceId" : resourceId,
                         "ResourceType" : resourceType
                     }
