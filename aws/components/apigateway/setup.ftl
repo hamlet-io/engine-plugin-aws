@@ -880,9 +880,16 @@
                         "$\{CONFIG}",
                         "openapi.json"
                     ) +
+                    [
+                        "DEFINITION_FILE=$( get_openapi_definition_filename " +
+                                "\"" + core.Name + "\"" + " " +
+                                "\"" + accountId + "\"" + " " +
+                                "\"" + region + "\"" + " )",
+                        "#"
+                    ] +
                     getLocalFileScript(
                         "referenceFiles",
-                        "$\{DEFINITION}",
+                        "$\{DEFINITION_FILE}",
                         "openapi-definition.json"
                     )
             /]
