@@ -41,13 +41,13 @@
     }
 ]
 
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_APIGATEWAY_RESOURCE_TYPE
     mappings=APIGATEWAY_OUTPUT_MAPPINGS
 /]
 
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_APIGATEWAY_APIKEY_RESOURCE_TYPE
     mappings=APIGATEWAY_APIKEY_OUTPUT_MAPPINGS
@@ -62,6 +62,24 @@
                 valueIfContent(stageName + "/*", stageName, "*"),
                 "/"
             )
+        )
+    ]
+[/#function]
+
+[#function formatAuthorizerApiGatewayArn apiId authorizerId="" account={ "Ref" : "AWS::AccountId" }]
+    [#return
+        formatRegionalArn(
+            "execute-api",
+            {
+                "Fn::Join": [
+                    "/",
+                    [
+                        getReference(apiId),
+                        "authorizers",
+                        valueIfContent(getReference(authorizerId),authorizerId,"*")
+                    ]
+                ]
+            }
         )
     ]
 [/#function]
@@ -90,7 +108,7 @@
     }
 ]
 
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_APIGATEWAY_USAGEPLAN_RESOURCE_TYPE
     mappings=APIGATEWAY_USAGEPLAN_OUTPUT_MAPPINGS
@@ -104,7 +122,7 @@
             {
                 "ApiStages" : stages,
                 "UsagePlanName" : name
-            } + 
+            } +
             attributeIfContent("Quota", quotaSettings)
         outputs=APIGATEWAY_USAGEPLAN_OUTPUT_MAPPINGS
         dependencies=dependencies

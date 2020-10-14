@@ -143,6 +143,20 @@
                             [/#switch]
                             [#break]
 
+                        [#case "authorise" ]
+                        [#case "authorize" ]
+                            [#switch linkTargetCore.Type]
+                                 [#case APIGATEWAY_COMPONENT_TYPE ]
+                                    [@createLambdaPermission
+                                        id=formatLambdaPermissionId(fn, "link", linkName)
+                                        targetId=fnId
+                                        source=linkTargetRoles.Inbound["authorize"]
+                                    /]
+                                    [#break]
+
+                            [/#switch]
+                            [#break]
+
                     [/#switch]
                     [#break]
                 [#case "outbound" ]
