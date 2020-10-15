@@ -380,6 +380,10 @@ created in either case.
                     "invoke" : {
                         "Principal" : "apigateway.amazonaws.com",
                         "SourceArn" : formatInvokeApiGatewayArn(apiId, stageName)
+                    },
+                    "authorize" : {
+                        "Principal" : "apigateway.amazonaws.com",
+                        "SourceArn" : formatAuthorizerApiGatewayArn(apiId)
                     }
                 },
                 "Outbound" : {
