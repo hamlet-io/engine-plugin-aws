@@ -1,14 +1,7 @@
 [#ftl]
 [@addResourceGroupInformation
     type=APIGATEWAY_COMPONENT_TYPE
-    attributes=[
-        {
-            "Names" : "LogStore",
-            "Type" : STRING_TYPE,
-            "Default" : "aws:cloudwatch",
-            "Values" : [ "cloudwatch", "CloudWatch", "Kinesis", "kinesis" ]
-        }
-    ]
+    attributes=[]
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=

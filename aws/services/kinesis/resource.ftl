@@ -45,127 +45,135 @@
     /]
 [/#macro]
 
-[#macro setupFirehoseStream id occurrence loggingProfile streamNamePrefix="" dependencies=""]
-    
-    [#local streamDestinationConfiguration = {}]
-    [#local streamRolePolicies = []]
-    [#local streamProcessorArn = ""]
+[#macro setupFirehoseStream 
+    id
+    destinationLink
+    bucketPrefix
+    errorPrefix
+    processorId=""
+    cmkKeyId=""
+    streamNamePrefix=""
+    dependencies=""]
 
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
-    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local cmkKeyId = baselineComponentIds["Encryption"]]
+    [#if destinationLink?is_hash && destinationLink?has_content]
 
-    [#-- Process Logging Profile Links --]
-    [#list loggingProfile.ForwardingRules!{} as id,forwardingRule ]
-        [#list forwardingRule.Links?values as link]
-            [#if link?is_hash]
-                [#local linkTarget = getLinkTarget(occurrence, link, false) ]
-                [@debug message="Link Target" context=linkTarget enabled=false /]
-                [#if !linkTarget?has_content]
-                    [#continue]
+        [#local destinationCore = destinationLink.Core ]
+        [#local destinationConfiguration = destinationLink.Configuration ]
+        [#local destinationResources = destinationLink.State.Resources ]
+        [#local destinationSolution = destinationConfiguration.Solution ]
+
+        [#local role = {
+            "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, id)
+        }]
+
+        [#local stream = {
+            "Id" : id,
+            "Name" : formatName(streamNamePrefix, destinationCore.FullName)
+        }]
+
+        [#-- defaults --]
+        [#local isEncrypted = false]
+        [#local bufferInterval = 60]
+        [#local bufferSize = 1]
+        [#local rolePolicies = []]
+        [#local streamDestinationConfiguration = {}]
+
+        [#switch destinationCore.Type]
+
+            [#case BASELINE_DATA_COMPONENT_TYPE]
+            [#case S3_COMPONENT_TYPE]
+
+                [#-- Handle target encryption --]
+                [#local isEncrypted = destinationSolution.Encryption.Enabled]
+                [#if isEncrypted]
+                    [@fatal
+                        message="Destination is encrypted, but CMK not provided."
+                        context=destinationLink
+                    /]
                 [/#if]
 
-                [#local linkTargetCore = linkTarget.Core ]
-                [#local linkTargetConfiguration = linkTarget.Configuration ]
-                [#local linkTargetResources = linkTarget.State.Resources ]
-                [#local linkTargetAttributes = linkTarget.State.Attributes ]
-                [#local linkTargetSolution = linkTargetConfiguration.Solution]
+                [#-- Handle processor functions --]
+                [#if processorId?has_content]
+                    [#local streamProcessorArn = getArn(processorId)]
+                [/#if]
 
-                [#switch linkTargetCore.Type]
-                    [#case LAMBDA_FUNCTION_COMPONENT_TYPE]
-                        [#if link.Role == "kinesis"]
-                            [#local streamProcessorArn = linkTargetAttributes["ARN"]]
-                        [/#if]
-                        [#break]
+                [#local bucket = destinationResources["bucket"]]
 
-                    [#case S3_COMPONENT_TYPE]
-                        
-                        [#local isEncrypted = linkTargetSolution.Encryption.Enabled]
-                        [#local bucket = linkTargetResources["bucket"] ]
-                        [#local prefix = formatRelativePath(occurrence.Core.FullRelativePath)]
-                        [#local bufferInterval = 60]
-                        [#local bufferSize = 1]
-                        [#local errorPrefix = formatRelativePath("error", occurrence.Core.FullRelativePath)] 
-                        [#local streamRoleId = formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, id)]
-                        [#break]
+                [#local rolePolicies += [
+                    getPolicyDocument(
+                        s3KinesesStreamPermission(bucket.Id) +
+                        s3AllPermission(bucket.Name, bucketPrefix) +
+                        isEncrypted?then(
+                            s3EncryptionKinesisPermission(
+                                cmkKeyId,
+                                bucket.Name,
+                                bucketPrefix,
+                                region
+                            ),
+                            []
+                        ) +
+                        processorId?has_content?then(
+                            lambdaKinesisPermission(streamProcessorArn),
+                            []
+                        ),
+                        "firehose"
+                    )
+                ]]
 
-                    [#default]
-                        [@fatal
-                            message="Invalid stream destination or destination not found"
-                            detail="Supported Destinations - S3"
-                            context=occurrence
-                        /]
-                        [#break]
-                [/#switch]
-            [/#if]
-        [/#list]
-    [/#list]
+                [#local streamDestinationConfiguration += 
+                    getFirehoseStreamS3Destination(
+                        bucket.Id,
+                        bucketPrefix,
+                        errorPrefix,
+                        bufferInterval,
+                        bufferSize,
+                        role.Id,
+                        isEncrypted,
+                        cmkKeyId,
+                        getFirehoseStreamLoggingConfiguration(false),
+                        false,
+                        {},
+                        processorId?has_content?then([
+                            getFirehoseStreamLambdaProcessor(
+                                streamProcessorArn,
+                                role.Id,
+                                bufferInterval,
+                                bufferSize
+                            )
+                        ],
+                        [])
+                    )]
 
-    [#-- Validation --]
-    [#if !streamProcessorArn?has_content]
+                [#break]
+
+            [#default]
+                [@fatal
+                    message="Invalid stream destination."
+                    detail="Supported Destinations - S3"
+                    context=destinationLink
+                /]
+                [#break]
+
+        [/#switch]
+        
+        [@createRole
+            id=role.Id
+            trustedServices=["firehose.amazonaws.com"]
+            policies=rolePolicies
+            dependencies=dependencies
+        /]
+
+        [@createFirehoseStream
+            id=stream.Id
+            name=stream.Name
+            destination=streamDestinationConfiguration
+        /]
+    [#else]
         [@fatal
-            message="Invalid Logging Profile. Profiles must contain at least one Log Processor."
-            context={}
+            message="Destination Link is not a hash or is empty."
+            context=destinationLink
         /]
     [/#if]
-
-    [#local streamRolePolicies += [
-        getPolicyDocument(
-            isEncrypted?then(
-                s3EncryptionKinesisPermission(
-                    cmkKeyId,
-                    bucket.Name,
-                    prefix,
-                    region
-                ),
-                []
-            ) +
-            s3AllPermission(bucket.Name, bucketPrefix),
-            "apigwbase"
-        ),
-        getPolicyDocument(
-            s3KinesesStreamPermission(bucket.Id) +
-            lambdaKinesisPermission(streamProcessorArn),
-            "apigw"
-        )
-    ]]
-
-    [#local streamDestinationConfiguration = 
-        getFirehoseStreamS3Destination(
-            bucket.Id,
-            prefix,
-            errorPrefix,
-            bufferInterval,
-            bufferSize,
-            streamRoleId,
-            isEncrypted,
-            cmkKeyId,
-            getFirehoseStreamLoggingConfiguration(false),
-            false,
-            {},
-            [
-                getFirehoseStreamLambdaProcessor(
-                    streamProcessorArn,
-                    streamRoleId,
-                    bufferInterval,
-                    bufferSize
-                )
-            ]
-        )
-    ]
-    
-    [@createRole
-        id=streamRoleId
-        trustedServices=["firehose.amazonaws.com"]
-        policies=streamRolePolicies
-    /]
-
-    [@createFirehoseStream
-        id=formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, id)
-        name=formatName(streamNamePrefix, occurrence.Core.FullName)
-        destination=streamDestinationConfiguration
-        dependencies=dependencies
-    /]
 
 [/#macro]
 
@@ -261,7 +269,7 @@
         loggingConfiguration
         backupEnabled
         backupS3Destination
-        lambdaProcessor
+        lambdaProcessor=[]
 ]
 
 [#return

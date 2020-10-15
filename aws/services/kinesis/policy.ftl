@@ -29,3 +29,17 @@
         ]
     ]
 [/#function]
+
+[#function fireHoseDataStreamKinesisPermssion id]
+    [#return [
+        getPolicyStatement(
+            [
+                "kinesis:DescribeStream",
+                "kinesis:GetShardIterator",
+                "kinesis:GetRecords",
+                "kinesis:ListShards"
+            ],
+            getReference(id, ARN_ATTRIBUTE_TYPE)
+        )
+    ]]
+[/#function]

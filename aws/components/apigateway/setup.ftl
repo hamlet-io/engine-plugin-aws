@@ -275,18 +275,34 @@
         [#case "aws:kinesis"]
 
             [#-- Create Kinesis Firehose & connect Stage directly to it --]
-            [#local streamId = 
-                formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
-            [#local stageLogTarget = streamId]
+            [#local stageLogTarget = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
+
+            [#-- get the service-linked-role service type --]
+            [#local serviceRoles = getReferenceData(SERVICEROLE_REFERENCE_TYPE)]
+            [#local serviceRole = serviceRoles[occurrence.Core.Type]![]]
+            [#if serviceRole?has_content && serviceRole?is_hash]
+                [#local trustedService = serviceRole.ServiceName]
+                [#local streamRoleArn = formatServiceLinkedRoleArn(trustedService, "AWSServiceRoleForAPIGateway")]
+
+            [#else]
+                [@fatal
+                    message="Unable to locate a Service Role for the component."
+                    context={
+                        "Roles" : serviceRoles,
+                        "CurrentType" : occurrence.Core.Type
+                    }
+                /]
+            [/#if]
 
             [@setupFirehoseStream
-                id=core.Id
+                streamId=stageLogTarget
+                roleArn=streamRoleArn
                 occurrence=occurrence
                 loggingProfile=loggingProfile
                 streamNamePrefix="amazon-apigateway-"
             /]
             
-            [#local stageDependencies += [streamId]]
+            [#local stageDependencies += [stageLogTarget]]
             [#break]
 
         [#default]
