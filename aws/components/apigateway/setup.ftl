@@ -18,11 +18,16 @@
     [#local apiId      = resources["apigateway"].Id]
     [#local apiName    = resources["apigateway"].Name]
 
+    [#-- Access Log Group --]
+    [#local accessLgId   = resources["accesslg"].Id]
+    [#local accessLgName = resources["accesslg"].Name]
+
     [#-- Use runId to ensure deploy happens every time --]
     [#local deployId   = resources["apideploy"].Id]
     [#local stageId    = resources["apistage"].Id]
     [#local stageName  = resources["apistage"].Name]
     [#local stageDependencies = [deployId]]
+    [#local stageLogTarget = accessLgId]
 
     [#-- Determine the stage variables required --]
     [#local stageVariables = {} ]
@@ -36,9 +41,10 @@
                                                 openapiFileName)]
 
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
+    [#local baselineLinks = getBaselineLinks(occurrence, ["Encryption", "OpsData", "AppData" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local contextLinks = getLinkTargets(occurrence) ]
     [#assign _context =
@@ -254,65 +260,36 @@
             ] ]
     [/#if]
 
-    [#-- Process Logging Profile Links, ensuring the target is the Logstore --]
-    [#switch solution.LogStore?lower_case]
 
-        [#case "aws:cloudwatch"]
+    [#-- Add CloudWatch LogGroup                           --]
+    [#-- Firehose can only accept Access Logs so we create --]
+    [#-- this every time regardless.                       --]
+    [@setupLogGroup
+        occurrence=occurrence
+        logGroupId=accessLgId
+        logGroupName=accessLgName
+        loggingProfile=loggingProfile
+    /]
 
-            [#-- Create the CW Log Group & Set APIGateway Stage to Log to CW --]
-            [#local accessLgId   = resources["accesslg"].Id]
-            [#local accessLgName = resources["accesslg"].Name]
-            [#local stageLogTarget = accessLgId]
+    [#-- Manage Access Logs with Kinesis Firehose --]
+    [#if solution.LogToOpsData]
 
-            [@setupLogGroup
-                occurrence=occurrence
-                logGroupId=accessLgId
-                logGroupName=accessLgName
-                loggingProfile=loggingProfile
-            /]
-            [#break]
+        [#-- APIGW Stage resource to send Access Logs to a Kinesis Delivery Stream --]
+        [#local stageLogTarget = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
 
-        [#case "aws:kinesis"]
+        [@setupFirehoseStream
+            id=stageLogTarget
+            destinationLink=baselineLinks["OpsData"]
+            cmkKeyId=kmsKeyId
+            bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath)
+            errorPrefix=formatRelativePath("error", occurrence.Core.FullRelativePath)
+            streamNamePrefix="amazon-apigateway-"
+            logGroupName=accessLgName
+        /]
 
-            [#-- Create Kinesis Firehose & connect Stage directly to it --]
-            [#local stageLogTarget = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
+        [#local stageDependencies += [stageLogTarget]]
 
-            [#-- get the service-linked-role service type --]
-            [#local serviceRoles = getReferenceData(SERVICEROLE_REFERENCE_TYPE)]
-            [#local serviceRole = serviceRoles[occurrence.Core.Type]![]]
-            [#if serviceRole?has_content && serviceRole?is_hash]
-                [#local trustedService = serviceRole.ServiceName]
-                [#local streamRoleArn = formatServiceLinkedRoleArn(trustedService, "AWSServiceRoleForAPIGateway")]
-
-            [#else]
-                [@fatal
-                    message="Unable to locate a Service Role for the component."
-                    context={
-                        "Roles" : serviceRoles,
-                        "CurrentType" : occurrence.Core.Type
-                    }
-                /]
-            [/#if]
-
-            [@setupFirehoseStream
-                streamId=stageLogTarget
-                roleArn=streamRoleArn
-                occurrence=occurrence
-                loggingProfile=loggingProfile
-                streamNamePrefix="amazon-apigateway-"
-            /]
-            
-            [#local stageDependencies += [stageLogTarget]]
-            [#break]
-
-        [#default]
-            [@fatal
-                message="Invalid LogStore type."
-                context={ "Type" : solution.LogStore }
-            /]
-            [#break]
-
-    [/#switch]
+    [/#if]
 
     [#if deploymentSubsetRequired("apigateway", true)]
         [#-- Assume extended openAPI specification is in the ops bucket --]

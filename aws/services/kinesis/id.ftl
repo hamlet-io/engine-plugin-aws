@@ -1,6 +1,7 @@
 [#ftl]
 
 [#-- Resources --]
+[#assign AWS_KINESIS_DATA_STREAM_RESOURCE_TYPE = "datastream"]
 [#assign AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE = "firehosestream" ]
 [@addServiceResource
     provider=AWS_PROVIDER

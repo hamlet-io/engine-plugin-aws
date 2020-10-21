@@ -124,7 +124,7 @@
                 [#local streamProcessors +=
                         [ getFirehoseStreamLambdaProcessor(
                             linkTargetAttributes["ARN"],
-                            getArn(streamRoleId),
+                            streamRoleId,
                             solution.Buffering.Interval,
                             solution.Buffering.Size
                         )]]
@@ -248,7 +248,7 @@
                                                 solution.Bucket.ErrorPrefix,
                                                 solution.Buffering.Interval,
                                                 solution.Buffering.Size,
-                                                getReference(streamRoleId, ARN_ATTRIBUTE_TYPE),
+                                                streamRoleId,
                                                 encrypted,
                                                 cmkKeyId,
                                                 streamLoggingConfiguration,

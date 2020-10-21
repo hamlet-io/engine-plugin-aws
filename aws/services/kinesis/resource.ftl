@@ -11,10 +11,27 @@
     }
 ]
 
+[#assign AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS = 
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        },
+        ARN_ATTRIBUTE_TYPE : {
+            "Attribute" : "Arn"
+        }
+    }
+]
+
 [@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE
     mappings=KINESIS_FIREHOSE_STREAM_OUTPUT_MAPPINGS
+/]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_KINESIS_DATA_STREAM_RESOURCE_TYPE
+    mappings=AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS
 /]
 
 [#assign metricAttributes +=
@@ -30,6 +47,28 @@
     }
 ]
 
+[#macro createKinesisDataStream id name retentionHours="" shardCount=1 keyId="" dependencies=""]
+    [#local encrpytionConfig = {}]
+    [#if keyId?has_content]
+        [#local encrpytionConfig = {
+            "EncryptionType" : "KMS",
+            "KeyId" : keyId }]
+    [/#if]
+
+    [@cfResource
+        id=id
+        type="AWS::Kinesis::Stream"
+        properties=
+            {
+                "Name" : name
+            } +
+            attributeIfContent("RetentionPeriodHours", retentionHours) +
+            attributeIfContent("ShardCount", shardCount) +
+            attributeIfContent("StreamEncryption", encrpytionConfig)
+        outputs=AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]
 
 [#macro createFirehoseStream id name destination dependencies="" ]
     [@cfResource
@@ -52,6 +91,8 @@
     errorPrefix
     processorId=""
     cmkKeyId=""
+    logGroupName=""
+    logStreamName=""
     streamNamePrefix=""
     dependencies=""]
 
@@ -63,13 +104,11 @@
         [#local destinationSolution = destinationConfiguration.Solution ]
 
         [#local role = {
-            "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, id)
-        }]
+            "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, id) }]
 
         [#local stream = {
             "Id" : id,
-            "Name" : formatName(streamNamePrefix, destinationCore.FullName)
-        }]
+            "Name" : formatName(streamNamePrefix, destinationCore.FullName) }]
 
         [#-- defaults --]
         [#local isEncrypted = false]
@@ -85,7 +124,7 @@
 
                 [#-- Handle target encryption --]
                 [#local isEncrypted = destinationSolution.Encryption.Enabled]
-                [#if isEncrypted]
+                [#if isEncrypted && !(cmkKeyId?has_content)]
                     [@fatal
                         message="Destination is encrypted, but CMK not provided."
                         context=destinationLink
@@ -120,6 +159,11 @@
                     )
                 ]]
 
+                [#local cwLoggingConfiguration = getFirehoseStreamLoggingConfiguration(false)]
+                [#if logGroupName?has_content || logStreamName?has_content]
+                    [#local cwLoggingConfiguration = getFirehoseStreamLoggingConfiguration(true, logGroupName, logStreamName)]
+                [/#if]
+
                 [#local streamDestinationConfiguration += 
                     getFirehoseStreamS3Destination(
                         bucket.Id,
@@ -130,7 +174,7 @@
                         role.Id,
                         isEncrypted,
                         cmkKeyId,
-                        getFirehoseStreamLoggingConfiguration(false),
+                        cwLoggingConfiguration,
                         false,
                         {},
                         processorId?has_content?then([
@@ -155,12 +199,18 @@
                 [#break]
 
         [/#switch]
+
+        [#-- [@createKinesisDataStream 
+            id=dataStream.Id
+            name=dataStream.Name
+            keyId=dataStreamEncryptionKey
+            dependencies=dependencies
+        /] --]
         
         [@createRole
             id=role.Id
             trustedServices=["firehose.amazonaws.com"]
             policies=rolePolicies
-            dependencies=dependencies
         /]
 
         [@createFirehoseStream

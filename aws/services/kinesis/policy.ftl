@@ -30,7 +30,7 @@
     ]
 [/#function]
 
-[#function fireHoseDataStreamKinesisPermssion id]
+[#function firehoseKinesisDataStreamPermssion id]
     [#return [
         getPolicyStatement(
             [
