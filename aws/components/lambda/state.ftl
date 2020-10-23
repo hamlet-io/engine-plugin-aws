@@ -128,8 +128,7 @@
                     "default" : "invoke",
                     "invoke" : lambdaInvokePermission(id),
                     "authorise" : lambdaInvokePermission(id),
-                    "authorize" : lambdaInvokePermission(id),
-                    "kinesis" : lambdaKinesisPermission(id)
+                    "authorize" : lambdaInvokePermission(id)
                 }
             }
         }
