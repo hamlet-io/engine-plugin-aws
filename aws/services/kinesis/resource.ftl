@@ -199,13 +199,6 @@
                 [#break]
 
         [/#switch]
-
-        [#-- [@createKinesisDataStream 
-            id=dataStream.Id
-            name=dataStream.Name
-            keyId=dataStreamEncryptionKey
-            dependencies=dependencies
-        /] --]
         
         [@createRole
             id=role.Id
