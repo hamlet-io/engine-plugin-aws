@@ -2,10 +2,35 @@
 
 [#-- Resources --]
 [#assign AWS_IAM_POLICY_RESOURCE_TYPE="policy" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_IDENTITY_SERVICE
+    resource=AWS_IAM_POLICY_RESOURCE_TYPE
+/]
 [#assign AWS_IAM_MANAGED_POLICY_RESOURCE_TYPE = "managedPolicy" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_IDENTITY_SERVICE
+    resource=AWS_IAM_MANAGED_POLICY_RESOURCE_TYPE
+/]
 [#assign AWS_IAM_ROLE_RESOURCE_TYPE="role" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_IDENTITY_SERVICE
+    resource=AWS_IAM_ROLE_RESOURCE_TYPE
+/]
 [#assign AWS_IAM_USER_RESOURCE_TYPE="user"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_IDENTITY_SERVICE
+    resource=AWS_IAM_USER_RESOURCE_TYPE
+/]
 [#assign AWS_IAM_SERVICE_LINKED_ROLE_RESOURCE_TYPE="serviceLinkedRole" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_IDENTITY_SERVICE
+    resource=AWS_IAM_SERVICE_LINKED_ROLE_RESOURCE_TYPE
+/]
 
 [#function formatPolicyId ids...]
     [#return formatResourceId(

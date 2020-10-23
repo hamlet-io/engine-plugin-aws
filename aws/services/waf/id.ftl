@@ -7,8 +7,23 @@
 [#-- reousrce type definitions will be needed here but for now --]
 [#-- AWs hasn't defined any of interest                        --]
 [#assign AWS_WAF_RULE_RESOURCE_TYPE = "wafRule" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_WEB_APPLICATION_FIREWALL_SERVICE
+    resource=AWS_WAF_RULE_RESOURCE_TYPE
+/]
 [#assign AWS_WAF_ACL_RESOURCE_TYPE = "wafAcl" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_WEB_APPLICATION_FIREWALL_SERVICE
+    resource=AWS_WAF_ACL_RESOURCE_TYPE
+/]
 [#assign AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE = "wafAssoc" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_WEB_APPLICATION_FIREWALL_SERVICE
+    resource=AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE
+/]
 
 [#-- TODO(mfl): Deprecate direct creation of IPSet rule --]
 [#assign AWS_WAF_IPSET_RESOURCE_TYPE = "wafIpSet" ]
@@ -78,4 +93,3 @@
                 resourceId,
                 extensions)]
 [/#function]
-

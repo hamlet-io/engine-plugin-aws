@@ -2,7 +2,18 @@
 
 [#-- Resources --]
 [#assign AWS_CMK_RESOURCE_TYPE = "cmk" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_KEY_MANAGEMENT_SERVICE
+    resource=AWS_CMK_RESOURCE_TYPE
+/]
+
 [#assign AWS_CMK_ALIAS_RESOURCE_TYPE = "cmkalias" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_KEY_MANAGEMENT_SERVICE
+    resource=AWS_CMK_ALIAS_RESOURCE_TYPE
+/]
 
 [#function formatSegmentCMKId ]
     [#return

@@ -2,8 +2,23 @@
 
 [#-- Resources --]
 [#assign AWS_CLOUDFRONT_DISTRIBUTION_RESOURCE_TYPE = "cf" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_CLOUDFRONT_SERVICE
+    resource=AWS_CLOUDFRONT_DISTRIBUTION_RESOURCE_TYPE
+/]
 [#assign AWS_CLOUDFRONT_ACCESS_ID_RESOURCE_TYPE = "cfaccess" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_CLOUDFRONT_SERVICE
+    resource=AWS_CLOUDFRONT_ACCESS_ID_RESOURCE_TYPE
+/]
 [#assign AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE = "cforigin" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_CLOUDFRONT_SERVICE
+    resource=AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE
+/]
 
 [#function formatDependentCFDistributionId resourceId extensions...]
     [#return formatDependentResourceId(
@@ -26,4 +41,3 @@
                 resourceId,
                 extensions)]
 [/#function]
-

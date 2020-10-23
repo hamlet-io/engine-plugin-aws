@@ -2,10 +2,35 @@
 
 [#-- Resources --]
 [#assign AWS_LAMBDA_RESOURCE_TYPE = "lambda"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_LAMBDA_SERVICE
+    resource=AWS_LAMBDA_RESOURCE_TYPE
+/]
 [#assign AWS_LAMBDA_FUNCTION_RESOURCE_TYPE = "lambda"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_LAMBDA_SERVICE
+    resource=AWS_LAMBDA_FUNCTION_RESOURCE_TYPE
+/]
 [#assign AWS_LAMBDA_PERMISSION_RESOURCE_TYPE = "permission"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_LAMBDA_SERVICE
+    resource=AWS_LAMBDA_PERMISSION_RESOURCE_TYPE
+/]
 [#assign AWS_LAMBDA_EVENT_SOURCE_TYPE = "source"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_LAMBDA_SERVICE
+    resource=AWS_LAMBDA_EVENT_SOURCE_TYPE
+/]
 [#assign AWS_LAMBDA_VERSION_RESOURCE_TYPE = "lambdaVersion" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_LAMBDA_SERVICE
+    resource=AWS_LAMBDA_VERSION_RESOURCE_TYPE
+/]
 
 [#function formatLambdaPermissionId occurrence extensions...]
     [#return formatResourceId(
@@ -27,4 +52,3 @@
             "lambda",
             getReference(lambdaId))]
 [/#function]
-

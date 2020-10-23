@@ -232,6 +232,18 @@
                 ]
             ]
         [/#list]
+        [#local ulimits = []]
+        [#list (container.Ulimits!{}) as id, limit ]
+            [#local ulimits +=
+                [
+                    {
+                        "Name" : limit.Name,
+                        "HardLimit" : limit.HardLimit,
+                        "SoftLimit" : limit.SoftLimit
+                    }
+                ]
+            ]
+        [/#list]
 
         [#local placementConstraints = combineEntities( placementConstraints, container.PlacementConstraints![], UNIQUE_COMBINE_BEHAVIOUR) ]
 
@@ -279,7 +291,8 @@
                 attributeIfContent("EntryPoint", container.EntryPoint![]) +
                 attributeIfContent("Command", container.Command![]) +
                 attributeIfContent("HealthCheck", container.HealthCheck!{}) +
-                attributeIfContent("Hostname", container.Hostname!"")
+                attributeIfContent("Hostname", container.Hostname!"") +
+                attributeIfContent("Ulimits", ulimits )
             ]
         ]
     [/#list]

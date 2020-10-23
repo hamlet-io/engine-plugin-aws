@@ -2,8 +2,24 @@
 
 [#-- Resources --]
 [#assign AWS_SNS_TOPIC_RESOURCE_TYPE = "snstopic"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_SIMPLE_NOTIFICATION_SERVICE
+    resource=AWS_SNS_TOPIC_RESOURCE_TYPE
+/]
+
 [#assign AWS_SNS_SUBSCRIPTION_RESOURCE_TYPE = "snssub"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_SIMPLE_NOTIFICATION_SERVICE
+    resource=AWS_SNS_SUBSCRIPTION_RESOURCE_TYPE
+/]
 [#assign AWS_SNS_PLATFORMAPPLICATION_RESOURCE_TYPE = "snsplatformapp" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_SIMPLE_NOTIFICATION_SERVICE
+    resource=AWS_SNS_PLATFORMAPPLICATION_RESOURCE_TYPE
+/]
 
 [#function formatSNSTopicId ids...]
     [#return formatResourceId(

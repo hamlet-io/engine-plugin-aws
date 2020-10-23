@@ -1,7 +1,17 @@
 [#ftl]
 
 [#assign AWS_S3_RESOURCE_TYPE = "s3" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_SIMPLE_STORAGE_SERVICE
+    resource=AWS_S3_RESOURCE_TYPE
+/]
 [#assign AWS_S3_BUCKET_POLICY_RESOURCE_TYPE="bucketpolicy" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_SIMPLE_STORAGE_SERVICE
+    resource=AWS_S3_BUCKET_POLICY_RESOURCE_TYPE
+/]
 
 [#function formatS3Id ids...]
     [#return formatResourceId(
@@ -57,4 +67,3 @@
                 bucketId,
                 destinationId)]
 [/#function]
-

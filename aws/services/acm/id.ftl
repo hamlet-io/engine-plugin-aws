@@ -2,6 +2,11 @@
 
 [#-- Resources --]
 [#assign AWS_CERTIFICATE_RESOURCE_TYPE="certificate" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_CERTIFICATE_MANAGER_SERVICE
+    resource=AWS_CERTIFICATE_RESOURCE_TYPE
+/]
 
 [#function formatCertificateId ids...]
     [#return formatResourceId(

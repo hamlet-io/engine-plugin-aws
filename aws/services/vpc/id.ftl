@@ -2,34 +2,144 @@
 
 [#-- Resources --]
 [#assign AWS_VPC_RESOURCE_TYPE = "vpc" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_RESOURCE_TYPE
+/]
+
 [#assign AWS_VPC_SUBNET_RESOURCE_TYPE = "subnet" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_SUBNET_RESOURCE_TYPE
+/]
+
 [#assign AWS_VPC_FLOWLOG_RESOURCE_TYPE = "vpcflowlogs" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_FLOWLOG_RESOURCE_TYPE
+/]
+
 
 [#assign AWS_VPC_ROUTE_TABLE_RESOURCE_TYPE = "routeTable" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_ROUTE_TABLE_RESOURCE_TYPE
+/]
+
 [#assign AWS_VPC_ROUTE_RESOURCE_TYPE = "route" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_ROUTE_RESOURCE_TYPE
+/]
 [#assign AWS_VPC_NETWORK_ROUTE_TABLE_ASSOCIATION_TYPE = "association" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_NETWORK_ROUTE_TABLE_ASSOCIATION_TYPE
+/]
 
 [#assign AWS_VPC_NETWORK_ACL_RESOURCE_TYPE = "networkACL" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_NETWORK_ACL_RESOURCE_TYPE
+/]
 [#assign AWS_VPC_NETWORK_ACL_RULE_RESOURCE_TYPE = "rule"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_NETWORK_ACL_RULE_RESOURCE_TYPE
+/]
 [#assign AWS_VPC_NETWORK_ACL_ASSOCIATION_TYPE = "association" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_NETWORK_ACL_ASSOCIATION_TYPE
+/]
 
 [#assign AWS_VPC_SUBNET_TYPE = "subnet"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_SUBNET_TYPE
+/]
+
 [#assign AWS_VPC_SUBNETLIST_TYPE = "subnetList" ]
 
 [#assign AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE = "securityGroup" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+/]
 [#assign AWS_VPC_SECURITY_GROUP_INGRESS_RESOURCE_TYPE = "securityGroupIngress" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_SECURITY_GROUP_INGRESS_RESOURCE_TYPE
+/]
 [#assign AWS_VPC_SECURITY_GROUP_EGRESS_RESOURCE_TYPE = "securityGroupEgress" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_SECURITY_GROUP_EGRESS_RESOURCE_TYPE
+/]
 
 [#assign AWS_VPC_IGW_RESOURCE_TYPE = "igw" ]
-[#assign AWS_VPC_IGW_ATTACHMENT_TYPE = formatId( AWS_VPC_IGW_RESOURCE_TYPE, "attachment") ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_IGW_RESOURCE_TYPE
+/]
+[#assign AWS_VPC_IGW_ATTACHMENT_TYPE = "igwXattachment" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_IGW_ATTACHMENT_TYPE
+/]
 [#assign AWS_VPC_NAT_GATEWAY_RESOURCE_TYPE = "natGateway" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_NAT_GATEWAY_RESOURCE_TYPE
+/]
 
 [#assign AWS_VPC_VPCENDPOINT_RESOURCE_TYPE = "vpcEndPoint"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_VPCENDPOINT_RESOURCE_TYPE
+/]
 [#assign AWS_VPC_ENDPOINT_RESOURCE_TYPE = "endpointGateway" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_ENDPOINT_RESOURCE_TYPE
+/]
 
 [#assign AWS_VPC_ENDPOINT_SERVICE_RESOURCE_TYPE = "vpcEndPointSerivce" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_ENDPOINT_SERVICE_RESOURCE_TYPE
+/]
 [#assign AWS_VPC_ENDPOINT_SERVICE_PERMISSION_RESOURCE_TYPE = "vpcEndPointServicePermission" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_ENDPOINT_SERVICE_PERMISSION_RESOURCE_TYPE
+/]
 [#assign AWS_VPC_ENDPOINT_SERVICE_NOTIFICATION_RESOURCE_TYPE = "vpcEndpontServiceNotification" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+    resource=AWS_VPC_ENDPOINT_SERVICE_NOTIFICATION_RESOURCE_TYPE
+/]
 
 [#function formatSecurityGroupId ids...]
     [#return formatResourceId(
