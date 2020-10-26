@@ -125,7 +125,7 @@
                         solution.VPCAccess,
                         {
                             "Ports" : [ availablePorts ],
-                            "SecurityGroups" : getExistingReference(securityGroupId),
+                            "SecurityGroups" : securityGroupId,
                             "Description" : core.FullName
                         }
                     ),
@@ -135,7 +135,7 @@
                         "networkacl",
                         solution.VPCAccess,
                         {
-                            "SecurityGroups" : getExistingReference(securityGroupId),
+                            "SecurityGroups" : securityGroupId,
                             "Description" : core.FullName
                         }
                     )

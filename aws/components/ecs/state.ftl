@@ -155,14 +155,14 @@
             "Roles" : {
                 "Inbound" : {
                     "networkacl" : {
-                        "SecurityGroups" : getExistingReference(sgGroupId),
+                        "SecurityGroups" : sgGroupId,
                         "Description" : core.FullName
                     }
                 },
                 "Outbound" : {
                     "networkacl" : {
                         "Ports" : [ "ssh" ],
-                        "SecurityGroups" : getExistingReference(sgGroupId),
+                        "SecurityGroups" : sgGroupId,
                         "Description" : core.FullName
                     }
                 }
@@ -300,14 +300,14 @@
                         "LogGroupIds" : [ lgId ]
                     },
                     "networkacl" : {
-                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "SecurityGroups" : securityGroupId,
                         "Description" : core.FullName
                     }
                 },
                 "Outbound" : {
                     "networkacl" : {
                         "Ports" : [ availablePorts ],
-                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "SecurityGroups" : securityGroupId,
                         "Description" : core.FullName
                     }
                 }
@@ -471,14 +471,14 @@
                         "LogGroupIds" : [ lgId ]
                     },
                     "networkacl" : {
-                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "SecurityGroups" : securityGroupId,
                         "Description" : core.FullName
                     }
                 },
                 "Outbound" : {
                     "networkacl" : {
                         "Ports" : [ availablePorts ],
-                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "SecurityGroups" : securityGroupId,
                         "Description" : core.FullName
                     },
                     "run" :

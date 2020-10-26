@@ -734,6 +734,15 @@
                                                 (container.InboundPorts)![],
                                                 UNIQUE_COMBINE_BEHAVIOUR
                                             )]
+                    [#list container.Links as id,link ]
+                        [@createSecurityGroupRulesFromLink
+                            occurrence=subOccurrence
+                            groupId=ecsSecurityGroupId
+                            inboundPorts=container.InboundPorts
+                            linkTarget=link
+                            networkProfile=networkProfile
+                        /]
+                    [/#list]
                 [/#list]
 
                 [@createSecurityGroupRulesFromNetworkProfile

@@ -45,7 +45,7 @@
             "Roles" : {
                 "Inbound" : {
                     "networkacl" : {
-                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "SecurityGroups" : securityGroupId,
                         "Description" : core.FullName
                     }
                 },
@@ -56,7 +56,7 @@
                     "root" : efsFullPermission(id),
                     "networkacl" : {
                         "Ports" : [ availablePorts ],
-                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "SecurityGroups" : securityGroupId,
                         "Description" : core.FullName
                     }
                 }

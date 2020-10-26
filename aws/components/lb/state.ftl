@@ -226,7 +226,7 @@
                     "networkacl",
                     securityGroupRequired,
                     {
-                        "SecurityGroups" : getExistingReference(securityGroupId),
+                        "SecurityGroups" : securityGroupId,
                         "Description" : core.FullName
                     }
                 ),
@@ -238,7 +238,7 @@
                     attributeIfTrue(
                         "SecurityGroups",
                         securityGroupRequired
-                        getExistingReference(securityGroupId)
+                        securityGroupId
                     ) +
                     attributeIfTrue(
                         "IPAddressGroups",

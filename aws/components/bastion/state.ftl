@@ -52,14 +52,14 @@
             "Roles" : {
                 "Inbound" : {
                     "networkacl" : {
-                        "SecurityGroups" : getExistingReference(securityGroupToId),
+                        "SecurityGroups" : securityGroupToId,
                         "Description" : core.FullName
                     }
                 },
                 "Outbound" : {
                     "networkacl" : {
                         "Ports": [ "ssh" ],
-                        "SecurityGroups" : getExistingReference(securityGroupToId),
+                        "SecurityGroups" : securityGroupToId,
                         "Description" : core.FullName
                     }
                 }
