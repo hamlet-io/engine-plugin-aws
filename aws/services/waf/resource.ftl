@@ -371,7 +371,7 @@
                 content=
                 {
                     "LoggingConfiguration" : {
-                        "LogDestinationConfigs" : getArn(deliveryStreamId)
+                        "LogDestinationConfigs" : [getArn(deliveryStreamId)]
                     }
                 }
             /]
