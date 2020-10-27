@@ -260,35 +260,36 @@
             ] ]
     [/#if]
 
-
-    [#-- Add CloudWatch LogGroup                           --]
-    [#-- Firehose can only accept Access Logs so we create --]
-    [#-- this every time regardless.                       --]
-    [@setupLogGroup
-        occurrence=occurrence
-        logGroupId=accessLgId
-        logGroupName=accessLgName
-        loggingProfile=loggingProfile
-    /]
-
-    [#-- Manage Access Logs with Kinesis Firehose --]
-    [#if solution.LogToOpsData]
-
+    [#if solution.AccessLogging.Enabled]
+        [#-- Manage Access Logs with Kinesis Firehose --]
         [#-- APIGW Stage resource to send Access Logs to a Kinesis Delivery Stream --]
         [#local stageLogTarget = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
+        
+        [#-- Default destination is the Ops Data bucket, unless another link is provided --]
+        [#local destinationLink = baselineLinks["OpsData"]]
+        [#if solution.AccessLogging["aws:DestinationLink"]?has_content]
+            [#local destinationLink = getLinkTarget(occurrence, solution.AccessLogging["aws:DestinationLink"])]
+        [/#if]
 
         [@setupFirehoseStream
             id=stageLogTarget
-            destinationLink=baselineLinks["OpsData"]
+            lgPath=formatAbsolutePath(core.FullAbsolutePath, "cloudwatch")
+            destinationLink=destinationLink
             cmkKeyId=kmsKeyId
             bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath)
             errorPrefix=formatRelativePath("error", occurrence.Core.FullRelativePath)
             streamNamePrefix="amazon-apigateway-"
-            logGroupName=accessLgName
         /]
 
         [#local stageDependencies += [stageLogTarget]]
-
+    [#else]
+        [#-- Add CloudWatch LogGroup --]
+        [@setupLogGroup
+            occurrence=occurrence
+            logGroupId=accessLgId
+            logGroupName=accessLgName
+            loggingProfile=loggingProfile
+        /]
     [/#if]
 
     [#if deploymentSubsetRequired("apigateway", true)]
@@ -584,14 +585,30 @@
     [#if wafAclResources?has_content ]
 
         [#local wafRegional = isRegionalEndpointType && (!cfResources?has_content) ]
-        [#local wafLoggingProfile = getLoggingProfile(solution.WAF.Profiles.Logging) ]
 
-        [@createWAFLoggingFromProfile
-            occurrence=occurrence
-            wafaclId=wafAclResources.acl.Id
-            loggingProfile=wafLoggingProfile
-            regional=wafRegional
-        /]
+        [#-- WAF Logging --]
+        [#-- WAF Can only log to a Kinesis Firehose via a CloudWatch LogStream --]
+        [#if solution.WAF.Logging.Enabled]
+            [#local wafFirehoseStreamId = 
+                formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclResources.acl.Id)]
+
+            [@setupFirehoseStream
+                id=wafFirehoseStreamId
+                lgPath=formatAbsolutePath(core.FullAbsolutePath, "waf")
+                destinationLink=baselineLinks["OpsData"]
+                cmkKeyId=kmsKeyId
+                bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf")
+                errorPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf", "error")
+                streamNamePrefix="aws-waf-logs-"
+            /]
+
+            [@createWAFLoggingDeliveryStream
+                wafaclId=wafAclResources.acl.Id
+                deliveryStreamId=wafFirehoseStreamId
+                regional=wafRegional
+            /]
+
+        [/#if]
 
         [#if deploymentSubsetRequired("apigateway", true)]
             [@createWAFAclFromSecurityProfile

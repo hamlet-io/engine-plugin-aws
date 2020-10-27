@@ -355,9 +355,7 @@
 [/#macro]
 
 
-[#macro createWAFLoggingFromProfile occurrence wafaclId loggingProfile regional=false ]
-
-    [#local dataFeedArns = []]
+[#macro createWAFLoggingDeliveryStream wafaclId deliveryStreamId="" regional=false ]
 
     [#if regional ]
         [#local wafType = "regional" ]
@@ -365,47 +363,7 @@
         [#local wafType = "global" ]
     [/#if]
 
-    [#list (loggingProfile.ForwardingRules)!{} as id,forwardingRule ]
-        [#list forwardingRule.Links?values as link]
-            [#if link?is_hash]
-                [#local linkTarget = getLinkTarget(occurrence, link) ]
-
-                [#if !linkTarget?has_content]
-                    [#continue]
-                [/#if]
-
-                [#local linkTargetRoles = linkTarget.State.Roles ]
-
-                [#if (linkTargetRoles.Outbound["logwatcher"]!{})?has_content
-                        && linkTarget.Direction == "outbound" ]
-
-                    [#switch linkTarget.Core.Type ]
-                        [#case DATAFEED_COMPONENT_TYPE ]
-                            [#if linkTarget.Configuration.Solution["aws:WAFLogFeed"] ]
-
-                                [#local dataFeedArns = combineEntities(
-                                        dataFeedArns,
-                                        linkTarget.State.Attributes["STREAM_ARN"],
-                                        UNIQUE_COMBINE_BEHAVIOUR
-                                )]
-
-                            [#else]
-                                [@fatal
-                                    message="Invalid Data Feed Configuration"
-                                    detail="To use datafeed for WAF Logging please enable aws:WAFLogFeed"
-                                    context=linkTarget.Configuration.Solution
-                                /]
-                            [/#if]
-                            [#break]
-                    [/#switch]
-                [/#if]
-            [/#if]
-        [/#list]
-    [/#list]
-
-    [@debug message="WAFLog" context=dataFeedArns enabled=true /]
-
-    [#if dataFeedArns?has_content ]
+    [#if deliveryStreamId?has_content ]
         [#if deploymentSubsetRequired("cli", false) ]
             [@addCliToDefaultJsonOutput
                 id=wafaclId
@@ -413,7 +371,7 @@
                 content=
                 {
                     "LoggingConfiguration" : {
-                        "LogDestinationConfigs" : dataFeedArns
+                        "LogDestinationConfigs" : getArn(deliveryStreamId)
                     }
                 }
             /]

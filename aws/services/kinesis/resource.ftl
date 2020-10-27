@@ -86,13 +86,13 @@
 
 [#macro setupFirehoseStream 
     id
+    lgPath
     destinationLink
     bucketPrefix
     errorPrefix
+    cloudwatchEnabled=true
     processorId=""
     cmkKeyId=""
-    logGroupName=""
-    logStreamName=""
     streamNamePrefix=""
     dependencies=""]
 
@@ -102,6 +102,14 @@
         [#local destinationConfiguration = destinationLink.Configuration ]
         [#local destinationResources = destinationLink.State.Resources ]
         [#local destinationSolution = destinationConfiguration.Solution ]
+    
+        [#local lg = {
+            "Id" : formatLogGroupId(id),
+            "Name" : lgPath }]
+
+        [#local lgStream = {
+            "Id" : formatResourceId(AWS_CLOUDWATCH_LOG_GROUP_STREAM_RESOURCE_TYPE, id),
+            "Name" : formatDependentResourceId(AWS_CLOUDWATCH_LOG_GROUP_STREAM_RESOURCE_TYPE, lg.Id) }]
 
         [#local role = {
             "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, id) }]
@@ -159,11 +167,6 @@
                     )
                 ]]
 
-                [#local cwLoggingConfiguration = getFirehoseStreamLoggingConfiguration(false)]
-                [#if logGroupName?has_content || logStreamName?has_content]
-                    [#local cwLoggingConfiguration = getFirehoseStreamLoggingConfiguration(true, logGroupName, logStreamName)]
-                [/#if]
-
                 [#local streamDestinationConfiguration += 
                     getFirehoseStreamS3Destination(
                         bucket.Id,
@@ -174,7 +177,7 @@
                         role.Id,
                         isEncrypted,
                         cmkKeyId,
-                        cwLoggingConfiguration,
+                        getFirehoseStreamLoggingConfiguration(cloudwatchEnabled, lg.Name!"", lgStream.Name!""),
                         false,
                         {},
                         processorId?has_content?then([
@@ -199,6 +202,20 @@
                 [#break]
 
         [/#switch]
+
+        [#if cloudwatchEnabled]
+            [@createLogGroup
+                id=lg.Id
+                name=lg.Name
+            /]
+
+            [@createLogStream
+                id=lgStream.Id
+                name=lgStream.Name
+                logGroup=lg.Name
+                dependencies=lg.Id
+            /]
+        [/#if]
         
         [@createRole
             id=role.Id
@@ -210,6 +227,7 @@
             id=stream.Id
             name=stream.Name
             destination=streamDestinationConfiguration
+            dependencies=cloudwatchEnabled?then(lgStream.Id, "")
         /]
     [#else]
         [@fatal

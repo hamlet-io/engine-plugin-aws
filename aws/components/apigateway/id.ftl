@@ -1,7 +1,18 @@
 [#ftl]
 [@addResourceGroupInformation
     type=APIGATEWAY_COMPONENT_TYPE
-    attributes=[]
+    attributes=[
+        {
+            "Names" : "AccessLogging",
+            "Children" : [
+                {
+                    "Names" : "DestinationLink",
+                    "Description" : "Destination for the Execution logs. If not provided, Execution logs will be stored in the OpsData DataBucket.",
+                    "Children" : linkChildrenConfiguration
+                }
+            ]
+        }
+    ]
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=
