@@ -722,6 +722,25 @@
         [#case "application"]
             [#if wafAclResources?has_content ]
 
+                [#local wafFirehoseStreamId = 
+                    formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclResources.acl.Id)]
+
+                [@setupFirehoseStream
+                    id=wafFirehoseStreamId
+                    lgPath=formatAbsolutePath(core.FullAbsolutePath, "waf")
+                    destinationLink=baselineLinks["OpsData"]
+                    cmkKeyId=kmsKeyId
+                    bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf")
+                    errorPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf", "error")
+                    streamNamePrefix="aws-waf-logs-"
+                /]
+
+                [@createWAFLoggingDeliveryStream
+                    wafaclId=wafAclResources.acl.Id
+                    deliveryStreamId=wafFirehoseStreamId
+                    regional=false
+                /]
+
                 [#local wafLoggingProfile = getLoggingProfile(wafSolution.Profiles.Logging) ]
                 [@createWAFLoggingFromProfile
                     occurrence=occurrence
