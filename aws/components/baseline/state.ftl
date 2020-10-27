@@ -94,11 +94,19 @@
                 }
             },
             "Attributes" : {
+                "ARN" : getExistingReference(bucketId, ARN_ATTRIBUTE_TYPE),
                 "BUCKET" : getExistingReference(bucketId)
             },
             "Roles" : {
                 "Inbound" : {},
-                "Outbound" : {}
+                "Outbound" : {
+                    "all" : {},
+                    "produce" : {},
+                    "consume" : {},
+                    "replicadestination" : {},
+                    "replicasource" : {},
+                    "datafeed" : {}
+                }
             }
         }
     ]

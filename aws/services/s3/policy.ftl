@@ -268,3 +268,54 @@
         )
     ]   
 [/#function]
+
+[#function getDataBucketRolePolicies bucketId bucketName encryptionKeyId role]
+
+    [#local s3AllEncryptionPolicy  = s3EncryptionAllPermission(
+        encryptionKeyId,
+        bucketName,
+        "*",
+        getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE))]
+
+    [#local s3ReadEncryptionPolicy  = s3EncryptionReadPermission(
+        encryptionKeyId,
+        bucketName,
+        "*",
+        getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE))]
+
+    [#local linkPolicies = []]
+    [#switch role]
+        [#case "all"]
+            [#local linkPolicies += [
+                s3AllPermission(bucketId) + s3AllEncryptionPolicy
+            ]]
+            [#break]
+        [#case "produce"]
+            [#local linkPolicies += [
+                s3ProducePermission(bucketId) + s3AllEncryptionPolicy
+            ]]
+            [#break]
+
+        [#case "consume"]
+            [#local linkPolicies += [
+                s3ConsumePermission(bucketId) + s3ReadEncryptionPolicy
+            ]]
+            [#break]
+
+        [#case "replicadestination"]
+            [#local linkPolicies += [
+                s3ReplicaDestinationPermission(bucketId) + s3ReadEncryptionPolicy
+            ]]
+            [#break]
+
+        [#case "replicasource"]
+            [#break]
+
+        [#case "datafeed"]
+            [#local linkPolicies += [
+                s3KinesesStreamPermission(bucketId)
+            ]]
+            [#break]
+    [/#switch]
+    [#return linkPolicies]
+[/#function]

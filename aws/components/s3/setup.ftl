@@ -161,6 +161,7 @@
     [/#list]
 
     [#list solution.Links?values as link]
+        [#local linkPolicies = []]
         [#if link?is_hash]
 
             [#local linkTarget = getLinkTarget(occurrence, link, false) ]
@@ -202,6 +203,16 @@
                     [/#if]
                     [#break]
 
+                [#case BASELINE_DATA_COMPONENT_TYPE ]
+                    [#local bucket = linkTargetResources["bucket"]]
+
+                    [#local linkPolicies += 
+                        getDataBucketRolePolicies(
+                            bucket.Id,
+                            bucket.Name,
+                            kmsKeyId,
+                            linkTarget.Role )]
+                    [#-- do not break, include S3 case --]
                 [#case S3_COMPONENT_TYPE ]
                     [#switch linkTarget.Role ]
                         [#case  "replicadestination" ]
@@ -255,7 +266,7 @@
 
     [#if deploymentSubsetRequired("iam", true) &&
             isPartOfCurrentDeploymentUnit(roleId)]
-        [#local linkPolicies = getLinkTargetsOutboundRoles(links) ]
+        [#local linkPolicies += getLinkTargetsOutboundRoles(links) ]
 
         [#local rolePolicies =
                 arrayIfContent(

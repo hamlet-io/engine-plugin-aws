@@ -215,6 +215,9 @@
                                             /]
                                         [/#if]
                                         [#break]
+                                    [#case "replicasource" ]
+                                        [#local versioningEnabled = true]
+                                        [#break]
                                 [/#switch]
                                 [#break]
 
