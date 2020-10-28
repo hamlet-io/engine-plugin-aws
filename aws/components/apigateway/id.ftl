@@ -7,8 +7,20 @@
             "Children" : [
                 {
                     "Names" : "DestinationLink",
-                    "Description" : "Destination for the Access logs. If not provided, Execution logs will be stored in the OpsData DataBucket.",
+                    "Description" : "Destination for the Access logs. If not provided but AccessLogging is enabled, Access logs will be sent to CloudWatch.",
                     "Children" : linkChildrenConfiguration
+                },
+                {
+                    "Names" : "KinesisFirehose",
+                    "Description" : "Send Access logs to a KinesisFirehose. By default, the Firehose destination is the OpsData DataBucket, but can be overwritten by specifying a DestinationLink.",
+                    "Type" : BOOLEAN_TYPE,
+                    "Default" : false
+                },
+                {
+                    "Names" : "KeepLogGroup",
+                    "Description" : "Prevent the destruction of existing LogGroups when enabling KinesisFirehose.",
+                    "Type" : BOOLEAN_TYPE,
+                    "Default" : true
                 }
             ]
         }
