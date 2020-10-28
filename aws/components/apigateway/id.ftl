@@ -7,7 +7,7 @@
             "Children" : [
                 {
                     "Names" : "DestinationLink",
-                    "Description" : "Destination for the Execution logs. If not provided, Execution logs will be stored in the OpsData DataBucket.",
+                    "Description" : "Destination for the Access logs. If not provided, Execution logs will be stored in the OpsData DataBucket.",
                     "Children" : linkChildrenConfiguration
                 }
             ]
