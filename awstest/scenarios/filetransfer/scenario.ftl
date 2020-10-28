@@ -1,10 +1,16 @@
 [#ftl]
 
-[#-- Get stack output --]
-[#macro awstest_scenario_filetransfer ]
+[@addScenario
+    name="filetransfer"
+    description="Testing scenario for the aws filetransfer component"
+    provider=AWSTEST_PROVIDER
+    properties=[]
+/]
+
+[#macro awstest_scenario_filetransfer parameters ]
 
     [#-- Base SFTP File Transfer Server --]
-    [@addScenario
+    [@loadScenario
         blueprint={
             "Tiers" : {
                 "app" : {

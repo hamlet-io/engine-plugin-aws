@@ -1,10 +1,16 @@
 [#ftl]
 
-[#-- Get stack output --]
-[#macro awstest_scenario_lb ]
+[@addScenario
+    name="lb"
+    description="Testing scenario for the aws lb component"
+    provider=AWSTEST_PROVIDER
+    properties=[]
+/]
+
+[#macro awstest_scenario_lb parameters ]
 
     [#-- HTTPS Load Balancer --]
-    [@addScenario
+    [@loadScenario
         blueprint={
             "Tiers" : {
                 "elb" : {

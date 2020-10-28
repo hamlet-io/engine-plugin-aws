@@ -14,15 +14,3 @@
 --]
 
 [#assign AWSTEST_PROVIDER = "awstest"]
-
-[#assign testScenarios = [
-    "apigateway",
-    "db",
-    "filetransfer",
-    "lb",
-    "s3"
-]]
-
-[@updateScenarioList
-    scenarioIds=testScenarios
-/]

@@ -1,10 +1,17 @@
 [#ftl]
 
-[#-- Get stack output --]
-[#macro awstest_scenario_db ]
+[@addScenario
+    name="db"
+    description="Testing scenario for the aws db component"
+    provider=AWSTEST_PROVIDER
+    properties=[]
+/]
+
+
+[#macro awstest_scenario_db parameters]
 
     [#-- Base database setup --]
-    [@addScenario
+    [@loadScenario
         settingSets=[
             {
                 "Type" : "Settings",
@@ -100,7 +107,7 @@
 
 
     [#-- Generated creds --]
-    [@addScenario
+    [@loadScenario
         blueprint={
             "Tiers" : {
                 "db" : {
