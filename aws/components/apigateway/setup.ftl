@@ -261,35 +261,44 @@
     [/#if]
 
     [#if solution.AccessLogging.Enabled]
+
         [#-- Manage Access Logs with Kinesis Firehose --]
-        [#-- APIGW Stage resource to send Access Logs to a Kinesis Delivery Stream --]
-        [#local stageLogTarget = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
-        
-        [#-- Default destination is the Ops Data bucket, unless another link is provided --]
-        [#local destinationLink = baselineLinks["OpsData"]]
-        [#if solution.AccessLogging["aws:DestinationLink"]?has_content]
-            [#local destinationLink = getLinkTarget(occurrence, solution.AccessLogging["aws:DestinationLink"])]
+        [#if solution.AccessLogging["aws:KinesisFirehose"] ]
+
+            [#-- APIGW Stage resource to send Access Logs to a Kinesis Delivery Stream --]
+            [#local stageLogTarget = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
+            
+            [#-- Default destination is the Ops Data bucket, unless another link is provided --]
+            [#local destinationLink = baselineLinks["OpsData"]]
+            [#if solution.AccessLogging["aws:DestinationLink"]?has_content]
+                [#local destinationLink = getLinkTarget(occurrence, solution.AccessLogging["aws:DestinationLink"])]
+            [/#if]
+
+            [@setupFirehoseStream
+                id=stageLogTarget
+                lgPath=formatAbsolutePath(core.FullAbsolutePath, "cloudwatch")
+                destinationLink=destinationLink
+                cmkKeyId=kmsKeyId
+                bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath)
+                errorPrefix=formatRelativePath("error", occurrence.Core.FullRelativePath)
+                streamNamePrefix="amazon-apigateway-"
+            /]
+
+            [#local stageDependencies += [stageLogTarget]]
         [/#if]
 
-        [@setupFirehoseStream
-            id=stageLogTarget
-            lgPath=formatAbsolutePath(core.FullAbsolutePath, "cloudwatch")
-            destinationLink=destinationLink
-            cmkKeyId=kmsKeyId
-            bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath)
-            errorPrefix=formatRelativePath("error", occurrence.Core.FullRelativePath)
-            streamNamePrefix="amazon-apigateway-"
-        /]
-
-        [#local stageDependencies += [stageLogTarget]]
-    [#else]
-        [#-- Add CloudWatch LogGroup --]
-        [@setupLogGroup
-            occurrence=occurrence
-            logGroupId=accessLgId
-            logGroupName=accessLgName
-            loggingProfile=loggingProfile
-        /]
+        [#-- If Access logs are intended for CloudWatch or the existing log groups should remain ...    --]
+        [#-- This is intended to allow existing products to allow progressive updates to their logging. --]
+        [#-- If Firehose is enabled, LogGroup will not receive new logs and serve as records only.      --]
+        [#if !solution.AccessLogging["aws:KinesisFirehose"] || solution.AccessLogging["aws:KeepLogGroup"]]
+            [#-- Add CloudWatch LogGroup --]
+            [@setupLogGroup
+                occurrence=occurrence
+                logGroupId=accessLgId
+                logGroupName=accessLgName
+                loggingProfile=loggingProfile
+            /]
+        [/#if]
     [/#if]
 
     [#if deploymentSubsetRequired("apigateway", true)]
