@@ -200,6 +200,7 @@
                                 [/#if]
                                 [#break]
 
+                            [#case BASELINE_DATA_COMPONENT_TYPE]
                             [#case S3_COMPONENT_TYPE]
 
                                 [#switch linkTarget.Role ]
