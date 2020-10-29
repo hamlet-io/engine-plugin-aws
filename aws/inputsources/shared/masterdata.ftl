@@ -1310,6 +1310,45 @@
       }
     }
   },
+  "ComputeProviders" : {
+    "default" : {
+      "Containers" : {
+        "Default" : {
+          "Provider" : "_autoscalegroup",
+          "Base" : 1
+        }
+      }
+    },
+    "fargate" : {
+      "Containers" : {
+        "Default" : {
+          "Provider" : "aws:fargate",
+          "Base" : 1
+        }
+      }
+    },
+    "fargate-add-spot" : {
+      "Containers" : {
+        "Default" : {
+          "Provider" : "aws:fargate",
+          "Base" : 1
+        },
+        "Additional" : {
+          "spot" : {
+            "Provider" : "aws:fargatespot"
+          }
+        }
+      }
+    },
+    "fargatespot" : {
+      "Containers" : {
+        "Default" : {
+          "Provider" : "aws:fargatespot",
+          "Base" : 1
+        }
+      }
+    }
+  },
   "Product": {
     "cfredirect-v1": {
       "Region": "us-east-1"

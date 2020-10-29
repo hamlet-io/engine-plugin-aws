@@ -26,6 +26,7 @@
     [#local solution = occurrence.Configuration.Solution ]
 
     [#local clusterId = formatResourceId(AWS_ECS_RESOURCE_TYPE, core.Id)]
+    [#local clusterName = core.FullName ]
 
     [#local lgId = formatLogGroupId(core.Id) ]
     [#local lgName = core.FullAbsolutePath ]
@@ -87,24 +88,13 @@
         [/#list]
     [/#if]
 
-    [#local computeProvider = {}]
-    [#if solution.ComputeProvider == "ec2OnDemand" ]
-        [#local computeProvider += {
-                "ecsCapacityProviderOnDemand" : {
-                    "Id" : formatResourceId(AWS_ECS_CAPACIITY_PROVIDER_RESOURCE_TYPE, core.Id, 'OnDemand'),
-                    "Type" : AWS_ECS_CAPACIITY_PROVIDER_RESOURCE_TYPE
-                }
-            }
-        ]
-    [/#if]
-
     [#-- TODO(mfl): Use formatDependentRoleId() for roles --]
     [#assign componentState =
         {
             "Resources" : {
                 "cluster" : {
                     "Id" : clusterId,
-                    "Name" : core.FullName,
+                    "Name" : clusterName,
                     "Type" : AWS_ECS_RESOURCE_TYPE,
                     "Monitored" : true
                 },
@@ -144,11 +134,14 @@
                     "Name" : lgInstanceLogName,
                     "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
                     "IncludeInDeploymentState" : false
+                },
+                "ecsASGCapacityProvider" : {
+                    "Id" : formatResourceId(AWS_ECS_CAPACIITY_PROVIDER_RESOURCE_TYPE, core.Id, "asg" ),
+                    "Type" : AWS_ECS_CAPACIITY_PROVIDER_RESOURCE_TYPE
                 }
             } +
             attributeIfContent("logMetrics", logMetrics) +
-            autoScaling +
-            computeProvider,
+            autoScaling,
             "Attributes" : {
                 "ARN" : getExistingReference(clusterId, ARN_ATTRIBUTE_TYPE)
             },

@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_ecs_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets=[ "template", "cli", "epilogue" ] /]
+    [@addDefaultGenerationContract subsets=[ "template" ] /]
 [/#macro]
 
 [#macro aws_ecs_cf_deployment_solution occurrence ]
@@ -23,6 +23,8 @@
     [#local ecsInstanceLogGroupId = resources["lgInstanceLog"].Id]
     [#local ecsInstanceLogGroupName = resources["lgInstanceLog"].Name]
 
+    [#local ecsASGCapacityProviderId = resources["ecsASGCapacityProvider"].Id]
+
     [#local cliAutoScaleGroupId = formatId(ecsAutoScaleGroupId, "cli" ) ]
     [#local cliECSClusterId = formatId(ecsId, "cli") ]
 
@@ -30,14 +32,8 @@
 
     [#local defaultLogDriver = solution.LogDriver ]
     [#local fixedIP = solution.FixedIP ]
-    [#local computeProvider = solution.ComputeProvider]
 
     [#local cliRequired = false ]
-
-    [#if computeProvider == "ec2OnDemand" ]
-        [#local cliRequired = true ]
-        [#local ecsOnDemandCapacityProviderId = resources["ecsCapacityProviderOnDemand"].Id]
-    [/#if]
 
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
 
@@ -47,6 +43,7 @@
     [#local bootstrapProfile = getBootstrapProfile(occurrence, "ECS")]
     [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
     [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
+    [#local computeProviderProfile = getComputeProviderProfile(solution.Profiles.ComputeProvider)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -75,7 +72,8 @@
     [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
     [#local publicRouteTable = routeTableConfiguration.Public ]
 
-    [#local ecsTags = getOccurrenceCoreTags(occurrence, ecsName, "", true)]
+    [#local ecsAsgTags = getOccurrenceCoreTags(occurrence, ecsName, "", true)]
+    [#local ecsTags = getOccurrenceCoreTags(occurrence, ecsName )]
 
     [#local environmentVariables = {}]
 
@@ -317,7 +315,39 @@
             [/#if]
         [/#if]
 
-        [@createECSCluster id=ecsId /]
+        [#local defaultCapacityProviderStrategies = []]
+
+        [#if getExistingReference(ecsId)?has_content ]
+            [#local defaultCapacityProviderStrategies += [
+                    getECSCapacityProviderStrategy(computeProviderProfile.Containers.Default, ecsASGCapacityProviderId)
+            ]]
+            [#list (computeProviderProfile.Containers.Additional)?values as providerRule ]
+                [#local defaultCapacityProviderStrategies +=
+                    [
+                        getECSCapacityProviderStrategy(providerRule, ecsASGCapacityProviderId)
+                    ]
+                ]
+            [/#list]
+        [/#if]
+
+        [#local capacityProviders =
+            [
+                "FARGATE",
+                "FARGATE_SPOT"
+            ] +
+            valueIfContent(
+                [ getReference(ecsASGCapacityProviderId) ],
+                getExistingReference(ecsAutoScaleGroupId),
+                []
+            )
+        ]
+
+        [@createECSCluster
+            id=ecsId
+            tags=ecsTags
+            capacityProviders=capacityProviders
+            defaultCapacityProviderStrategies=defaultCapacityProviderStrategies
+        /]
 
         [@cfResource
             id=ecsInstanceProfileId
@@ -353,15 +383,35 @@
                 getInitConfigEIPAllocation(allocationIds)]
         [/#if]
 
+        [#local capacityProviderScalingPolicy = { "managedScaling" : false, "managedTermination" : false } ]
+        [#local managedTermination = false ]
+
         [#if solution.HostScalingPolicies?has_content ]
             [#list solution.HostScalingPolicies as name, scalingPolicy ]
-                [#local scalingPolicyId = resources["scalingPolicy" + name].Id ]
-
-                [#local scalingMetricTrigger = scalingPolicy.TrackingResource.MetricTrigger ]
 
                 [#switch scalingPolicy.Type?lower_case ]
+                    [#case "computeprovider"]
+                        [#if ! capacityProviderScaling?has_content ]
+                            [#local capacityProviderScalingPolicy += {
+                                    "managedScaling" : true,
+                                    "minStepSize" : scalingPolicy.ComputeProvider.MinAdjustment,
+                                    "maxStepSize" : scalingPolicy.ComputeProvider.MaxAdjustment,
+                                    "targetCapacity" : scalingPolicy.ComputeProvider.TargetCapacity,
+                                    "managedTermination" : scalingPolicy.ComputeProvider.ManageTermination
+                            }]
+                            [#local managedTermination = scalingPolicy.ComputeProvider.ManageTermination ]
+                        [#else]
+                            [@fatal
+                                message="Only one compute provider scaling policy can be provided"
+                                context=solution.HostScalingPolicies
+                                enabled=true
+                            /]
+                        [/#if]
+                        [#break]
                     [#case "stepped"]
                     [#case "tracked"]
+                        [#local scalingPolicyId = resources["scalingPolicy" + name].Id ]
+                        [#local scalingMetricTrigger = scalingPolicy.TrackingResource.MetricTrigger ]
 
                         [#if isPresent(scalingPolicy.TrackingResource.Link) ]
 
@@ -486,6 +536,9 @@
                         [#break]
 
                     [#case "scheduled"]
+                        [#local scalingPolicyId = resources["scalingPolicy" + name].Id ]
+                        [#local scalingMetricTrigger = scalingPolicy.TrackingResource.MetricTrigger ]
+
                         [#if ! isPresent( scalingPolicy.Scheduled )]
                             [@fatal
                                 message="Scheduled Scaling policy not found"
@@ -511,6 +564,15 @@
             [/#list]
         [/#if]
 
+        [#-- workaround for a known bug with a circular dependency with the capacity provider asg and ecs cluster name --]
+        [#if getExistingReference(ecsId)?has_content ]
+            [@createECSCapacityProvider?with_args(capacityProviderScalingPolicy)
+                id=ecsASGCapacityProviderId
+                asgId=ecsAutoScaleGroupId
+                tags=ecsTags
+            /]
+        [/#if]
+
         [@createEc2AutoScaleGroup
             id=ecsAutoScaleGroupId
             tier=core.Tier
@@ -520,9 +582,10 @@
             processorProfile=processorProfile
             autoScalingConfig=solution.AutoScaling
             multiAZ=multiAZ
-            tags=ecsTags
+            tags=ecsAsgTags
             networkResources=networkResources
             hibernate=hibernate
+            scaleInProtection=managedTermination
         /]
 
         [@createEC2LaunchConfig
@@ -539,85 +602,6 @@
             enableCfnSignal=solution.AutoScaling.WaitForSignal
             keyPairId=sshKeyPairId
         /]
-    [/#if]
-
-    [#if deploymentSubsetRequired("cli", false) && cliRequired ]
-
-        [#if computeProvider == "ec2OnDemand" ]
-
-            [#-- Enable instance scale in protection -- ]
-            [#-- aws autoscaling update-auto-scaling-group --auto-scaling-group-name my-asg --new-instances-protected-from-scale-in --]
-            [@addCliToDefaultJsonOutput
-                id=cliAutoScaleGroupId
-                command=commandUpdateAutoScaleGroup
-                content=
-                    {
-                        "NewInstancesProtectedFromScaleIn" : true
-                    }
-            /]
-
-        [/#if]
-    [/#if]
-
-
-    [#if deploymentSubsetRequired("epilogue", false) && cliRequired ]
-
-        [@addToDefaultBashScriptOutput
-            content=[
-                " case $\{STACK_OPERATION} in",
-                "   create|update)",
-                "       info \"Getting Basic ECS Cluster details..\"",
-                "       # Get cli config file",
-                "       split_cli_file \"$\{CLI}\" \"$\{tmpdir}\" || return $?",
-                "       # Get ASG Name",
-                "       export asgName=\"$(get_cloudformation_stack_output" +
-                "       \"" + region + "\" " +
-                "       \"$\{STACK_NAME}\" " +
-                "       \"" + ecsAutoScaleGroupId + "\" " +
-                "       || return $?)\"",
-                "       export asgArn=\"$(get_ec2_autoscalegroup_arn" +
-                "       \"" + region + "\" " +
-                "       \"$\{asgName}\" " +
-                "       || return $? )\"",
-                "       export ecsClusterArn=\"$(get_cloudformation_stack_output" +
-                "       \"" + region + "\" " +
-                "       \"$\{STACK_NAME}\" " +
-                "       \"" + ecsId + "\" " +
-                "       \"arn\" " +
-                "       || return $?)\"",
-                "       ;;",
-                " esac"
-            ]
-        /]
-
-        [#-- asgName is used as a capacity provider name as the capacity providers can't be updated or deleted at the moment --]
-        [#-- change to ecsOnDemandCapacityProviderId when update/delete is supported--]
-        [#if computeProvider == "ec2OnDemand" ]
-            [@addToDefaultBashScriptOutput
-                content=[
-                    " case $\{STACK_OPERATION} in",
-                    "   create|update)",
-                    "       info \"Setting up OnDemand Ec2 Scaling\"",
-                    "       update_ec2_autoscalegroup" +
-                    "       \"" + region + "\" " +
-                    "       \"$\{asgName}\" " +
-                    "       \"$\{tmpdir}/cli-" + cliAutoScaleGroupId + "-" + commandUpdateAutoScaleGroup + ".json\" " +
-                    "       || return $?",
-                    "       create_ecs_capacity_provider" +
-                    "       \"" + region + "\" " +
-                    "       \"$\{asgName}\" " +
-                    "       \"$\{asgArn}\" " +
-                    "       || return $?",
-                    "       update_ecs_cluster_capacity_providers" +
-                    "       \"" + region + "\" " +
-                    "       \"$\{ecsClusterArn}\" " +
-                    "       \"$\{asgName}\" " +
-                    "       || return $?",
-                    "       ;;",
-                    " esac"
-                ]
-            /]
-        [/#if]
     [/#if]
 
 [/#macro]

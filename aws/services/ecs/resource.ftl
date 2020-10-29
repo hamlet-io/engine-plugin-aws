@@ -41,11 +41,20 @@
         }
     }]
 
+[#assign ECS_CAPACITYPROVIDER_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+
 [#assign ecsMappings =
     {
         AWS_ECS_RESOURCE_TYPE : ECS_OUTPUT_MAPPINGS,
         AWS_ECS_SERVICE_RESOURCE_TYPE : ECS_SERVICE_OUTPUT_MAPPINGS,
-        AWS_ECS_TASK_RESOURCE_TYPE : ECS_TASK_OUTPUT_MAPPINGS
+        AWS_ECS_TASK_RESOURCE_TYPE : ECS_TASK_OUTPUT_MAPPINGS,
+        AWS_ECS_CAPACIITY_PROVIDER_RESOURCE_TYPE : ECS_CAPACITYPROVIDER_OUTPUT_MAPPINGS
     }
 ]
 
@@ -84,11 +93,72 @@
     }
 ]
 
-[#macro createECSCluster id ]
+[#function getCapacityProviderStrategy capacityProvider weight base="" ]
+    [#return
+        {
+            "CapacityProvider" : capacityProvider,
+            "Weight" : weight
+        } +
+        attributeIfContent(
+            "Base",
+            base
+        )
+    ]
+[/#function]
+
+[#function getECSCapacityProviderStrategy computeProfileRule asgCapacityProviderId ]
+    [#local provider = "" ]
+    [#switch computeProfileRule.Provider ]
+        [#case "_autoscalegroup" ]
+            [#local provider = getReference(asgCapacityProviderId)]
+            [#break]
+        [#case "aws:fargate" ]
+            [#local provider = "FARGATE" ]
+            [#break]
+        [#case "aws:fargatespot" ]
+            [#local provider = "FARGATE_SPOT" ]
+            [#break]
+    [/#switch]
+
+    [#return
+        {
+            "CapacityProvider" : provider,
+            "Weight" : computeProfileRule.Weight
+        } +
+        attributeIfContent(
+            "Base",
+            computeProfileRule.RequiredCount!""
+        )
+    ]
+[/#function]
+
+[#macro createECSCluster
+            id
+            name=""
+            capacityProviders=[]
+            defaultCapacityProviderStrategies=[]
+            tags={}
+            dependencies=[] ]
         [@cfResource
             id=id
             type="AWS::ECS::Cluster"
             outputs=ECS_OUTPUT_MAPPINGS
+            tags=tags
+            dependencies=dependencies
+            properties={
+            } +
+            attributeIfContent(
+                "CapacityProviders",
+                capacityProviders
+            ) +
+            attributeIfContent(
+                "DefaultCapacityProviderStrategy",
+                defaultCapacityProviderStrategies
+            ) +
+            attributeIfContent(
+                "ClusterName",
+                name
+            )
         /]
 [/#macro]
 
@@ -417,5 +487,49 @@
             )
         dependencies=dependencies
         outputs=ECS_SERVICE_OUTPUT_MAPPINGS
+    /]
+[/#macro]
+
+[#macro createECSCapacityProvider
+        id
+        asgId
+        managedScaling=true
+        minStepSize=1
+        maxStepSize=10000
+        targetCapacity=90
+        managedTermination=true
+        tags={}
+        dependencies=[] ]
+
+    [@cfResource
+        id=id
+        type="AWS::ECS::CapacityProvider"
+        outputs=ECS_CAPACITYPROVIDER_OUTPUT_MAPPINGS
+        tags=tags
+        properties={
+            "AutoScalingGroupProvider" : {
+                "AutoScalingGroupArn" : getReference(asgId),
+                "ManagedTerminationProtection" :
+                        managedTermination?then(
+                            "ENABLED",
+                            "DISABLED"
+                        ),
+                "ManagedScaling" :
+                    valueIfTrue(
+                        {
+                            "Status" : "ENABLED",
+                            "MinimumScalingStepSize" : minStepSize,
+                            "MaximumScalingStepSize" : maxStepSize,
+                            "TargetCapacity" : targetCapacity
+                        },
+                        managedScaling,
+                        {
+                            "Status" : "DISABLED"
+                        }
+                    )
+            }
+        }
+        dependencies=dependencies
+
     /]
 [/#macro]
