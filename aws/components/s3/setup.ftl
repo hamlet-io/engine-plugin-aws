@@ -270,7 +270,7 @@
 
         [#local rolePolicies =
                 arrayIfContent(
-                    [getPolicyDocument(linkPolicies, "links")],
+                    [getPolicyDocument(asFlattenedArray(linkPolicies), "links")],
                     linkPolicies) +
                 arrayIfContent(
                     getPolicyDocument(
