@@ -260,18 +260,19 @@
             ] ]
     [/#if]
 
-    [#if solution.AccessLogging.Enabled]
+    [#local accessLogging = solution.AccessLogging ]
+    [#if accessLogging.Enabled]
 
         [#-- Manage Access Logs with Kinesis Firehose --]
-        [#if solution.AccessLogging["aws:KinesisFirehose"] ]
+        [#if accessLogging["aws:KinesisFirehose"] ]
 
             [#-- APIGW Stage resource to send Access Logs to a Kinesis Delivery Stream --]
             [#local stageLogTarget = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
             
             [#-- Default destination is the Ops Data bucket, unless another link is provided --]
             [#local destinationLink = baselineLinks["OpsData"]]
-            [#if solution.AccessLogging["aws:DestinationLink"]?has_content]
-                [#local destinationLink = getLinkTarget(occurrence, solution.AccessLogging["aws:DestinationLink"])]
+            [#if accessLogging["aws:DestinationLink"].Enabled && accessLogging["aws:DestinationLink"].Configured]
+                [#local destinationLink = getLinkTarget(occurrence, accessLogging["aws:DestinationLink"])]
             [/#if]
 
             [@setupFirehoseStream
@@ -290,7 +291,7 @@
         [#-- If Access logs are intended for CloudWatch or the existing log groups should remain ...    --]
         [#-- This is intended to allow existing products to allow progressive updates to their logging. --]
         [#-- If Firehose is enabled, LogGroup will not receive new logs and serve as records only.      --]
-        [#if !solution.AccessLogging["aws:KinesisFirehose"] || solution.AccessLogging["aws:KeepLogGroup"]]
+        [#if !accessLogging["aws:KinesisFirehose"] || accessLogging["aws:KeepLogGroup"] ]
             [#-- Add CloudWatch LogGroup --]
             [@setupLogGroup
                 occurrence=occurrence
