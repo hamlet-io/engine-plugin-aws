@@ -738,7 +738,7 @@
                         [@createSecurityGroupRulesFromLink
                             occurrence=subOccurrence
                             groupId=ecsSecurityGroupId
-                            inboundPorts=container.InboundPorts
+                            inboundPorts=inboundPorts
                             linkTarget=link
                             networkProfile=networkProfile
                         /]
