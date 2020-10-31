@@ -66,6 +66,7 @@
         [#local replicationEnabled = false]
         [#local replicationConfiguration = {} ]
         [#local replicationBucket = "" ]
+        [#local replicateEncryptedData = subSolution.Encryption.Enabled]
 
         [#-- Storage bucket --]
         [#if subCore.Type == BASELINE_DATA_COMPONENT_TYPE ]
@@ -217,6 +218,7 @@
                                             /]
                                         [/#if]
                                         [#break]
+
                                 [/#switch]
                                 [#break]
 
@@ -230,13 +232,13 @@
                     [#if (subSolution.Replication!{})?has_content]
                         [#local replicationRules = [] ]
                         [#list subSolution.Replication.Prefixes as prefix ]
-                            [#-- fixup(b-line): update b-line call of getS3ReplicationRule to use replica key if source repl. --]
                             [#local replicationRules +=
                                 [ getS3ReplicationRule(
                                     replicationBucket,
                                     subSolution.Replication.Enabled,
                                     prefix,
-                                    false
+                                    replicateEncryptedData,
+                                    cmkId
                                 )]]
                         [/#list]
 
