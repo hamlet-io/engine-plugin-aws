@@ -23,6 +23,7 @@
     [#local replicationEnabled = false]
     [#local replicationConfiguration = {} ]
     [#local replicationBucket = ""]
+    [#local replicateEncryptedData = solution.Encryption.Enabled]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "CDNOriginKey", "Encryption" ])]
@@ -239,13 +240,13 @@
     [#if replicationEnabled ]
         [#local replicationRules = [] ]
         [#list solution.Replication.Prefixes as prefix ]
-            [#-- TODO: fixup(s3): update s3 call of getS3ReplicationRule to use replica key if source repl. --]
             [#local replicationRules +=
                 [ getS3ReplicationRule(
                     replicationBucket,
                     solution.Replication.Enabled,
                     prefix,
-                    false
+                    replicateEncryptedData,
+                    kmsKeyId
                 )]]
         [/#list]
 
