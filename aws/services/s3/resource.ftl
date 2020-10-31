@@ -233,6 +233,7 @@
     ]
 [/#function]
 
+[#-- TODO: feat(s3): update s3 replication rule with repl. encryption key --]
 [#function getS3ReplicationRule
     destinationBucket
     enabled

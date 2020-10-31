@@ -204,6 +204,7 @@
 
                 [#case S3_COMPONENT_TYPE ]
                     [#switch linkTarget.Role ]
+                        [#-- TODO: Update s3 link proc. to add source bucket policy --]
                         [#case  "replicadestination" ]
                             [#local replicationEnabled = true]
                             [#local versioningEnabled = true]
@@ -238,6 +239,7 @@
     [#if replicationEnabled ]
         [#local replicationRules = [] ]
         [#list solution.Replication.Prefixes as prefix ]
+            [#-- TODO: fixup(s3): update s3 call of getS3ReplicationRule to use replica key if source repl. --]
             [#local replicationRules +=
                 [ getS3ReplicationRule(
                     replicationBucket,

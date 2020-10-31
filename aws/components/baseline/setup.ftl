@@ -200,6 +200,7 @@
                                 [/#if]
                                 [#break]
 
+                            [#-- TODO: feat(s3): update b-line link proc. to support other b-line data buckets. --]
                             [#case S3_COMPONENT_TYPE]
 
                                 [#switch linkTarget.Role ]
@@ -207,6 +208,7 @@
                                         [#local replicationEnabled = true]
                                         [#if !replicationBucket?has_content ]
                                             [#local replicationBucket = linkTargetAttributes["ARN"]]
+                                            [#-- TODO: Update baseline databucket link proc. to add source bucket policy --]
                                             [#local linkPolicies = getLinkTargetsOutboundRoles(links) ]
                                         [#else]
                                             [@fatal
@@ -228,6 +230,7 @@
                     [#if (subSolution.Replication!{})?has_content]
                         [#local replicationRules = [] ]
                         [#list subSolution.Replication.Prefixes as prefix ]
+                            [#-- fixup(b-line): update b-line call of getS3ReplicationRule to use replica key if source repl. --]
                             [#local replicationRules +=
                                 [ getS3ReplicationRule(
                                     replicationBucket,

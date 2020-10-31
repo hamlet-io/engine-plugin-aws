@@ -38,6 +38,7 @@
             )]
     [/#if]
 
+    [#-- TODO: feat(s3): update state routine role 'replicadestination' /w 'all' permissions. --]
     [#assign componentState =
         {
             "Resources" : {
