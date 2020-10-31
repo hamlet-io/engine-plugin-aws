@@ -233,18 +233,30 @@
     ]
 [/#function]
 
-[#-- TODO: feat(s3): update s3 replication rule with repl. encryption key --]
 [#function getS3ReplicationRule
     destinationBucket
     enabled
     prefix
-    encryptReplica
+    encryptReplica,
+    replicaKMSKeyId=""
 ]
+
+    [#local destinationEncryptionConfiguration = {}]
+    [#if encryptReplica && replicaKMSKeyId?has_content]
+        [#local destinationEncryptionConfiguration = {
+            "ReplicaKmsKeyID" : getArn(replicaKMSKeyId)
+        }]
+    [/#if]
+
     [#return
         {
             "Destination" : {
                 "Bucket" : getArn(destinationBucket)
-            },
+            } +
+            attributeIfContent(
+                "EncryptionConfiguration",
+                destinationEncryptionConfiguration
+            ),
             "Prefix" : prefix,
             "Status" : enabled?then(
                 "Enabled",
