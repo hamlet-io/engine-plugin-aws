@@ -205,7 +205,6 @@
 
                 [#case S3_COMPONENT_TYPE ]
                     [#switch linkTarget.Role ]
-                        [#-- TODO: Update s3 link proc. to add source bucket policy --]
                         [#case  "replicadestination" ]
                             [#local replicationEnabled = true]
                             [#local versioningEnabled = true]
@@ -258,7 +257,14 @@
 
     [#if deploymentSubsetRequired("iam", true) &&
             isPartOfCurrentDeploymentUnit(roleId)]
-        [#local linkPolicies = getLinkTargetsOutboundRoles(links) ]
+        [#local linkPolicies = 
+            getLinkTargetsOutboundRoles(links) + 
+            s3EncryptionReadPermission(
+                kmsKeyId,
+                s3Name,
+                "*",
+                getExistingReference(s3Id, REGION_ATTRIBUTE_TYPE)
+            )]
 
         [#local rolePolicies =
                 arrayIfContent(
