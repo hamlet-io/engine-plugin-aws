@@ -66,7 +66,6 @@
         [#local replicationEnabled = false]
         [#local replicationConfiguration = {} ]
         [#local replicationBucket = "" ]
-        [#local replicateEncryptedData = subSolution.Encryption.Enabled]
 
         [#-- Storage bucket --]
         [#if subCore.Type == BASELINE_DATA_COMPONENT_TYPE ]
@@ -77,6 +76,7 @@
             [#local replicationRoleId = subResources["role"].Id]
             [#local links = getLinkTargets(subOccurrence)]
             [#local versioningEnabled = (subSolution.Replication!{})?has_content?then(true, subSolution.Versioning)]
+            [#local replicateEncryptedData = subSolution.Encryption.Enabled]
 
             [#if ( deploymentSubsetRequired(BASELINE_COMPONENT_TYPE, true) && legacyS3 == false ) ||
                 ( deploymentSubsetRequired("s3") && legacyS3 == true) ]
