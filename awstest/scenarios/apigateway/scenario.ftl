@@ -7,7 +7,7 @@
     properties=[]
 /]
 
-[#macro awstest_scenario_apigateway parameters ]
+[#macro awstest_scenario_apigateway ]
 
     [#-- Base apigateway setup - No solution parameters --]
     [@addDefinition

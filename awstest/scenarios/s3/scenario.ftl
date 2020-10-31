@@ -7,7 +7,7 @@
     properties=[]
 /]
 
-[#macro awstest_scenario_s3 parameters ]
+[#macro awstest_scenario_s3 ]
 
     [#-- Base S3 - No default parameters --]
     [@loadScenario

@@ -8,7 +8,7 @@
 /]
 
 
-[#macro awstest_scenario_db parameters]
+[#macro awstest_scenario_db ]
 
     [#-- Base database setup --]
     [@loadScenario

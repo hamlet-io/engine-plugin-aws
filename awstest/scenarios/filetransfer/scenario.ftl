@@ -7,7 +7,7 @@
     properties=[]
 /]
 
-[#macro awstest_scenario_filetransfer parameters ]
+[#macro awstest_scenario_filetransfer ]
 
     [#-- Base SFTP File Transfer Server --]
     [@loadScenario

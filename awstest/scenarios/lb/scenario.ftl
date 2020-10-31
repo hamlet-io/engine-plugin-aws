@@ -7,7 +7,7 @@
     properties=[]
 /]
 
-[#macro awstest_scenario_lb parameters ]
+[#macro awstest_scenario_lb ]
 
     [#-- HTTPS Load Balancer --]
     [@loadScenario
