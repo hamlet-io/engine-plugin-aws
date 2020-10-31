@@ -209,8 +209,14 @@
                                         [#local replicationEnabled = true]
                                         [#if !replicationBucket?has_content ]
                                             [#local replicationBucket = linkTargetAttributes["ARN"]]
-                                            [#-- TODO: Update baseline databucket link proc. to add source bucket policy --]
-                                            [#local linkPolicies = getLinkTargetsOutboundRoles(links) ]
+                                            [#local linkPolicies = 
+                                                getLinkTargetsOutboundRoles(links) + 
+                                                s3EncryptionReadPermission(
+                                                    cmkId,
+                                                    bucketName,
+                                                    "*",
+                                                    getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE)
+                                                )]
                                         [#else]
                                             [@fatal
                                                 message="Only one replication destination is supported"
