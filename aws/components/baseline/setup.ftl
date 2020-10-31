@@ -200,7 +200,7 @@
                                 [/#if]
                                 [#break]
 
-                            [#-- TODO: feat(s3): update b-line link proc. to support other b-line data buckets. --]
+                            [#case BASELINE_DATA_COMPONENT_TYPE]
                             [#case S3_COMPONENT_TYPE]
 
                                 [#switch linkTarget.Role ]
