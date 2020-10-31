@@ -210,7 +210,8 @@
             [
                 "s3:GetObjectVersion",
                 "s3:GetObjectVersionAcl",
-                "s3:GetObjectVersionTagging"
+                "s3:GetObjectVersionTagging",
+                "s3:GetObjectVersionForReplication"
             ],
             bucket,
             prefix,
