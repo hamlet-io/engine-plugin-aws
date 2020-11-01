@@ -60,6 +60,4 @@
             }
         }
     /]
-
-    [#-- TODO: Add s3 unit test for eval. b-line data link /w replicadest. role --]
 [/#macro]
