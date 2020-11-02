@@ -29,9 +29,9 @@
         solution.Logging.EnableFlowLogs
     )]
 
-    [#local networkCIDR = (network.CIDR)?has_content?then(
-                    network.CIDR.Address + "/" + network.CIDR.Mask,
-                    solution.Address.CIDR )]
+    [#local networkCIDR = isPresent(network.CIDR)?then(
+        network.CIDR.Address + "/" + network.CIDR.Mask,
+        solution.Address.CIDR )]
 
     [#local subnetCIDRMask = getSubnetMaskFromSizes(
                                 networkCIDR,
