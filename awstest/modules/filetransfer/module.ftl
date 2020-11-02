@@ -1,16 +1,16 @@
 [#ftl]
 
-[@addScenario
+[@addModule
     name="filetransfer"
-    description="Testing scenario for the aws filetransfer component"
+    description="Testing module for the aws filetransfer component"
     provider=AWSTEST_PROVIDER
     properties=[]
 /]
 
-[#macro awstest_scenario_filetransfer ]
+[#macro awstest_module_filetransfer  ]
 
     [#-- Base SFTP File Transfer Server --]
-    [@loadScenario
+    [@loadModule
         blueprint={
             "Tiers" : {
                 "app" : {

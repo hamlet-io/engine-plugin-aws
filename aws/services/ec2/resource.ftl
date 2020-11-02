@@ -431,7 +431,11 @@
                     "03ConfigureCluster" : {
                         "command" : "/opt/codeontap/bootstrap/ecs.sh",
                         "env" : {
-                            "ECS_CLUSTER" : getReference(ecsId),
+                            "ECS_CLUSTER" : valueIfContent(
+                                                    getExistingReference(ecsId),
+                                                    getExistingReference(ecsId),
+                                                    getReference(ecsId)
+                                            ),
                             "ECS_LOG_DRIVER" : defaultLogDriver
                         } +
                         attributeIfContent(
@@ -773,6 +777,7 @@
     multiAZ
     tags
     networkResources
+    scaleInProtection=false
     hibernate=false
     loadBalancers=[]
     targetGroups=[]
@@ -857,6 +862,11 @@
                 "TargetGroupARNs",
                 targetGroups,
                 targetGroups
+            ) +
+            attributeIfTrue(
+                "NewInstancesProtectedFromScaleIn",
+                scaleInProtection,
+                true
             )
         tags=tags
         outputs=AWS_EC2_AUTO_SCALE_GROUP_OUTPUT_MAPPINGS

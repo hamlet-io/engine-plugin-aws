@@ -1,13 +1,13 @@
 [#ftl]
 
-[@addScenario
+[@addModule
     name="apigateway"
-    description="Testing scenario for the aws apigateway component"
+    description="Testing module for the aws apigateway component"
     provider=AWSTEST_PROVIDER
     properties=[]
 /]
 
-[#macro awstest_scenario_apigateway ]
+[#macro awstest_module_apigateway ]
 
     [#-- Base apigateway setup - No solution parameters --]
     [@addDefinition
@@ -35,7 +35,7 @@
         }
     /]
 
-    [@loadScenario
+    [@loadModule
         settingSets=[
             {
                 "Type" : "Settings",

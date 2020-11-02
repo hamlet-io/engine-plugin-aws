@@ -1,17 +1,17 @@
 [#ftl]
 
-[@addScenario
+[@addModule
     name="db"
-    description="Testing scenario for the aws db component"
+    description="Testing module for the aws db component"
     provider=AWSTEST_PROVIDER
     properties=[]
 /]
 
 
-[#macro awstest_scenario_db ]
+[#macro awstest_module_db ]
 
     [#-- Base database setup --]
-    [@loadScenario
+    [@loadModule
         settingSets=[
             {
                 "Type" : "Settings",
@@ -107,7 +107,7 @@
 
 
     [#-- Generated creds --]
-    [@loadScenario
+    [@loadModule
         blueprint={
             "Tiers" : {
                 "db" : {

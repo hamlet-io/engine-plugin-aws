@@ -1310,6 +1310,45 @@
       }
     }
   },
+  "ComputeProviders" : {
+    "default" : {
+      "Containers" : {
+        "Default" : {
+          "Provider" : "_autoscalegroup",
+          "Base" : 1
+        }
+      }
+    },
+    "fargate" : {
+      "Containers" : {
+        "Default" : {
+          "Provider" : "aws:fargate",
+          "Base" : 1
+        }
+      }
+    },
+    "fargate-add-spot" : {
+      "Containers" : {
+        "Default" : {
+          "Provider" : "aws:fargate",
+          "Base" : 1
+        },
+        "Additional" : {
+          "spot" : {
+            "Provider" : "aws:fargatespot"
+          }
+        }
+      }
+    },
+    "fargatespot" : {
+      "Containers" : {
+        "Default" : {
+          "Provider" : "aws:fargatespot",
+          "Base" : 1
+        }
+      }
+    }
+  },
   "Product": {
     "cfredirect-v1": {
       "Region": "us-east-1"
@@ -1844,11 +1883,13 @@
     },
     "autoscaling" : {
       "Enabled" : true,
-      "ServiceName" : "autoscaling.amazonaws.com"
+      "ServiceName" : "autoscaling.amazonaws.com",
+      "Description" : "Default Service-Linked Role enables access to AWS Services and Resources used or managed by Auto Scaling"
     },
     "ecs" : {
       "Enabled" : true,
-      "ServiceName" : "ecs.amazonaws.com"
+      "ServiceName" : "ecs.amazonaws.com",
+      "Description" : "Role to enable Amazon ECS to manage your cluster."
     },
     "es" : {
       "Enabled" : true,

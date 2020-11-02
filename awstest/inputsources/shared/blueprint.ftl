@@ -4,35 +4,28 @@
 [#macro awstest_input_shared_blueprint_seed ]
     [@addBlueprint
         blueprint={
-            "ScenarioProfiles" : {
-                "aws-provider-testing" : {
-                    "Scenarios" : {
-                        "apigateway" : {
-                            "Provider" : "awstest",
-                            "Name" : "apigateway"
-                        },
-                        "db" : {
-                            "Provider" : "awstest",
-                            "Name" : "db"
-                        },
-                        "filetransfer" : {
-                            "Provider" : "awstest",
-                            "Name" : "filetransfer"
-                        },
-                        "lb" : {
-                            "Provider" : "awstest",
-                            "Name" : "lb"
-                        },
-                        "s3" : {
-                            "Provider" : "awstest",
-                            "Name" : "s3"
-                        }
-                    }
-                }
-            },
             "Solution" : {
-                "Profiles" : {
-                    "Scenarios" : [ "aws-provider-testing" ]
+                "Modules" : {
+                    "apigateway" : {
+                        "Provider" : "awstest",
+                        "Name" : "apigateway"
+                    },
+                    "db" : {
+                        "Provider" : "awstest",
+                        "Name" : "db"
+                    },
+                    "filetransfer" : {
+                        "Provider" : "awstest",
+                        "Name" : "filetransfer"
+                    },
+                    "lb" : {
+                        "Provider" : "awstest",
+                        "Name" : "lb"
+                    },
+                    "s3" : {
+                        "Provider" : "awstest",
+                        "Name" : "s3"
+                    }
                 }
             },
             "DeploymentGroups" : {

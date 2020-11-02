@@ -1,16 +1,16 @@
 [#ftl]
 
-[@addScenario
+[@addModule
     name="lb"
-    description="Testing scenario for the aws lb component"
+    description="Testing module for the aws lb component"
     provider=AWSTEST_PROVIDER
     properties=[]
 /]
 
-[#macro awstest_scenario_lb ]
+[#macro awstest_module_lb  ]
 
     [#-- HTTPS Load Balancer --]
-    [@loadScenario
+    [@loadModule
         blueprint={
             "Tiers" : {
                 "elb" : {

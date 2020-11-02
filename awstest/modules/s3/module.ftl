@@ -1,16 +1,16 @@
 [#ftl]
 
-[@addScenario
+[@addModule
     name="s3"
-    description="Testing scenario for the aws s3 component"
+    description="Testing module for the aws s3 component"
     provider=AWSTEST_PROVIDER
     properties=[]
 /]
 
-[#macro awstest_scenario_s3 ]
+[#macro awstest_module_s3  ]
 
     [#-- Base S3 - No default parameters --]
-    [@loadScenario
+    [@loadModule
         blueprint={
             "Tiers" : {
                 "app" : {
