@@ -237,13 +237,26 @@
     destinationBucket
     enabled
     prefix
-    encryptReplica
+    encryptReplica,
+    replicaKMSKeyId=""
 ]
+
+    [#local destinationEncryptionConfiguration = {}]
+    [#if encryptReplica && replicaKMSKeyId?has_content]
+        [#local destinationEncryptionConfiguration = {
+            "ReplicaKmsKeyID" : getArn(replicaKMSKeyId)
+        }]
+    [/#if]
+
     [#return
         {
             "Destination" : {
                 "Bucket" : getArn(destinationBucket)
-            },
+            } +
+            attributeIfContent(
+                "EncryptionConfiguration",
+                destinationEncryptionConfiguration
+            ),
             "Prefix" : prefix,
             "Status" : enabled?then(
                 "Enabled",

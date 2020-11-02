@@ -721,14 +721,26 @@
     [#switch engine ]
         [#case "application"]
             [#if wafAclResources?has_content ]
+                [#if solution.WAF.Logging.Enabled]
+                    [#local wafFirehoseStreamId = 
+                        formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclResources.acl.Id)]
 
-                [#local wafLoggingProfile = getLoggingProfile(wafSolution.Profiles.Logging) ]
-                [@createWAFLoggingFromProfile
-                    occurrence=occurrence
-                    wafaclId=wafAclResources.acl.Id
-                    loggingProfile=wafLoggingProfile
-                    regional=true
-                /]
+                    [@setupFirehoseStream
+                        id=wafFirehoseStreamId
+                        lgPath=formatAbsolutePath(core.FullAbsolutePath, "waf")
+                        destinationLink=baselineLinks["OpsData"]
+                        cmkKeyId=kmsKeyId
+                        bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf")
+                        errorPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf", "error")
+                        streamNamePrefix="aws-waf-logs-"
+                    /]
+
+                    [@createWAFLoggingDeliveryStream
+                        wafaclId=wafAclResources.acl.Id
+                        deliveryStreamId=wafFirehoseStreamId
+                        regional=false
+                    /]
+                [/#if]
 
                 [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                     [#-- Create a WAF ACL if required --]

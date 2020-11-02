@@ -18,10 +18,16 @@
     [#local apiId      = resources["apigateway"].Id]
     [#local apiName    = resources["apigateway"].Name]
 
+    [#-- Access Log Group --]
+    [#local accessLgId   = resources["accesslg"].Id]
+    [#local accessLgName = resources["accesslg"].Name]
+
     [#-- Use runId to ensure deploy happens every time --]
     [#local deployId   = resources["apideploy"].Id]
     [#local stageId    = resources["apistage"].Id]
     [#local stageName  = resources["apistage"].Name]
+    [#local stageDependencies = [deployId]]
+    [#local stageLogTarget = accessLgId]
 
     [#-- Determine the stage variables required --]
     [#local stageVariables = {} ]
@@ -35,10 +41,10 @@
                                                 openapiFileName)]
 
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
+    [#local baselineLinks = getBaselineLinks(occurrence, ["Encryption", "OpsData", "AppData" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local contextLinks = getLinkTargets(occurrence) ]
     [#assign _context =
@@ -84,6 +90,7 @@
             [#local linkTargetConfiguration = linkTarget.Configuration ]
             [#local linkTargetResources = linkTarget.State.Resources ]
             [#local linkTargetAttributes = linkTarget.State.Attributes ]
+            [#local linkTargetSolution = linkTargetConfiguration.Solution]
 
             [#switch linkTargetCore.Type]
                 [#case LB_COMPONENT_TYPE ]
@@ -138,6 +145,7 @@
                             } ]
                     [/#if]
                     [#break]
+            
             [/#switch]
         [/#if]
     [/#list]
@@ -252,15 +260,47 @@
             ] ]
     [/#if]
 
-    [#local accessLgId   = resources["accesslg"].Id]
-    [#local accessLgName = resources["accesslg"].Name]
+    [#local accessLogging = solution.AccessLogging ]
+    [#if accessLogging.Enabled]
 
-    [@setupLogGroup
-        occurrence=occurrence
-        logGroupId=accessLgId
-        logGroupName=accessLgName
-        loggingProfile=loggingProfile
-    /]
+        [#-- Manage Access Logs with Kinesis Firehose --]
+        [#if accessLogging["aws:KinesisFirehose"] ]
+
+            [#-- APIGW Stage resource to send Access Logs to a Kinesis Delivery Stream --]
+            [#local stageLogTarget = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
+            
+            [#-- Default destination is the Ops Data bucket, unless another link is provided --]
+            [#local destinationLink = baselineLinks["OpsData"]]
+            [#if accessLogging["aws:DestinationLink"].Enabled && accessLogging["aws:DestinationLink"].Configured]
+                [#local destinationLink = getLinkTarget(occurrence, accessLogging["aws:DestinationLink"])]
+            [/#if]
+
+            [@setupFirehoseStream
+                id=stageLogTarget
+                lgPath=formatAbsolutePath(core.FullAbsolutePath, "cloudwatch")
+                destinationLink=destinationLink
+                cmkKeyId=kmsKeyId
+                bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath)
+                errorPrefix=formatRelativePath("error", occurrence.Core.FullRelativePath)
+                streamNamePrefix="amazon-apigateway-"
+            /]
+
+            [#local stageDependencies += [stageLogTarget]]
+        [/#if]
+
+        [#-- If Access logs are intended for CloudWatch or the existing log groups should remain ...    --]
+        [#-- This is intended to allow existing products to allow progressive updates to their logging. --]
+        [#-- If Firehose is enabled, LogGroup will not receive new logs and serve as records only.      --]
+        [#if !accessLogging["aws:KinesisFirehose"] || accessLogging["aws:KeepLogGroup"] ]
+            [#-- Add CloudWatch LogGroup --]
+            [@setupLogGroup
+                occurrence=occurrence
+                logGroupId=accessLgId
+                logGroupName=accessLgName
+                loggingProfile=loggingProfile
+            /]
+        [/#if]
+    [/#if]
 
     [#if deploymentSubsetRequired("apigateway", true)]
         [#-- Assume extended openAPI specification is in the ops bucket --]
@@ -358,7 +398,7 @@
                     "RestApiId" : getReference(apiId),
                     "StageName" : stageName,
                     "AccessLogSetting" : {
-                        "DestinationArn" : getArn(accessLgId),
+                        "DestinationArn" : getArn(stageLogTarget),
                         "Format" : "$context.identity.sourceIp $context.identity.caller $context.identity.user $context.identity.userArn [$context.requestTime] $context.apiId $context.httpMethod $context.resourcePath $context.protocol $context.status $context.responseLength $context.requestId"
                     }
                 } +
@@ -369,7 +409,7 @@
                     solution.Tracing.Configured && solution.Tracing.Enabled && ((solution.Tracing.Mode!"") == "active"),
                     true)
             outputs={}
-            dependencies=deployId
+            dependencies=stageDependencies
         /]
 
         [#-- Create a CloudFront distribution if required --]
@@ -555,14 +595,30 @@
     [#if wafAclResources?has_content ]
 
         [#local wafRegional = isRegionalEndpointType && (!cfResources?has_content) ]
-        [#local wafLoggingProfile = getLoggingProfile(solution.WAF.Profiles.Logging) ]
 
-        [@createWAFLoggingFromProfile
-            occurrence=occurrence
-            wafaclId=wafAclResources.acl.Id
-            loggingProfile=wafLoggingProfile
-            regional=wafRegional
-        /]
+        [#-- WAF Logging --]
+        [#-- WAF Can only log to a Kinesis Firehose via a CloudWatch LogStream --]
+        [#if solution.WAF.Logging.Enabled]
+            [#local wafFirehoseStreamId = 
+                formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclResources.acl.Id)]
+
+            [@setupFirehoseStream
+                id=wafFirehoseStreamId
+                lgPath=formatAbsolutePath(core.FullAbsolutePath, "waf")
+                destinationLink=baselineLinks["OpsData"]
+                cmkKeyId=kmsKeyId
+                bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf")
+                errorPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf", "error")
+                streamNamePrefix="aws-waf-logs-"
+            /]
+
+            [@createWAFLoggingDeliveryStream
+                wafaclId=wafAclResources.acl.Id
+                deliveryStreamId=wafFirehoseStreamId
+                regional=wafRegional
+            /]
+
+        [/#if]
 
         [#if deploymentSubsetRequired("apigateway", true)]
             [@createWAFAclFromSecurityProfile

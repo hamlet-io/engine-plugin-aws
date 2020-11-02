@@ -76,6 +76,7 @@
             [#local replicationRoleId = subResources["role"].Id]
             [#local links = getLinkTargets(subOccurrence)]
             [#local versioningEnabled = (subSolution.Replication!{})?has_content?then(true, subSolution.Versioning)]
+            [#local replicateEncryptedData = subSolution.Encryption.Enabled]
 
             [#if ( deploymentSubsetRequired(BASELINE_COMPONENT_TYPE, true) && legacyS3 == false ) ||
                 ( deploymentSubsetRequired("s3") && legacyS3 == true) ]
@@ -200,6 +201,7 @@
                                 [/#if]
                                 [#break]
 
+                            [#case BASELINE_DATA_COMPONENT_TYPE]
                             [#case S3_COMPONENT_TYPE]
 
                                 [#switch linkTarget.Role ]
@@ -207,7 +209,14 @@
                                         [#local replicationEnabled = true]
                                         [#if !replicationBucket?has_content ]
                                             [#local replicationBucket = linkTargetAttributes["ARN"]]
-                                            [#local linkPolicies = getLinkTargetsOutboundRoles(links) ]
+                                            [#local linkPolicies = 
+                                                getLinkTargetsOutboundRoles(links) + 
+                                                s3EncryptionReadPermission(
+                                                    cmkId,
+                                                    bucketName,
+                                                    "*",
+                                                    getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE)
+                                                )]
                                         [#else]
                                             [@fatal
                                                 message="Only one replication destination is supported"
@@ -215,6 +224,7 @@
                                             /]
                                         [/#if]
                                         [#break]
+
                                 [/#switch]
                                 [#break]
 
@@ -233,7 +243,8 @@
                                     replicationBucket,
                                     subSolution.Replication.Enabled,
                                     prefix,
-                                    false
+                                    replicateEncryptedData,
+                                    cmkId
                                 )]]
                         [/#list]
 

@@ -23,6 +23,7 @@
     [#local replicationEnabled = false]
     [#local replicationConfiguration = {} ]
     [#local replicationBucket = ""]
+    [#local replicateEncryptedData = solution.Encryption.Enabled]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "CDNOriginKey", "Encryption" ])]
@@ -243,7 +244,8 @@
                     replicationBucket,
                     solution.Replication.Enabled,
                     prefix,
-                    false
+                    replicateEncryptedData,
+                    kmsKeyId
                 )]]
         [/#list]
 
@@ -255,7 +257,14 @@
 
     [#if deploymentSubsetRequired("iam", true) &&
             isPartOfCurrentDeploymentUnit(roleId)]
-        [#local linkPolicies = getLinkTargetsOutboundRoles(links) ]
+        [#local linkPolicies = 
+            getLinkTargetsOutboundRoles(links) + 
+            s3EncryptionReadPermission(
+                kmsKeyId,
+                s3Name,
+                "*",
+                getExistingReference(s3Id, REGION_ATTRIBUTE_TYPE)
+            )]
 
         [#local rolePolicies =
                 arrayIfContent(

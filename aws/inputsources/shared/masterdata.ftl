@@ -1838,6 +1838,10 @@
     }
   },
   "ServiceRoles" : {
+    "apigateway" : {
+      "Enabled" : true,
+      "ServiceName" : "ops.apigateway.amazonaws.com"
+    },
     "autoscaling" : {
       "Enabled" : true,
       "ServiceName" : "autoscaling.amazonaws.com"

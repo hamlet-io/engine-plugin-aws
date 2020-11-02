@@ -78,7 +78,7 @@
                     "all" : s3AllPermission(id) + s3AllEncryptionPolicy,
                     "produce" : s3ProducePermission(id) + s3AllEncryptionPolicy,
                     "consume" : s3ConsumePermission(id) + s3ReadEncryptionPolicy,
-                    "replicadestination" : s3ReplicaDestinationPermission(id) + s3ReadEncryptionPolicy,
+                    "replicadestination" : s3ReplicaDestinationPermission(id) + s3AllEncryptionPolicy,
                     "replicasource" : {},
                     "datafeed" : s3KinesesStreamPermission(id)
                }
