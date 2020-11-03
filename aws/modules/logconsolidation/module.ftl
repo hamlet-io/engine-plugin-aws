@@ -13,11 +13,14 @@
 
     [@loadModule
         settingSets=[]
-        blueprint={}
+        blueprint={
+            "Tiers" : {
+                "app" : {},
+                "mgmt" : {}
+            }
+        }
     /]
 
-    [#-- TODO(rossmurr4y): feature: add empty log consolidation module to the provider --]
-    [#-- TODO(rossmurr4y): feature: load skeleton structure blueprint --]
     [#-- TODO(rossmurr4y): feature: add log consolidator s3 bucket to module blueprint --]
     [#-- TODO(rossmurr4y): feature: add datafeed component to module blueprint  --]
     [#-- TODO(rossmurr4y): feature: add log processor lambda function to module blueprint --]
