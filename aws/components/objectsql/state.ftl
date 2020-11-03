@@ -7,33 +7,37 @@
     [#local workGroupName = core.FullName]
 
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ] )]
-    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ], true, false )]
+    [#if baselineLinks?has_content]
+        [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+        [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
 
-    [#assign componentState =
-        {
-            "Resources" : {
-                "workgroup" : {
-                    "Id" : workGroupId,
-                    "Name" : core.FullName,
-                    "Type" : AWS_ATHENA_WORKGROUP_RESOURCE_TYPE
+        [#assign componentState =
+            {
+                "Resources" : {
+                    "workgroup" : {
+                        "Id" : workGroupId,
+                        "Name" : core.FullName,
+                        "Type" : AWS_ATHENA_WORKGROUP_RESOURCE_TYPE
+                    }
+                },
+                "Attributes" : {
+                    "WORKGROUP" : getExistingReference(workGroupId, NAME_ATTRIBUTE_TYPE),
+                    "QUERY_BUCKET" : dataBucket,
+                    "QUERY_PREFIX" : getAppDataFilePrefix(occurrence)
+                },
+                "Roles" : {
+                    "Inbound" : {},
+                    "Outbound" : {
+                        "default" : "consume",
+                        "consume" :
+                            athenaConsumePermission(workGroupId) +
+                            s3AllPermission(baselineComponentIds["AppData"], getAppDataFilePrefix(occurrence))
                 }
-            },
-            "Attributes" : {
-                "WORKGROUP" : getExistingReference(workGroupId, NAME_ATTRIBUTE_TYPE),
-                "QUERY_BUCKET" : dataBucket,
-                "QUERY_PREFIX" : getAppDataFilePrefix(occurrence)
-            },
-            "Roles" : {
-                "Inbound" : {},
-                "Outbound" : {
-                    "default" : "consume",
-                    "consume" :
-                        athenaConsumePermission(workGroupId) +
-                        s3AllPermission(baselineComponentIds["AppData"], getAppDataFilePrefix(occurrence))
-               }
+                }
             }
-        }
-    ]
+        ]
+    [#else]
+        [#assign componentState = {}]
+    [/#if]
 [/#macro]
