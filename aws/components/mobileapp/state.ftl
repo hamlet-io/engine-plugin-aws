@@ -28,88 +28,84 @@
     ]
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ], true, false )]
-    [#if baselineLinks?has_content]
-        [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
-        [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]!"") ]
 
-        [#local configFilePath = formatRelativePath(
-                                    getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
-                                    "config" )]
-        [#local configFileName = "config.json" ]
+    [#local configFilePath = formatRelativePath(
+                                getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
+                                "config" )]
+    [#local configFileName = "config.json" ]
 
-        [#list solution.Links as id,link]
-            [#if link?is_hash]
-                [#local linkTarget = getLinkTarget(occurrence, link) ]
+    [#list solution.Links as id,link]
+        [#if link?is_hash]
+            [#local linkTarget = getLinkTarget(occurrence, link) ]
 
-                [@debug message="Link Target" context=linkTarget enabled=false /]
+            [@debug message="Link Target" context=linkTarget enabled=false /]
 
-                [#if !linkTarget?has_content]
-                    [#continue]
-                [/#if]
-                [#local linkTargetCore = linkTarget.Core ]
-                [#local linkTargetAttributes = linkTarget.State.Attributes ]
-
-                [#if !(linkTarget.Configuration.Solution.Enabled!true) ]
-                    [#continue]
-                [/#if]
-
-                [#switch linkTargetCore.Type]
-                    [#case S3_COMPONENT_TYPE ]
-                        [#if id?lower_case?starts_with("ota") ]
-                            [#local otaBucket = linkTargetAttributes["NAME"]]
-                            [#local otaS3URL = formatRelativePath("https://", linkTargetAttributes["INTERNAL_FQDN"], otaPrefix )]
-                        [/#if]
-                        [#break]
-                    [#case CDN_ROUTE_COMPONENT_TYPE ]
-                        [#if id?lower_case?starts_with("ota")]
-                            [#if solution.UseOTAPrefix ]
-                                [#local otaCDNURL = formatRelativePath(linkTargetAttributes["URL"], otaPrefix )]
-                            [#else]
-                                [#local otaCDNURL = linkTargetAttributes["URL"] ]
-                            [/#if]
-                        [/#if]
-                        [#break]
-                [/#switch]
+            [#if !linkTarget?has_content]
+                [#continue]
             [/#if]
-        [/#list]
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
-        [#-- CDN OTA endpoint is preferred to an S3 OTA Endpoint --]
-        [#if (otaCDNURL!"")?has_content ]
-            [#local otaURL = otaCDNURL ]
-        [#else]
-            [#if (otaS3URL!"")?has_content ]
-                [#local otaURL = otaS3URL ]
+            [#if !(linkTarget.Configuration.Solution.Enabled!true) ]
+                [#continue]
             [/#if]
+
+            [#switch linkTargetCore.Type]
+                [#case S3_COMPONENT_TYPE ]
+                    [#if id?lower_case?starts_with("ota") ]
+                        [#local otaBucket = linkTargetAttributes["NAME"]]
+                        [#local otaS3URL = formatRelativePath("https://", linkTargetAttributes["INTERNAL_FQDN"], otaPrefix )]
+                    [/#if]
+                    [#break]
+                [#case CDN_ROUTE_COMPONENT_TYPE ]
+                    [#if id?lower_case?starts_with("ota")]
+                        [#if solution.UseOTAPrefix ]
+                            [#local otaCDNURL = formatRelativePath(linkTargetAttributes["URL"], otaPrefix )]
+                        [#else]
+                            [#local otaCDNURL = linkTargetAttributes["URL"] ]
+                        [/#if]
+                    [/#if]
+                    [#break]
+            [/#switch]
         [/#if]
+    [/#list]
 
-        [#assign componentState =
-            {
-                "Resources" : {
-                    "mobileapp" : {
-                        "Id" : id,
-                        "Type" : HAMLET_MOBILEAPP_RESOURCE_TYPE,
-                        "ConfigFilePath" : configFilePath,
-                        "ConfigFileName" : configFileName,
-                        "Deployed" : true
-                    }
-                },
-                "Attributes" : {
-                    "ENGINE" : solution.Engine,
-                    "RELEASE_CHANNEL" : releaseChannel,
-                    "IOS_DIST_EXPORT_METHOD" : exportMethod,
-                    "OTA_ARTEFACT_BUCKET" : otaBucket,
-                    "OTA_ARTEFACT_PREFIX" : otaPrefix,
-                    "OTA_ARTEFACT_URL" : otaURL,
-                    "CONFIG_BUCKET" : operationsBucket,
-                    "CONFIG_FILE" : formatRelativePath(
-                                        configFilePath,
-                                        configFileName
-                                    )
-                }
-            }
-        ]
+    [#-- CDN OTA endpoint is preferred to an S3 OTA Endpoint --]
+    [#if (otaCDNURL!"")?has_content ]
+        [#local otaURL = otaCDNURL ]
     [#else]
-        [#assign componentState = {}]
+        [#if (otaS3URL!"")?has_content ]
+            [#local otaURL = otaS3URL ]
+        [/#if]
     [/#if]
+
+    [#assign componentState =
+        {
+            "Resources" : {
+                "mobileapp" : {
+                    "Id" : id,
+                    "Type" : HAMLET_MOBILEAPP_RESOURCE_TYPE,
+                    "ConfigFilePath" : configFilePath,
+                    "ConfigFileName" : configFileName,
+                    "Deployed" : true
+                }
+            },
+            "Attributes" : {
+                "ENGINE" : solution.Engine,
+                "RELEASE_CHANNEL" : releaseChannel,
+                "IOS_DIST_EXPORT_METHOD" : exportMethod,
+                "OTA_ARTEFACT_BUCKET" : otaBucket,
+                "OTA_ARTEFACT_PREFIX" : otaPrefix,
+                "OTA_ARTEFACT_URL" : otaURL,
+                "CONFIG_BUCKET" : operationsBucket,
+                "CONFIG_FILE" : formatRelativePath(
+                                    configFilePath,
+                                    configFileName
+                                )
+            }
+        }
+    ]
 [/#macro]
