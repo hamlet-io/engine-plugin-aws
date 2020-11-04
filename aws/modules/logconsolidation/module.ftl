@@ -17,26 +17,37 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "logstore" : {
-                            "s3" : {
-                                "Instances" : {
-                                    "default" : {}
+                        "log-feed": {
+                            "datafeed": {
+                                "Instances": {
+                                    "default": {
+                                        "DeploymentUnits": ["log-feed"]
+                                    }
                                 },
-                                "Links": {
-                                    "source": {
+                                "Encrypted": true,
+                                "Destination": {
+                                    "Link": {
                                         "Tier": "mgmt",
                                         "Component": "baseline",
                                         "DataBucket": "opsdata",
-                                        "Version": "",
                                         "Instance": "",
-                                        "Role": "replicasource"
+                                        "Version": ""
                                     }
                                 },
-                                "Lifecycle": {
-                                    "Versioning": true
+                                "LogWatchers": {
+                                    "app-all": {
+                                        "LogFilter": "all-logs"
+                                    }
                                 },
-                                "Encryption": {
-                                    "Enabled": true
+                                "aws:WAFLogFeed": true,
+                                "Links": {
+                                    "seg-opsdata": {
+                                        "Tier": "mgmt",
+                                        "Component": "baseline",
+                                        "DataBucket": "opsdata",
+                                        "Instance": "",
+                                        "Version": ""
+                                    }
                                 }
                             }
                         }
