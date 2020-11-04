@@ -203,7 +203,7 @@
         [#local protocol = port.Protocol]
     [/#if]
 
-    [#local certificateArn = getReference(certificateId, ARN_ATTRIBUTE_TYPE, regionId)]
+    [#local certificateArn = getExistingReference(certificateId, ARN_ATTRIBUTE_TYPE, regionId)]
     [#if certificateId?has_content && !(certificateArn?has_content)]
         [@fatal
             message="LB Certificate ARN could not be found. Check the certificate exists and is in the correct region."
