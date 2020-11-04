@@ -15,13 +15,14 @@
         [/#if]
     [/#list]
 
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ])]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ], true, false)]
     [#local baselineIds = getBaselineComponentIds(baselineLinks)]
 
     [#local s3AllEncryptionPolicy = []]
     [#local s3ReadEncryptionPolicy = []]
     [#if solution.Encryption.Enabled &&
-           solution.Encryption.EncryptionSource == "EncryptionService" ]
+        solution.Encryption.EncryptionSource == "EncryptionService" &&
+        baselineIds?has_content]
 
         [#local s3AllEncryptionPolicy  = s3EncryptionAllPermission(
                 baselineIds["Encryption"],
@@ -81,7 +82,7 @@
                     "replicadestination" : s3ReplicaDestinationPermission(id) + s3AllEncryptionPolicy,
                     "replicasource" : {},
                     "datafeed" : s3KinesesStreamPermission(id)
-               }
+            }
             }
         }
     ]

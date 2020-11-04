@@ -27,10 +27,10 @@
         )
     ]
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ] )]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ], true, false )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]!"") ]
 
     [#local configFilePath = formatRelativePath(
                                 getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),

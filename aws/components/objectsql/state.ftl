@@ -7,9 +7,9 @@
     [#local workGroupName = core.FullName]
 
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ] )]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ], true, false )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"]!"")]
 
     [#assign componentState =
         {
@@ -31,8 +31,8 @@
                     "default" : "consume",
                     "consume" :
                         athenaConsumePermission(workGroupId) +
-                        s3AllPermission(baselineComponentIds["AppData"], getAppDataFilePrefix(occurrence))
-               }
+                        s3AllPermission(dataBucket, getAppDataFilePrefix(occurrence))
+            }
             }
         }
     ]

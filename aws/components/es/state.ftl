@@ -37,7 +37,7 @@
         [#local esHostName = getExistingReference(esId, DNS_ATTRIBUTE_TYPE) ]
         [#local esSnapshotRoleId = formatDependentRoleId(esId, "snapshotStore" ) ]
 
-        [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ] )]
+        [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ], true, false )]
         [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
         [#local securityProfile = getSecurityProfile(solution.Profiles.Security, "es")]
@@ -107,7 +107,7 @@
                     "KIBANA_URL" : "https://" + esHostName + "/_plugin/kibana/",
                     "PORT" : 443,
                     "SNAPSHOT_ROLE_ARN" : getExistingReference(esSnapshotRoleId, ARN_ATTRIBUTE_TYPE),
-                    "SNAPSHOT_BUCKET" : getExistingReference(baselineComponentIds["AppData"]),
+                    "SNAPSHOT_BUCKET" : getExistingReference(baselineComponentIds["AppData"]!""),
                     "SNAPSHOT_PATH" : getAppDataFilePrefix(occurrence)
                 },
                 "Roles" : {
