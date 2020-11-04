@@ -31,7 +31,7 @@
                     "default" : "consume",
                     "consume" :
                         athenaConsumePermission(workGroupId) +
-                        s3AllPermission(baselineComponentIds["AppData"], getAppDataFilePrefix(occurrence))
+                        s3AllPermission(dataBucket, getAppDataFilePrefix(occurrence))
             }
             }
         }
