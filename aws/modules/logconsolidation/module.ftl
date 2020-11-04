@@ -42,13 +42,18 @@
                         }
                     }
                 }
+            },
+            "LogFilters": {
+                "all-logs": {
+                    "Pattern": ""
+                }
             }
         }
     /]
 
+    [#-- TODO(rossmurr4y): feature: define placeholder log filter pattern --]
     [#-- TODO(rossmurr4y): feature: add datafeed component to module blueprint  --]
     [#-- TODO(rossmurr4y): feature: add log processor lambda function to module blueprint --]
-    [#-- TODO(rossmurr4y): feature: define placeholder log filter pattern --]
     [#-- TODO(rossmurr4y): feature: define logging profile for forwarding logs to the log consolidation dest. bucket --]
     [#-- TODO(rossmurr4y): feature: define deploymentProfile for opsdata -> log consolidation store replication --]
     [#-- TODO(rossmurr4y): feature: define deploymentProfile to capture LB logs --]
