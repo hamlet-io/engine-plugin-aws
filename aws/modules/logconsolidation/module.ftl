@@ -15,13 +15,37 @@
         settingSets=[]
         blueprint={
             "Tiers" : {
-                "app" : {},
-                "mgmt" : {}
+                "app" : {
+                    "Components" : {
+                        "logstore" : {
+                            "s3" : {
+                                "Instances" : {
+                                    "default" : {}
+                                },
+                                "Links": {
+                                    "source": {
+                                        "Tier": "mgmt",
+                                        "Component": "baseline",
+                                        "DataBucket": "opsdata",
+                                        "Version": "",
+                                        "Instance": "",
+                                        "Role": "replicasource"
+                                    }
+                                },
+                                "Lifecycle": {
+                                    "Versioning": true
+                                },
+                                "Encryption": {
+                                    "Enabled": true
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     /]
 
-    [#-- TODO(rossmurr4y): feature: add log consolidator s3 bucket to module blueprint --]
     [#-- TODO(rossmurr4y): feature: add datafeed component to module blueprint  --]
     [#-- TODO(rossmurr4y): feature: add log processor lambda function to module blueprint --]
     [#-- TODO(rossmurr4y): feature: define placeholder log filter pattern --]
