@@ -240,6 +240,7 @@
 
 
         [#switch (destinationLink.Core.Type)!"notfound" ]
+            [#case BASELINE_DATA_COMPONENT_TYPE]
             [#case S3_COMPONENT_TYPE ]
                 [#local s3Id = destinationLink.State.Resources["bucket"].Id ]
                 [#local streamS3Destination = getFirehoseStreamS3Destination(
