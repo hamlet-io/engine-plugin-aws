@@ -203,6 +203,18 @@
         [#local protocol = port.Protocol]
     [/#if]
 
+    [#local certificateArn = getReference(certificateId, ARN_ATTRIBUTE_TYPE, regionId)]
+    [#if certificateId?has_content && !(certificateArn?has_content)]
+        [@fatal
+            message="LB Certificate ARN could not be found. Check the certificate exists and is in the correct region."
+            context=
+                { 
+                    "CertificateId" : certificateId,
+                    "Region" : regionId
+                }
+        /]
+    [/#if]
+
     [@cfResource
         id=id
         type="AWS::ElasticLoadBalancingV2::Listener"
@@ -222,12 +234,12 @@
                 {
                     "Certificates" : [
                         {
-                            "CertificateArn" : getReference(certificateId, ARN_ATTRIBUTE_TYPE, regionId)
+                            "CertificateArn" : certificateArn
                         }
                     ],
                     "SslPolicy" : sslPolicy
                 },
-                port.Certificate!false)
+                (port.Certificate!false && certificateArn?has_content))
         outputs=ALB_LISTENER_OUTPUT_MAPPINGS
     /]
 [/#macro]
