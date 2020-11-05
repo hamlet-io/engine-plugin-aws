@@ -155,7 +155,7 @@
             {
                 "MetricName" : metric?replace("-","X"),
                 "Name": name
-            } + 
+            } +
             attributeIfTrue("MatchPredicates", rateBased, predicates) +
             attributeIfTrue("Predicates", (!rateBased), predicates) +
             attributeIfContent("RateKey", rateKey) +
@@ -355,7 +355,7 @@
 [/#macro]
 
 
-[#macro createWAFLoggingDeliveryStream wafaclId deliveryStreamId="" regional=false ]
+[#macro enableWAFLogging wafaclId deliveryStreamId="" regional=false ]
 
     [#if regional ]
         [#local wafType = "regional" ]
@@ -364,32 +364,17 @@
     [/#if]
 
     [#if deliveryStreamId?has_content ]
-        [#if deploymentSubsetRequired("cli", false) ]
-            [@addCliToDefaultJsonOutput
-                id=wafaclId
-                command="wafACLLogging"
-                content=
-                {
-                    "LoggingConfiguration" : {
-                        "LogDestinationConfigs" : [getArn(deliveryStreamId)]
-                    }
-                }
-            /]
-        [/#if]
-
         [#if deploymentSubsetRequired("epilogue", false) ]
             [@addToDefaultBashScriptOutput
                 content=[
                     r' case ${STACK_OPERATION} in',
                     r'   create|update)',
-                    r'       # Get cli config file',
-                    r'       split_cli_file "${CLI}" "${tmpdir}" || return $?',
                     r'       manage_waf_logging ' +
                     r'          "' + region + r'"' +
                     r'          "' + wafaclId + r'"' +
                     r'          "' + wafType + r'"' +
                     r'          "enable"' +
-                    r'          "${tmpdir}/cli-' + wafaclId + r'-wafACLLogging.json" ' +
+                    r'          "' + deliveryStreamId + r'"' +
                     r'          || return $?',
                     r'       ;;',
                     r'    delete)',

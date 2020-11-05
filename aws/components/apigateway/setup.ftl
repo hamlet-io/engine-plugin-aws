@@ -145,7 +145,7 @@
                             } ]
                     [/#if]
                     [#break]
-            
+
             [/#switch]
         [/#if]
     [/#list]
@@ -156,7 +156,11 @@
     [#local securityProfile        = getSecurityProfile(solution.Profiles.Security, "apigateway")]
     [#local loggingProfile         = getLoggingProfile(solution.Profiles.Logging)]
 
-    [#local wafAclResources        = resources["wafacl"]!{} ]
+    [#local wafAclResources          = resources["wafacl"]!{} ]
+    [#local wafLogStreamingResources = resources["wafLogStreaming"]!{}]
+
+    [#local accessLogStreamingResources = resources["accessLogStreaming"]!{} ]
+
     [#local cfResources            = resources["cf"]!{} ]
     [#local customDomainResources  = resources["customDomains"]!{} ]
 
@@ -266,26 +270,24 @@
         [#-- Manage Access Logs with Kinesis Firehose --]
         [#if accessLogging["aws:KinesisFirehose"] ]
 
-            [#-- APIGW Stage resource to send Access Logs to a Kinesis Delivery Stream --]
-            [#local stageLogTarget = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, core.Id)]
-            
+            [#local stageLogTarget = accessLogStreamingResources["stream"].Id ]
+
             [#-- Default destination is the Ops Data bucket, unless another link is provided --]
             [#local destinationLink = baselineLinks["OpsData"]]
             [#if accessLogging["aws:DestinationLink"].Enabled && accessLogging["aws:DestinationLink"].Configured]
                 [#local destinationLink = getLinkTarget(occurrence, accessLogging["aws:DestinationLink"])]
             [/#if]
 
-            [@setupFirehoseStream
-                id=stageLogTarget
-                lgPath=formatAbsolutePath(core.FullAbsolutePath, "cloudwatch")
+            [@setupLoggingFirehoseStream
+                componentSubset="apigateway"
+                resourceDetails=accessLogStreamingResources
                 destinationLink=destinationLink
+                bucketPrefix=formatRelativePath("APIGatewayAccess", "Logs", occurrence.Core.FullRelativePath)
+                errorPrefix=formatRelativePath("APIGatewayAccess", "Error", occurrence.Core.FullRelativePath )
+                cloudwatchEnabled=true
                 cmkKeyId=kmsKeyId
-                bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath)
-                errorPrefix=formatRelativePath("error", occurrence.Core.FullRelativePath)
-                streamNamePrefix="amazon-apigateway-"
             /]
 
-            [#local stageDependencies += [stageLogTarget]]
         [/#if]
 
         [#-- If Access logs are intended for CloudWatch or the existing log groups should remain ...    --]
@@ -597,24 +599,22 @@
         [#local wafRegional = isRegionalEndpointType && (!cfResources?has_content) ]
 
         [#-- WAF Logging --]
-        [#-- WAF Can only log to a Kinesis Firehose via a CloudWatch LogStream --]
-        [#if solution.WAF.Logging.Enabled]
-            [#local wafFirehoseStreamId = 
-                formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclResources.acl.Id)]
+        [#-- WAF Can only log to a Kinesis Firehose --]
+        [#if wafLogStreamingResources?has_content ]
 
-            [@setupFirehoseStream
-                id=wafFirehoseStreamId
-                lgPath=formatAbsolutePath(core.FullAbsolutePath, "waf")
+            [@setupLoggingFirehoseStream
+                componentSubset="apigateway"
+                resourceDetails=wafLogStreamingResources
                 destinationLink=baselineLinks["OpsData"]
+                bucketPrefix=formatRelativePath("WAF", "Logs", occurrence.Core.FullRelativePath)
+                errorPrefix=formatRelativePath("WAF", "Error", occurrence.Core.FullRelativePath )
+                cloudwatchEnabled=true
                 cmkKeyId=kmsKeyId
-                bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf")
-                errorPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf", "error")
-                streamNamePrefix="aws-waf-logs-"
             /]
 
-            [@createWAFLoggingDeliveryStream
+            [@enableWAFLogging
                 wafaclId=wafAclResources.acl.Id
-                deliveryStreamId=wafFirehoseStreamId
+                deliveryStreamId=wafLogStreamingResources["stream"].Id
                 regional=wafRegional
             /]
 

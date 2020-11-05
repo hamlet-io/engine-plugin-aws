@@ -84,9 +84,13 @@ created in either case.
     [#local certificatePresent = isPresent(solution.Certificate) ]
     [#local cfPresent          = isPresent(solution.CloudFront) ]
     [#local wafPresent         = isPresent(solution.WAF) ]
+
+    [#local wafLoggingEnabled  = wafPresent && solution.WAF.Logging.Enabled ]
     [#local mappingPresent     = isPresent(solution.Mapping) &&
                                      (!cfPresent || solution.CloudFront.Mapping) ]
+
     [#local publishPresent     = isPresent(solution.Publish) ]
+    [#local accessLogEnabled   = solution.AccessLogging.Enabled ]
 
     [#local endpointType       = solution.EndpointType ]
     [#local isEdgeEndpointType = solution.EndpointType == "EDGE" ]
@@ -249,7 +253,24 @@ created in either case.
             } ]
     [/#if]
 
+    [#-- Access Log Streaming Services --]
+    [#local accessLogStreamingResources = {}]
+    [#if accessLogEnabled ]
+        [#if solution.AccessLogging["aws:KinesisFirehose"] ]
+            [#local accessLogStreamingResources =
+                getLoggingFirehoseStreamResources(
+                        core.Id,
+                        core.FullName,
+                        core.FullAbsolutePath,
+                        "accesslog",
+                        "amazon-apigateway-"
+                    )]
+        [/#if]
+    [/#if]
+
+    [#-- WAF Services --]
     [#local wafResources = {} ]
+    [#local wafLogStreamResources = {}]
     [#if wafPresent]
         [#local wafResources =
             {
@@ -263,6 +284,17 @@ created in either case.
                     "Type" : AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE
                 }
             } ]
+
+        [#if wafLoggingEnabled ]
+            [#local wafLogStreamResources =
+                    getLoggingFirehoseStreamResources(
+                        core.Id,
+                        core.FullName,
+                        core.FullAbsolutePath,
+                        "waflog",
+                        "aws-waf-logs-"
+                    )]
+        [/#if]
     [/#if]
 
     [#-- Custom domain resources if required --]
@@ -357,7 +389,9 @@ created in either case.
             attributeIfContent("cf", cfResources) +
             attributeIfContent("wafacl", wafResources) +
             attributeIfContent("docs", docsResources) +
-            attributeIfContent("customDomains", customDomainResources),
+            attributeIfContent("customDomains", customDomainResources) +
+            attributeIfContent("accessLogStreaming", accessLogStreamingResources ) +
+            attributeIfContent("wafLogStreaming", wafLogStreamResources),
             "Attributes" : {
                 "FQDN" : fqdn,
                 "URL" : "https://" + fqdn + stagePath,

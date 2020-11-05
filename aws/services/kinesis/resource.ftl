@@ -11,7 +11,7 @@
     }
 ]
 
-[#assign AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS = 
+[#assign AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS =
     {
         REFERENCE_ATTRIBUTE_TYPE : {
             "UseRef" : true
@@ -70,30 +70,58 @@
     /]
 [/#macro]
 
-[#macro createFirehoseStream id name destination dependencies="" ]
+[#macro createFirehoseStream id destination name="" dependencies="" ]
     [@cfResource
         id=id
         type="AWS::KinesisFirehose::DeliveryStream"
         properties=
-            {
-                "DeliveryStreamName" : name
-            } +
+            {} +
+            attributeIfContent(
+                "DeliveryStreamName",
+                name
+            ) +
             destination
         outputs=KINESIS_FIREHOSE_STREAM_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]
 [/#macro]
 
-[#macro setupFirehoseStream 
-    id
-    lgPath
+[#function getLoggingFirehoseStreamResources id name fullPath destinationLinkId streamNamePrefix="" ]
+    [#local streamId = formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, id, destinationLinkId )]
+    [#return
+        {
+            "stream" : {
+                "Id" : streamId,
+                "Name" : formatName(streamNamePrefix, name, destinationLinkId )?truncate_c(64, ""),
+                "Type" : AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE
+            },
+            "lg" : {
+                "Id" : formatDependentResourceId(AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE, streamId ),
+                "Name" : formatAbsolutePath(fullPath, destinationLinkId),
+                "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE
+            },
+            "lgStream" : {
+                "Id" : formatDependentResourceId(AWS_CLOUDWATCH_LOG_GROUP_STREAM_RESOURCE_TYPE, streamId ),
+                "Name" : "S3Delivery",
+                "Type" : AWS_CLOUDWATCH_LOG_GROUP_STREAM_RESOURCE_TYPE
+            },
+            "role" : {
+                "Id" : formatDependentResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, streamId),
+                "Type" : AWS_IAM_ROLE_RESOURCE_TYPE
+            }
+        }
+    ]
+[/#function]
+
+[#macro setupLoggingFirehoseStream
+    resourceDetails
     destinationLink
     bucketPrefix
     errorPrefix
+    componentSubset
     cloudwatchEnabled=true
     processorId=""
     cmkKeyId=""
-    streamNamePrefix=""
     dependencies=""]
 
     [#if destinationLink?is_hash && destinationLink?has_content]
@@ -102,21 +130,6 @@
         [#local destinationConfiguration = destinationLink.Configuration ]
         [#local destinationResources = destinationLink.State.Resources ]
         [#local destinationSolution = destinationConfiguration.Solution ]
-    
-        [#local lg = {
-            "Id" : formatLogGroupId(id),
-            "Name" : lgPath }]
-
-        [#local lgStream = {
-            "Id" : formatResourceId(AWS_CLOUDWATCH_LOG_GROUP_STREAM_RESOURCE_TYPE, id),
-            "Name" : formatDependentResourceId(AWS_CLOUDWATCH_LOG_GROUP_STREAM_RESOURCE_TYPE, lg.Id) }]
-
-        [#local role = {
-            "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, id) }]
-
-        [#local stream = {
-            "Id" : id,
-            "Name" : formatName(streamNamePrefix, destinationCore.FullName) }]
 
         [#-- defaults --]
         [#local isEncrypted = false]
@@ -167,23 +180,23 @@
                     )
                 ]]
 
-                [#local streamDestinationConfiguration += 
+                [#local streamDestinationConfiguration +=
                     getFirehoseStreamS3Destination(
                         bucket.Id,
                         bucketPrefix,
                         errorPrefix,
                         bufferInterval,
                         bufferSize,
-                        role.Id,
+                        resourceDetails["role"].Id,
                         isEncrypted,
                         cmkKeyId,
-                        getFirehoseStreamLoggingConfiguration(cloudwatchEnabled, lg.Name!"", lgStream.Name!""),
+                        getFirehoseStreamLoggingConfiguration(cloudwatchEnabled, resourceDetails["lg"].Name!"", resourceDetails["lgStream"].Name!""),
                         false,
                         {},
                         processorId?has_content?then([
                             getFirehoseStreamLambdaProcessor(
                                 streamProcessorArn,
-                                role.Id,
+                                resourceDetails["role"].Id,
                                 bufferInterval,
                                 bufferSize
                             )
@@ -203,32 +216,39 @@
 
         [/#switch]
 
-        [#if cloudwatchEnabled]
+        [#if cloudwatchEnabled &&
+                deploymentSubsetRequired("lg", true) &&
+                isPartOfCurrentDeploymentUnit(resourceDetails["lg"].Id) ]
             [@createLogGroup
-                id=lg.Id
-                name=lg.Name
+                id=resourceDetails["lg"].Id
+                name=resourceDetails["lg"].Name
             /]
 
             [@createLogStream
-                id=lgStream.Id
-                name=lgStream.Name
-                logGroup=lg.Name
-                dependencies=lg.Id
+                id=resourceDetails["lgStream"].Id
+                name=resourceDetails["lgStream"].Name
+                logGroup=resourceDetails["lg"].Name
+                dependencies=resourceDetails["lg"].Id
             /]
         [/#if]
-        
-        [@createRole
-            id=role.Id
-            trustedServices=["firehose.amazonaws.com"]
-            policies=rolePolicies
-        /]
 
-        [@createFirehoseStream
-            id=stream.Id
-            name=stream.Name
-            destination=streamDestinationConfiguration
-            dependencies=cloudwatchEnabled?then(lgStream.Id, "")
-        /]
+        [#if deploymentSubsetRequired("iam", true)  &&
+                isPartOfCurrentDeploymentUnit(resourceDetails["role"].Id)]
+            [@createRole
+                id=resourceDetails["role"].Id
+                trustedServices=["firehose.amazonaws.com"]
+                policies=rolePolicies
+            /]
+        [/#if]
+
+        [#if deploymentSubsetRequired(componentSubset, true)]
+            [@createFirehoseStream
+                id=resourceDetails["stream"].Id
+                name=resourceDetails["stream"].Name
+                destination=streamDestinationConfiguration
+                dependencies=cloudwatchEnabled?then(resourceDetails["lgStream"].Id, "")
+            /]
+        [/#if]
     [#else]
         [@fatal
             message="Destination Link is not a hash or is empty."

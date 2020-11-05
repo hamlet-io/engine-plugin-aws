@@ -19,6 +19,8 @@
     [#local wafAclResources = resources["wafacl"]!{} ]
     [#local wafSolution = solution.WAF]
 
+    [#local wafLogStreamingResources = resources["wafLogStreaming"]!{} ]
+
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
@@ -720,28 +722,25 @@
 
     [#switch engine ]
         [#case "application"]
+            [#if wafLogStreamingResources?has_content ]
+
+                [@setupLoggingFirehoseStream
+                    componentSubset=LB_COMPONENT_TYPE
+                    resourceDetails=wafLogStreamingResources
+                    destinationLink=baselineLinks["OpsData"]
+                    bucketPrefix=formatRelativePath("WAF", "Logs", occurrence.Core.FullRelativePath)
+                    errorPrefix=formatRelativePath("WAF", "Error", occurrence.Core.FullRelativePath )
+                    cloudwatchEnabled=true
+                    cmkKeyId=kmsKeyId
+                /]
+
+                [@enableWAFLogging
+                    wafaclId=wafAclResources.acl.Id
+                    deliveryStreamId=wafLogStreamingResources["stream"].Id
+                    regional=true
+                /]
+            [/#if]
             [#if wafAclResources?has_content ]
-                [#if solution.WAF.Logging.Enabled]
-                    [#local wafFirehoseStreamId = 
-                        formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclResources.acl.Id)]
-
-                    [@setupFirehoseStream
-                        id=wafFirehoseStreamId
-                        lgPath=formatAbsolutePath(core.FullAbsolutePath, "waf")
-                        destinationLink=baselineLinks["OpsData"]
-                        cmkKeyId=kmsKeyId
-                        bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf")
-                        errorPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf", "error")
-                        streamNamePrefix="aws-waf-logs-"
-                    /]
-
-                    [@createWAFLoggingDeliveryStream
-                        wafaclId=wafAclResources.acl.Id
-                        deliveryStreamId=wafFirehoseStreamId
-                        regional=false
-                    /]
-                [/#if]
-
                 [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                     [#-- Create a WAF ACL if required --]
                     [@createWAFAclFromSecurityProfile

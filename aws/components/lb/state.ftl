@@ -28,6 +28,20 @@
             } ]
     [/#if]
 
+    [#local wafLoggingEnabled  = wafPresent && solution.WAF.Logging.Enabled  && solution.Engine == "application"  ]
+
+    [#local wafLogStreamResources = {}]
+    [#if wafLoggingEnabled ]
+        [#local wafLogStreamResources =
+                getLoggingFirehoseStreamResources(
+                    core.Id,
+                    core.FullName,
+                    core.FullAbsolutePath,
+                    "waflog",
+                    "aws-waf-logs-"
+                )]
+    [/#if]
+
     [#if wafPresent && solution.Engine != "application" ]
         [@fatal
             message="WAF not supported on this engine type"
@@ -66,7 +80,8 @@
                     "Monitored" : true
                 }
             } +
-            attributeIfContent("wafacl", wafResources),
+            attributeIfContent("wafacl", wafResources) +
+            attributeIfContent("wafLogStreaming", wafLogStreamResources),
             "Attributes" : {
                 "INTERNAL_FQDN" : getExistingReference(id, DNS_ATTRIBUTE_TYPE)
             },

@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_cdn_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets=["template", "epilogue", "cli" ] /]
+    [@addDefaultGenerationContract subsets=["prologue", "template", "epilogue", "cli" ] /]
 [/#macro]
 
 [#macro aws_cdn_cf_deployment_solution occurrence ]
@@ -16,6 +16,8 @@
     [#local wafPresent          = isPresent(solution.WAF) ]
     [#local wafAclId            = resources["wafacl"].Id]
     [#local wafAclName          = resources["wafacl"].Name]
+
+    [#local wafLogStreamingResources = resources["wafLogStreaming"]!{} ]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ])]
@@ -480,22 +482,22 @@
     [#if wafPresent ]
         [#if deploymentSubsetRequired(CDN_COMPONENT_TYPE, true)]
             [#if solution.WAF.Logging.Enabled]
-                [#local wafFirehoseStreamId = 
+                [#local wafFirehoseStreamId =
                     formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclId)]
 
-                [@setupFirehoseStream
-                    id=wafFirehoseStreamId
-                    lgPath=formatAbsolutePath(core.FullAbsolutePath, "waf")
+                [@setupLoggingFirehoseStream
+                    componentSubset=CDN_COMPONENT_TYPE
+                    resourceDetails=wafLogStreamingResources
                     destinationLink=baselineLinks["OpsData"]
+                    bucketPrefix=formatRelativePath("WAF", "Logs", occurrence.Core.FullRelativePath)
+                    errorPrefix=formatRelativePath("WAF", "Error", occurrence.Core.FullRelativePath )
+                    cloudwatchEnabled=true
                     cmkKeyId=kmsKeyId
-                    bucketPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf")
-                    errorPrefix=formatRelativePath(occurrence.Core.FullRelativePath, "waf", "error")
-                    streamNamePrefix="aws-waf-logs-"
                 /]
 
-                [@createWAFLoggingDeliveryStream
+                [@enableWAFLogging
                     wafaclId=wafAclId
-                    deliveryStreamId=wafFirehoseStreamId
+                    deliveryStreamId=wafLogStreamingResources["stream"].Id
                     regional=false
                 /]
             [/#if]
