@@ -239,7 +239,7 @@
                     ],
                     "SslPolicy" : sslPolicy
                 },
-                (port.Certificate!false && certificateArn?has_content))
+                port.Certificate!false)
         outputs=ALB_LISTENER_OUTPUT_MAPPINGS
     /]
 [/#macro]
