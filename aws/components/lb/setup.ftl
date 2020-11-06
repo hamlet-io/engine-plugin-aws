@@ -22,9 +22,10 @@
     [#local wafLogStreamingResources = resources["wafLogStreaming"]!{} ]
 
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ] )]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
