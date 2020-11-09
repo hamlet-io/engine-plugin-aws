@@ -28,7 +28,7 @@
             "Type" : STRING_TYPE,
             "Description" : "The alert profile id to use for enabling notifications",
             "Default" : "default"
-        }
+        },
         {
             "Names" : "kmsPrefix",
             "Type" : STRING_TYPE,
@@ -46,7 +46,7 @@
             "Type" : STRING_TYPE,
             "Description" : "A sha1 hash of the lambda image to ensure its the right one",
             "Default" : "8f194db4f6ed2b826387112df144f188451ba6db"
-        }
+        },
         {
             "Names" : "namePrefix",
             "Type" : STRING_TYPE,
