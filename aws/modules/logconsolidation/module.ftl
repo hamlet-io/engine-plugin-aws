@@ -4,27 +4,69 @@
     name="logconsolidation"
     description="Solution-wide consolidation of logs, intended for consumption by ElasticSearch."
     provider=AWS_PROVIDER
-    properties=[]
+    properties=[
+        {
+            "Names" : "namePrefix",
+            "Type" : STRING_TYPE,
+            "Description" : "A prefix appended to component names and deployment units to ensure uniquness",
+            "Default" : "alarmslack"
+        },
+        {
+            "Names" : "lambdaSourceUrl",
+            "Type" : STRING_TYPE,
+            "Description" : "A URL to the lambda zip package for sending alerts",
+            "Default" : "https://github.com/hamlet-io/lambda-log-processors/releases/download/v1.0.2/cloudwatch-firehose.zip"
+        },
+        {
+            "Names" : "lambdaSourceHash",
+            "Type" : STRING_TYPE,
+            "Description" : "A sha1 hash of the lambda image to validate the correct one",
+            "Default" : "3a6b1ce462aaa203477044cfe83c66f128381434"
+        },
+        {
+            "Names" : "tier",
+            "Type" : STRING_TYPE,
+            "Description" : "The tier to use to host the components",
+            "Default" : "mgmt"
+        }
+    ]
 /]
 
-[#macro aws_module_logconsolidation lambdaProcessorId]
+[#macro aws_module_logconsolidation
+    namePrefix
+    lambdaSourceUrl
+    lambdaSourceHash
+    tier]
 
     [@debug message="Entering Module: logconsolidation" context=layerActiveData enabled=false /]
 
-    [#local processorTier = ""][#-- how can i find this? --]
-    [#local processorComponent = ""] [#-- how can i find this? --]
+    [#local lambdaName = formatName(namePrefix, "lambda")]
+    [#local datafeedName = formatName(namePrefix, "datafeed")]
+
+    [#local product = getActiveLayer(PRODUCT_LAYER_TYPE) ]
+    [#local environment = getActiveLayer(ENVIRONMENT_LAYER_TYPE)]
+    [#local segment = getActiveLayer(SEGMENT_LAYER_TYPE)]
 
     [@loadModule
-        settingSets=[]
+        settingSets=[
+           {
+                "Type" : "Settings",
+                "Scope" : "Products",
+                "Namespace" : lambdaSettingNamespace,
+                "Settings" : {
+
+                }
+            } 
+        ]
         blueprint={
             "Tiers" : {
-                "app" : {
+                tier : {
                     "Components" : {
-                        "logfeed": {
+                        datafeedName : {
                             "datafeed": {
                                 "Instances": {
                                     "default": {
-                                        "DeploymentUnits": ["logfeed"]
+                                        "DeploymentUnits": [ datafeedName ]
                                     }
                                 },
                                 "Encrypted": true,
@@ -65,7 +107,6 @@
         }
     /]
 
-    [#-- TODO(rossmurr4y): feature: add log processor parameters to the module --]
     [#-- TODO(rossmurr4y): feature: add datafeed component to module blueprint  --]
     [#-- TODO(rossmurr4y): feature: add a link to the lambda processor to the datafeed --]
     [#-- TODO(rossmurr4y): feature: define logging profile for forwarding logs to the log consolidation dest. bucket --]
