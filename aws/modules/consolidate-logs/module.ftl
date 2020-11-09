@@ -12,9 +12,9 @@
             "Default" : "consolidatelogs"
         },
         {
-            "Names" : "loggingProfile",
+            "Names" : "deploymentProfile",
             "Type" : STRING_TYPE,
-            "Description" : "The logging profile id to use for log consolidation."
+            "Description" : "The deployment profile id to enable log consolidation on."
         },
         {
             "Names" : "lambdaSourceUrl",
@@ -39,7 +39,7 @@
 
 [#macro aws_module_consolidatelogs
     namePrefix
-    loggingProfile
+    deploymentProfile
     lambdaSourceUrl
     lambdaSourceHash
     tier]
@@ -157,7 +157,7 @@
                 }
             },
             "LoggingProfiles" : {
-                loggingProfile : {
+                "consolidate" : {
                     "ForwardingRules": {
                         "store": {
                             "Filter": "all-logs",
@@ -176,12 +176,12 @@
                 }
             },
             "DeploymentProfiles" : {
-                "consolidate-logs" : {
+                deploymentProfile : {
                     "Modes" : {
                         "*" : {
                             "*" : {
                                 "Profiles" : {
-                                    "Logging" : loggingProfile
+                                    "Logging" : "consolidate"
                                 }
                             },
                             "apigateway" : {
@@ -196,7 +196,7 @@
                                 "WAF" : {
                                     "Profiles" : {
                                         "EnableLogging" : true,
-                                        "Logging" : loggingProfile
+                                        "Logging" : "consolidate"
                                     }
                                 }
                             },
@@ -205,7 +205,7 @@
                                 "WAF" : {
                                     "Profiles" : {
                                         "EnableLogging" : true,
-                                        "Logging" : loggingProfile
+                                        "Logging" : "consolidate"
                                     }
                                 }
                             },
