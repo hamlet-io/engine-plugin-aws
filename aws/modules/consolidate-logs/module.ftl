@@ -1,7 +1,7 @@
 [#ftl]
 
 [@addModule
-    name="logconsolidation"
+    name="consolidatelogs"
     description="Solution-wide consolidation of logs, intended for consumption by ElasticSearch."
     provider=AWS_PROVIDER
     properties=[
@@ -9,7 +9,7 @@
             "Names" : "namePrefix",
             "Type" : STRING_TYPE,
             "Description" : "A prefix appended to component names and deployment units to ensure uniquness",
-            "Default" : "alarmslack"
+            "Default" : "consolidatelogs"
         },
         {
             "Names" : "lambdaSourceUrl",
@@ -32,13 +32,13 @@
     ]
 /]
 
-[#macro aws_module_logconsolidation
+[#macro aws_module_consolidatelogs
     namePrefix
     lambdaSourceUrl
     lambdaSourceHash
     tier]
 
-    [@debug message="Entering Module: logconsolidation" context=layerActiveData enabled=false /]
+    [@debug message="Entering Module: consolidate-logs" context=layerActiveData enabled=false /]
 
     [#local lambdaName = formatName(namePrefix, "lambda")]
     [#local datafeedName = formatName(namePrefix, "datafeed")]
@@ -89,12 +89,47 @@
                                 },
                                 "aws:WAFLogFeed": true,
                                 "Links": {
-                                    "seg-opsdata": {
+                                    "store": {
                                         "Tier": "mgmt",
                                         "Component": "baseline",
                                         "DataBucket": "opsdata",
                                         "Instance": "",
                                         "Version": ""
+                                    }
+                                }
+                            }
+                        },
+                        lambdaName : {
+                            "lambda": {
+                                "Instances": {
+                                    "default": {
+                                        "DeploymentUnits": [
+                                            lambdaName
+                                        ]
+                                    }
+                                },
+                                "Functions": {
+                                    "processor": {
+                                        "RunTime": "python3.6",
+                                        "MemorySize": 128,
+                                        "Timeout": 30,
+                                        "Handler": "src/run.lambda_handler",
+                                        "Links": {
+                                            "store": {
+                                                "Tier": "mgmt",
+                                                "Component": "baseline",
+                                                "DataBucket" : "opsdata",
+                                                "Instance" : "",
+                                                "Version": "",
+                                                "Role": "datafeed"
+                                            },
+                                            "logwatcher": {
+                                                "Tier": "app",
+                                                "Component": "logwatcher",
+                                                "Version": "",
+                                                "Role": "produce"
+                                            }
+                                        }
                                     }
                                 }
                             }
