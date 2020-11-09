@@ -17,6 +17,21 @@
             [#local fqdn = getExistingReference(cfId,DNS_ATTRIBUTE_TYPE)]
     [/#if]
 
+    [#local wafPresent = isPresent(solution.WAF)]
+    [#local wafLoggingEnabled  = wafPresent && solution.WAF.Logging.Enabled ]
+
+    [#local wafLogStreamResources = {}]
+    [#if wafLoggingEnabled ]
+        [#local wafLogStreamResources =
+                getLoggingFirehoseStreamResources(
+                    core.Id,
+                    core.FullName,
+                    core.FullAbsolutePath,
+                    "waflog",
+                    "aws-waf-logs-"
+                )]
+    [/#if]
+
     [#assign componentState =
         {
             "Resources" : {
@@ -30,7 +45,8 @@
                     "Name" : formatComponentWAFAclName(core.Tier, core.Component, occurrence),
                     "Type" : AWS_WAF_ACL_RESOURCE_TYPE
                 }
-            },
+            } +
+            attributeIfContent("wafLogStreaming", wafLogStreamResources),
             "Attributes" : {
                 "FQDN" : fqdn,
                 "URL" : "https://" + fqdn,

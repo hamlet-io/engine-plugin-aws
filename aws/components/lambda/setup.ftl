@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_lambda_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=["prologue", "template", "config", "epilogue"] /]
+    [@addDefaultGenerationContract subsets=[ "pregeneration", "prologue", "template", "config", "epilogue"] /]
 [/#macro]
 
 [#macro aws_lambda_cf_deployment_application occurrence ]
@@ -16,7 +16,7 @@
     [@debug message="Entering" context=occurrence enabled=false /]
 
     [#if deploymentSubsetRequired("generationcontract", false)]
-        [@addDefaultGenerationContract subsets=["prologue", "template", "config", "epilogue"] /]
+        [@addDefaultGenerationContract subsets=[ "pregeneration", "prologue", "template", "config", "epilogue"] /]
         [#return]
     [/#if]
 
@@ -71,6 +71,26 @@
 
     [#local fragment = getOccurrenceFragmentBase(fn) ]
 
+    [#local buildReference = getOccurrenceBuildReference(fn)]
+
+    [#local imageSource = solution.Image.Source]
+    [#if deploymentSubsetRequired("pregeneration", false) && imageSource == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=
+                getImageFromUrlScript(
+                    regionId,
+                    productName,
+                    environmentName,
+                    segmentName,
+                    fn,
+                    solution.Image.UrlSource.Url,
+                    "lambda",
+                    "lambda.zip",
+                    solution.Image.UrlSource.ImageHash
+                )
+        /]
+    [/#if]
+
     [#local contextLinks = getLinkTargets(fn) ]
     [#assign _context =
         {
@@ -87,7 +107,7 @@
                     getOccurrenceBuildProduct(fn,productName),
                     getOccurrenceBuildScopeExtension(fn),
                     getOccurrenceBuildUnit(fn),
-                    getOccurrenceBuildReference(fn),
+                    buildReference,
                     "lambda.zip"
                 ),
             "Links" : contextLinks,
