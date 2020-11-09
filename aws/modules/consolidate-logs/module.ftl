@@ -137,7 +137,7 @@
                                                 "Version": "",
                                                 "Role": "datafeed"
                                             },
-                                            "logwatcher": {
+                                            "feed": {
                                                 "Tier": "app",
                                                 "Component": "logwatcher",
                                                 "Version": "",
@@ -167,7 +167,8 @@
                                     "Component": "baseline",
                                     "Instance": "",
                                     "Version": "",
-                                    "DataBucket" : "opsdata"
+                                    "DataBucket" : "opsdata",
+                                    "Role" : "produce"
                                 }
                             }
                         }
@@ -184,6 +185,11 @@
                                 }
                             },
                             "apigateway" : {
+                                "AccessLogging" : {
+                                    "Enabled" : true,
+                                    "aws:KinesisFirehose" : true,
+                                    "aws:KeepLogGroup" : true
+                                },
                                 "CloudFront" : {
                                     "EnableLogging" : true
                                 },
@@ -213,7 +219,6 @@
         }
     /]
 
-    [#-- TODO(rossmurr4y): feature: define loggingprofile for use by apigw components to log to kinesis /w log processor function --]
     [#-- TODO(rossmurr4y): feature: define deploymentProfile to apply new logging profile to apigw components --]
     [#-- TODO(rossmurr4y): feature: define deploymentProfile for opsdata -> log consolidation store replication --]
     [#-- TODO(rossmurr4y): feature: add test case to the provider: log consolidation bucket exists --]
