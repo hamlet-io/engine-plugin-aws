@@ -12,6 +12,11 @@
             "Default" : "consolidatelogs"
         },
         {
+            "Names" : "loggingProfile",
+            "Type" : STRING_TYPE,
+            "Description" : "The logging profile id to use for log consolidation."
+        },
+        {
             "Names" : "lambdaSourceUrl",
             "Type" : STRING_TYPE,
             "Description" : "A URL to the lambda zip package for sending alerts",
@@ -34,6 +39,7 @@
 
 [#macro aws_module_consolidatelogs
     namePrefix
+    loggingProfile
     lambdaSourceUrl
     lambdaSourceHash
     tier]
@@ -151,7 +157,7 @@
                 }
             },
             "LoggingProfiles" : {
-                "consolidate": {
+                loggingProfile : {
                     "ForwardingRules": {
                         "store": {
                             "Filter": "all-logs",
@@ -172,14 +178,33 @@
                 "consolidate-logs" : {
                     "Modes" : {
                         "*" : {
-                            "lb" : {
-                                "Logs" : true,
+                            "*" : {
+                                "Profiles" : {
+                                    "Logging" : loggingProfile
+                                }
+                            },
+                            "apigateway" : {
+                                "CloudFront" : {
+                                    "EnableLogging" : true
+                                },
                                 "WAF" : {
                                     "Profiles" : {
                                         "EnableLogging" : true,
-                                        "Logging" : "consolidate"
+                                        "Logging" : loggingProfile
                                     }
                                 }
+                            },
+                            "cdn" : {
+                                "EnableLogging" : true,
+                                "WAF" : {
+                                    "Profiles" : {
+                                        "EnableLogging" : true,
+                                        "Logging" : loggingProfile
+                                    }
+                                }
+                            },
+                            "lb" : {
+                                "Logs" : true
                             }
                         }
                     }
@@ -188,7 +213,6 @@
         }
     /]
 
-    [#-- TODO(rossmurr4y): feature: define deploymentProfile to capture ECS service/task logs --]
     [#-- TODO(rossmurr4y): feature: define loggingprofile for use by apigw components to log to kinesis /w log processor function --]
     [#-- TODO(rossmurr4y): feature: define deploymentProfile to apply new logging profile to apigw components --]
     [#-- TODO(rossmurr4y): feature: define deploymentProfile for opsdata -> log consolidation store replication --]
