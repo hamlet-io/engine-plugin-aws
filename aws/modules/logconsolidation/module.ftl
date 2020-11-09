@@ -47,6 +47,9 @@
     [#local environment = getActiveLayer(ENVIRONMENT_LAYER_TYPE)]
     [#local segment = getActiveLayer(SEGMENT_LAYER_TYPE)]
 
+    [#local namespace = formatName(product["Name"], environment["Name"], segment["Name"])]
+    [#local lambdaSettingNamespace = formatName(namespace, lambdaName)]
+
     [@loadModule
         settingSets=[
            {
