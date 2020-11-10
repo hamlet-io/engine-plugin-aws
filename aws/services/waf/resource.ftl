@@ -342,7 +342,7 @@
 [/#macro]
 
 [#-- Associations are only relevant for regional endpoints --]
-[#macro createWAFAclAssociation id wafaclId endpointId ]
+[#macro createWAFAclAssociation id wafaclId endpointId dependencies=[] ]
     [@cfResource
         id=id
         type=formatWAFResourceType("WebACLAssociation", true)
@@ -351,6 +351,7 @@
                 "ResourceArn" : getArn(endpointId),
                 "WebACLId" : getReference(wafaclId)
             }
+        dependencies=dependencies
     /]
 [/#macro]
 

@@ -650,7 +650,9 @@
                                     ]
                                 ]
                             }
-                        ) /]
+                        )
+                    dependencies=stageId
+                /]
             [/#if]
         [/#if]
     [/#if]
