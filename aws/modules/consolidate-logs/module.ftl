@@ -189,9 +189,6 @@
                                     "aws:KinesisFirehose" : true,
                                     "aws:KeepLogGroup" : true
                                 },
-                                "CloudFront" : {
-                                    "EnableLogging" : true
-                                },
                                 "WAF" : {
                                     "Profiles" : {
                                         "EnableLogging" : true,
