@@ -1024,6 +1024,11 @@
                     "Prefix": "DOCKERLogs",
                     "Expiration": "_operations",
                     "Offline": "_operations"
+                  },
+                  "waf": {
+                    "Prefix": "WAF",
+                    "Expiration": "_operations",
+                    "Offline": "_operations"
                   }
                 },
                 "Links": {
