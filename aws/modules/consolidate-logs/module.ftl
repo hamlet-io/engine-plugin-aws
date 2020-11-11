@@ -215,8 +215,6 @@
         }
     /]
 
-    [#-- TODO(rossmurr4y): feature: define deploymentProfile to apply new logging profile to apigw components --]
-    [#-- TODO(rossmurr4y): feature: define deploymentProfile for opsdata -> log consolidation store replication --]
     [#-- TODO(rossmurr4y): feature: add test case to the provider: log consolidation bucket exists --]
     [#-- TODO(rossmurr4y): feature: add test case to the provider: opsdata replication rule exists --]
     [#-- TODO(rossmurr4y): feature: add test case to the provider:  log processor exists --]
