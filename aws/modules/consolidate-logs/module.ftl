@@ -9,7 +9,7 @@
             "Names" : "namePrefix",
             "Type" : STRING_TYPE,
             "Description" : "A prefix appended to component names and deployment units to ensure uniquness",
-            "Default" : "consolidatelogs"
+            "Default" : "log"
         },
         {
             "Names" : "deploymentProfile",
@@ -117,9 +117,14 @@
                             "lambda": {
                                 "Instances": {
                                     "default": {
-                                        "DeploymentUnits": [
-                                            lambdaName
-                                        ]
+                                        "DeploymentUnits": [ lambdaName ]
+                                    }
+                                },
+                                "Image" : {
+                                    "Source" : "url",
+                                    "UrlSource" : {
+                                        "Url" : lambdaSourceUrl,
+                                        "ImageHash" : lambdaSourceHash
                                     }
                                 },
                                 "Functions": {
@@ -136,12 +141,6 @@
                                                 "Instance" : "",
                                                 "Version": "",
                                                 "Role": "datafeed"
-                                            },
-                                            "feed": {
-                                                "Tier": "app",
-                                                "Component": "logwatcher",
-                                                "Version": "",
-                                                "Role": "produce"
                                             }
                                         }
                                     }
