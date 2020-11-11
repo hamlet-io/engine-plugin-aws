@@ -246,7 +246,7 @@
             [#case BASELINE_DATA_COMPONENT_TYPE]
                 [#if destinationLink.Core.SubComponent.Name == "opsdata"]
                     [#local streamS3DestinationPrefix = formatRelativePath(streamS3DestinationPrefix, core.FullAbsolutePath)]
-                    [#local streamS3DestinationErrorPrefix = formatPath(true, streamS3DestinationErrorPrefix, core.FullAbsolutePath)]
+                    [#local streamS3DestinationErrorPrefix = formatRelative(streamS3DestinationErrorPrefix, core.FullAbsolutePath)]
                 [/#if]
                 [#-- continue to s3 case --]
             [#case S3_COMPONENT_TYPE ]
