@@ -57,16 +57,6 @@
     [#local lambdaSettingNamespace = formatName(namespace, lambdaName)]
 
     [@loadModule
-        settingSets=[
-           {
-                "Type" : "Settings",
-                "Scope" : "Products",
-                "Namespace" : lambdaSettingNamespace,
-                "Settings" : {
-
-                }
-            } 
-        ]
         blueprint={
             "Tiers" : {
                 tier : {
