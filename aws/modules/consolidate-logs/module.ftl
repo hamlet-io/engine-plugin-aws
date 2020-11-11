@@ -95,13 +95,6 @@
                                 },
                                 "aws:WAFLogFeed": true,
                                 "Links": {
-                                    "store": {
-                                        "Tier": "mgmt",
-                                        "Component": "baseline",
-                                        "DataBucket": "opsdata",
-                                        "Instance": "",
-                                        "Version": ""
-                                    },
                                     "processor" : {
                                         "Tier" : tier,
                                         "Component" : lambdaName,
