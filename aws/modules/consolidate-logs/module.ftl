@@ -141,6 +141,13 @@
                                                 "Instance" : "",
                                                 "Version": "",
                                                 "Role": "datafeed"
+                                            },
+                                            "feed" : {
+                                                "Tier" : tier,
+                                                "Component" : datafeedName,
+                                                "Instance" : "",
+                                                "Version" : "",
+                                                "Role" : "logwatcher"
                                             }
                                         }
                                     }
@@ -188,12 +195,6 @@
                                     "Enabled" : true,
                                     "aws:KinesisFirehose" : true,
                                     "aws:KeepLogGroup" : true
-                                },
-                                "WAF" : {
-                                    "Profiles" : {
-                                        "EnableLogging" : true,
-                                        "Logging" : "consolidate"
-                                    }
                                 }
                             },
                             "cdn" : {
