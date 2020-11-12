@@ -117,14 +117,6 @@
                                         "Timeout": 30,
                                         "Handler": "src/run.lambda_handler",
                                         "Links": {
-                                            "store": {
-                                                "Tier": "mgmt",
-                                                "Component": "baseline",
-                                                "DataBucket" : "opsdata",
-                                                "Instance" : "",
-                                                "Version": "",
-                                                "Role": "datafeed"
-                                            },
                                             "feed" : {
                                                 "Tier" : tier,
                                                 "Component" : datafeedName,
