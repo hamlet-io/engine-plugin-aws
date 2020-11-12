@@ -47,8 +47,8 @@
 
     [@debug message="Entering Module: consolidate-logs" context=layerActiveData enabled=false /]
 
-    [#local lambdaName = formatName(namePrefix, "cwlogs", "lambda")]
-    [#local datafeedName = formatName(namePrefix, "cwlogs", "datafeed")]
+    [#local lambdaName = formatName(namePrefix + "cwlogslambda")]
+    [#local datafeedName = formatName(namePrefix + "cwlogsdatafeed")]
 
     [#local product = getActiveLayer(PRODUCT_LAYER_TYPE) ]
     [#local environment = getActiveLayer(ENVIRONMENT_LAYER_TYPE)]
@@ -84,13 +84,17 @@
                                         "LogFilter": "all-logs"
                                     }
                                 },
+                                "Bucket" : {
+                                    "Prefix" : "CWLogs/Logs/",
+                                    "ErrorPrefix" : "CWLogs/Errors/"
+                                },
                                 "Links": {
                                     "processor" : {
                                         "Tier" : tier,
                                         "Component" : lambdaName,
+                                        "Function" : "processor",
                                         "Instance" : "",
                                         "Version" : "",
-                                        "Function" : "processor",
                                         "Role" : "invoke"
                                     }
                                 }
@@ -122,7 +126,8 @@
                                                 "Component" : datafeedName,
                                                 "Instance" : "",
                                                 "Version" : "",
-                                                "Role" : "logwatcher"
+                                                "Role" : "logwatch",
+                                                "Direction": "inbound"
                                             }
                                         }
                                     }
