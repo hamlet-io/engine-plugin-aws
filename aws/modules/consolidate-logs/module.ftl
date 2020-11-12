@@ -14,7 +14,8 @@
         {
             "Names" : "deploymentProfile",
             "Type" : STRING_TYPE,
-            "Description" : "The deployment profile id to enable log consolidation on."
+            "Description" : "The deployment profile id to enable log consolidation on.",
+            "Mandatory" : true
         },
         {
             "Names" : "lambdaSourceUrl",
