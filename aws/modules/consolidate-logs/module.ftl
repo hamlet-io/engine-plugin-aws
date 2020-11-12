@@ -143,13 +143,11 @@
                         "store": {
                             "Filter": "all-logs",
                             "Links": {
-                                "store": {
-                                    "Tier": "mgmt",
-                                    "Component": "baseline",
+                                "feed": {
+                                    "Tier": tier,
+                                    "Component": datafeedName,
                                     "Instance": "",
-                                    "Version": "",
-                                    "DataBucket" : "opsdata",
-                                    "Role" : "produce"
+                                    "Version": ""
                                 }
                             }
                         }
