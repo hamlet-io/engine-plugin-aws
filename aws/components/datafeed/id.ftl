@@ -4,7 +4,7 @@
     attributes=[
         {
             "Names" : "WAFLogFeed",
-            "Description" : "Set up this datafeed to capture WAF Logs",
+            "Description" : "Feed is intended for use with WAF. Enforces a strict naming convention required by the provider.",
             "Type" : BOOLEAN_TYPE,
             "Default" : false
         }
