@@ -83,7 +83,6 @@
                                         "LogFilter": "all-logs"
                                     }
                                 },
-                                "aws:WAFLogFeed": true,
                                 "Links": {
                                     "processor" : {
                                         "Tier" : tier,
