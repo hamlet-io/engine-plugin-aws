@@ -173,6 +173,11 @@
                                     "Enabled" : true,
                                     "aws:KinesisFirehose" : true,
                                     "aws:KeepLogGroup" : true
+                                },
+                                "WAF" : {
+                                    "Logging" : {
+                                        "Enabled" : true
+                                    }
                                 }
                             },
                             "cdn" : {
