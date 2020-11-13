@@ -9,7 +9,7 @@
             "Names" : "namePrefix",
             "Type" : STRING_TYPE,
             "Description" : "A prefix appended to component names and deployment units to ensure uniquness",
-            "Default" : "log"
+            "Default" : ""
         },
         {
             "Names" : "deploymentProfile",
