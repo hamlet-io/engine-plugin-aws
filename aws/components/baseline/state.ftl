@@ -98,7 +98,9 @@
             },
             "Roles" : {
                 "Inbound" : {},
-                "Outbound" : {}
+                "Outbound" : {
+                    "datafeed" : s3KinesesStreamPermission(bucketId)
+                }
             }
         }
     ]
