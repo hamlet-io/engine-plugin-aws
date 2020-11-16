@@ -174,13 +174,7 @@
                                 }
                             },
                             "cdn" : {
-                                "EnableLogging" : true,
-                                "WAF" : {
-                                    "Profiles" : {
-                                        "EnableLogging" : true,
-                                        "Logging" : "consolidate"
-                                    }
-                                }
+                                "EnableLogging" : true
                             },
                             "lb" : {
                                 "Logs" : true
