@@ -174,7 +174,12 @@
                                 }
                             },
                             "cdn" : {
-                                "EnableLogging" : true
+                                "EnableLogging" : true,
+                                "WAF" : {
+                                    "Logging" : {
+                                        "Enabled" : true
+                                    }
+                                }
                             },
                             "lb" : {
                                 "Logs" : true
