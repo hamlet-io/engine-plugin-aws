@@ -183,6 +183,11 @@
                             },
                             "lb" : {
                                 "Logs" : true
+                                "WAF" : { 
+                                    "Logging" : { 
+                                         "Enabled" : true
+                                     }
+                                 }
                             }
                         }
                     }
