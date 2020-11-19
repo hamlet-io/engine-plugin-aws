@@ -1884,7 +1884,8 @@
   "ServiceRoles" : {
     "apigateway" : {
       "Enabled" : true,
-      "ServiceName" : "ops.apigateway.amazonaws.com"
+      "ServiceName" : "ops.apigateway.amazonaws.com",
+      "Description" : "The Service Linked Role is used by Amazon API Gateway."
     },
     "autoscaling" : {
       "Enabled" : true,
