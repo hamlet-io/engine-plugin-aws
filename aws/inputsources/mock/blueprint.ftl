@@ -7,7 +7,7 @@
         {
             "Account": {
                 "Region": "ap-southeast-2",
-                "AWSId": "0123456789"
+                "ProviderId": "0123456789"
             },
             "Product": {
                 "Region": "ap-southeast-2"

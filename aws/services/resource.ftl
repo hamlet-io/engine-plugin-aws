@@ -99,7 +99,7 @@
 [#-- Include a reference to a resource --]
 [#-- Allows resources to share a template or be separated --]
 [#-- Note that if separate, creation order becomes important --]
-[#function getExistingReference resourceId attributeType="" inRegion="" inDeploymentUnit="" inAccount=(accountObject.AWSId)!""]
+[#function getExistingReference resourceId attributeType="" inRegion="" inDeploymentUnit="" inAccount=(accountObject.ProviderId)!""]
     [#local attributeType = (attributeType == REFERENCE_ATTRIBUTE_TYPE)?then(
                                 "",
                                 attributeType
@@ -107,7 +107,7 @@
     [#return getStackOutput( AWS_PROVIDER, formatAttributeId(resourceId, attributeType), inDeploymentUnit, inRegion, inAccount) ]
 [/#function]
 
-[#function migrateToResourceId resourceId legacyIds=[] inRegion="" inDeploymentUnit="" inAccount=(accountObject.AWSId)!""]
+[#function migrateToResourceId resourceId legacyIds=[] inRegion="" inDeploymentUnit="" inAccount=(accountObject.ProviderId)!""]
 
     [#list asArray(legacyIds) as legacyId]
         [#if getExistingReference(legacyId, "", inRegion, inDeploymentUnit, inAccount)?has_content]

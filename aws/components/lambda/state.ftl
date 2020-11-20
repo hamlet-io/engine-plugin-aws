@@ -102,7 +102,7 @@
                                 regionObject.Partition,
                                 "lambda",
                                 region,
-                                accountObject.AWSId,
+                                accountObject.ProviderId,
                                 "function:" + core.FullName,
                                 true)
                 ),
