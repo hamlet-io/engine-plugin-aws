@@ -77,6 +77,9 @@
                                         "LogFilter": "all-logs"
                                     }
                                 },
+                                "Profiles" : {
+                                    "Logging" : "noforward"
+                                },
                                 "Bucket" : {
                                     "Prefix" : "CWLogs/Logs/",
                                     "ErrorPrefix" : "CWLogs/Errors/"
