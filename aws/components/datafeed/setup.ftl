@@ -38,6 +38,14 @@
     [#local dataBucket          = getExistingReference(dataBucketId) ]
     [#local dataBucketPrefix    = getAppDataFilePrefix(occurrence) ]
 
+    [#local dataBucketLink = baselineLinks["AppData"]]
+
+    [#local backUpEncrypt = dataBucketLink.Configuration.Solution.Encryption.Enabled &&
+                dataBucketLink.Configuration.Solution.Encryption.EncryptionSource == "EncryptionService" ]
+
+    [#local backUpBaselineLinks = getBaselineLinks( dataBucketLink, ["Encryption"]) ]
+    [#local backupCmkKeyId = getBaselineComponentIds(backUpBaselineLinks)["Encryption"]]
+
     [#local cmkKeyId            = baselineComponentIds["Encryption"]]
 
     [#if solution.LogWatchers?has_content ]
@@ -235,7 +243,7 @@
                                                 solution.Buffering.Size,
                                                 streamRoleId,
                                                 encrypted,
-                                                cmkKeyId,
+                                                backupCmkKeyId,
                                                 streamBackupLoggingConfiguration )]
 
         [#-- Establish bucket prefixes --]
@@ -244,12 +252,17 @@
 
         [#switch (destinationLink.Core.Type)!"notfound" ]
             [#case BASELINE_DATA_COMPONENT_TYPE]
-                [#if destinationLink.Core.SubComponent.Name == "opsdata"]
-                    [#local streamS3DestinationPrefix = formatRelativePath(streamS3DestinationPrefix, core.FullAbsolutePath)]
-                    [#local streamS3DestinationErrorPrefix = formatRelativePath(streamS3DestinationErrorPrefix, core.FullAbsolutePath)]
-                [/#if]
+                [#local streamS3DestinationPrefix = formatRelativePath(streamS3DestinationPrefix, core.FullAbsolutePath)]
+                [#local streamS3DestinationErrorPrefix = formatRelativePath(streamS3DestinationErrorPrefix, core.FullAbsolutePath)]
                 [#-- continue to s3 case --]
             [#case S3_COMPONENT_TYPE ]
+
+                [#local s3Encrypt = destinationLink.Configuration.Solution.Encryption.Enabled &&
+                                        destinationLink.Configuration.Solution.Encryption.EncryptionSource == "EncryptionService" ]
+
+                [#local s3BaselineLinks = getBaselineLinks(destinationLink, [ "Encryption"] )]
+                [#local s3BaselineComponentIds = getBaselineComponentIds(s3BaselineLinks)]
+
                 [#local s3Id = destinationLink.State.Resources["bucket"].Id ]
                 [#local streamS3Destination = getFirehoseStreamS3Destination(
                                                 s3Id,
@@ -258,8 +271,8 @@
                                                 solution.Buffering.Interval,
                                                 solution.Buffering.Size,
                                                 streamRoleId,
-                                                encrypted,
-                                                cmkKeyId,
+                                                backUpEncrypt,
+                                                s3BaselineComponentIds["Encryption"],
                                                 streamLoggingConfiguration,
                                                 solution.Backup.Enabled,
                                                 streamS3BackupDestination,

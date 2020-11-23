@@ -62,7 +62,6 @@
                                         "DeploymentUnits": [ datafeedName ]
                                     }
                                 },
-                                "Encrypted": true,
                                 "Destination": {
                                     "Link": {
                                         "Tier": "mgmt",

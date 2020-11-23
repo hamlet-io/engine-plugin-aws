@@ -81,7 +81,7 @@
                     "consume" : s3ConsumePermission(id) + s3ReadEncryptionPolicy,
                     "replicadestination" : s3ReplicaDestinationPermission(id) + s3AllEncryptionPolicy,
                     "replicasource" : {},
-                    "datafeed" : s3KinesesStreamPermission(id)
+                    "datafeed" : s3KinesesStreamPermission(id) + s3AllEncryptionPolicy
             }
             }
         }

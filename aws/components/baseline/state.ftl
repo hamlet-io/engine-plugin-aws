@@ -1,6 +1,15 @@
 [#ftl]
 [#assign LOCAL_SSH_PRIVATE_KEY_RESOURCE_TYPE = "sshPrivKey" ]
 
+[#function getCMKOutputId componentId coreId ]
+    [#if componentId == "cmk" &&
+            getExistingReference(formatSegmentCMKId(), "","", "cmk" )?has_content ]
+        [#return formatSegmentCMKId() ]
+    [#else]
+        [#return formatResourceId(AWS_CMK_RESOURCE_TYPE, coreId)]
+    [/#if]
+[/#function]
+
 [#macro aws_baseline_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
@@ -40,7 +49,7 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
 
-    [#local parentCore = occurrence.Core ]
+    [#local parentCore = parent.Core ]
     [#local parentState = parent.State ]
     [#local segmentSeed = parentState.Attributes["SEED_SEGMENT"] ]
 
@@ -72,6 +81,33 @@
             [#break]
     [/#switch]
 
+    [#local baselineProfile = baselineProfiles[occurrence.Configuration.Solution.Profiles.Baseline] ]
+    [#local kmsKeyComponentId = baselineProfile["Encryption"] ]
+
+    [#-- This relies on these components being "siblings" and allows us to get around the issue of not being able to do occurrence lookups inside the same component --]
+    [#local kmsKeyId = getCMKOutputId(kmsKeyComponentId, formatId( parentCore.Extensions.Id, kmsKeyComponentId)) ]
+
+    [#local s3AllEncryptionPolicy = []]
+    [#local s3ReadEncryptionPolicy = []]
+    [#if solution.Encryption.Enabled &&
+        solution.Encryption.EncryptionSource == "EncryptionService" &&
+        kmsKeyId?has_content]
+
+        [#local s3AllEncryptionPolicy  = s3EncryptionAllPermission(
+                kmsKeyId,
+                bucketName,
+                "*",
+                getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE)
+            )]
+
+        [#local s3ReadEncryptionPolicy  = s3EncryptionReadPermission(
+                kmsKeyId,
+                bucketName,
+                "*",
+                getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE)
+            )]
+    [/#if]
+
     [#local bucketPolicyId = formatDependentBucketPolicyId(bucketId)]
 
     [#assign componentState =
@@ -90,7 +126,7 @@
                 "role" : {
                     "Id" : formatResourceId( AWS_IAM_ROLE_RESOURCE_TYPE, core.Id ),
                     "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
-                    "IncludeInDeploymentState" : false 
+                    "IncludeInDeploymentState" : false
                 }
             },
             "Attributes" : {
@@ -99,7 +135,7 @@
             "Roles" : {
                 "Inbound" : {},
                 "Outbound" : {
-                    "datafeed" : s3KinesesStreamPermission(bucketId)
+                    "datafeed" : s3KinesesStreamPermission(bucketId) + s3AllEncryptionPolicy
                 }
             }
         }
@@ -110,7 +146,7 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
 
-    [#local parentCore = occurrence.Core ]
+    [#local parentCore = parent.Core ]
     [#local parentState = parent.State ]
 
     [#local resources = {}]
@@ -133,7 +169,7 @@
                 [#local cmkAliasName = core.FullName ]
             [/#if]
 
-            [#local cmkOutputId = legacyKey?then(formatSegmentCMKId(), cmkId)]
+            [#local cmkOutputId = getCMKOutputId(core.SubComponent.Id, core.Id)]
 
             [#local resources +=
                 {
