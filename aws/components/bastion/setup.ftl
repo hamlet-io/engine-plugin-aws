@@ -41,15 +41,13 @@
             [#break]
     [/#switch]
 
-    [#if deploymentSubsetRequired("bastion", true) ]
+    [#if deploymentSubsetRequired("eip", false) || deploymentSubsetRequired("bastion", true) ]
         [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
         [#local networkLink = occurrenceNetwork.Link!{} ]
         [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
 
         [#if ! networkLinkTarget?has_content ]
-            [#if deploymentSubsetRequired(BASTION_COMPONENT_TYPE, false)]
-                [@fatal message="Network could not be found" context=networkLink /]
-            [/#if]
+            [@fatal message="Network could not be found" context=networkLink /]
             [#return]
         [/#if]
 
