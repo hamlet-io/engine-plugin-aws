@@ -1002,10 +1002,8 @@
           "Enabled": false
         },
         "baseline": {
-          "DeploymentUnits": [
-            "baseline"
-          ],
           "baseline": {
+            "deployment:Unit" : "baseline",
             "DataBuckets": {
               "opsdata": {
                 "Role": "operations",
@@ -1065,11 +1063,9 @@
           }
         },
         "ssh": {
-          "DeploymentUnits": [
-            "ssh"
-          ],
           "MultiAZ": true,
           "bastion": {
+            "deployment:Unit" : "ssh",
             "AutoScaling": {
               "DetailedMetrics": false,
               "ActivityCooldown": 180,
@@ -1079,11 +1075,9 @@
           }
         },
         "vpc": {
-          "DeploymentUnits": [
-            "vpc"
-          ],
           "MultiAZ": true,
           "network": {
+            "deployment:Unit" : "vpc",
             "RouteTables": {
               "internal": {},
               "external": {
@@ -1131,10 +1125,8 @@
           }
         },
         "igw": {
-          "DeploymentUnits": [
-            "igw"
-          ],
           "gateway": {
+            "deployment:Unit" : "igw",
             "Engine": "igw",
             "Destinations": {
               "default": {
@@ -1153,10 +1145,9 @@
           }
         },
         "nat": {
-          "DeploymentUnits": [
-            "nat"
-          ],
           "gateway": {
+            "deployment:Unit" : "nat",
+            "deployment:Priority" : 75,
             "Engine": "natgw",
             "Destinations": {
               "default": {
@@ -1175,10 +1166,8 @@
           }
         },
         "vpcendpoint": {
-          "DeploymentUnits": [
-            "vpcendpoint"
-          ],
           "gateway": {
+            "deployment:Unit" : "vpcendpoint",
             "Engine": "privateservice",
             "DestinationPorts" : [ "http", "https" ],
             "Destinations": {
@@ -1217,9 +1206,7 @@
               "default": {
                 "Versions": {
                   "v1": {
-                    "DeploymentUnits": [
-                      "cfredirect-v1"
-                    ],
+                    "deployment:Unit" : "cfredirect-v1",
                     "Enabled": false,
                     "Fragment": "_cfredirect-v1"
                   }
