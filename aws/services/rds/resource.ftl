@@ -115,9 +115,9 @@
             "AutoMinorVersionUpgrade": autoMinorVersionUpgrade,
             "AllowMajorVersionUpgrade" : allowMajorVersionUpgrade,
             "DeleteAutomatedBackups" : deleteAutomatedBackups,
-            "DBSubnetGroupName": getReference(subnetGroupId),
-            "DBParameterGroupName": getReference(parameterGroupId),
-            "OptionGroupName": getReference(optionGroupId),
+            "DBSubnetGroupName": getReference(AWS_PROVIDER, subnetGroupId),
+            "DBParameterGroupName": getReference(AWS_PROVIDER, parameterGroupId),
+            "OptionGroupName": getReference(AWS_PROVIDER, optionGroupId),
             "CACertificateIdentifier" : caCertificate
         } +
         valueIfTrue(
@@ -129,13 +129,13 @@
                 "StorageType" : "gp2",
                 "BackupRetentionPeriod" : retentionPeriod,
                 "DBInstanceIdentifier": name,
-                "VPCSecurityGroups": asArray( getReference(securityGroupId)),
+                "VPCSecurityGroups": asArray( getReference(AWS_PROVIDER, securityGroupId)),
                 "Port" : port?c?string,
                 "EngineVersion": engineVersion
             },
             ( !clusterMember ),
             {
-                "DBClusterIdentifier" : getReference(clusterId),
+                "DBClusterIdentifier" : getReference(AWS_PROVIDER, clusterId),
                 "PromotionTier" : clusterPromotionTier
             }
 
@@ -152,7 +152,7 @@
         valueIfTrue(
             {
                 "StorageEncrypted" : true,
-                "KmsKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                "KmsKeyId" : getReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE)
             },
             ( (!(snapshotArn?has_content) && encrypted) && !clusterMember )
         ) +
@@ -175,14 +175,14 @@
             {
                 "EnablePerformanceInsights" : performanceInsights,
                 "PerformanceInsightsRetentionPeriod" : performanceInsightsRetention,
-                "PerformanceInsightsKMSKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                "PerformanceInsightsKMSKeyId" : getReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE)
             },
             {}
         ) +
         enhancedMonitoring?then(
             {
                 "MonitoringInterval" : enhancedMonitoringInterval,
-                "MonitoringRoleArn" : getReference(enhancedMonitoringRoleId, ARN_ATTRIBUTE_TYPE)
+                "MonitoringRoleArn" : getReference(AWS_PROVIDER, enhancedMonitoringRoleId, ARN_ATTRIBUTE_TYPE)
             },
             {}
         )
@@ -251,7 +251,7 @@
             (!(snapshotArn?has_content) && encrypted)?then(
                 {
                     "StorageEncrypted" : true,
-                    "KmsKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                    "KmsKeyId" : getReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE)
                 },
                 {}
             ) +

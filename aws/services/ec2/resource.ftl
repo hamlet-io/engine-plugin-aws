@@ -462,9 +462,9 @@
                         "command" : "/opt/codeontap/bootstrap/ecs.sh",
                         "env" : {
                             "ECS_CLUSTER" : valueIfContent(
-                                                    getExistingReference(ecsId),
-                                                    getExistingReference(ecsId),
-                                                    getReference(ecsId)
+                                                    getExistingReference(AWS_PROVIDER, ecsId),
+                                                    getExistingReference(AWS_PROVIDER, ecsId),
+                                                    getReference(AWS_PROVIDER, ecsId)
                                             ),
                             "ECS_LOG_DRIVER" : defaultLogDriver
                         } +
@@ -662,7 +662,7 @@
                     "RegisterWithLB" : {
                         "command" : "/opt/codeontap/bootstrap/register.sh",
                         "env" : {
-                            "LOAD_BALANCER" : getReference(lbId)
+                            "LOAD_BALANCER" : getReference(AWS_PROVIDER, lbId)
                         },
                         "ignoreErrors" : ignoreErrors
                     }
@@ -737,12 +737,12 @@
         properties=
             getBlockDevices(storageProfile) +
             {
-                "KeyName" : getExistingReference(keyPairId, NAME_ATTRIBUTE_TYPE),
+                "KeyName" : getExistingReference(AWS_PROVIDER, keyPairId, NAME_ATTRIBUTE_TYPE),
                 "InstanceType": processorProfile.Processor,
                 "ImageId" : imageId,
                 "SecurityGroups" :
                     [
-                        getReference(securityGroupId)
+                        getReference(AWS_PROVIDER, securityGroupId)
                     ] +
                     sshFromProxy?has_content?then(
                         [
@@ -750,7 +750,7 @@
                         ],
                         []
                     ),
-                "IamInstanceProfile" : getReference(instanceProfileId),
+                "IamInstanceProfile" : getReference(AWS_PROVIDER, instanceProfileId),
                 "AssociatePublicIpAddress" : publicIP,
                 "UserData" : {
                     "Fn::Base64" : {
@@ -846,7 +846,7 @@
         properties=
             {
                 "Cooldown" : autoScalingConfig.ActivityCooldown?c,
-                "LaunchConfigurationName": getReference(launchConfigId)
+                "LaunchConfigurationName": getReference(AWS_PROVIDER, launchConfigId)
             } +
             autoScalingConfig.DetailedMetrics?then(
                 {
@@ -863,13 +863,13 @@
                     "MinSize": minSize,
                     "MaxSize": maxSize,
                     "DesiredCapacity": desiredCapacity,
-                    "VPCZoneIdentifier": getSubnets(tier, networkResources)
+                    "VPCZoneIdentifier": getSubnets(AWS_PROVIDER, tier, networkResources)
                 },
                 {
                     "MinSize": minSize,
                     "MaxSize": maxSize,
                     "DesiredCapacity": desiredCapacity,
-                    "VPCZoneIdentifier" : getSubnets(tier, networkResources)[0..0]
+                    "VPCZoneIdentifier" : getSubnets(AWS_PROVIDER, tier, networkResources)[0..0]
                 }
             ) +
             attributeIfContent(
@@ -950,7 +950,7 @@
         (!(snapshotId?has_content) && encrypted)?then(
             {
                 "Encrypted" : encrypted,
-                "KmsKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                "KmsKeyId" : getReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE)
             },
             {}
         ) +
@@ -983,8 +983,8 @@
         type="AWS::EC2::VolumeAttachment"
         properties={
             "Device" : "/dev/" + device,
-            "InstanceId" : getReference(instanceId),
-            "VolumeId" : getReference(volumeId)
+            "InstanceId" : getReference(AWS_PROVIDER, instanceId),
+            "VolumeId" : getReference(AWS_PROVIDER, volumeId)
         }
         outputId=outputId
         dependencies=dependencies

@@ -83,8 +83,8 @@
                                             linkTarget.Core.Id
                                         )]
 
-                                [#local transitGateway = getReference( linkTargetResources["transitGateway"].Id ) ]
-                                [#local transitGatewayRouteTable = getReference( linkTargetResources["routeTable"].Id )]
+                                [#local transitGateway = getReference(AWS_PROVIDER, linkTargetResources["transitGateway"].Id ) ]
+                                [#local transitGatewayRouteTable = getReference(AWS_PROVIDER, linkTargetResources["routeTable"].Id )]
                                 [#local transGatewayAttachmentId =  formatId(vpnConnectionId, "attach") ]
 
                                 [#if deploymentSubsetRequired(EXTERNALNETWORK_COMPONENT_TYPE, true)]
@@ -92,7 +92,7 @@
                                         id=vpnConnectionId
                                         name=formatName(core.FullName, linkTargetCore.Name)
                                         staticRoutesOnly=( ! parentSolution.BGP.Enabled )
-                                        customerGateway=getReference(customerGatewayId)
+                                        customerGateway=getReference(AWS_PROVIDER, customerGatewayId)
                                         transitGateway=transitGateway
                                     /]
                                 [/#if]
@@ -128,7 +128,7 @@
                                 [/#if]
 
 
-                                [#if getExistingReference(transGatewayAttachmentId)?has_content ]
+                                [#if getExistingReference(AWS_PROVIDER, transGatewayAttachmentId)?has_content ]
 
                                     [#if deploymentSubsetRequired(EXTERNALNETWORK_COMPONENT_TYPE, true)]
                                         [@createTransitGatewayRouteTableAssociation
@@ -137,7 +137,7 @@
                                                     core.Id,
                                                     linkTargetCore.Id
                                                 )
-                                                transitGatewayAttachment=getExistingReference(transGatewayAttachmentId)
+                                                transitGatewayAttachment=getExistingReference(AWS_PROVIDER, transGatewayAttachmentId)
                                                 transitGatewayRouteTable=transitGatewayRouteTable
                                         /]
                                     [/#if]
@@ -151,7 +151,7 @@
                                                         core.Id,
                                                         linkTargetCore.Id
                                                     )
-                                                    transitGatewayAttachment=getExistingReference(transGatewayAttachmentId)
+                                                    transitGatewayAttachment=getExistingReference(AWS_PROVIDER, transGatewayAttachmentId)
                                                     transitGatewayRouteTable=transitGatewayRouteTable
                                             /]
                                         [/#if]
@@ -172,7 +172,7 @@
                                                 [@createTransitGatewayRoute
                                                         id=vpnRouteId
                                                         transitGatewayRouteTable=transitGatewayRouteTable
-                                                        transitGatewayAttachment=getExistingReference(transGatewayAttachmentId)
+                                                        transitGatewayAttachment=getExistingReference(AWS_PROVIDER, transGatewayAttachmentId)
                                                         destinationCidr=externalNetworkCIDR
                                                 /]
                                             [/#if]

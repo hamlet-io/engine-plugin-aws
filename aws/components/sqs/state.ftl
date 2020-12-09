@@ -66,11 +66,11 @@
                     {}
                 ),
                 "Attributes" : {
-                    "NAME" : getExistingReference(id, NAME_ATTRIBUTE_TYPE),
-                    "URL" : getExistingReference(id, URL_ATTRIBUTE_TYPE),
-                    "PRODUCT_URL" : getExistingReference(id, URL_ATTRIBUTE_TYPE)?replace("https://", "sqs://"),
-                    "ARN" : getExistingReference(id, ARN_ATTRIBUTE_TYPE),
-                    "REGION" : getExistingReference(id, REGION_ATTRIBUTE_TYPE)!regionId
+                    "NAME" : getExistingReference(AWS_PROVIDER, id, NAME_ATTRIBUTE_TYPE),
+                    "URL" : getExistingReference(AWS_PROVIDER, id, URL_ATTRIBUTE_TYPE),
+                    "PRODUCT_URL" : getExistingReference(AWS_PROVIDER, id, URL_ATTRIBUTE_TYPE)?replace("https://", "sqs://"),
+                    "ARN" : getExistingReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE),
+                    "REGION" : getExistingReference(AWS_PROVIDER, id, REGION_ATTRIBUTE_TYPE)!regionId
                 },
                 "Roles" : {
                     "Inbound" : {},

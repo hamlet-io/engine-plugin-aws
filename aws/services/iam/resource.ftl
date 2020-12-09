@@ -187,7 +187,7 @@
     [#assign deployed = false ]
     [#list getReferenceData(SERVICEROLE_REFERENCE_TYPE) as id,ServiceRole ]
         [#if ServiceRole.ServiceName == serviceName ]
-            [#assign deployed = getExistingReference( formatAccountServiceLinkedRoleId(id) )?has_content ]
+            [#assign deployed = getExistingReference(AWS_PROVIDER, formatAccountServiceLinkedRoleId(id) )?has_content ]
         [/#if]
     [/#list]
     [#return deployed]

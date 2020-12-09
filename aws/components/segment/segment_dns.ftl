@@ -19,7 +19,7 @@
                     "Name" : concatenate(fullNamePrefixes?reverse + ["internal"], "."),
                     "VPCs" : [
                         {
-                            "VPCId" : getReference(formatVPCId()),
+                            "VPCId" : getReference(AWS_PROVIDER, formatVPCId()),
                             "VPCRegion" : regionId
                         }
                     ]

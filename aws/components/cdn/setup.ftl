@@ -22,7 +22,7 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ])]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]!"") ]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]!"") ]
 
     [#local fragment = getOccurrenceFragmentBase(occurrence) ]
 
@@ -197,7 +197,7 @@
                 [#local spaBaslineProfile = originLinkTargetConfiguration.Solution.Profiles.Baseline ]
                 [#local spaBaselineLinks = getBaselineLinks(originLink, [ "CDNOriginKey" ])]
                 [#local spaBaselineComponentIds = getBaselineComponentIds(spaBaselineLinks)]
-                [#local cfAccess = getExistingReference(spaBaselineComponentIds["CDNOriginKey"]!"")]
+                [#local cfAccess = getExistingReference(AWS_PROVIDER, spaBaselineComponentIds["CDNOriginKey"]!"")]
 
                 [#local originBucket = originLinkTargetAttributes["OTA_ARTEFACT_BUCKET"]]
                 [#local originPrefix = originLinkTargetAttributes["OTA_ARTEFACT_PREFIX"]]
@@ -230,7 +230,7 @@
                 [#local spaBaslineProfile = originLinkTargetConfiguration.Solution.Profiles.Baseline ]
                 [#local spaBaselineLinks = getBaselineLinks(originLink, [ "CDNOriginKey" ])]
                 [#local spaBaselineComponentIds = getBaselineComponentIds(spaBaselineLinks)]
-                [#local cfAccess = getExistingReference(spaBaselineComponentIds["CDNOriginKey"]!"")]
+                [#local cfAccess = getExistingReference(AWS_PROVIDER, spaBaselineComponentIds["CDNOriginKey"]!"")]
 
                 [#local originBucket = originLinkTargetAttributes["NAME"] ]
 
@@ -262,8 +262,8 @@
                 [#local spaBaslineProfile = originLinkTargetConfiguration.Solution.Profiles.Baseline ]
                 [#local spaBaselineLinks = getBaselineLinks(originLink, [ "OpsData", "CDNOriginKey" ])]
                 [#local spaBaselineComponentIds = getBaselineComponentIds(spaBaselineLinks)]
-                [#local originBucket = getExistingReference(spaBaselineComponentIds["OpsData"]!"") ]
-                [#local cfAccess = getExistingReference(spaBaselineComponentIds["CDNOriginKey"]!"")]
+                [#local originBucket = getExistingReference(AWS_PROVIDER, spaBaselineComponentIds["OpsData"]!"") ]
+                [#local cfAccess = getExistingReference(AWS_PROVIDER, spaBaselineComponentIds["CDNOriginKey"]!"")]
 
                 [#local configPathPattern = originLinkTargetAttributes["CONFIG_PATH_PATTERN"]]
 
@@ -514,7 +514,7 @@
     [/#if]
 
     [#if deploymentSubsetRequired("epilogue", false)]
-        [#if invalidationPaths?has_content && getExistingReference(cfId)?has_content ]
+        [#if invalidationPaths?has_content && getExistingReference(AWS_PROVIDER, cfId)?has_content ]
             [@addToDefaultBashScriptOutput
                 [
                     "case $\{STACK_OPERATION} in",
@@ -523,7 +523,7 @@
                     "       info \"Invalidating cloudfront distribution ... \"",
                     "       invalidate_distribution" +
                     "       \"" + region + "\" " +
-                    "       \"" + getExistingReference(cfId) + "\" " +
+                    "       \"" + getExistingReference(AWS_PROVIDER, cfId) + "\" " +
                     "       \"" + invalidationPaths?join(" ") + "\" || return $?"
                     " ;;",
                     " esac"

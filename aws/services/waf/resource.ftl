@@ -140,7 +140,7 @@
         [#local predicates +=
             [
                 {
-                    "DataId" : getReference(conditionId),
+                    "DataId" : getReference(AWS_PROVIDER, conditionId),
                     "Negated" : (condition.Negated)!false,
                     "Type" : rateBased?then("IPMatch", condition.Type)
                 }
@@ -211,7 +211,7 @@
             [#local aclRules +=
                 [
                     {
-                        "RuleId" : getReference(ruleId),
+                        "RuleId" : getReference(AWS_PROVIDER, ruleId),
                         "Priority" : nextRulePriority,
                         "Action" : {
                         "Type" : rule.Action
@@ -349,7 +349,7 @@
         properties=
             {
                 "ResourceArn" : getArn(endpointId),
-                "WebACLId" : getReference(wafaclId)
+                "WebACLId" : getReference(AWS_PROVIDER, wafaclId)
             }
         dependencies=dependencies
     /]

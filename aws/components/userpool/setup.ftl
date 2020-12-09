@@ -14,7 +14,7 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local cmkKeyId = baselineComponentIds["Encryption"]!"" ]
-    [#local cmkKeyArn = getReference(cmkKeyId, ARN_ATTRIBUTE_TYPE)]
+    [#local cmkKeyArn = getReference(AWS_PROVIDER, cmkKeyId, ARN_ATTRIBUTE_TYPE)]
 
     [#local userPoolId                 = resources["userpool"].Id]
     [#local userPoolName               = resources["userpool"].Name]
@@ -191,7 +191,7 @@
                 }/]
         [/#if]
 
-        [#local smsConfig = getUserPoolSMSConfiguration( getReference(userPoolRoleId, ARN_ATTRIBUTE_TYPE), userPoolName )]
+        [#local smsConfig = getUserPoolSMSConfiguration( getReference(AWS_PROVIDER, userPoolRoleId, ARN_ATTRIBUTE_TYPE), userPoolName )]
         [#local smsVerification = true]
     [/#if]
 
@@ -607,7 +607,7 @@
                                         )]
                 [#if linkTarget?has_content && linkTarget.Configuration.Solution.Enabled ]]
 
-                    [#local resourceIdentifier = getReference( linkTarget.State.Resources["resourceserver"].Id )  ]
+                    [#local resourceIdentifier = getReference(AWS_PROVIDER, linkTarget.State.Resources["resourceserver"].Id )  ]
 
                     [#list linkTarget.State.Resources as id,linkResource ]
 
@@ -770,7 +770,7 @@
                     },
                     "context" : {
                         "DefaultClient" : defaultUserPoolClientId,
-                        "DefaultClientId" : getExistingReference(defaultUserPoolClientId)
+                        "DefaultClientId" : getExistingReference(AWS_PROVIDER, defaultUserPoolClientId)
                     },
                     "Configuration" : {
                         "Clients" : {

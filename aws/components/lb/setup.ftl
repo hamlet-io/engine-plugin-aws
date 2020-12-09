@@ -24,7 +24,7 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
     [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
@@ -117,7 +117,7 @@
                             reportOK=alert.ReportOk
                             unit=alert.Unit
                             missingData=alert.MissingData
-                            dimensions=getResourceMetricDimensions(monitoredResource, resources)
+                            dimensions=getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, resources)
                         /]
                     [#break]
                 [/#switch]
@@ -146,7 +146,7 @@
                     [#local registryServiceId = linkTargetResources["service"].Id ]
                     [#local instanceAttributes = getCloudMapInstanceAttribute(
                                                     "alias",
-                                                    getExistingReference(lbId, DNS_ATTRIBUTE_TYPE) )]
+                                                    getExistingReference(AWS_PROVIDER, lbId, DNS_ATTRIBUTE_TYPE) )]
 
                     [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                         [#local cloudMapInstanceId = formatDependentResourceId(
@@ -179,7 +179,7 @@
         [#local defaultTargetGroupId = resources["defaulttg"].Id]
         [#local defaultTargetGroupName = resources["defaulttg"].Name]
 
-        [#local cliCleanUpRequired = getExistingReference(listenerId, "cleanup")?has_content ]
+        [#local cliCleanUpRequired = getExistingReference(AWS_PROVIDER, listenerId, "cleanup")?has_content ]
 
         [#local firstMappingForPort = !listenerPortsSeen?seq_contains(listenerId) ]
         [#switch engine ]
@@ -552,11 +552,11 @@
                     )]
 
                 [#if firstMappingForPort ]
-                    [#if getExistingReference(listenerId)?has_content && ! getExistingReference(listenerRuleId)?has_content ]
+                    [#if getExistingReference(AWS_PROVIDER, listenerId)?has_content && ! getExistingReference(AWS_PROVIDER, listenerRuleId)?has_content ]
                         [#local ruleCleanupScript += [
                                 "cleanup_elbv2_rules" +
                                 "       \"" + region + "\" " +
-                                "       \"" + getExistingReference(listenerId, ARN_ATTRIBUTE_TYPE) + "\" "
+                                "       \"" + getExistingReference(AWS_PROVIDER, listenerId, ARN_ATTRIBUTE_TYPE) + "\" "
                             ]]
                     [/#if]
                 [/#if]
@@ -657,7 +657,7 @@
                             attributeIfTrue(
                                 "SSLCertificateId",
                                 classicSSLRequired,
-                                getReference(certificateId, ARN_ATTRIBUTE_TYPE, regionId)
+                                getReference(AWS_PROVIDER, certificateId, ARN_ATTRIBUTE_TYPE, regionId)
                             ) +
                             attributeIfContent(
                                 "PolicyNames",
@@ -756,7 +756,7 @@
                     [@createWAFAclAssociation
                         id=wafAclResources.association.Id
                         wafaclId=wafAclResources.acl.Id
-                        endpointId=getReference(lbId)
+                        endpointId=getReference(AWS_PROVIDER, lbId)
                     /]
                 [/#if]
             [/#if]

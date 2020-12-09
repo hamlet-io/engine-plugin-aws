@@ -14,7 +14,7 @@
 
         [#local fqdn = formatDomainName(hostName, primaryDomainObject) ]
     [#else]
-        [#local fqdn = "${getExistingReference(fileServerId)}.server.transfer.${regionId}.amazonaws.com"]
+        [#local fqdn = "${getExistingReference(AWS_PROVIDER, fileServerId)}.server.transfer.${regionId}.amazonaws.com"]
     [/#if]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]

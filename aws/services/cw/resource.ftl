@@ -168,7 +168,7 @@
                         name="log-forwarding"
                         statements=linkTargetRoles.Outbound["logwatcher"].Policy +
                                     iamPassRolePermission(
-                                        getReference(forwardingRoleId, ARN_ATTRIBUTE_TYPE)
+                                        getReference(AWS_PROVIDER, forwardingRoleId, ARN_ATTRIBUTE_TYPE)
                                     )
                         roles=forwardingRoleId
                     /]

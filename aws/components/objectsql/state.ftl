@@ -9,7 +9,7 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ], true, false )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"]!"")]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"]!"")]
 
     [#assign componentState =
         {
@@ -21,7 +21,7 @@
                 }
             },
             "Attributes" : {
-                "WORKGROUP" : getExistingReference(workGroupId, NAME_ATTRIBUTE_TYPE),
+                "WORKGROUP" : getExistingReference(AWS_PROVIDER, workGroupId, NAME_ATTRIBUTE_TYPE),
                 "QUERY_BUCKET" : dataBucket,
                 "QUERY_PREFIX" : getAppDataFilePrefix(occurrence)
             },

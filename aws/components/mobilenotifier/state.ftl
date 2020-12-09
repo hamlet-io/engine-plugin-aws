@@ -47,7 +47,7 @@
     [#local lgFailureId = formatMobileNotifierLogGroupId(engine, name, true) ]
     [#local lgFailureName = formatMobileNotifierLogGroupName(engine, name, true)]
 
-    [#local region = contentIfContent(getExistingReference(id, REGION_ATTRIBUTE_TYPE), regionId) ]
+    [#local region = contentIfContent(getExistingReference(AWS_PROVIDER, id, REGION_ATTRIBUTE_TYPE), regionId) ]
 
     [#local logMetrics = {} ]
     [#list solution.LogMetrics as name,logMetric ]
@@ -109,7 +109,7 @@
                                 accountObject.ProviderId,
                                 "smsPlaceHolder"
                             ),
-                            getExistingReference(id, ARN_ATTRIBUTE_TYPE)
+                            getExistingReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE)
                 ),
                 "ENGINE" : engine,
                 "TOPIC_PREFIX" : topicPrefix

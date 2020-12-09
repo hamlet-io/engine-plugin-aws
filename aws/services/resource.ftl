@@ -54,9 +54,9 @@
     [#else]
         [#return
             valueIfTrue(
-                getExistingReference(idOrArn, ARN_ATTRIBUTE_TYPE, inRegion),
+                getExistingReference(AWS_PROVIDER, idOrArn, ARN_ATTRIBUTE_TYPE, inRegion),
                 existingOnly,
-                getReference(idOrArn, ARN_ATTRIBUTE_TYPE, inRegion)
+                getReference(AWS_PROVIDER, idOrArn, ARN_ATTRIBUTE_TYPE, inRegion)
             ) ]
     [/#if]
 [/#function]
@@ -99,25 +99,18 @@
 [#-- Include a reference to a resource --]
 [#-- Allows resources to share a template or be separated --]
 [#-- Note that if separate, creation order becomes important --]
-[#function getExistingReference resourceId attributeType="" inRegion="" inDeploymentUnit="" inAccount=(accountObject.ProviderId)!""]
-    [#local attributeType = (attributeType == REFERENCE_ATTRIBUTE_TYPE)?then(
-                                "",
-                                attributeType
-    )]
-    [#return getStackOutput( AWS_PROVIDER, formatAttributeId(resourceId, attributeType), inDeploymentUnit, inRegion, inAccount) ]
-[/#function]
-
 [#function migrateToResourceId resourceId legacyIds=[] inRegion="" inDeploymentUnit="" inAccount=(accountObject.ProviderId)!""]
 
     [#list asArray(legacyIds) as legacyId]
-        [#if getExistingReference(legacyId, "", inRegion, inDeploymentUnit, inAccount)?has_content]
+        [#if getExistingReference(AWS_PROVIDER, legacyId, "", inRegion, inDeploymentUnit, inAccount)?has_content]
             [#return legacyId]
         [/#if]
     [/#list]
     [#return resourceId]
 [/#function]
 
-[#function getReference resourceId attributeType="" inRegion=""]
+[#-- Called from shared/services/resource.ftl:getReference when not in current scope --]
+[#function aws_getReference resourceId attributeType="" inRegion="" optParams={}]
     [#if !(resourceId?has_content)]
         [#return ""]
     [/#if]
@@ -157,6 +150,7 @@
     [/#if]
     [#return
         getExistingReference(
+            AWS_PROVIDER,
             resourceId,
             attributeType,
             inRegion)
@@ -166,7 +160,7 @@
 [#function getReferences resourceIds attributeType="" inRegion=""]
     [#local result = [] ]
     [#list asArray(resourceIds) as resourceId]
-        [#local result += [getReference(resourceId, attributeType, inRegion)] ]
+        [#local result += [getReference(AWS_PROVIDER, resourceId, attributeType, inRegion)] ]
     [/#list]
     [#return result]
 [/#function]

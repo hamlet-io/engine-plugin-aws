@@ -3,7 +3,7 @@
 
 [#function getCMKOutputId componentId coreId ]
     [#if componentId == "cmk" &&
-            getExistingReference(formatSegmentCMKId(), "","", "cmk" )?has_content ]
+            getExistingReference(AWS_PROVIDER, formatSegmentCMKId(), "","", "cmk" )?has_content ]
         [#return formatSegmentCMKId() ]
     [#else]
         [#return formatResourceId(AWS_CMK_RESOURCE_TYPE, coreId)]
@@ -15,14 +15,14 @@
     [#local solution = occurrence.Configuration.Solution]
 
     [#local segmentSeedId = formatSegmentSeedId() ]
-    [#if !(getExistingReference(segmentSeedId)?has_content) ]
+    [#if !(getExistingReference(AWS_PROVIDER, segmentSeedId)?has_content) ]
         [#if legacyVpc ]
             [#local segmentSeedValue = vpc?remove_beginning("vpc-")]
         [#else]
             [#local segmentSeedValue = ( commandLineOptions.Run.Id + accountObject.Seed)[0..(solution.Seed.Length - 1)]  ]
         [/#if]
     [#else]
-        [#local segmentSeedValue = getExistingReference(segmentSeedId) ]
+        [#local segmentSeedValue = getExistingReference(AWS_PROVIDER, segmentSeedId) ]
     [/#if]
 
     [#assign componentState =
@@ -64,7 +64,7 @@
             [#local bucketId = formatSegmentResourceId(AWS_S3_RESOURCE_TYPE, core.SubComponent.Id ) ]
             [#local bucketName = formatSegmentBucketName(segmentSeed, "data") ]
 
-            [#if getExistingReference(formatS3DataId())?has_content ]
+            [#if getExistingReference(AWS_PROVIDER, formatS3DataId())?has_content ]
                 [#local bucketId = formatS3DataId() ]
                 [#local legacyS3 = true ]
             [/#if]
@@ -74,7 +74,7 @@
             [#local bucketId = formatSegmentResourceId(AWS_S3_RESOURCE_TYPE, core.SubComponent.Id ) ]
             [#local bucketName = formatSegmentBucketName(segmentSeed, "ops") ]
 
-            [#if getExistingReference(formatS3OperationsId())?has_content ]
+            [#if getExistingReference(AWS_PROVIDER, formatS3OperationsId())?has_content ]
                 [#local bucketId = formatS3OperationsId() ]
                 [#local legacyS3 = true]
             [/#if]
@@ -97,14 +97,14 @@
                 kmsKeyId,
                 bucketName,
                 "*",
-                getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE)
+                getExistingReference(AWS_PROVIDER, bucketId, REGION_ATTRIBUTE_TYPE)
             )]
 
         [#local s3ReadEncryptionPolicy  = s3EncryptionReadPermission(
                 kmsKeyId,
                 bucketName,
                 "*",
-                getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE)
+                getExistingReference(AWS_PROVIDER, bucketId, REGION_ATTRIBUTE_TYPE)
             )]
     [/#if]
 
@@ -130,11 +130,11 @@
                 }
             },
             "Attributes" : {
-                "BUCKET" : getExistingReference(bucketId),
-                "NAME" : getExistingReference(bucketId),
-                "ARN" : getExistingReference(bucketId, ARN_ATTRIBUTE_TYPE),
-                "REGION" : getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE),
-                "FQDN" : getExistingReference(bucketId, DNS_ATTRIBUTE_TYPE)
+                "BUCKET" : getExistingReference(AWS_PROVIDER, bucketId),
+                "NAME" : getExistingReference(AWS_PROVIDER, bucketId),
+                "ARN" : getExistingReference(AWS_PROVIDER, bucketId, ARN_ATTRIBUTE_TYPE),
+                "REGION" : getExistingReference(AWS_PROVIDER, bucketId, REGION_ATTRIBUTE_TYPE),
+                "FQDN" : getExistingReference(AWS_PROVIDER, bucketId, DNS_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Inbound" : {},
@@ -160,7 +160,7 @@
         [#case "cmk"]
             [#local legacyKey = false]
             [#if core.SubComponent.Id == "cmk" &&
-                     getExistingReference(formatSegmentCMKId(), "","", "cmk" )?has_content ]
+                     getExistingReference(AWS_PROVIDER, formatSegmentCMKId(), "","", "cmk" )?has_content ]
                 [#local cmkId = formatSegmentCMKTemplateId()]
                 [#local cmkName = formatSegmentFullName()]
                 [#local cmkAliasId = formatSegmentCMKAliasId(cmkId)]
@@ -194,8 +194,8 @@
 
             [#local attributes +=
                 {
-                    "ID" : getExistingReference(cmkOutputId),
-                    "ARN" : getExistingReference(cmkOutputId, ARN_ATTRIBUTE_TYPE)
+                    "ID" : getExistingReference(AWS_PROVIDER, cmkOutputId),
+                    "ARN" : getExistingReference(AWS_PROVIDER, cmkOutputId, ARN_ATTRIBUTE_TYPE)
                 }
             ]
 
@@ -213,8 +213,8 @@
             ]
             [#local attributes +=
                 {
-                    "ID" : getExistingReference(cmkId),
-                    "ARN" : getExistingReference(cmkId, ARN_ATTRIBUTE_TYPE)
+                    "ID" : getExistingReference(AWS_PROVIDER, cmkId),
+                    "ARN" : getExistingReference(AWS_PROVIDER, cmkId, ARN_ATTRIBUTE_TYPE)
                 }
             ]
             [#break]
@@ -222,7 +222,7 @@
         [#case "ssh"]
             [#local legacyKey = false]
             [#if core.SubComponent.Id == "ssh" &&
-                    getExistingReference(formatEC2KeyPairId(), NAME_ATTRIBUTE_TYPE)?has_content ]
+                    getExistingReference(AWS_PROVIDER, formatEC2KeyPairId(), NAME_ATTRIBUTE_TYPE)?has_content ]
                 [#local keyPairId = formatEC2KeyPairId()]
                 [#local keyPairName = formatSegmentFullName() ]
                 [#local legacyKey = true ]

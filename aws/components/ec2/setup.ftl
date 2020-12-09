@@ -34,8 +34,8 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"])]
     [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
@@ -359,7 +359,7 @@
             properties=
                 {
                     "Path" : "/",
-                    "Roles" : [getReference(ec2RoleId)]
+                    "Roles" : [getReference(AWS_PROVIDER, ec2RoleId)]
                 }
             outputs={}
         /]
@@ -415,12 +415,12 @@
                             "IamInstanceProfile" : { "Ref" : ec2InstanceProfileId },
                             "InstanceInitiatedShutdownBehavior" : "stop",
                             "InstanceType": processorProfile.Processor,
-                            "KeyName": getExistingReference(sshKeyPairId, NAME_ATTRIBUTE_TYPE),
+                            "KeyName": getExistingReference(AWS_PROVIDER, sshKeyPairId, NAME_ATTRIBUTE_TYPE),
                             "Monitoring" : false,
                             "NetworkInterfaces" : [
                                 {
                                     "DeviceIndex" : "0",
-                                    "NetworkInterfaceId" : getReference(zoneEc2ENIId)
+                                    "NetworkInterfaceId" : getReference(AWS_PROVIDER, zoneEc2ENIId)
                                 }
                             ],
                             "UserData" : {
@@ -466,10 +466,10 @@
                     properties=
                         {
                             "Description" : "eth0",
-                            "SubnetId" : getSubnets(core.Tier, networkResources, zone.Id)[0],
+                            "SubnetId" : getSubnets(AWS_PROVIDER, core.Tier, networkResources, zone.Id)[0],
                             "SourceDestCheck" : true,
                             "GroupSet" :
-                                [getReference(ec2SecurityGroupId)] +
+                                [getReference(AWS_PROVIDER, ec2SecurityGroupId)] +
                                 sshFromProxySecurityGroup?has_content?then(
                                     [sshFromProxySecurityGroup],
                                     []
@@ -498,8 +498,8 @@
                         type="AWS::EC2::EIPAssociation"
                         properties=
                             {
-                                "AllocationId" : getReference(zoneEc2EIPId, ALLOCATION_ATTRIBUTE_TYPE),
-                                "NetworkInterfaceId" : getReference(zoneEc2ENIId)
+                                "AllocationId" : getReference(AWS_PROVIDER, zoneEc2EIPId, ALLOCATION_ATTRIBUTE_TYPE),
+                                "NetworkInterfaceId" : getReference(AWS_PROVIDER, zoneEc2ENIId)
                             }
                         dependencies=[zoneEc2EIPId]
                         outputs={}

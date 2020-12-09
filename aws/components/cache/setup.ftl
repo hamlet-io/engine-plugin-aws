@@ -115,7 +115,7 @@
             properties=
                 {
                     "Description" : cacheFullName,
-                    "SubnetIds" : getSubnets(core.Tier, networkResources)
+                    "SubnetIds" : getSubnets(AWS_PROVIDER, core.Tier, networkResources)
                 }
             outputs={}
         /]
@@ -161,7 +161,7 @@
                                 reportOK=alert.ReportOk
                                 unit=alert.Unit
                                 missingData=alert.MissingData
-                                dimensions=getResourceMetricDimensions(monitoredResource, resources)
+                                dimensions=getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, resources)
                             /]
                         [#break]
                     [/#switch]
@@ -177,9 +177,9 @@
                         "EngineVersion": engineVersion,
                         "CacheNodeType" : processorProfile.Processor,
                         "Port" : portObject.Port,
-                        "CacheParameterGroupName": getReference(cacheParameterGroupId),
-                        "CacheSubnetGroupName": getReference(cacheSubnetGroupId),
-                        "VpcSecurityGroupIds":[getReference(cacheSecurityGroupId)]
+                        "CacheParameterGroupName": getReference(AWS_PROVIDER, cacheParameterGroupId),
+                        "CacheSubnetGroupName": getReference(AWS_PROVIDER, cacheSubnetGroupId),
+                        "VpcSecurityGroupIds":[getReference(AWS_PROVIDER, cacheSecurityGroupId)]
                     } +
                     multiAZ?then(
                         {

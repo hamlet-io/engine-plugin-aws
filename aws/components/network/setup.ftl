@@ -186,7 +186,7 @@
                         [#local networkACLAssociationId = zoneSubnetResources["networkACLAssoc"].Id]
                         [#local routeTableId = (routeTableZones[zone.Id]["routeTable"]).Id]
 
-                        [#local tierSubnetIdRefs += [ getReference(subnetId) ]]
+                        [#local tierSubnetIdRefs += [ getReference(AWS_PROVIDER, subnetId) ]]
 
                         [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
                             [@createSubnet
@@ -267,7 +267,7 @@
                                 id=legacyIGWRouteId
                                 routeTableId=routeTableId
                                 destinationType="gateway"
-                                destinationAttribute=getReference(legacyIGWResourceId)
+                                destinationAttribute=getReference(AWS_PROVIDER, legacyIGWResourceId)
                                 destinationCidr="0.0.0.0/0"
                             /]
                         [/#if]

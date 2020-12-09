@@ -86,7 +86,7 @@
             {
                 "Name" : name,
                 "OwnerInformation" : name,
-                "WindowId" : getReference(windowId),
+                "WindowId" : getReference(AWS_PROVIDER, windowId),
                 "ResourceType" : "INSTANCE",
                 "Targets" : targets
             }
@@ -151,14 +151,14 @@
             {
                 "Name" : name,
                 "MaxErrors" : maxErrors,
-                "ServiceRoleArn" : getReference(serviceRoleId, ARN_ATTRIBUTE_TYPE),
-                "WindowId" : getReference(windowId),
+                "ServiceRoleArn" : getReference(AWS_PROVIDER, serviceRoleId, ARN_ATTRIBUTE_TYPE),
+                "WindowId" : getReference(AWS_PROVIDER, windowId),
                 "Priority" : priority,
                 "MaxConcurrency" : maxConcurrency,
                 "Targets" : targets,
                 "TaskArn" : ( taskType == "AUTOMATION" )?then(
                                 taskId,
-                                getReference(taskId, ARN_ATTRIBUTE_TYPE)
+                                getReference(AWS_PROVIDER, taskId, ARN_ATTRIBUTE_TYPE)
                 ),
                 "TaskType" : taskType,
                 "TaskInvocationParameters" : {} +

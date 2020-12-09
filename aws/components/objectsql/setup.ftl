@@ -24,7 +24,7 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData", "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]]
 
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"])]
     [#local dataPrefix = getAppDataFilePrefix(occurrence) ]
 
     [#local kmsKeyId = baselineComponentIds["Encryption"] ]
@@ -38,7 +38,7 @@
         {
             "EncryptionConfiguration" : {
                 "EncryptionOption" : "SSE_KMS",
-                "KmsKey" : getExistingReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                "KmsKey" : getExistingReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE)
             }
         },
         {}

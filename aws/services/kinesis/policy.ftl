@@ -8,7 +8,7 @@
                     "firehose:PutRecord",
                     "firehose:PutRecordBatch"
                 ],
-                getReference(id, ARN_ATTRIBUTE_TYPE)
+                getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE)
             )
         ]
     ]
@@ -24,7 +24,7 @@
                     "firehose:PutRecordBatch",
                     "firehose:UpdateDestination"
                 ],
-                getReference(id, ARN_ATTRIBUTE_TYPE)
+                getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE)
             )
         ]
     ]
@@ -39,7 +39,7 @@
                 "kinesis:GetRecords",
                 "kinesis:ListShards"
             ],
-            getReference(id, ARN_ATTRIBUTE_TYPE)
+            getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE)
         )
     ]]
 [/#function]

@@ -31,8 +31,8 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"])]
     [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
 
     [#switch bastionOS ]
@@ -263,7 +263,7 @@
                 properties=
                     {
                         "Path" : "/",
-                        "Roles" : [ getReference(bastionRoleId) ]
+                        "Roles" : [ getReference(AWS_PROVIDER, bastionRoleId) ]
                     }
                 outputs={}
             /]

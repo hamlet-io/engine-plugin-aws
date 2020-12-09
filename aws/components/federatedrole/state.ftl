@@ -20,7 +20,7 @@
                 }
             },
             "Attributes" : {
-                "ID" : getExistingReference(identityPoolId),
+                "ID" : getExistingReference(AWS_PROVIDER, identityPoolId),
                 "NAME" : identityPoolName
             },
             "Roles" : {

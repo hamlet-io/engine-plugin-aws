@@ -25,7 +25,7 @@
 
     [#-- Segment Seed --]
     [#local segmentSeedId = resources["segmentSeed"].Id ]
-    [#if !(getExistingReference(segmentSeedId)?has_content) ]
+    [#if !(getExistingReference(AWS_PROVIDER, segmentSeedId)?has_content) ]
 
         [#local segmentSeedValue = resources["segmentSeed"].Value]
 
@@ -98,7 +98,7 @@
 
                 [#-- Backwards compatible support for legacy OAI keys --]
                 [#local legacyOAIId = formatDependentCFAccessId(bucketId)]
-                [#local legacyOAI =  getExistingReference(legacyOAIId, CANONICAL_ID_ATTRIBUTE_TYPE) ]
+                [#local legacyOAI =  getExistingReference(AWS_PROVIDER, legacyOAIId, CANONICAL_ID_ATTRIBUTE_TYPE) ]
 
                 [#if legacyOAI?has_content]
                     [#local cfAccessCanonicalIds += [ legacyOAI ]]
@@ -202,7 +202,7 @@
 
                             [#case BASELINE_KEY_COMPONENT_TYPE]
                                 [#if linkTargetConfiguration.Solution.Engine == "oai" ]
-                                    [#local cfAccessCanonicalIds += [ getReference( (linkTargetResources["originAccessId"].Id), CANONICAL_ID_ATTRIBUTE_TYPE )] ]
+                                    [#local cfAccessCanonicalIds += [ getReference(AWS_PROVIDER, (linkTargetResources["originAccessId"].Id), CANONICAL_ID_ATTRIBUTE_TYPE )] ]
                                 [/#if]
                                 [#break]
 
@@ -262,7 +262,7 @@
                                     cmkId,
                                     bucketName,
                                     "*",
-                                    getExistingReference(bucketId, REGION_ATTRIBUTE_TYPE)
+                                    getExistingReference(AWS_PROVIDER, bucketId, REGION_ATTRIBUTE_TYPE)
                                 ),
                                 []
                                 )]
@@ -558,7 +558,7 @@
                             [#local legacyOAIId = formatDependentCFAccessId(opsDataBucketId)]
                             [#local legacyOAIName = formatSegmentFullName()]
 
-                            [#if (getExistingReference(legacyOAIId, CANONICAL_ID_ATTRIBUTE_TYPE))?has_content ]
+                            [#if (getExistingReference(AWS_PROVIDER, legacyOAIId, CANONICAL_ID_ATTRIBUTE_TYPE))?has_content ]
                                 [#local legacyKey = true]
                             [/#if]
                         [/#if]

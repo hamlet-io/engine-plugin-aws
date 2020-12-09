@@ -18,9 +18,9 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
     [#local cmkKeyId = baselineComponentIds["Encryption"] ]
-    [#local cmkKeyArn = getExistingReference(cmkKeyId, ARN_ATTRIBUTE_TYPE)]
+    [#local cmkKeyArn = getExistingReference(AWS_PROVIDER, cmkKeyId, ARN_ATTRIBUTE_TYPE)]
 
     [#local credentialFormats = solution.GenerateCredentials.Formats]
     [#local userPasswordLength = solution.GenerateCredentials.CharacterLength ]
@@ -123,7 +123,7 @@
 
     [#if _context.Policy?has_content]
         [#local policyId = formatDependentManagedPolicyId(userId)]
-        [#local managedPolicyArns += [ getReference(policyId, ARN_ATTRIBUTE_TYPE) ]]
+        [#local managedPolicyArns += [ getReference(AWS_PROVIDER, policyId, ARN_ATTRIBUTE_TYPE) ]]
         [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(policyId)]
             [@createManagedPolicy
                 id=policyId
@@ -137,7 +137,7 @@
 
     [#if linkPolicies?has_content]
         [#local linkPolicyId = formatDependentManagedPolicyId(userId, "links")]
-        [#local managedPolicyArns += [ getReference(linkPolicyId, ARN_ATTRIBUTE_TYPE) ]]
+        [#local managedPolicyArns += [ getReference(AWS_PROVIDER, linkPolicyId, ARN_ATTRIBUTE_TYPE) ]]
         [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(linkPolicyId)]
             [@createManagedPolicy
                 id=linkPolicyId

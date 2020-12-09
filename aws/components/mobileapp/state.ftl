@@ -30,7 +30,7 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ], true, false )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]!"") ]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]!"") ]
 
     [#local configFilePath = formatRelativePath(
                                 getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),

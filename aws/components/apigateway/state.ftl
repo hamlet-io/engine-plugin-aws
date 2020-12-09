@@ -62,7 +62,7 @@ created in either case.
     [#local solution = occurrence.Configuration.Solution]
 
     [#-- Resource Id doesn't follow the resource type for backwards compatability --]
-    [#if getExistingReference(formatResourceId("api", core.Id))?has_content ]
+    [#if getExistingReference(AWS_PROVIDER, formatResourceId("api", core.Id))?has_content ]
         [#local apiId = formatResourceId("api", core.Id)]
     [#else ]
         [#local apiId = formatResourceId(AWS_APIGATEWAY_RESOURCE_TYPE, core.Id)]
@@ -96,13 +96,13 @@ created in either case.
     [#local isEdgeEndpointType = solution.EndpointType == "EDGE" ]
 
     [#local region = contentIfContent(
-                        getExistingReference(apiId, REGION_ATTRIBUTE_TYPE),
+                        getExistingReference(AWS_PROVIDER, apiId, REGION_ATTRIBUTE_TYPE),
                         regionId
                     )]
     [#-- The AWS assigned domain for the API --]
     [#local internalFqdn =
         formatDomainName(
-            getExistingReference(apiId),
+            getExistingReference(AWS_PROVIDER, apiId),
             serviceName,
             region,
             "amazonaws.com") ]
@@ -132,7 +132,7 @@ created in either case.
                             "",
                             [
                                 "API-Gateway-Execution-Logs_",
-                                getExistingReference(apiId),
+                                getExistingReference(AWS_PROVIDER, apiId),
                                 "/",
                                 stageName
                             ]

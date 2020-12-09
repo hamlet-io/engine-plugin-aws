@@ -5,7 +5,7 @@
         [
             getPolicyStatement(
                 actions,
-                    ((getExistingReference(bucket)?has_content)?then(getExistingReference(bucket),bucket) +
+                    ((getExistingReference(AWS_PROVIDER, bucket)?has_content)?then(getExistingReference(AWS_PROVIDER, bucket),bucket) +
                     key?has_content?then("/" + key, "") +
                     object?has_content?then("/" + object, ""))?ensure_starts_with("arn:aws:s3:::"),
                 principals,
@@ -29,7 +29,7 @@
         [
             getPolicyStatement(
                 actions,
-                    ((getExistingReference(bucket)?has_content)?then(getExistingReference(bucket),bucket))?ensure_starts_with("arn:aws:s3:::"),
+                    ((getExistingReference(AWS_PROVIDER, bucket)?has_content)?then(getExistingReference(AWS_PROVIDER, bucket),bucket))?ensure_starts_with("arn:aws:s3:::"),
                 principals,
                 conditions +
                     s3PrefixCondition

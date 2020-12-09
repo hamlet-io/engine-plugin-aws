@@ -88,7 +88,7 @@
                 "FunctionName" : settings.Name,
                 "Description" : settings.Description,
                 "Handler" : settings.Handler,
-                "Role" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
+                "Role" : getReference(AWS_PROVIDER, roleId, ARN_ATTRIBUTE_TYPE),
                 "Runtime" : settings.RunTime
             } +
             attributeIfContent("Environment", settings.Environment!{}, {"Variables" : settings.Environment}) +
@@ -97,7 +97,7 @@
             attributeIfTrue(
                 "KmsKeyArn",
                 settings.Encrypted!false,
-                getReference(settings.KMSKeyId, ARN_ATTRIBUTE_TYPE)
+                getReference(AWS_PROVIDER, settings.KMSKeyId, ARN_ATTRIBUTE_TYPE)
             ) +
             attributeIfContent(
                 "VpcConfig",
@@ -140,7 +140,7 @@
         type="AWS::Lambda::Version"
         properties=
             {
-                "FunctionName" : getReference(targetId)
+                "FunctionName" : getReference(AWS_PROVIDER, targetId)
             } +
             attributeIfContent(
                 "Description",
@@ -162,7 +162,7 @@
         type="AWS::Lambda::Permission"
         properties=
             {
-                "FunctionName" : getReference(targetId),
+                "FunctionName" : getReference(AWS_PROVIDER, targetId),
                 "Action" : action
             } +
             valueIfContent(
@@ -170,7 +170,7 @@
                 source,
                 {
                     "Principal" : sourcePrincipal,
-                    "SourceArn" : getReference(sourceId, ARN_ATTRIBUTE_TYPE)
+                    "SourceArn" : getReference(AWS_PROVIDER, sourceId, ARN_ATTRIBUTE_TYPE)
                 }
             )
         outputs=LAMBDA_PERMISSION_OUTPUT_MAPPINGS
@@ -187,7 +187,7 @@
             {
                 "Enabled" : enabled,
                 "EventSourceArn" : getArn(source),
-                "FunctionName" : getReference(targetId)
+                "FunctionName" : getReference(AWS_PROVIDER, targetId)
             } +
             attributeIfContent("BatchSize", batchSize) +
             attributeIfContent("StartingPosition", startingPosition)

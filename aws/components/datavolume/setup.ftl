@@ -11,7 +11,7 @@
     [#local resources = occurrence.State.Resources]
 
     [#local manualSnapshotId = resources["manualSnapshot"].Id]
-    [#local manualSnapshotName = getExistingReference(manualSnapshotId, NAME_ATTRIBUTE_TYPE)]
+    [#local manualSnapshotName = getExistingReference(AWS_PROVIDER, manualSnapshotId, NAME_ATTRIBUTE_TYPE)]
 
 
     [#-- Baseline component lookup --]
@@ -79,8 +79,8 @@
                     taskType="Automation"
                     taskParameters=getSSMWindowAutomationTaskParameters(
                                         {
-                                            "AutomationAssumeRole" : asArray(getReference(maintenanceServiceRoleId,ARN_ATTRIBUTE_TYPE)),
-                                            "VolumeId" : asArray(getReference(volumeId))
+                                            "AutomationAssumeRole" : asArray(getReference(AWS_PROVIDER, maintenanceServiceRoleId,ARN_ATTRIBUTE_TYPE)),
+                                            "VolumeId" : asArray(getReference(AWS_PROVIDER, volumeId))
                                         }
                     )
                     priority=10
@@ -100,9 +100,9 @@
                     taskType="Automation"
                     taskParameters=getSSMWindowAutomationTaskParameters(
                                         {
-                                            "AutomationAssumeRole" : asArray(getReference(maintenanceServiceRoleId, ARN_ATTRIBUTE_TYPE)),
-                                            "LambdaAssumeRole" : asArray(getReference(maintenanceLambdaRoleId, ARN_ATTRIBUTE_TYPE)),
-                                            "VolumeId" : asArray(getReference(volumeId)),
+                                            "AutomationAssumeRole" : asArray(getReference(AWS_PROVIDER, maintenanceServiceRoleId, ARN_ATTRIBUTE_TYPE)),
+                                            "LambdaAssumeRole" : asArray(getReference(AWS_PROVIDER, maintenanceLambdaRoleId, ARN_ATTRIBUTE_TYPE)),
+                                            "VolumeId" : asArray(getReference(AWS_PROVIDER, volumeId)),
                                             "RetentionDays" : asArray(solution.Backup.RetentionPeriod),
                                             "RetentionCount" : asArray("")
                                         }
@@ -156,8 +156,8 @@
                     name="passRole"
                     statements=iamPassRolePermission(
                                     [
-                                        getReference(maintenanceLambdaRoleId, ARN_ATTRIBUTE_TYPE),
-                                        getReference(maintenanceServiceRoleId, ARN_ATTRIBUTE_TYPE)
+                                        getReference(AWS_PROVIDER, maintenanceLambdaRoleId, ARN_ATTRIBUTE_TYPE),
+                                        getReference(AWS_PROVIDER, maintenanceServiceRoleId, ARN_ATTRIBUTE_TYPE)
                                     ]
                                 ) +
                                 ec2EBSVolumeSnapshotAllPermission() +

@@ -51,7 +51,7 @@
 
 [#function getAccountSSMSessionManagerKMSKeyId ]
     [#if (accountObject.Console.Encryption.DedicatedKey)!false ||
-            getExistingReference(formatAccountSSMSessionManagerKMSKeyId)?has_content ]
+            getExistingReference(AWS_PROVIDER, formatAccountSSMSessionManagerKMSKeyId)?has_content ]
         [#return formatAccountSSMSessionManagerKMSKeyId() ]
     [#else]
         [#return formatAccountCMKTemplateId() ]

@@ -58,7 +58,7 @@
         formatRegionalArn(
             "execute-api",
             formatTypedArnResource(
-                getReference(apiId),
+                getReference(AWS_PROVIDER, apiId),
                 valueIfContent(stageName + "/*", stageName, "*"),
                 "/"
             )
@@ -74,9 +74,9 @@
                 "Fn::Join": [
                     "/",
                     [
-                        getReference(apiId),
+                        getReference(AWS_PROVIDER, apiId),
                         "authorizers",
-                        valueIfContent(getReference(authorizerId),authorizerId,"*")
+                        valueIfContent(getReference(AWS_PROVIDER, authorizerId),authorizerId,"*")
                     ]
                 ]
             }
@@ -135,9 +135,9 @@
         type="AWS::ApiGateway::UsagePlanKey"
         properties=
             {
-                "KeyId" : getReference(apikeyId),
+                "KeyId" : getReference(AWS_PROVIDER, apikeyId),
                 "KeyType" : "API_KEY",
-                "UsagePlanId" : getReference(planId)
+                "UsagePlanId" : getReference(AWS_PROVIDER, planId)
             }
         outputs={}
         dependencies=dependencies

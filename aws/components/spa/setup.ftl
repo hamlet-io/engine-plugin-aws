@@ -32,7 +32,7 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData"] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
 
     [#local distributions = [] ]
 

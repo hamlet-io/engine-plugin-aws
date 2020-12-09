@@ -273,8 +273,8 @@
                             [/#if]
 
                             [#local routerFound = true ]
-                            [#local transitGateway = getExistingReference( linkTargetResources["transitGateway"].Id ) ]
-                            [#local transitGatewayRouteTableId = getExistingReference( linkTargetResources["routeTable"].Id ) ]
+                            [#local transitGateway = getExistingReference(AWS_PROVIDER, linkTargetResources["transitGateway"].Id ) ]
+                            [#local transitGatewayRouteTableId = getExistingReference(AWS_PROVIDER, linkTargetResources["routeTable"].Id ) ]
 
                         [/#if]
                         [#break]
@@ -317,13 +317,13 @@
                         name=transitGatewayAttachmentName
                         transitGateway=transitGateway
                         subnets=getReferences(attachmentSubnets)
-                        vpc=getReference(vpcId)
+                        vpc=getReference(AWS_PROVIDER, vpcId)
                     /]
 
                     [#if localRouter ]
                         [@createTransitGatewayRouteTableAssociation
                             id=routeTableAssociationId
-                            transitGatewayAttachment=getReference(transitGatewayAttachmentId)
+                            transitGatewayAttachment=getReference(AWS_PROVIDER, transitGatewayAttachmentId)
                             transitGatewayRouteTable=transitGatewayRouteTable
                         /]
 
@@ -337,7 +337,7 @@
                             [@createTransitGatewayRoute
                                     id=vpcRouteId
                                     transitGatewayRouteTable=transitGatewayRouteTable
-                                    transitGatewayAttachment=getReference(transitGatewayAttachmentId)
+                                    transitGatewayAttachment=getReference(AWS_PROVIDER, transitGatewayAttachmentId)
                                     destinationCidr=souceCidr
                             /]
                         [/#list]
@@ -407,7 +407,7 @@
                                             name=formatName(core.FullName, linkTargetCore.Name)
                                             staticRoutesOnly=( ! BGPEnabled )
                                             customerGateway=customerGateway
-                                            vpnGateway=getReference(privateGatewayId)
+                                            vpnGateway=getReference(AWS_PROVIDER, privateGatewayId)
                                         /]
 
 
@@ -515,7 +515,7 @@
                                                     id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
                                                     routeTableId=zoneRouteTableId
                                                     destinationType="nat"
-                                                    destinationAttribute=getReference(natGatewayId)
+                                                    destinationAttribute=getReference(AWS_PROVIDER, natGatewayId)
                                                     destinationCidr=cidr
                                                 /]
                                             [/#list]
@@ -530,7 +530,7 @@
                                                             id=formatRouteId(zoneRouteTableId, core.Id, cidr?index)
                                                             routeTableId=zoneRouteTableId
                                                             destinationType="gateway"
-                                                            destinationAttribute=getReference(IGWId)
+                                                            destinationAttribute=getReference(AWS_PROVIDER, IGWId)
                                                             destinationCidr=cidr
                                                             dependencies=IGWAttachmentId
                                                         /]
@@ -574,7 +574,7 @@
                                                         id=formatRouteId(zoneRouteTableId, core.Id, cidr?index )
                                                         routeTableId=zoneRouteTableId
                                                         destinationType="gateway"
-                                                        destinationAttribute=getReference(privateGatewayId)
+                                                        destinationAttribute=getReference(AWS_PROVIDER, privateGatewayId)
                                                         destinationCidr=cidr
                                                         dependencies=privateGatewayDependencies
                                                     /]

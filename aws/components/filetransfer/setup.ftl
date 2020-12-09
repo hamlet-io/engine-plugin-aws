@@ -156,7 +156,7 @@
             networkRule=ingressNetworkRule
         /]
 
-        [#if getExistingReference(transferServerId)?has_content]
+        [#if getExistingReference(AWS_PROVIDER, transferServerId)?has_content]
             [@createLogSubscriptionFromLoggingProfile
                 occurrence=occurrence
                 logGroupId=lgId
@@ -166,7 +166,7 @@
                         [
                             "aws",
                             "transfer",
-                            getReference(transferServerId, NAME_ATTRIBUTE_TYPE)
+                            getReference(AWS_PROVIDER, transferServerId, NAME_ATTRIBUTE_TYPE)
                         ]
                     ]
                 }
@@ -180,7 +180,7 @@
             [#local resourceZones = [ zones[0] ]]
         [/#if]
 
-        [#local subnets = resourceZones?map( zone -> getSubnets(core.Tier, networkResources, zone.Id)[0] ) ]
+        [#local subnets = resourceZones?map( zone -> getSubnets(AWS_PROVIDER, core.Tier, networkResources, zone.Id)[0] ) ]
         [#local vpcDetails =
                     getTransferServerVpcDetails(
                         eipIds,

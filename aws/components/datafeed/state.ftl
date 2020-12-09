@@ -62,8 +62,8 @@
                 {}
             ),
             "Attributes" : {
-                "STREAM_NAME" : getExistingReference(streamId),
-                "STREAM_ARN" : getExistingReference(streamId, ARN_ATTRIBUTE_TYPE)
+                "STREAM_NAME" : getExistingReference(AWS_PROVIDER, streamId),
+                "STREAM_ARN" : getExistingReference(AWS_PROVIDER, streamId, ARN_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Outbound" : {

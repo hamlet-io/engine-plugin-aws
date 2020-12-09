@@ -29,7 +29,7 @@
         [@createTransitGatewayRouteTable
             id=routeTableId
             name=routeTableName
-            transitGateway=getReference(transitGatewayId)
+            transitGateway=getReference(AWS_PROVIDER, transitGatewayId)
         /]
 
         [#if solution["aws:ResourceSharing"].Enabled ]
@@ -44,7 +44,7 @@
                         "/",
                         [
                             "transit-gateway",
-                            getReference(transitGatewayId)
+                            getReference(AWS_PROVIDER, transitGatewayId)
                         ]
                     ]
                 }
@@ -107,7 +107,7 @@
                                 [@createTransitGatewayRouteTableAssociation
                                     id=routeTableAssociationId
                                     transitGatewayAttachment=transitGatewayAttachment
-                                    transitGatewayRouteTable=getReference(routeTableId)
+                                    transitGatewayRouteTable=getReference(AWS_PROVIDER, routeTableId)
                                 /]
                                 [/#if]
 
@@ -118,7 +118,7 @@
                                     [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
                                         [@createTransitGatewayRoute
                                                 id=routeId
-                                                transitGatewayRouteTable=getReference(routeTableId)
+                                                transitGatewayRouteTable=getReference(AWS_PROVIDER, routeTableId)
                                                 transitGatewayAttachment=transitGatewayAttachment
                                                 destinationCidr=destinationCidr
                                         /]
@@ -138,7 +138,7 @@
                     [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
                         [@createTransitGatewayRoute
                                 id=routeId
-                                transitGatewayRouteTable=getReference(routeTableId)
+                                transitGatewayRouteTable=getReference(AWS_PROVIDER, routeTableId)
                                 blackhole=true
                                 destinationCidr=destinationCidr
                         /]

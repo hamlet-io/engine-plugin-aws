@@ -107,7 +107,7 @@
             }]
 
             [#local attributes += {
-                "TRANSIT_GATEWAY_ATTACHMENT" : getExistingReference(transitGatewayAttachmentId)
+                "TRANSIT_GATEWAY_ATTACHMENT" : getExistingReference(AWS_PROVIDER, transitGatewayAttachmentId)
             }]
             [#break]
 
@@ -124,12 +124,12 @@
 
                 [#local networkOutboundAclRules += {
                     "Ports" : solution.DestinationPorts,
-                    "SecurityGroups" : getExistingReference(sgGroupId),
+                    "SecurityGroups" : getExistingReference(AWS_PROVIDER, sgGroupId),
                     "Description" : core.FullName
                 }]
 
                 [#local networkInboundAclRules += {
-                    "SecurityGroups" : getExistingReference(sgGroupId),
+                    "SecurityGroups" : getExistingReference(AWS_PROVIDER, sgGroupId),
                     "Description" : core.FullName
                 }]
             [#break]

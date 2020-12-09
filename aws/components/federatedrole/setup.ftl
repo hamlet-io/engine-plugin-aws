@@ -198,9 +198,9 @@
                 } +
                 attributeIfContent (
                     "StringEquals",
-                    getExistingReference(identityPoolId),
+                    getExistingReference(AWS_PROVIDER, identityPoolId),
                     {
-                        "cognito-identity.amazonaws.com:aud": getExistingReference(identityPoolId)
+                        "cognito-identity.amazonaws.com:aud": getExistingReference(AWS_PROVIDER, identityPoolId)
                     }
                 )
                 managedArns=managedPolicies

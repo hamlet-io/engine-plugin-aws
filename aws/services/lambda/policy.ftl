@@ -5,7 +5,7 @@
         [
             getPolicyStatement(
                 "lambda:InvokeFunction",
-                getReference(id, ARN_ATTRIBUTE_TYPE))
+                getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE))
         ]
     ]
 [/#function]

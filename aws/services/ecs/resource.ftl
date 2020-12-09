@@ -110,7 +110,7 @@
     [#local provider = "" ]
     [#switch computeProfileRule.Provider ]
         [#case "_autoscalegroup" ]
-            [#local provider = getReference(asgCapacityProviderId)]
+            [#local provider = getReference(AWS_PROVIDER, asgCapacityProviderId)]
             [#break]
         [#case "aws:fargate" ]
             [#local provider = "FARGATE" ]
@@ -382,10 +382,10 @@
         "ContainerDefinitions" : definitions
         } +
         attributeIfContent("Volumes", volumes)  +
-        attributeIfContent("TaskRoleArn", role, getReference(role, ARN_ATTRIBUTE_TYPE)) +
+        attributeIfContent("TaskRoleArn", role, getReference(AWS_PROVIDER, role, ARN_ATTRIBUTE_TYPE)) +
         attributeIfContent("NetworkMode", networkMode) +
         attributeIfTrue("Family", fixedName, name ) +
-        attributeIfContent("ExecutionRoleArn", executionRole, getReference(executionRole, ARN_ATTRIBUTE_TYPE)) +
+        attributeIfContent("ExecutionRoleArn", executionRole, getReference(AWS_PROVIDER, executionRole, ARN_ATTRIBUTE_TYPE)) +
         valueIfTrue(
             {
                 "RequiresCompatibilities" : [ engine?upper_case ],
@@ -434,8 +434,8 @@
         type="AWS::ECS::Service"
         properties=
             {
-                "Cluster" : getExistingReference(ecsId),
-                "TaskDefinition" : getReference(taskId),
+                "Cluster" : getExistingReference(AWS_PROVIDER, ecsId),
+                "TaskDefinition" : getReference(AWS_PROVIDER, taskId),
                 "DeploymentConfiguration" :
                     (desiredCount > 1)?then(
                         {
@@ -508,7 +508,7 @@
         tags=tags
         properties={
             "AutoScalingGroupProvider" : {
-                "AutoScalingGroupArn" : getReference(asgId),
+                "AutoScalingGroupArn" : getReference(AWS_PROVIDER, asgId),
                 "ManagedTerminationProtection" :
                         managedTermination?then(
                             "ENABLED",

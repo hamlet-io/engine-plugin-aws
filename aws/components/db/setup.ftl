@@ -18,7 +18,7 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local cmkKeyId = baselineComponentIds["Encryption"]!"" ]
-    [#local cmkKeyArn = getReference(cmkKeyId, ARN_ATTRIBUTE_TYPE)]
+    [#local cmkKeyArn = getReference(AWS_PROVIDER, cmkKeyId, ARN_ATTRIBUTE_TYPE)]
 
     [#local networkLink = getOccurrenceNetwork(occurrence).Link!{} ]
     [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
@@ -122,9 +122,9 @@
 
     [#local hibernateStartUpMode = solution.Hibernate.StartUpMode ]
 
-    [#local rdsRestoreSnapshot = getExistingReference(formatDependentRDSSnapshotId(rdsId), NAME_ATTRIBUTE_TYPE)]
-    [#local rdsManualSnapshot = getExistingReference(formatDependentRDSManualSnapshotId(rdsId), NAME_ATTRIBUTE_TYPE)]
-    [#local rdsLastSnapshot = getExistingReference(rdsId, LASTRESTORE_ATTRIBUTE_TYPE )]
+    [#local rdsRestoreSnapshot = getExistingReference(AWS_PROVIDER, formatDependentRDSSnapshotId(rdsId), NAME_ATTRIBUTE_TYPE)]
+    [#local rdsManualSnapshot = getExistingReference(AWS_PROVIDER, formatDependentRDSManualSnapshotId(rdsId), NAME_ATTRIBUTE_TYPE)]
+    [#local rdsLastSnapshot = getExistingReference(AWS_PROVIDER, rdsId, LASTRESTORE_ATTRIBUTE_TYPE )]
 
     [#local links = getLinkTargets(occurrence, {}, false) ]
     [#list links as linkId,linkTarget]
@@ -241,7 +241,7 @@
                 "  create|update)"
             ] +
             [#-- If a manual snapshot has been added the pseudo stack output should be replaced with an automated one --]
-            (getExistingReference(rdsId)?has_content)?then(
+            (getExistingReference(AWS_PROVIDER, rdsId)?has_content)?then(
                 (rdsManualSnapshot?has_content)?then(
                     [
                         "# Check Snapshot MasterUserName",
@@ -337,7 +337,7 @@
             properties=
                 {
                     "DBSubnetGroupDescription" : rdsFullName,
-                    "SubnetIds" : getSubnets(core.Tier, networkResources)
+                    "SubnetIds" : getSubnets(AWS_PROVIDER, core.Tier, networkResources)
                 }
             tags=rdsTags
             outputs={}
@@ -410,7 +410,7 @@
                         }
                     ]]
                 [#else]
-                    [#local resourceDimensions = getResourceMetricDimensions(monitoredResource, resources) ]
+                    [#local resourceDimensions = getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, resources) ]
                 [/#if]
 
                 [#switch alert.Comparison ]
@@ -542,7 +542,7 @@
 
                                 [#local monitoredResource = monitoredResources[ (monitoredResources?keys)[0]] ]
 
-                                [#local metricDimensions = getResourceMetricDimensions(monitoredResource, scalingTargetResources )]
+                                [#local metricDimensions = getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, scalingTargetResources )]
 
                                 [#if scalingMetricTrigger.Configured ]
                                     [#local metricName = getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName)]
@@ -564,7 +564,7 @@
                                         severity="Scaling"
                                         resourceName=scalingTargetCore.FullName
                                         alertName=scalingMetricTrigger.Name
-                                        actions=getReference( scalingPolicyId )
+                                        actions=getReference(AWS_PROVIDER, scalingPolicyId )
                                         reportOK=false
                                         metric=metricName
                                         namespace=metricNamespace
@@ -617,7 +617,7 @@
                                     [#else]
                                         [#local specificationType = "custom" ]
                                         [#local metricSpecification = getAutoScalingCustomTrackMetric(
-                                                                        getResourceMetricDimensions(monitoredResource, scalingTargetResources ),
+                                                                        getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, scalingTargetResources ),
                                                                         getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName),
                                                                         getResourceMetricNamespace(monitoredResource.Type),
                                                                         scalingMetricTrigger.Statistic
@@ -696,10 +696,10 @@
                     masterPassword=rdsPassword
                     databaseName=rdsDatabaseName
                     retentionPeriod=solution.Backup.RetentionPeriod
-                    subnetGroupId=getReference(rdsSubnetGroupId)
-                    parameterGroupId=getReference(rdsClusterParameterGroupId)
+                    subnetGroupId=getReference(AWS_PROVIDER, rdsSubnetGroupId)
+                    parameterGroupId=getReference(AWS_PROVIDER, rdsClusterParameterGroupId)
                     snapshotArn=snapshotArn
-                    securityGroupId=getReference(rdsSecurityGroupId)
+                    securityGroupId=getReference(AWS_PROVIDER, rdsSecurityGroupId)
                     tags=rdsTags
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
@@ -777,8 +777,8 @@
     [#if !hibernate ]
         [#if deploymentSubsetRequired("epilogue", false)]
 
-            [#local rdsFQDN = getExistingReference(rdsId, DNS_ATTRIBUTE_TYPE)]
-            [#local rdsCA = getExistingReference(rdsId, "ca")]
+            [#local rdsFQDN = getExistingReference(AWS_PROVIDER, rdsId, DNS_ATTRIBUTE_TYPE)]
+            [#local rdsCA = getExistingReference(AWS_PROVIDER, rdsId, "ca")]
 
             [#local passwordPseudoStackFile = "\"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE}\")-password-pseudo-stack.json\"" ]
             [#local urlPseudoStackFile = "\"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE}\")-url-pseudo-stack.json\""]

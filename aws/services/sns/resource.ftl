@@ -51,7 +51,7 @@
             attributeIfTrue(
                 "KmsMasterKeyId",
                 encrypted,
-                getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                getReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE)
             )
         outputs=SNS_TOPIC_OUTPUT_MAPPINGS
         dependencies=[]
@@ -66,7 +66,7 @@
             {
                 "Endpoint" : endpoint,
                 "Protocol" : protocol,
-                "TopicArn" : getReference(topicId, ARN_ATTRIBUTE_TYPE)
+                "TopicArn" : getReference(AWS_PROVIDER, topicId, ARN_ATTRIBUTE_TYPE)
             } + 
             attributeIfContent(
                 "DeliveryPolicy",
@@ -101,8 +101,8 @@
     [#return
         {
             "Attributes" : {
-                "SuccessFeedbackRoleArn"    : getReference(roleId, ARN_ATTRIBUTE_TYPE),
-                "FailureFeedbackRoleArn"    : getReference(roleId, ARN_ATTRIBUTE_TYPE),
+                "SuccessFeedbackRoleArn"    : getReference(AWS_PROVIDER, roleId, ARN_ATTRIBUTE_TYPE),
+                "FailureFeedbackRoleArn"    : getReference(AWS_PROVIDER, roleId, ARN_ATTRIBUTE_TYPE),
                 "SuccessFeedbackSampleRate" : successSample
             } +
             attributeIfContent(
