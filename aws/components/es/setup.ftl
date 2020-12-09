@@ -32,7 +32,7 @@
         [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
         [#local networkResources = networkLinkTarget.State.Resources ]
         [#local vpcId = networkResources["vpc"].Id ]
-        [#local subnets = getSubnets(core.Tier, networkResources) ]
+        [#local subnets = getSubnets(AWS_PROVIDER, core.Tier, networkResources) ]
 
         [#local sgId = resources["sg"].Id ]
         [#local sgName = resources["sg"].Name ]
@@ -41,7 +41,7 @@
         [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
 
         [#local networkConfiguration = {
-                    "SecurityGroupIds" : [ getReference(sgId) ],
+                    "SecurityGroupIds" : [ getReference(AWS_PROVIDER, sgId) ],
                     "SubnetIds" : valueIfTrue(
                                     subnets,
                                     multiAZ,
@@ -76,7 +76,7 @@
     [#local cognitoIntegration = false ]
     [#local cognitoConfig = {
             "Enabled" : false,
-            "RoleArn" : getReference(esServiceRoleId, ARN_ATTRIBUTE_TYPE)
+            "RoleArn" : getReference(AWS_PROVIDER, esServiceRoleId, ARN_ATTRIBUTE_TYPE)
     }]
 
     [#local esPolicyStatements = [] ]
@@ -252,7 +252,7 @@
                     [#local cognitoIntegration = true ]
                     [#local cognitoConfig +=
                         {
-                            "IdentityPoolId" : getExistingReference(linkTargetResources["identitypool"].Id)
+                            "IdentityPoolId" : getExistingReference(AWS_PROVIDER, linkTargetResources["identitypool"].Id)
                         }]
                     [#break]
 
@@ -261,7 +261,7 @@
                         [#local registryS3Source = linkTargetAttributes["DATASET_LOCATION"]]
                         [#local snapshotS3Destination = formatRelativePath(
                                                             "s3://",
-                                                            getExistingReference(baselineComponentIds["AppData"]),
+                                                            getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"]),
                                                             getAppDataFilePrefix(occurrence) )]
 
                         [#if deploymentSubsetRequired("epilogue", false)]
@@ -361,7 +361,7 @@
                             reportOK=alert.ReportOk
                             unit=alert.Unit
                             missingData=alert.MissingData
-                            dimensions=getResourceMetricDimensions(monitoredResource, resources)
+                            dimensions=getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, resources)
                         /]
                     [#break]
                 [/#switch]
@@ -450,7 +450,7 @@
                     solution.Encrypted,
                     {
                         "Enabled" : true,
-                        "KmsKeyId" : getReference(cmkKeyId, ARN_ATTRIBUTE_TYPE)
+                        "KmsKeyId" : getReference(AWS_PROVIDER, cmkKeyId, ARN_ATTRIBUTE_TYPE)
                     }
                 ) +
                 attributeIfContent(
@@ -468,7 +468,7 @@
                     solution.Logging,
                     {
                         "Enabled" : true,
-                        "CloudWatchLogsLogGroupArn" : getReference(lgId, ARN_ATTRIBUTE_TYPE)
+                        "CloudWatchLogsLogGroupArn" : getReference(AWS_PROVIDER, lgId, ARN_ATTRIBUTE_TYPE)
                     }
                 ) +
                 attributeIfTrue(

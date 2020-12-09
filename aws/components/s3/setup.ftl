@@ -33,7 +33,7 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "CDNOriginKey", "Encryption" ])]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local cfAccessId  = getExistingReference(baselineComponentIds["CDNOriginKey"]!"", CANONICAL_ID_ATTRIBUTE_TYPE) ]
+    [#local cfAccessId  = getExistingReference(AWS_PROVIDER, baselineComponentIds["CDNOriginKey"]!"", CANONICAL_ID_ATTRIBUTE_TYPE) ]
 
     [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
@@ -277,7 +277,7 @@
                     kmsKeyId,
                     s3Name,
                     "*",
-                    getExistingReference(s3Id, REGION_ATTRIBUTE_TYPE)
+                    getExistingReference(AWS_PROVIDER, s3Id, REGION_ATTRIBUTE_TYPE)
                 ),
                 []
             )]

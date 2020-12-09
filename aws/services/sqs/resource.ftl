@@ -54,7 +54,7 @@
                 "RedrivePolicy",
                 dlq,
                 {
-                  "deadLetterTargetArn" : getReference(dlq, ARN_ATTRIBUTE_TYPE),
+                  "deadLetterTargetArn" : getReference(AWS_PROVIDER, dlq, ARN_ATTRIBUTE_TYPE),
                   "maxReceiveCount" : dlqReceives
                 }) +
             attributeIfContent("VisibilityTimeout", visibilityTimout)

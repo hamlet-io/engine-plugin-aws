@@ -57,7 +57,7 @@
             encrypted?then(
                 {
                     "Encrypted" : true,
-                    "KmsKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                    "KmsKeyId" : getReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE)
                 },
                 {}
             ) +
@@ -80,7 +80,7 @@
                                 subnet[0],
                                 subnet
                 ),
-                "FileSystemId" : getReference(efsId),
+                "FileSystemId" : getReference(AWS_PROVIDER, efsId),
                 "SecurityGroups": getReferences(securityGroups)
             }
         outputs=EFS_MOUNT_TARGET_MAPPINGS
@@ -103,7 +103,7 @@
         type="AWS::EFS::AccessPoint"
         properties=
             {
-                "FileSystemId" : getReference(efsId),
+                "FileSystemId" : getReference(AWS_PROVIDER, efsId),
                 "AccessPointTags" : tags
             } +
             attributeIfTrue(

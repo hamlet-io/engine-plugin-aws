@@ -15,9 +15,9 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"], NAME_ATTRIBUTE_TYPE )]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"], NAME_ATTRIBUTE_TYPE )]
-    [#local kmsKeyArn = getExistingReference(baselineComponentIds["Encryption"], ARN_ATTRIBUTE_TYPE )]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"], NAME_ATTRIBUTE_TYPE )]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"], NAME_ATTRIBUTE_TYPE )]
+    [#local kmsKeyArn = getExistingReference(AWS_PROVIDER, baselineComponentIds["Encryption"], ARN_ATTRIBUTE_TYPE )]
 
     [#local templatePath = formatRelativePath(
         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
@@ -79,9 +79,9 @@
             [#local networkResources = networkLinkTarget.State.Resources ]
 
             [#local vpcId = networkResources["vpc"].Id ]
-            [#local vpc = getExistingReference(vpcId)]
+            [#local vpc = getExistingReference(AWS_PROVIDER, vpcId)]
 
-            [#local subnets = getSubnets(core.Tier, networkResources, "", false)]
+            [#local subnets = getSubnets(AWS_PROVIDER, core.Tier, networkResources, "", false)]
 
         [/#if]
 

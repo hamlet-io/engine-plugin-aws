@@ -83,7 +83,7 @@
             attributeIfTrue(
                 "CUSTOMER_GATEWAY_ID",
                 ( engine == "SiteToSite" ),
-                getExistingReference(customerGatewayId)
+                getExistingReference(AWS_PROVIDER, customerGatewayId)
             ),
             "Roles" : {
                 "Inbound" : {},

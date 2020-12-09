@@ -43,7 +43,7 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, ["Encryption", "OpsData", "AppData" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
     [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local contextLinks = getLinkTargets(occurrence) ]
@@ -340,7 +340,7 @@
             type="AWS::ApiGateway::Deployment"
             properties=
                 {
-                    "RestApiId": getReference(apiId),
+                    "RestApiId": getReference(AWS_PROVIDER, apiId),
                     "StageName": "default"
                 }
             outputs={}
@@ -396,8 +396,8 @@
             type="AWS::ApiGateway::Stage"
             properties=
                 {
-                    "DeploymentId" : getReference(deployId),
-                    "RestApiId" : getReference(apiId),
+                    "DeploymentId" : getReference(AWS_PROVIDER, deployId),
+                    "RestApiId" : getReference(AWS_PROVIDER, apiId),
                     "StageName" : stageName,
                     "AccessLogSetting" : {
                         "DestinationArn" : getArn(stageLogTarget),
@@ -426,7 +426,7 @@
                             "Fn::Join" : [
                                 ".",
                                 [
-                                    getReference(apiId),
+                                    getReference(AWS_PROVIDER, apiId),
                                     "execute-api." + regionId + ".amazonaws.com"
                                 ]
                             ]
@@ -491,7 +491,7 @@
                 name=cfResources["usageplan"].Name
                 stages=[
                     {
-                        "ApiId" : getReference(apiId),
+                        "ApiId" : getReference(AWS_PROVIDER, apiId),
                         "Stage" : stageName
                     }
                 ]
@@ -537,7 +537,7 @@
                 properties=
                     {
                         "DomainName" : value["domain"].Name,
-                        "RestApiId" : getReference(apiId)
+                        "RestApiId" : getReference(AWS_PROVIDER, apiId)
                     } +
                     attributeIfContent("Stage", value["basepathmapping"].Stage)
                 outputs={}
@@ -571,7 +571,7 @@
                             reportOK=alert.ReportOk
                             unit=alert.Unit
                             missingData=alert.MissingData
-                            dimensions=getResourceMetricDimensions(monitoredResource, resources)
+                            dimensions=getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, resources)
                         /]
                     [#break]
                 [/#switch]
@@ -644,7 +644,7 @@
                                     "/",
                                     [
                                         "/restapis",
-                                        getReference(apiId),
+                                        getReference(AWS_PROVIDER, apiId),
                                         "stages",
                                         stageName
                                     ]
@@ -665,7 +665,7 @@
 
         [#if deploymentSubsetRequired("prologue", false)  ]
             [#-- Clear out bucket content if deleting api gateway so buckets will delete --]
-            [#if getExistingReference(value["bucket"].Id)?has_content ]
+            [#if getExistingReference(AWS_PROVIDER, value["bucket"].Id)?has_content ]
                 [@addToDefaultBashScriptOutput
                     content=
                         [
@@ -763,7 +763,7 @@
     [/#if]
 
     [#local legacyId = formatS3Id(core.Id, APIGATEWAY_COMPONENT_DOCS_EXTENSION) ]
-    [#if getExistingReference(legacyId)?has_content && deploymentSubsetRequired("prologue", false) ]
+    [#if getExistingReference(AWS_PROVIDER, legacyId)?has_content && deploymentSubsetRequired("prologue", false) ]
         [#-- Remove legacy docs bucket id - it will likely be recreated with new id format --]
         [#-- which uses bucket name --]
         [@addToDefaultBashScriptOutput
@@ -774,13 +774,13 @@
                 syncFilesToBucketScript(
                     "clear_bucket_files",
                     regionId,
-                    getExistingReference(legacyId, NAME_ATTRIBUTE_TYPE),
+                    getExistingReference(AWS_PROVIDER, legacyId, NAME_ATTRIBUTE_TYPE),
                     ""
                 ) +
                 [
                     "deleteBucket" + " " +
                         regionId + " " +
-                        getExistingReference(legacyId, NAME_ATTRIBUTE_TYPE) + " " +
+                        getExistingReference(AWS_PROVIDER, legacyId, NAME_ATTRIBUTE_TYPE) + " " +
                         "|| return $?"
                 ]
         /]

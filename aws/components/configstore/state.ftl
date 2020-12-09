@@ -23,8 +23,8 @@
                 }
             },
             "Attributes" : {
-                "TABLE_NAME" : getExistingReference(id),
-                "TABLE_ARN" : getExistingReference(id, ARN_ATTRIBUTE_TYPE),
+                "TABLE_NAME" : getExistingReference(AWS_PROVIDER, id),
+                "TABLE_ARN" : getExistingReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE),
                 "TABLE_KEY" : key
             } +
             attributeIfContent(
@@ -36,7 +36,7 @@
                 "Outbound" : {
                     "default" : "consume",
                     "consume" : dynamoDbViewerPermission(
-                                    getReference(id, ARN_ATTRIBUTE_TYPE)
+                                    getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE)
                                 )
                }
             }
@@ -100,7 +100,7 @@
                 "Outbound" : {
                     "default" : "consume",
                     "consume" : dynamoDbViewerPermission(
-                        getReference(tableId, ARN_ATTRIBUTE_TYPE),
+                        getReference(AWS_PROVIDER, tableId, ARN_ATTRIBUTE_TYPE),
                         [],
                         "",
                         getDynamoDbItemCondition(
@@ -108,7 +108,7 @@
                          )),
                     "managestate" :
                         dynamoDbViewerPermission(
-                            getReference(tableId, ARN_ATTRIBUTE_TYPE),
+                            getReference(AWS_PROVIDER, tableId, ARN_ATTRIBUTE_TYPE),
                             [],
                             "",
                             getDynamoDbItemCondition(
@@ -117,7 +117,7 @@
                         ) +
                         valueIfContent(
                             dynamoDbUpdatePermission(
-                                getReference(tableId, ARN_ATTRIBUTE_TYPE),
+                                getReference(AWS_PROVIDER, tableId, ARN_ATTRIBUTE_TYPE),
                                 "",
                                 getDynamoDbItemCondition(
                                     primaryKeyValue,

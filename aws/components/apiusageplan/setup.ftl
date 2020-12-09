@@ -37,7 +37,7 @@
                     [#local stages +=
                         [
                             {
-                                "ApiId" : getReference(linkTargetResources["apigateway"].Id),
+                                "ApiId" : getReference(AWS_PROVIDER, linkTargetResources["apigateway"].Id),
                                 "Stage" : linkTargetResources["apistage"].Name
                             }
                         ]

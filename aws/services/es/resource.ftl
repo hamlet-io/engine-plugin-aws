@@ -45,7 +45,7 @@
             "es",
             formatTypedArnResource(
                 "domain"
-                getReference(esId),
+                getReference(AWS_PROVIDER, esId),
                 "/",
                 indexPath
             ) ,

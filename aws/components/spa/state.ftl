@@ -13,7 +13,7 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
     [#local operationsBucketId = baselineComponentIds["OpsData"]!"" ]
-    [#local operationsBucket = getExistingReference(operationsBucketId) ]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, operationsBucketId) ]
 
     [#local configFilePath = formatRelativePath(
                                 getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
@@ -29,7 +29,7 @@
                     "Type" : SPA_COMPONENT_TYPE
                 }
             } +
-            getExistingReference(cfId, "", "", getDeploymentUnit())?has_content?then(
+            getExistingReference(AWS_PROVIDER, cfId, "", "", getDeploymentUnit())?has_content?then(
                 {
                     "legacyCF" : {
                         "Id" : cfId,

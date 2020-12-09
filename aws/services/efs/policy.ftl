@@ -15,7 +15,7 @@
         [#local conditions +=
             {
                 "StringEquals": {
-                    "elasticfilesystem:AccessPointArn" : getReference(accessPointId, ARN_ATTRIBUTE_TYPE)
+                    "elasticfilesystem:AccessPointArn" : getReference(AWS_PROVIDER, accessPointId, ARN_ATTRIBUTE_TYPE)
                 }
             }
         ]
@@ -26,7 +26,7 @@
             [
                 getPolicyStatement(
                     actions,
-                    formatRegionalArn("elasticfilesystem", formatRelativePath("file-system", getReference(id))),
+                    formatRegionalArn("elasticfilesystem", formatRelativePath("file-system", getReference(AWS_PROVIDER, id))),
                     principals,
                     conditions)
             ]

@@ -6,7 +6,7 @@
             "ecs",
             formatRelativePath(
                 "cluster",
-                getReference(ecsId)
+                getReference(AWS_PROVIDER, ecsId)
             )
         )
     ]
@@ -143,7 +143,7 @@
             attributeIfContent("logMetrics", logMetrics) +
             autoScaling,
             "Attributes" : {
-                "ARN" : getExistingReference(clusterId, ARN_ATTRIBUTE_TYPE)
+                "ARN" : getExistingReference(AWS_PROVIDER, clusterId, ARN_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Inbound" : {
@@ -183,7 +183,7 @@
     [#local lgId = formatDependentLogGroupId(taskId) ]
     [#local lgName = core.FullAbsolutePath ]
 
-    [#local region = getExistingReference(serviceId, REGION_ATTRIBUTE_TYPE )!regionId ]
+    [#local region = getExistingReference(AWS_PROVIDER, serviceId, REGION_ATTRIBUTE_TYPE )!regionId ]
 
     [#local availablePorts = [  ]]
 
@@ -333,7 +333,7 @@
     [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
     [#local networkResources = networkLinkTarget.State.Resources ]
 
-    [#local subnet = (getSubnets(core.Tier, networkResources))[0]]
+    [#local subnet = (getSubnets(AWS_PROVIDER, core.Tier, networkResources))[0]]
 
     [#if solution.NetworkMode == "awsvpc" ]
         [#local securityGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ) ]
@@ -352,7 +352,7 @@
     [#local lgId = formatDependentLogGroupId(taskId) ]
     [#local lgName = core.FullAbsolutePath ]
 
-    [#local region = getExistingReference(taskId, REGION_ATTRIBUTE_TYPE )]
+    [#local region = getExistingReference(AWS_PROVIDER, taskId, REGION_ATTRIBUTE_TYPE )]
 
     [#local logMetrics = {} ]
     [#list solution.LogMetrics as name,logMetric ]
@@ -440,7 +440,7 @@
                 }
             ),
             "Attributes" : {
-                "ECSHOST" : getExistingReference(ecsId)
+                "ECSHOST" : getExistingReference(AWS_PROVIDER, ecsId)
             } +
             attributeIfTrue(
                 "DEFINITION",
@@ -450,7 +450,7 @@
             attributeIfTrue(
                 "SECURITY_GROUP",
                 solution.NetworkMode == "awsvpc",
-                getExistingReference(securityGroupId)
+                getExistingReference(AWS_PROVIDER, securityGroupId)
             ) +
             attributeIfTrue(
                 "SUBNET",
@@ -478,13 +478,13 @@
                         ecsTaskRunPermission(ecsId) +
                         solution.UseTaskRole?then(
                             iamPassRolePermission(
-                                getReference(taskRoleId, ARN_ATTRIBUTE_TYPE)
+                                getReference(AWS_PROVIDER, taskRoleId, ARN_ATTRIBUTE_TYPE)
                             ),
                             []
                         ) +
                         (solution.Engine == "fargate")?then(
                             iamPassRolePermission(
-                                getReference(executionRoleId, ARN_ATTRIBUTE_TYPE)
+                                getReference(AWS_PROVIDER, executionRoleId, ARN_ATTRIBUTE_TYPE)
                             ),
                             []
                         )

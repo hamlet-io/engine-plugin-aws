@@ -43,7 +43,7 @@
         properties=
             {
                 "AliasName" : name,
-                "TargetKeyId" : getReference(cmkId, ARN_ATTRIBUTE_TYPE)
+                "TargetKeyId" : getReference(AWS_PROVIDER, cmkId, ARN_ATTRIBUTE_TYPE)
             }
         outputs={}
     /]

@@ -77,7 +77,7 @@
         formatRegionalArn(
             "execute-api",
             formatTypedArnResource(
-                getReference(apiId),
+                getReference(AWS_PROVIDER, apiId),
                 valueIfContent(stageName + "/*", stageName, "*"),
                 "/"
             )

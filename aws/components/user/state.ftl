@@ -5,7 +5,7 @@
     [#local solution = occurrence.Configuration.Solution]
 
     [#local userId = formatResourceId(AWS_IAM_USER_RESOURCE_TYPE, core.Id) ]
-    [#local userArn = getExistingReference(userId, ARN_ATTRIBUTE_TYPE)]
+    [#local userArn = getExistingReference(AWS_PROVIDER, userId, ARN_ATTRIBUTE_TYPE)]
 
     [#local encryptionScheme = (solution.GenerateCredentials.EncryptionScheme)?has_content?then(
                     solution.GenerateCredentials.EncryptionScheme?ensure_ends_with(":"),
@@ -63,11 +63,11 @@
                 }
             } + linkResources,
             "Attributes" : {
-                "USERNAME" : getExistingReference(userId),
+                "USERNAME" : getExistingReference(AWS_PROVIDER, userId),
                 "ARN" : userArn,
-                "ACCESS_KEY" : getExistingReference(userId, USERNAME_ATTRIBUTE_TYPE),
-                "SECRET_KEY" : getExistingReference(userId, PASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme),
-                "SES_SMTP_PASSWORD" : getExistingReference(userId, KEY_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme)
+                "ACCESS_KEY" : getExistingReference(AWS_PROVIDER, userId, USERNAME_ATTRIBUTE_TYPE),
+                "SECRET_KEY" : getExistingReference(AWS_PROVIDER, userId, PASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme),
+                "SES_SMTP_PASSWORD" : getExistingReference(AWS_PROVIDER, userId, KEY_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme)
             } +
             attributeIfTrue(
                 "FILETRANSFER_USERNAME",

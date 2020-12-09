@@ -42,7 +42,7 @@
                 }
             },
             "Attributes" : {
-                "ID" : getExistingReference( pipelineId )
+                "ID" : getExistingReference(AWS_PROVIDER, pipelineId )
             },
             "Roles" : {
                 "Inbound" : {

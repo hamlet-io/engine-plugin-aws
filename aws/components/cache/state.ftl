@@ -74,17 +74,17 @@
             },
             "Attributes" : {
                 "ENGINE" : engine,
-                "FQDN"  : getExistingReference(id, DNS_ATTRIBUTE_TYPE),
-                "PORT" : getExistingReference(id, PORT_ATTRIBUTE_TYPE),
+                "FQDN"  : getExistingReference(AWS_PROVIDER, id, DNS_ATTRIBUTE_TYPE),
+                "PORT" : getExistingReference(AWS_PROVIDER, id, PORT_ATTRIBUTE_TYPE),
                 "URL" :
                     valueIfTrue(
                         "redis://",
                         engine == "redis",
                         "memcached://"
                     ) +
-                    getExistingReference(id, DNS_ATTRIBUTE_TYPE) +
+                    getExistingReference(AWS_PROVIDER, id, DNS_ATTRIBUTE_TYPE) +
                     ":" +
-                    getExistingReference(id, PORT_ATTRIBUTE_TYPE)
+                    getExistingReference(AWS_PROVIDER, id, PORT_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Inbound" : {

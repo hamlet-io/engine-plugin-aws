@@ -17,14 +17,14 @@
                 }
             },
             "Attributes" : {
-                "ARN" : getExistingReference(topicId, ARN_ATTRIBUTE_TYPE),
-                "NAME" : getExistingReference(topicId, NAME_ATTRIBUTE_TYPE)
+                "ARN" : getExistingReference(AWS_PROVIDER, topicId, ARN_ATTRIBUTE_TYPE),
+                "NAME" : getExistingReference(AWS_PROVIDER, topicId, NAME_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Inbound" : {
                     "invoke" : {
                         "Principal" : "sns.amazonaws.com",
-                        "SourceArn" : getReference(topicId,ARN_ATTRIBUTE_TYPE)
+                        "SourceArn" : getReference(AWS_PROVIDER, topicId,ARN_ATTRIBUTE_TYPE)
                     }
                 },
                 "Outbound" : {

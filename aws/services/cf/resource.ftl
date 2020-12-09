@@ -274,7 +274,7 @@
 [/#function]
 
 [#function getCFCertificate id httpsProtocolPolicy assumeSNI=true ]
-    [#local acmCertificateArn = getExistingReference(id, ARN_ATTRIBUTE_TYPE, "us-east-1") ]
+    [#local acmCertificateArn = getExistingReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE, "us-east-1") ]
     [#return
         {
             "AcmCertificateArn" :
@@ -365,7 +365,7 @@
                     attributeIfContent("PriceClass", priceClass) +
                     attributeIfContent("Restrictions", restrictions) +
                     attributeIfContent("ViewerCertificate", certificate) +
-                    attributeIfContent("WebACLId", getReference(wafAclId))
+                    attributeIfContent("WebACLId", getReference(AWS_PROVIDER, wafAclId))
             }
         outputs=CF_OUTPUT_MAPPINGS
         dependencies=dependencies

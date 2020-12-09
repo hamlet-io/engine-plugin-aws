@@ -36,7 +36,7 @@
     [#local cmkKeyId            = baselineComponentIds["Encryption"]]
 
     [#local dataBucketId        = baselineComponentIds["AppData"]]
-    [#local dataBucket          = getExistingReference(dataBucketId) ]
+    [#local dataBucket          = getExistingReference(AWS_PROVIDER, dataBucketId) ]
     [#local dataBucketPrefix    = getAppDataFilePrefix(occurrence) ]
 
     [#local dataBucketLink = baselineLinks["AppData"]]
@@ -95,14 +95,14 @@
 
             [#list asArray(roleSource.LogGroupIds) as logGroupId ]
 
-                [#local logGroupArn = getExistingReference(logGroupId, ARN_ATTRIBUTE_TYPE)]
+                [#local logGroupArn = getExistingReference(AWS_PROVIDER, logGroupId, ARN_ATTRIBUTE_TYPE)]
 
                 [#if logGroupArn?has_content ]
 
                     [#if deploymentSubsetRequired(DATAFEED_COMPONENT_TYPE, true)]
                         [@createLogSubscription
                             id=formatDependentLogSubscriptionId(streamId, logWatcherLink.Id, logGroupId?index)
-                            logGroupName=getExistingReference(logGroupId)
+                            logGroupName=getExistingReference(AWS_PROVIDER, logGroupId)
                             logFilterId=logwatcher.LogFilter
                             destination=streamId
                             role=streamSubscriptionRoleId
@@ -218,7 +218,7 @@
                             (solution.LogWatchers?has_content)?then(
                                 firehoseStreamCloudwatchPermission(streamId)  +
                                     iamPassRolePermission(
-                                        getReference(streamSubscriptionRoleId, ARN_ATTRIBUTE_TYPE)
+                                        getReference(AWS_PROVIDER, streamSubscriptionRoleId, ARN_ATTRIBUTE_TYPE)
                                 ),
                                 []
                             )

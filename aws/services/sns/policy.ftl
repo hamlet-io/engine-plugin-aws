@@ -7,7 +7,7 @@
             [
                 getPolicyStatement(
                     actions,
-                    getReference(id, ARN_ATTRIBUTE_TYPE),
+                    getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE),
                     principals,
                     conditions)
             ]

@@ -42,7 +42,7 @@
                     "ecs:StopTask"
                 ],
                 taskId?has_content?then(
-                    getReference(taskId, ARN_ATTRIBUTE_TYPE),
+                    getReference(AWS_PROVIDER, taskId, ARN_ATTRIBUTE_TYPE),
                     "*"
                 ),
                 "",

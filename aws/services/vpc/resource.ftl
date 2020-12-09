@@ -76,7 +76,7 @@
                             {
                                 "SourceSecurityGroupId" : existingGroup?then(
                                                                 group,
-                                                                getReference(group)
+                                                                getReference(AWS_PROVIDER, group)
                                                             )
                             }
                         ]
@@ -95,7 +95,7 @@
                             {
                                 "DestinationSecurityGroupId" : existingGroup?then(
                                                                     group,
-                                                                    getReference(group)
+                                                                    getReference(AWS_PROVIDER, group)
                                                                 )
                             }]
                     [/#if]
@@ -240,7 +240,7 @@
         type="AWS::EC2::SecurityGroupIngress"
         properties=
             {
-                "GroupId" : getReference(groupId)
+                "GroupId" : getReference(AWS_PROVIDER, groupId)
             } +
             getSecurityGroupRules(port, cidr, group, "ingress", description )[0]
         outputs={}
@@ -285,7 +285,7 @@
         type="AWS::EC2::SecurityGroupEgress"
         properties=
             {
-                "GroupId" : getReference(groupId)
+                "GroupId" : getReference(AWS_PROVIDER, groupId)
             } +
             getSecurityGroupRules(port, cidr, group, "egress", description )[0]
         outputs={}
@@ -300,7 +300,7 @@
             {
                 "GroupDescription" : description?has_content?then(description, name),
                 "VpcId" : (vpcId?has_content)?then(
-                                getReference(vpcId),
+                                getReference(AWS_PROVIDER, vpcId),
                                 vpc
                             )
             }
@@ -369,14 +369,14 @@
         type="AWS::EC2::FlowLog"
         properties=
             {
-                "ResourceId" : getReference(resourceId),
+                "ResourceId" : getReference(AWS_PROVIDER, resourceId),
                 "ResourceType" : resourceType,
                 "TrafficType" : trafficType?upper_case,
                 "LogDestinationType" : logDestinationType
             } +
             ( logDestinationType == "cloud-watch-logs" )?then(
                 {
-                    "DeliverLogsPermissionArn" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
+                    "DeliverLogsPermissionArn" : getReference(AWS_PROVIDER, roleId, ARN_ATTRIBUTE_TYPE),
                     "LogGroupName" : logGroupName
                 },
                 {}
@@ -459,8 +459,8 @@
         type="AWS::EC2::VPCGatewayAttachment"
         properties=
             {
-                "InternetGatewayId" : getReference(igwId),
-                "VpcId" : getReference(vpcId)
+                "InternetGatewayId" : getReference(AWS_PROVIDER, igwId),
+                "VpcId" : getReference(AWS_PROVIDER, vpcId)
             }
         outputs={}
     /]
@@ -512,8 +512,8 @@
         type="AWS::EC2::NatGateway"
         properties=
             {
-                "AllocationId" : getReference(eipId, ALLOCATION_ATTRIBUTE_TYPE),
-                "SubnetId" : getReference(subnetId)
+                "AllocationId" : getReference(AWS_PROVIDER, eipId, ALLOCATION_ATTRIBUTE_TYPE),
+                "SubnetId" : getReference(AWS_PROVIDER, subnetId)
             }
         tags=tags
 
@@ -530,7 +530,7 @@
         type="AWS::EC2::RouteTable"
         properties=
             {
-                "VpcId" : getReference(vpcId)
+                "VpcId" : getReference(AWS_PROVIDER, vpcId)
             }
         tags=getCfTemplateCoreTags(name,"","",zone)
     /]
@@ -546,7 +546,7 @@
 
     [#local properties =
         {
-            "RouteTableId" : getReference(routeTableId),
+            "RouteTableId" : getReference(AWS_PROVIDER, routeTableId),
             "DestinationCidrBlock" : destinationCidr
         }
     ]
@@ -619,7 +619,7 @@
         type="AWS::EC2::NetworkAcl"
         properties=
             {
-                "VpcId" : getReference(vpcId)
+                "VpcId" : getReference(AWS_PROVIDER, vpcId)
             }
         tags=getCfTemplateCoreTags(name)
         outputs={}
@@ -700,7 +700,7 @@
         properties=
             properties +
             {
-                "NetworkAclId" : getReference(networkACLId),
+                "NetworkAclId" : getReference(AWS_PROVIDER, networkACLId),
                 "Egress" : outbound,
                 "RuleNumber" : rule.RuleNumber,
                 "RuleAction" : rule.Allow?string("allow","deny"),
@@ -734,7 +734,7 @@
         type="AWS::EC2::Subnet"
         properties=
             {
-                "VpcId" : getReference(vpcId),
+                "VpcId" : getReference(AWS_PROVIDER, vpcId),
                 "AvailabilityZone" : zone.AWSZone,
                 "CidrBlock" : cidr
             }
@@ -754,8 +754,8 @@
         type="AWS::EC2::SubnetRouteTableAssociation"
         properties=
             {
-                "SubnetId" : getReference(subnetId),
-                "RouteTableId" : getReference(routeTableId)
+                "SubnetId" : getReference(AWS_PROVIDER, subnetId),
+                "RouteTableId" : getReference(AWS_PROVIDER, routeTableId)
             }
         outputs={}
     /]
@@ -771,8 +771,8 @@
         type="AWS::EC2::SubnetNetworkAclAssociation"
         properties=
             {
-                "SubnetId" : getReference(subnetId),
-                "NetworkAclId" : getReference(networkACLId)
+                "SubnetId" : getReference(AWS_PROVIDER, subnetId),
+                "NetworkAclId" : getReference(AWS_PROVIDER, networkACLId)
             }
         outputs={}
     /]
@@ -796,7 +796,7 @@
         properties=
             {
                 "ServiceName" : service,
-                "VpcId" : getReference(vpcId)
+                "VpcId" : getReference(AWS_PROVIDER, vpcId)
             } +
             (type == "gateway")?then(
                 {
@@ -848,7 +848,7 @@
         id=id
         type="AWS::EC2::VPCEndpointServicePermissions"
         properties={
-            "ServiceId" : getReference(vpcEndpointServiceId),
+            "ServiceId" : getReference(AWS_PROVIDER, vpcEndpointServiceId),
             "AllowedPrincipals" : principalArns
         }
         dependencies=dependencies
@@ -873,12 +873,12 @@
         attributeIfContent(
             "ServiceId",
             vpcEndpointServiceId,
-            getReference(vpcEndpointServiceId)
+            getReference(AWS_PROVIDER, vpcEndpointServiceId)
         ) +
         attributeIfContent(
             "VPCEndpointId",
             vpcEndpointId,
-            getReference(vpcEndpointId)
+            getReference(AWS_PROVIDER, vpcEndpointId)
         )
         dependencies=dependencies
     /]

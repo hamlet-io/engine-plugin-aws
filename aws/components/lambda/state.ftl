@@ -35,7 +35,7 @@
         [#local versionId = versionOutputId]
     [/#if]
 
-    [#local region = getExistingReference(id, REGION_ATTRIBUTE_TYPE)!regionId]
+    [#local region = getExistingReference(AWS_PROVIDER, id, REGION_ATTRIBUTE_TYPE)!regionId]
 
     [#local lgId = formatLogGroupId(core.Id)]
     [#local lgName = formatAbsolutePath("aws", "lambda", core.FullName)]
@@ -96,7 +96,7 @@
             "Attributes" : {
                 "REGION" : region,
                 "ARN" : valueIfTrue(
-                            getExistingReference(versionOutputId),
+                            getExistingReference(AWS_PROVIDER, versionOutputId),
                             fixedCodeVersion
                             formatArn(
                                 regionObject.Partition,

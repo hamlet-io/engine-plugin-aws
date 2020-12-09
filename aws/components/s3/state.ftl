@@ -28,14 +28,14 @@
                 baselineIds["Encryption"],
                 name,
                 "*",
-                getExistingReference(id, REGION_ATTRIBUTE_TYPE)
+                getExistingReference(AWS_PROVIDER, id, REGION_ATTRIBUTE_TYPE)
             )]
 
         [#local s3ReadEncryptionPolicy  = s3EncryptionReadPermission(
                 baselineIds["Encryption"],
                 name,
                 "*",
-                getExistingReference(id, REGION_ATTRIBUTE_TYPE)
+                getExistingReference(AWS_PROVIDER, id, REGION_ATTRIBUTE_TYPE)
             )]
     [/#if]
 
@@ -46,7 +46,7 @@
                     "Id" : id,
                     "Name" :
                         firstContent(
-                            getExistingReference(id, NAME_ATTRIBUTE_TYPE),
+                            getExistingReference(AWS_PROVIDER, id, NAME_ATTRIBUTE_TYPE),
                             name),
                     "Type" : AWS_S3_RESOURCE_TYPE
                 },
@@ -61,18 +61,18 @@
                 }
             },
             "Attributes" : {
-                "NAME" : getExistingReference(id, NAME_ATTRIBUTE_TYPE),
-                "FQDN" : getExistingReference(id, DNS_ATTRIBUTE_TYPE),
-                "INTERNAL_FQDN" : getExistingReference(id, DNS_ATTRIBUTE_TYPE),
-                "WEBSITE_URL" : getExistingReference(id, URL_ATTRIBUTE_TYPE),
-                "ARN" : getExistingReference(id, ARN_ATTRIBUTE_TYPE),
-                "REGION" : getExistingReference(id, REGION_ATTRIBUTE_TYPE)
+                "NAME" : getExistingReference(AWS_PROVIDER, id, NAME_ATTRIBUTE_TYPE),
+                "FQDN" : getExistingReference(AWS_PROVIDER, id, DNS_ATTRIBUTE_TYPE),
+                "INTERNAL_FQDN" : getExistingReference(AWS_PROVIDER, id, DNS_ATTRIBUTE_TYPE),
+                "WEBSITE_URL" : getExistingReference(AWS_PROVIDER, id, URL_ATTRIBUTE_TYPE),
+                "ARN" : getExistingReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE),
+                "REGION" : getExistingReference(AWS_PROVIDER, id, REGION_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Inbound" : {
                     "invoke" : {
                         "Principal" : "s3.amazonaws.com",
-                        "SourceArn" : getReference(id, ARN_ATTRIBUTE_TYPE)
+                        "SourceArn" : getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE)
                     }
                 },
                 "Outbound" : {

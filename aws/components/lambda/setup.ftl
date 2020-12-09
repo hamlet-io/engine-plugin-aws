@@ -42,8 +42,8 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
     [#local cmkKeyId = baselineComponentIds["Encryption" ]]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"])]
 
     [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
 
@@ -63,7 +63,7 @@
         [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
 
         [#local vpcId = networkResources["vpc"].Id ]
-        [#local vpc = getExistingReference(vpcId)]
+        [#local vpc = getExistingReference(AWS_PROVIDER, vpcId)]
 
         [#local securityGroupId = resources["securityGroup"].Id ]
         [#local securityGroupName = resources["securityGroup"].Name ]
@@ -198,7 +198,7 @@
                                         [@createSNSSubscription
                                             id=formatDependentSNSSubscriptionId(fn, "link", linkName)
                                             topicId=linkTargetResources["topic"].Id
-                                            endpoint=getReference(fnId, ARN_ATTRIBUTE_TYPE)
+                                            endpoint=getReference(AWS_PROVIDER, fnId, ARN_ATTRIBUTE_TYPE)
                                             protocol="lambda"
                                         /]
                                     [/#if]
@@ -378,7 +378,7 @@
                 )
             subnetIds=
                 (vpcAccess)?then(
-                    getSubnets(core.Tier, networkResources, "", false),
+                    getSubnets(AWS_PROVIDER, core.Tier, networkResources, "", false),
                     []
                 )
             dependencies=
@@ -413,7 +413,7 @@
             [#local scheduleRuleId = formatEventRuleId(fn, "schedule", schedule.Id) ]
 
             [#local targetParameters = {
-                "Arn" : getReference(fnId, ARN_ATTRIBUTE_TYPE),
+                "Arn" : getReference(AWS_PROVIDER, fnId, ARN_ATTRIBUTE_TYPE),
                 "Id" : fnId,
                 "Input" : getJSON(schedule.Input?has_content?then(schedule.Input,{ "path" : schedule.InputPath }))
             }]
@@ -450,7 +450,7 @@
 
                 [#list asArray(roleSource.LogGroupIds) as logGroupId ]
 
-                    [#local logGroupArn = getExistingReference(logGroupId, ARN_ATTRIBUTE_TYPE)]
+                    [#local logGroupArn = getExistingReference(AWS_PROVIDER, logGroupId, ARN_ATTRIBUTE_TYPE)]
 
                     [#if logGroupArn?has_content ]
 
@@ -466,7 +466,7 @@
 
                         [@createLogSubscription
                             id=formatDependentLogSubscriptionId(fnId, logWatcherLink.Id, logGroupId?index)
-                            logGroupName=getExistingReference(logGroupId)
+                            logGroupName=getExistingReference(AWS_PROVIDER, logGroupId)
                             logFilterId=logFilter
                             destination=fnId
                             dependencies=fnId
@@ -501,7 +501,7 @@
                             reportOK=alert.ReportOk
                             unit=alert.Unit
                             missingData=alert.MissingData
-                            dimensions=getResourceMetricDimensions(monitoredResource, resources)
+                            dimensions=getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, resources)
                         /]
                     [#break]
                 [/#switch]

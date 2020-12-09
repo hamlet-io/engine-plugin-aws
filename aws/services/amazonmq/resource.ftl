@@ -71,7 +71,7 @@
         type="AWS::AmazonMQ::Broker"
         properties={
             "SubnetIds" : getReferences(subnetIds),
-            "SecurityGroups" : [ getReference(securityGroupId) ],
+            "SecurityGroups" : [ getReference(AWS_PROVIDER, securityGroupId) ],
             "Users" : asArray(users),
             "Logs" : {
                 "General" : logging
@@ -90,7 +90,7 @@
             "EncryptionOptions",
             encrypted,
             {
-                "KmsKeyId" : getReference(kmsKeyId),
+                "KmsKeyId" : getReference(AWS_PROVIDER, kmsKeyId),
                 "UseAwsOwnedKey" : true
             }
         )

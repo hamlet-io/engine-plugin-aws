@@ -46,24 +46,24 @@
 
     [#local securityGroupId = formatDependentComponentSecurityGroupId(core.Tier, core.Component, id)]
 
-    [#local fqdn = getExistingReference(id, DNS_ATTRIBUTE_TYPE)]
+    [#local fqdn = getExistingReference(AWS_PROVIDER, id, DNS_ATTRIBUTE_TYPE)]
 
-    [#local name = getExistingReference(id, DATABASENAME_ATTRIBUTE_TYPE)]
-    [#local region = getExistingReference(id, REGION_ATTRIBUTE_TYPE)]
+    [#local name = getExistingReference(AWS_PROVIDER, id, DATABASENAME_ATTRIBUTE_TYPE)]
+    [#local region = getExistingReference(AWS_PROVIDER, id, REGION_ATTRIBUTE_TYPE)]
     [#local encryptionScheme = (solution.GenerateCredentials.EncryptionScheme)?has_content?then(
                         solution.GenerateCredentials.EncryptionScheme?ensure_ends_with(":"),
                         "" )]
     [#if auroraCluster ]
-        [#local readfqdn = getExistingReference(id, "read" + DNS_ATTRIBUTE_TYPE )]
+        [#local readfqdn = getExistingReference(AWS_PROVIDER, id, "read" + DNS_ATTRIBUTE_TYPE )]
     [/#if]
 
     [#if solution.GenerateCredentials.Enabled ]
         [#local masterUsername = solution.GenerateCredentials.MasterUserName ]
-        [#local masterPassword = getExistingReference(id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme) ]
-        [#local url = getExistingReference(id, URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme) ]
+        [#local masterPassword = getExistingReference(AWS_PROVIDER, id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme) ]
+        [#local url = getExistingReference(AWS_PROVIDER, id, URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme) ]
 
         [#if auroraCluster ]
-            [#local readUrl = getExistingReference(id, "read" + URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme) ]
+            [#local readUrl = getExistingReference(AWS_PROVIDER, id, "read" + URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme) ]
         [/#if]
     [#else]
         [#-- don't flag an error if credentials missing but component is not enabled --]

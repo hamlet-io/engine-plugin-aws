@@ -5,7 +5,7 @@
         [
             getPolicyStatement(
                 "kms:Decrypt",
-                getReference(id, ARN_ATTRIBUTE_TYPE))
+                getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE))
         ]
     ]
 [/#function]
@@ -13,7 +13,7 @@
 [#function s3AccountEncryptionReadPermission bucketName bucketPrefix bucketRegion ]
     [#local accountEncryptionKeyId = formatAccountCMKTemplateId() ]
 
-    [#if getExistingReference(accountEncryptionKeyId)?has_content ]
+    [#if getExistingReference(AWS_PROVIDER, accountEncryptionKeyId)?has_content ]
         [#return s3EncryptionReadPermission(
                     accountEncryptionKeyId,
                     bucketName,
@@ -72,7 +72,7 @@
         [
             getPolicyStatement(
                 asArray(actions),
-                getReference(keyId, ARN_ATTRIBUTE_TYPE),
+                getReference(AWS_PROVIDER, keyId, ARN_ATTRIBUTE_TYPE),
                 "",
                 {
                     "StringEquals" : {

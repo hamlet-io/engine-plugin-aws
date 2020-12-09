@@ -26,7 +26,7 @@
                     "Type" : AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE
                 },
                 "ec2EIP" : {
-                    "Id" : getExistingReference(formatEIPId( core.Id, zone.Id))?has_content?then(
+                    "Id" : getExistingReference(AWS_PROVIDER, formatEIPId( core.Id, zone.Id))?has_content?then(
                         formatEIPId( core.Id, zone.Id),
                         formatEIPId( core.Id, zone.Id, "eth0")
                     ),

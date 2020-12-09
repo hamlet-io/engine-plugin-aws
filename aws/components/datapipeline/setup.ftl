@@ -31,8 +31,8 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"])]
     [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
 
     [#local pipelineCreateCommand = "createPipeline"]
@@ -54,9 +54,9 @@
     [#local parameterValues = {
             "_AWS_REGION" : regionId,
             "_AVAILABILITY_ZONE" : zones[0].AWSZone,
-            "_VPC_ID" : getExistingReference(vpcId),
-            "_SUBNET_ID" : getSubnets(core.Tier, networkResources)[0],
-            "_SSH_KEY_PAIR" : getExistingReference(sshKeyPairId, NAME_ATTRIBUTE_TYPE),
+            "_VPC_ID" : getExistingReference(AWS_PROVIDER, vpcId),
+            "_SUBNET_ID" : getSubnets(AWS_PROVIDER, core.Tier, networkResources)[0],
+            "_SSH_KEY_PAIR" : getExistingReference(AWS_PROVIDER, sshKeyPairId, NAME_ATTRIBUTE_TYPE),
             "_INSTANCE_TYPE_EC2" : ec2ProcessorProfile.Processor,
             "_INSTANCE_IMAGE_EC2" : regionObject.AMIs.Centos.EC2,
             "_INSTANCE_TYPE_EMR" : emrProcessorProfile.Processor,
@@ -197,7 +197,7 @@
                 properties=
                     {
                         "Path" : "/",
-                        "Roles" : [ getReference(resourceRoleId) ],
+                        "Roles" : [ getReference(AWS_PROVIDER, resourceRoleId) ],
                         "InstanceProfileName" : resourceInstanceProfileName
                     }
                 outputs={}

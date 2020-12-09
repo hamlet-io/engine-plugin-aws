@@ -56,7 +56,7 @@
             "Attributes" : {
                 "FQDN" : hostName,
                 "RECORD_TYPES" : solution.RecordTypes?join(","),
-                "SERVICE_ARN" : getExistingReference(serviceId, ARN_ATTRIBUTE_TYPE)
+                "SERVICE_ARN" : getExistingReference(AWS_PROVIDER, serviceId, ARN_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Inbound" : {},

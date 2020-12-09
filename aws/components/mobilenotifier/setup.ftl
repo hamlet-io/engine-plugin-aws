@@ -44,7 +44,7 @@
 
         [#local platformAppAttributesCliId = formatId( platformAppId, "attributes" )]
 
-        [#local platformArn = getExistingReference( platformAppId, ARN_ATTRIBUTE_TYPE) ]
+        [#local platformArn = getExistingReference(AWS_PROVIDER, platformAppId, ARN_ATTRIBUTE_TYPE) ]
 
         [#if platformArn?has_content ]
             [#local deployedPlatformAppArns += [ platformArn ] ]
@@ -176,7 +176,7 @@
                                 reportOK=alert.ReportOk
                                 unit=alert.Unit
                                 missingData=alert.MissingData
-                                dimensions=getResourceMetricDimensions(monitoredResource, resources)
+                                dimensions=getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, resources)
                             /]
                         [#break]
                     [/#switch]

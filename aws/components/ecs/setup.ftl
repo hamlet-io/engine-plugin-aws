@@ -52,8 +52,8 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"])]
     [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
@@ -297,7 +297,7 @@
 
                     [#local monitoredResource = monitoredResources[ (monitoredResources?keys)[0]] ]
 
-                    [#local metricDimensions = getResourceMetricDimensions(monitoredResource, scalingTargetResources )]
+                    [#local metricDimensions = getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, scalingTargetResources )]
                     [#local metricName = getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName)]
                     [#local metricNamespace = getResourceMetricNamespace(monitoredResource.Type)]
 
@@ -317,7 +317,7 @@
                                 severity="Scaling"
                                 resourceName=scalingTargetCore.FullName
                                 alertName=scalingMetricTrigger.Name
-                                actions=getReference( scalingPolicyId )
+                                actions=getReference(AWS_PROVIDER, scalingPolicyId )
                                 reportOK=false
                                 metric=metricName
                                 namespace=metricNamespace
@@ -357,7 +357,7 @@
                         [/#if]
 
                         [#local metricSpecification = getAutoScalingCustomTrackMetric(
-                                                        getResourceMetricDimensions(monitoredResource, scalingTargetResources ),
+                                                        getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, scalingTargetResources ),
                                                         getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName),
                                                         getResourceMetricNamespace(monitoredResource.Type),
                                                         scalingMetricTrigger.Statistic
@@ -500,7 +500,7 @@
                             reportOK=alert.ReportOk
                             unit=alert.Unit
                             missingData=alert.MissingData
-                            dimensions=getResourceMetricDimensions(monitoredResource, resources)
+                            dimensions=getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, resources)
                         /]
                     [#break]
                 [/#switch]
@@ -518,7 +518,7 @@
 
         [#local defaultCapacityProviderStrategies = []]
 
-        [#if getExistingReference(ecsId)?has_content ]
+        [#if getExistingReference(AWS_PROVIDER, ecsId)?has_content ]
             [#local defaultCapacityProviderStrategies += [
                     getECSCapacityProviderStrategy(computeProviderProfile.Containers.Default, ecsASGCapacityProviderId)
             ]]
@@ -537,8 +537,8 @@
                 "FARGATE_SPOT"
             ] +
             valueIfContent(
-                [ getReference(ecsASGCapacityProviderId) ],
-                getExistingReference(ecsAutoScaleGroupId),
+                [ getReference(AWS_PROVIDER, ecsASGCapacityProviderId) ],
+                getExistingReference(AWS_PROVIDER, ecsAutoScaleGroupId),
                 []
             )
         ]
@@ -556,7 +556,7 @@
             properties=
                 {
                     "Path" : "/",
-                    "Roles" : [getReference(ecsRoleId)]
+                    "Roles" : [getReference(AWS_PROVIDER, ecsRoleId)]
                 }
             outputs={}
         /]
@@ -573,7 +573,7 @@
                 /]
                 [#local allocationIds +=
                     [
-                        getReference(formatComponentEIPId(core.Tier, core.Component, index), ALLOCATION_ATTRIBUTE_TYPE)
+                        getReference(AWS_PROVIDER, formatComponentEIPId(core.Tier, core.Component, index), ALLOCATION_ATTRIBUTE_TYPE)
                     ]
                 ]
             [/#list]
@@ -585,7 +585,7 @@
         [/#if]
 
         [#-- workaround for a known bug with a circular dependency with the capacity provider asg and ecs cluster name --]
-        [#if getExistingReference(ecsId)?has_content ]
+        [#if getExistingReference(AWS_PROVIDER, ecsId)?has_content ]
             [@createECSCapacityProvider?with_args(capacityProviderScalingPolicy)
                 id=ecsASGCapacityProviderId
                 asgId=ecsAutoScaleGroupId
@@ -650,7 +650,7 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
@@ -694,8 +694,8 @@
         [#local executionRoleId = ""]
 
         [#local subnets = multiAZ?then(
-                getSubnets(core.Tier, networkResources),
-                getSubnets(core.Tier, networkResources)[0..0]
+                getSubnets(AWS_PROVIDER, core.Tier, networkResources),
+                getSubnets(AWS_PROVIDER, core.Tier, networkResources)[0..0]
             )]
 
         [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
@@ -856,7 +856,7 @@
                                                     {
                                                         "ContainerName" : container.Name,
                                                         "ContainerPort" : ports[portMapping.ContainerPort].Port,
-                                                        "LoadBalancerName" : getExistingReference(lbId)
+                                                        "LoadBalancerName" : getExistingReference(AWS_PROVIDER, lbId)
                                                     }
                                                 ]
                                             ]
@@ -1058,7 +1058,7 @@
 
                                 [#local monitoredResource = monitoredResources[ (monitoredResources?keys)[0]] ]
 
-                                [#local metricDimensions = getResourceMetricDimensions(monitoredResource, scalingTargetResources )]
+                                [#local metricDimensions = getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, scalingTargetResources )]
                                 [#local metricName = getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName)]
                                 [#local metricNamespace = getResourceMetricNamespace(monitoredResource.Type)]
 
@@ -1077,7 +1077,7 @@
                                         severity="Scaling"
                                         resourceName=concatenate( [ core.FullName, scalingTargetCore.FullName], "|" )
                                         alertName=scalingMetricTrigger.Name
-                                        actions=getReference( scalingPolicyId )
+                                        actions=getReference(AWS_PROVIDER, scalingPolicyId )
                                         reportOK=false
                                         metric=metricName
                                         namespace=metricNamespace
@@ -1129,7 +1129,7 @@
                                     [#else ]
                                         [#local specificationType = "custom" ]
                                         [#local metricSpecification = getAutoScalingCustomTrackMetric(
-                                                                        getResourceMetricDimensions(monitoredResource, scalingTargetResources ),
+                                                                        getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, scalingTargetResources ),
                                                                         getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName),
                                                                         getResourceMetricNamespace(monitoredResource.Type),
                                                                         scalingMetricTrigger.Statistic
@@ -1289,13 +1289,13 @@
                                 ecsTaskRunPermission(ecsId) +
                                 roleId?has_content?then(
                                     iamPassRolePermission(
-                                        getReference(roleId, ARN_ATTRIBUTE_TYPE)
+                                        getReference(AWS_PROVIDER, roleId, ARN_ATTRIBUTE_TYPE)
                                     ),
                                     []
                                 ) +
                                 executionRoleId?has_content?then(
                                     iamPassRolePermission(
-                                        getReference(executionRoleId, ARN_ATTRIBUTE_TYPE)
+                                        getReference(AWS_PROVIDER, executionRoleId, ARN_ATTRIBUTE_TYPE)
                                     ),
                                     []
                                 ),
@@ -1310,7 +1310,7 @@
                     [#local scheduleRuleId = resources["schedules"][schedule.Id]["schedule"].Id ]
                     [#local cliCleanUpRequired = cliCleanUpRequired?then(
                                 cliCleanUpRequired,
-                                getExistingReference(scheduleRuleId, "cleanup")?has_content
+                                getExistingReference(AWS_PROVIDER, scheduleRuleId, "cleanup")?has_content
                     )]
 
                     [#local scheduleEnabled = hibernate?then(
@@ -1320,7 +1320,7 @@
 
                     [#local ecsParameters = {
                         "TaskCount" : schedule.TaskCount,
-                        "TaskDefinitionArn" : getReference(taskId, ARN_ATTRIBUTE_TYPE)
+                        "TaskDefinitionArn" : getReference(AWS_PROVIDER, taskId, ARN_ATTRIBUTE_TYPE)
                      }]
 
                     [#if networkMode == "awsvpc" ]
@@ -1345,10 +1345,10 @@
                     [/#if]
 
                     [#local targetParameters = {
-                        "Arn" : getExistingReference(ecsId, ARN_ATTRIBUTE_TYPE),
+                        "Arn" : getExistingReference(AWS_PROVIDER, ecsId, ARN_ATTRIBUTE_TYPE),
                         "Id" : taskId,
                         "EcsParameters" : ecsParameters,
-                        "RoleArn" : getReference(scheduleTaskRoleId, ARN_ATTRIBUTE_TYPE)
+                        "RoleArn" : getReference(AWS_PROVIDER, scheduleTaskRoleId, ARN_ATTRIBUTE_TYPE)
                     }]
 
                     [#if deploymentSubsetRequired("ecs", true) ]
@@ -1493,7 +1493,7 @@
                                 reportOK=alert.ReportOk
                                 unit=alert.Unit
                                 missingData=alert.MissingData
-                                dimensions=getResourceMetricDimensions(monitoredResource, ( resources + { "cluster" : parentResources["cluster"] } ) )
+                                dimensions=getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, ( resources + { "cluster" : parentResources["cluster"] } ) )
                             /]
                         [#break]
                     [/#switch]

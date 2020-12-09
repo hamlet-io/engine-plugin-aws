@@ -39,7 +39,7 @@
                 "Zones" : zoneResources
             },
             "Attributes" : {
-                "EFS" : getExistingReference(id),
+                "EFS" : getExistingReference(AWS_PROVIDER, id),
                 "DIRECTORY" : "/"
             },
             "Roles" : {
@@ -84,13 +84,13 @@
                 }
             },
             "Attributes" : {
-                "EFS" : getExistingReference(efsId),
+                "EFS" : getExistingReference(AWS_PROVIDER, efsId),
                 "DIRECTORY" : (solution.chroot)?then(
                                     "/"
                                     solution.Directory
                                 ),
-                "ACCESS_POINT_ID": getExistingReference(accessPointId),
-                "ACCESS_POINT_ARN" : getExistingReference(accessPointId, ARN_ATTRIBUTE_TYPE)
+                "ACCESS_POINT_ID": getExistingReference(AWS_PROVIDER, accessPointId),
+                "ACCESS_POINT_ARN" : getExistingReference(AWS_PROVIDER, accessPointId, ARN_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Inbound" : {

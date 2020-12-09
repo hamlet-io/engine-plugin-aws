@@ -23,8 +23,8 @@
                 )
             },
             "Attributes" : {
-                "TABLE_NAME" : getExistingReference(id),
-                "TABLE_ARN" : getExistingReference(id, ARN_ATTRIBUTE_TYPE),
+                "TABLE_NAME" : getExistingReference(AWS_PROVIDER, id),
+                "TABLE_ARN" : getExistingReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE),
                 "TABLE_KEY" : key
             } +
             attributeIfContent(
@@ -36,13 +36,13 @@
                 "Outbound" : {
                     "default" : "consume",
                     "consume" : dynamoDbViewerPermission(
-                                    getReference(id, ARN_ATTRIBUTE_TYPE)
+                                    getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE)
                                 ),
                     "produce" : dynamodbProducePermission(
-                                    getReference(id, ARN_ATTRIBUTE_TYPE)
+                                    getReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE)
                                 ),
                     "all"     : dynamodbAllPermission(
-                                    getReference(id,ARN_ATTRIBUTE_TYPE)
+                                    getReference(AWS_PROVIDER, id,ARN_ATTRIBUTE_TYPE)
                                 )
                }
             }

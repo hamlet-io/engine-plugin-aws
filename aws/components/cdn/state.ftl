@@ -14,7 +14,7 @@
         [#local fqdn = formatDomainName(hostName, primaryDomainObject)]
 
     [#else]
-            [#local fqdn = getExistingReference(cfId,DNS_ATTRIBUTE_TYPE)]
+            [#local fqdn = getExistingReference(AWS_PROVIDER, cfId,DNS_ATTRIBUTE_TYPE)]
     [/#if]
 
     [#local wafPresent = isPresent(solution.WAF)]
@@ -50,7 +50,7 @@
             "Attributes" : {
                 "FQDN" : fqdn,
                 "URL" : "https://" + fqdn,
-                "DISTRIBUTION_ID" : getExistingReference(cfId)
+                "DISTRIBUTION_ID" : getExistingReference(AWS_PROVIDER, cfId)
             },
             "Roles" : {
                 "Inbound" : {},
@@ -86,7 +86,7 @@
                 "origin" : {
                     "Id" : formatResourceId(AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE, core.Id ),
                     "Type" : AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE,
-                    "Deployed" : getExistingReference(cfId)?has_content,
+                    "Deployed" : getExistingReference(AWS_PROVIDER, cfId)?has_content,
                     "PathPattern" : pathPattern,
                     "DefaultPath" : isDefaultPath
                 }

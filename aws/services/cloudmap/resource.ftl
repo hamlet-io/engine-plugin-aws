@@ -74,7 +74,7 @@
                 {
                     "Description" : name,
                     "Name" : domainName,
-                    "Vpc" : getReference(vpcId)
+                    "Vpc" : getReference(AWS_PROVIDER, vpcId)
                 }
             outputs=CLOUDMAP_DNS_NAMESPACE_OUTPUT_MAPPINGS
             dependencies=dependencies
@@ -140,11 +140,11 @@
                 "Description" : name,
                 "DnsConfig" : {
                     "DnsRecords" : dnsRecords,
-                    "NamespaceId" : getReference(namespaceId),
+                    "NamespaceId" : getReference(AWS_PROVIDER, namespaceId),
                     "RoutingPolicy" : routingPolicy
                 },
                 "Name" : hostName,
-                "NamespaceId" : getReference(namespaceId),
+                "NamespaceId" : getReference(AWS_PROVIDER, namespaceId),
                 "HealthCheckCustomConfig" : {
                     "FailureThreshold" : 1
                 }
@@ -195,7 +195,7 @@
         properties=
             {
                 "InstanceAttributes": instanceAttributes,
-                "ServiceId": getReference(serviceId),
+                "ServiceId": getReference(AWS_PROVIDER, serviceId),
                 "InstanceId" : instanceId
             }
         outputs=CLOUDMAP_INSTANCE_OUTPUT_MAPPINGS

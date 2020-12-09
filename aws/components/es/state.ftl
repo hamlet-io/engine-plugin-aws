@@ -34,7 +34,7 @@
 
         [#local solution = occurrence.Configuration.Solution]
         [#local esId = formatResourceId(AWS_ES_RESOURCE_TYPE, core.Id)]
-        [#local esHostName = getExistingReference(esId, DNS_ATTRIBUTE_TYPE) ]
+        [#local esHostName = getExistingReference(AWS_PROVIDER, esId, DNS_ATTRIBUTE_TYPE) ]
         [#local esSnapshotRoleId = formatDependentRoleId(esId, "snapshotStore" ) ]
 
         [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ], true, false )]
@@ -100,14 +100,14 @@
                     }
                 ),
                 "Attributes" : {
-                    "REGION" : getExistingReference(esId, REGION_ATTRIBUTE_TYPE)!regionId,
+                    "REGION" : getExistingReference(AWS_PROVIDER, esId, REGION_ATTRIBUTE_TYPE)!regionId,
                     "AUTH" : solution.Authentication,
                     "FQDN" : esHostName,
                     "URL" : "https://" + esHostName,
                     "KIBANA_URL" : "https://" + esHostName + "/_plugin/kibana/",
                     "PORT" : 443,
-                    "SNAPSHOT_ROLE_ARN" : getExistingReference(esSnapshotRoleId, ARN_ATTRIBUTE_TYPE),
-                    "SNAPSHOT_BUCKET" : getExistingReference(baselineComponentIds["AppData"]!""),
+                    "SNAPSHOT_ROLE_ARN" : getExistingReference(AWS_PROVIDER, esSnapshotRoleId, ARN_ATTRIBUTE_TYPE),
+                    "SNAPSHOT_BUCKET" : getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"]!""),
                     "SNAPSHOT_PATH" : getAppDataFilePrefix(occurrence)
                 },
                 "Roles" : {
@@ -117,7 +117,7 @@
                         "datafeed" : esKinesesStreamPermission(esId),
                         "snapshot" : esConsumePermission(esId) +
                                         iamPassRolePermission(
-                                            getExistingReference(esSnapshotRoleId, ARN_ATTRIBUTE_TYPE)
+                                            getExistingReference(AWS_PROVIDER, esSnapshotRoleId, ARN_ATTRIBUTE_TYPE)
                                         )
                     } +
                     attributeIfTrue(

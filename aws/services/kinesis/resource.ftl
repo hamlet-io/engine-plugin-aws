@@ -310,7 +310,7 @@
                 "RetryOptions" : {
                     "DurationInSeconds" : retryDuration
                 },
-                "RoleARN" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
+                "RoleARN" : getReference(AWS_PROVIDER, roleId, ARN_ATTRIBUTE_TYPE),
                 "S3BackupMode" : backupPolicy,
                 "S3Configuration" : backupS3Destination,
                 "CloudWatchLoggingOptions" : loggingConfiguration
@@ -347,7 +347,7 @@
             },
             "CompressionFormat" : "GZIP",
             "Prefix" : bucketPrefix?ensure_ends_with("/"),
-            "RoleARN" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
+            "RoleARN" : getReference(AWS_PROVIDER, roleId, ARN_ATTRIBUTE_TYPE),
             "CloudWatchLoggingOptions" : loggingConfiguration
         } +
         attributeIfTrue(
@@ -355,7 +355,7 @@
             encrypted,
             {
                 "KMSEncryptionConfig" : {
-                    "AWSKMSKeyARN" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                    "AWSKMSKeyARN" : getReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE)
                 }
             }
         )
@@ -387,7 +387,7 @@
             },
         "CloudWatchLoggingOptions" : loggingConfiguration,
         "CompressionFormat" : "GZIP",
-        "RoleARN" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
+        "RoleARN" : getReference(AWS_PROVIDER, roleId, ARN_ATTRIBUTE_TYPE),
         "S3BackupMode" : backupEnabled?then("Enabled", "Disabled")
     } +
     attributeIfContent(
@@ -419,7 +419,7 @@
         encrypted,
         {
             "KMSEncryptionConfig" : {
-                "AWSKMSKeyARN" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                "AWSKMSKeyARN" : getReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE)
             }
         }
     ) +

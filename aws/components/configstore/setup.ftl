@@ -19,8 +19,8 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"])]
 
     [#local itemInitCommand = "initItem"]
     [#local itemUpdateCommand = "updateItem" ]

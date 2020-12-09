@@ -48,7 +48,7 @@
         [#local userPoolFQDN = formatDomainName(userPoolDomainName, "auth", region, "amazoncognito.com")]
         [#local userPoolBaseUrl = "https://" + userPoolFQDN + "/" ]
 
-        [#local region = getExistingReference(userPoolId, REGION_ATTRIBUTE_TYPE)!regionId ]
+        [#local region = getExistingReference(AWS_PROVIDER, userPoolId, REGION_ATTRIBUTE_TYPE)!regionId ]
 
         [#local certificateArn = ""]
         [#if certificatePresent ]
@@ -60,16 +60,16 @@
             [#local userPoolCustomBaseUrl = "https://" + userPoolCustomDomainName + "/" ]
 
             [#local certificateId = formatDomainCertificateId(certificateObject, userPoolDomainName)]
-            [#local certificateArn = getExistingReference(certificateId, ARN_ATTRIBUTE_TYPE, "us-east-1")]
+            [#local certificateArn = getExistingReference(AWS_PROVIDER, certificateId, ARN_ATTRIBUTE_TYPE, "us-east-1")]
         [/#if]
 
-        [#local attrUserPoolId = getExistingReference(userPoolId) ]
-        [#local attrUserPoolArn = getExistingReference(userPoolId, ARN_ATTRIBUTE_TYPE) ]
-        [#local attrUserPoolName = getExistingReference(userPoolId, NAME_ATTRIBUTE_TYPE) ]
+        [#local attrUserPoolId = getExistingReference(AWS_PROVIDER, userPoolId) ]
+        [#local attrUserPoolArn = getExistingReference(AWS_PROVIDER, userPoolId, ARN_ATTRIBUTE_TYPE) ]
+        [#local attrUserPoolName = getExistingReference(AWS_PROVIDER, userPoolId, NAME_ATTRIBUTE_TYPE) ]
         [#local attrUserPoolRegion = region]
 
         [#local attrClientId = defaultUserPoolClientRequired?then(
-                                    getExistingReference(defaultUserPoolClientId),
+                                    getExistingReference(AWS_PROVIDER, defaultUserPoolClientId),
                                     "")]
 
         [#local attrUIBaseURL = userPoolCustomBaseUrl!userPoolBaseUrl ]
@@ -123,7 +123,7 @@
                     "Inbound" : {
                         "invoke" : {
                             "Principal" : "cognito-idp.amazonaws.com",
-                            "SourceArn" : getReference(userPoolId,ARN_ATTRIBUTE_TYPE)
+                            "SourceArn" : getReference(AWS_PROVIDER, userPoolId,ARN_ATTRIBUTE_TYPE)
                         }
                     },
                     "Outbound" : {}
@@ -184,13 +184,13 @@
             "Attributes" :
             parentAttributes +
             {
-                "CLIENT" : getExistingReference(userPoolClientId),
+                "CLIENT" : getExistingReference(AWS_PROVIDER, userPoolClientId),
                 "LB_OAUTH_SCOPE" : (solution.OAuth.Scopes)?join(" ")
             } +
             attributeIfTrue(
                 "SECRET",
                 solution.ClientGenerateSecret,
-                getExistingReference(userPoolClientId, KEY_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme)
+                getExistingReference(AWS_PROVIDER, userPoolClientId, KEY_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme)
             ),
             "Roles" : {
                 "Inbound" : {},
@@ -256,7 +256,7 @@
             } +
             scopeResources,
             "Attributes" : {
-                "IDENTIFIER" : getExistingReference(resourceServerId),
+                "IDENTIFIER" : getExistingReference(AWS_PROVIDER, resourceServerId),
                 "SCOPES" : scopeNames?join(" ")
             },
             "Roles" : {

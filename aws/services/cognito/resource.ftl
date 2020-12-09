@@ -489,7 +489,7 @@
                 "ClientName" : name,
                 "GenerateSecret" : generateSecret,
                 "RefreshTokenValidity" : tokenValidity,
-                "UserPoolId" : getReference(userPoolId),
+                "UserPoolId" : getReference(AWS_PROVIDER, userPoolId),
                 "AllowedOAuthFlowsUserPoolClient" : oAuthEnabled,
                 "PreventUserExistenceErrors" : "ENABLED"
             } +
@@ -550,7 +550,7 @@
         properties={
             "ProviderName" : name,
             "ProviderType" : providerType,
-            "UserPoolId" : getReference(userPoolId),
+            "UserPoolId" : getReference(AWS_PROVIDER, userPoolId),
             "ProviderDetails" : providerDetails
         } +
         attributeIfContent(
@@ -580,7 +580,7 @@
         id=id
         type="AWS::Cognito::UserPoolDomain"
         properties={
-            "UserPoolId" : getReference(userPoolId),
+            "UserPoolId" : getReference(AWS_PROVIDER, userPoolId),
             "Domain" : domainName
         } +
         attributeIfTrue(
@@ -618,7 +618,7 @@
         type="AWS::Cognito::UserPoolResourceServer"
         properties={
             "Identifier" : identifier,
-            "UserPoolId" : getReference(userPoolId),
+            "UserPoolId" : getReference(AWS_PROVIDER, userPoolId),
             "Name" : name,
             "Scopes" : scopes
         }
@@ -665,7 +665,7 @@
         type="AWS::Cognito::IdentityPoolRoleAttachment"
         properties=
             {
-                "IdentityPoolId" : getReference(identityPoolId)
+                "IdentityPoolId" : getReference(AWS_PROVIDER, identityPoolId)
             } +
             attributeIfTrue(
                 "Roles",

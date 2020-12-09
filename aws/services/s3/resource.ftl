@@ -184,7 +184,7 @@
                 "Type" : collectionKey,
                 "Notification" : {
                         "Event" : event,
-                        destKey : getReference(destId, ARN_ATTRIBUTE_TYPE )
+                        destKey : getReference(AWS_PROVIDER, destId, ARN_ATTRIBUTE_TYPE )
                     } +
                     attributeIfContent(
                         "Filter",
@@ -227,7 +227,7 @@
     ]
     [#return
         {
-            "Role" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
+            "Role" : getReference(AWS_PROVIDER, roleId, ARN_ATTRIBUTE_TYPE),
             "Rules" : asArray(replicationRules)
         }
     ]
@@ -342,9 +342,9 @@
 
     [#-- Enabling logging on the audit bucket would cause an infinite loop --]
     [#if formatAccountS3Id("audit") != id ]
-        [#if getExistingReference(formatAccountS3Id("audit"), "", regionId )?has_content ]
+        [#if getExistingReference(AWS_PROVIDER, formatAccountS3Id("audit"), "", regionId )?has_content ]
             [#local loggingConfiguration = getS3LoggingConfiguration(
-                                    getExistingReference(formatAccountS3Id("audit")),
+                                    getExistingReference(AWS_PROVIDER, formatAccountS3Id("audit")),
                                     name) ]
         [/#if]
     [/#if]
@@ -488,7 +488,7 @@
         type="AWS::S3::BucketPolicy"
         properties=
             {
-                "Bucket" : (getExistingReference(bucket)?has_content)?then(getExistingReference(bucket),bucket)
+                "Bucket" : (getExistingReference(AWS_PROVIDER, bucket)?has_content)?then(getExistingReference(AWS_PROVIDER, bucket),bucket)
             } +
             getPolicyDocument(statements)
         outputs={}

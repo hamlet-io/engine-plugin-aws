@@ -174,7 +174,7 @@
         type="AWS::ElasticLoadBalancingV2::LoadBalancer"
         properties=
             {
-                "Subnets" : getSubnets(tier, networkResources),
+                "Subnets" : getSubnets(AWS_PROVIDER, tier, networkResources),
                 "Scheme" : (publicEndpoint)?then("internet-facing","internal"),
                 "Name" : shortName,
                 "LoadBalancerAttributes" : loadBalancerAttributes
@@ -203,7 +203,7 @@
         [#local protocol = port.Protocol]
     [/#if]
 
-    [#local certificateArn = getExistingReference(certificateId, ARN_ATTRIBUTE_TYPE, regionId)]
+    [#local certificateArn = getExistingReference(AWS_PROVIDER, certificateId, ARN_ATTRIBUTE_TYPE, regionId)]
     [#if certificateId?has_content && !(certificateArn?has_content)]
         [@fatal
             message="LB Certificate ARN could not be found. Check the certificate exists and is in the correct region."
@@ -222,11 +222,11 @@
             {
                 "DefaultActions" : [
                     {
-                      "TargetGroupArn" : getReference(defaultTargetGroupId),
+                      "TargetGroupArn" : getReference(AWS_PROVIDER, defaultTargetGroupId),
                       "Type" : "forward"
                     }
                 ],
-                "LoadBalancerArn" : getReference(albId),
+                "LoadBalancerArn" : getReference(AWS_PROVIDER, albId),
                 "Port" : port.Port,
                 "Protocol" : protocol
             } +
@@ -301,7 +301,7 @@
                 "HealthyThresholdCount" : destination.HealthCheck.HealthyThreshold?number,
                 "Port" : destination.Port,
                 "Protocol" : (destination.Protocol)?upper_case,
-                "VpcId": getReference(vpcId),
+                "VpcId": getReference(AWS_PROVIDER, vpcId),
                 "TargetGroupAttributes" : targetGroupAttributes
             } +
             valueIfContent(
@@ -345,7 +345,7 @@
         [
             {
                 "Type": "forward",
-                "TargetGroupArn": getReference(targetGroupId, ARN_ATTRIBUTE_TYPE)
+                "TargetGroupArn": getReference(AWS_PROVIDER, targetGroupId, ARN_ATTRIBUTE_TYPE)
             } +
             attributeIfContent("Order", order)
         ]
@@ -446,7 +446,7 @@
                 "Priority" : priority,
                 "Actions" : asArray(actions),
                 "Conditions": asArray(conditions),
-                "ListenerArn" : getReference(listenerId, ARN_ATTRIBUTE_TYPE)
+                "ListenerArn" : getReference(AWS_PROVIDER, listenerId, ARN_ATTRIBUTE_TYPE)
             }
         outputs=ALB_LISTENER_RULE_OUTPUT_MAPPINGS
         dependencies=dependencies
@@ -486,11 +486,11 @@
             } +
             multiAZ?then(
                 {
-                    "Subnets" : getSubnets(tier, networkResources),
+                    "Subnets" : getSubnets(AWS_PROVIDER, tier, networkResources),
                     "CrossZone" : true
                 },
                 {
-                    "Subnets" : [ getSubnets(tier, networkResources)[0] ]
+                    "Subnets" : [ getSubnets(AWS_PROVIDER, tier, networkResources)[0] ]
                 }
             ) +
             (logs)?then(

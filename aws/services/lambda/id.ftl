@@ -50,5 +50,5 @@
     [#return
         formatRegionalArn(
             "lambda",
-            getReference(lambdaId))]
+            getReference(AWS_PROVIDER, lambdaId))]
 [/#function]

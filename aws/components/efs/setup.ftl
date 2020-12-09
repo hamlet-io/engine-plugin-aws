@@ -132,7 +132,7 @@
             [#local zoneEfsMountTargetId   = zoneResources[zone.Id]["efsMountTarget"].Id]
             [@createEFSMountTarget
                 id=zoneEfsMountTargetId
-                subnet=getSubnets(core.Tier, networkResources, zone.Id, true, false)
+                subnet=getSubnets(AWS_PROVIDER, core.Tier, networkResources, zone.Id, true, false)
                 efsId=efsId
                 securityGroups=efsSecurityGroupId
             /]

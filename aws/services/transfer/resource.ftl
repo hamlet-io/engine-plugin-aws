@@ -40,7 +40,7 @@
     [#return
         {
             "SubnetIds" : subnets,
-            "VpcId" : getReference(vpcId)
+            "VpcId" : getReference(AWS_PROVIDER, vpcId)
         } +
         attributeIfContent(
             "AddressAllocationIds",
@@ -67,7 +67,7 @@
                 "EndpointDetails" : vpcDetails,
                 "EndpointType" : "VPC",
                 "IdentityProviderType" : "SERVICE_MANAGED",
-                "LoggingRole" : getReference(logRoleId, ARN_ATTRIBUTE_TYPE),
+                "LoggingRole" : getReference(AWS_PROVIDER, logRoleId, ARN_ATTRIBUTE_TYPE),
                 "Protocols" : asArray( protocols )?map( protocol -> protocol?upper_case),
                 "SecurityPolicyName" : securityPolicy
             } +
@@ -113,7 +113,7 @@
             "HomeDirectoryMappings" : homeDirectoryMappings,
             "HomeDirectoryType" : "LOGICAL",
             "Role" : getArn(roleId),
-            "ServerId" : getReference(transferServerId, NAME_ATTRIBUTE_TYPE),
+            "ServerId" : getReference(AWS_PROVIDER, transferServerId, NAME_ATTRIBUTE_TYPE),
             "SshPublicKeys" : asArray(sshPublicKeys)
         } +
         attributeIfContent(

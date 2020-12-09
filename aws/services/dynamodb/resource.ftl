@@ -171,7 +171,7 @@
                 "SSESpecification",
                 encrypted,
                 {
-                    "KMSMasterKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE),
+                    "KMSMasterKeyId" : getReference(AWS_PROVIDER, kmsKeyId, ARN_ATTRIBUTE_TYPE),
                     "SSEEnabled" : true,
                     "SSEType" : "KMS"
                 }

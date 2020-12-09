@@ -164,7 +164,7 @@
 
     [#local localDependencies = [] ]
     [#list asArray(dependencies) as resourceId]
-        [#if getReference(resourceId)?is_hash]
+        [#if getReference(AWS_PROVIDER, resourceId)?is_hash]
             [#local localDependencies += [resourceId] ]
         [/#if]
     [/#list]

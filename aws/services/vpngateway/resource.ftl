@@ -52,8 +52,8 @@
         type="AWS::EC2::VPCGatewayAttachment"
         properties=
             {
-                "VpnGatewayId" : getReference(vpnGatewayId),
-                "VpcId" : getReference(vpcId)
+                "VpnGatewayId" : getReference(AWS_PROVIDER, vpnGatewayId),
+                "VpcId" : getReference(AWS_PROVIDER, vpcId)
             }
         outputs={}
     /]
@@ -101,7 +101,7 @@
         type="AWS::EC2::VPNConnectionRoute"
         properties={
             "DestinationCidrBlock" : destinationCidr,
-            "VpnConnectionId" : getReference(vpnConnectionId)
+            "VpnConnectionId" : getReference(AWS_PROVIDER, vpnConnectionId)
         }
     /]
 [/#macro]
@@ -117,7 +117,7 @@
         type="AWS::EC2::VPNGatewayRoutePropagation"
         properties={
             "RouteTableIds" : getReferences(routeTableIds),
-            "VpnGatewayId" : getReference(vpnGatewayId)
+            "VpnGatewayId" : getReference(AWS_PROVIDER, vpnGatewayId)
         }
     /]
 [/#macro]

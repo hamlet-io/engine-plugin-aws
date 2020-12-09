@@ -115,8 +115,8 @@
                 "/",
                 [
                     "service",
-                    getReference(clusterId),
-                    getReference(serviceId, NAME_ATTRIBUTE_TYPE)
+                    getReference(AWS_PROVIDER, clusterId),
+                    getReference(AWS_PROVIDER, serviceId, NAME_ATTRIBUTE_TYPE)
                 ]
             ]
         }
@@ -130,7 +130,7 @@
                 ":",
                 [
                     "cluster",
-                    getReference(clusterId)
+                    getReference(AWS_PROVIDER, clusterId)
                 ]
             ]
         }
@@ -288,7 +288,7 @@
         type="AWS::ApplicationAutoScaling::ScalingPolicy"
         properties={
             "PolicyName" : name,
-            "ScalingTargetId" : getReference(scalingTargetId)
+            "ScalingTargetId" : getReference(AWS_PROVIDER, scalingTargetId)
         } +
         (policyType?lower_case == "tracked")?then(
             {
@@ -353,7 +353,7 @@
         id=id
         type="AWS::AutoScaling::ScheduledAction"
         properties= {
-            "AutoScalingGroupName" : getReference(autoScaleGroupId),
+            "AutoScalingGroupName" : getReference(AWS_PROVIDER, autoScaleGroupId),
             "DesiredCapacity" : processorCount.DesiredCount,
             "MaxSize" : processorCount.MaxCount,
             "MinSize" : processorCount.MinCount,
@@ -397,7 +397,7 @@
         id=id
         type="AWS::AutoScaling::ScalingPolicy"
         properties= {
-            "AutoScalingGroupName" : getReference(autoScaleGroupId)
+            "AutoScalingGroupName" : getReference(AWS_PROVIDER, autoScaleGroupId)
         } +
         (policyType?lower_case == "tracked")?then(
             {

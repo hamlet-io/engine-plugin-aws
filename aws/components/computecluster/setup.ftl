@@ -33,8 +33,8 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"])]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
@@ -265,7 +265,7 @@
                     [#case "classic" ]
                         [#local lbId = linkTargetAttributes["LB"] ]
                         [#-- Classic ELB's register the instance so we only need 1 registration --]
-                        [#local loadBalancers += [ getExistingReference(lbId) ]]
+                        [#local loadBalancers += [ getExistingReference(AWS_PROVIDER, lbId) ]]
                         [#break]
                     [/#switch]
                 [#break]
@@ -385,7 +385,7 @@
 
                         [#local monitoredResource = monitoredResources[ (monitoredResources?keys)[0]] ]
 
-                        [#local metricDimensions = getResourceMetricDimensions(monitoredResource, scalingTargetResources )]
+                        [#local metricDimensions = getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, scalingTargetResources )]
                         [#local metricName = getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName)]
                         [#local metricNamespace = getResourceMetricNamespace(monitoredResource.Type)]
 
@@ -404,7 +404,7 @@
                                 severity="Scaling"
                                 resourceName=scalingTargetCore.FullName
                                 alertName=scalingMetricTrigger.Name
-                                actions=getReference( scalingPolicyId )
+                                actions=getReference(AWS_PROVIDER, scalingPolicyId )
                                 reportOK=false
                                 metric=metricName
                                 namespace=metricNamespace
@@ -443,7 +443,7 @@
                             [/#if]
 
                             [#local metricSpecification = getAutoScalingCustomTrackMetric(
-                                                            getResourceMetricDimensions(monitoredResource, scalingTargetResources ),
+                                                            getResourceMetricDimensions(AWS_PROVIDER, monitoredResource, scalingTargetResources ),
                                                             getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName),
                                                             getResourceMetricNamespace(monitoredResource.Type),
                                                             scalingMetricTrigger.Statistic
@@ -521,7 +521,7 @@
             properties=
                 {
                     "Path" : "/",
-                    "Roles" : [getReference(computeClusterRoleId)]
+                    "Roles" : [getReference(AWS_PROVIDER, computeClusterRoleId)]
                 }
             outputs={}
         /]

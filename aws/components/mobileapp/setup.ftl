@@ -14,8 +14,8 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-    [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
-    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
+    [#local dataBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["AppData"])]
+    [#local operationsBucket = getExistingReference(AWS_PROVIDER, baselineComponentIds["OpsData"]) ]
 
     [#local mobileAppId = resources["mobileapp"].Id]
     [#local configFilePath = resources["mobileapp"].ConfigFilePath ]

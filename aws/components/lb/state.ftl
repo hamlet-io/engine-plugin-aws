@@ -4,7 +4,7 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution ]
 
-    [#if getExistingReference(formatResourceId(AWS_ALB_RESOURCE_TYPE, core.Id) )?has_content ]
+    [#if getExistingReference(AWS_PROVIDER, formatResourceId(AWS_ALB_RESOURCE_TYPE, core.Id) )?has_content ]
         [#local id = formatResourceId(AWS_ALB_RESOURCE_TYPE, core.Id) ]
     [#else]
         [#local id = formatResourceId(AWS_LB_RESOURCE_TYPE, core.Id) ]
@@ -83,7 +83,7 @@
             attributeIfContent("wafacl", wafResources) +
             attributeIfContent("wafLogStreaming", wafLogStreamResources),
             "Attributes" : {
-                "INTERNAL_FQDN" : getExistingReference(id, DNS_ATTRIBUTE_TYPE)
+                "INTERNAL_FQDN" : getExistingReference(AWS_PROVIDER, id, DNS_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Inbound" : {},
@@ -176,10 +176,10 @@
 
     [#switch parentSolution.Engine ]
         [#case "application" ]
-            [#local targetGroupArn = getExistingReference(targetGroupId, ARN_ATTRIBUTE_TYPE)]
+            [#local targetGroupArn = getExistingReference(AWS_PROVIDER, targetGroupId, ARN_ATTRIBUTE_TYPE)]
             [#break]
         [#case "network" ]
-            [#local targetGroupArn = getExistingReference(defaultTargetGroupId, ARN_ATTRIBUTE_TYPE)]
+            [#local targetGroupArn = getExistingReference(AWS_PROVIDER, defaultTargetGroupId, ARN_ATTRIBUTE_TYPE)]
             [#break]
         [#default]
             [#local targetGroupArn = ""]
