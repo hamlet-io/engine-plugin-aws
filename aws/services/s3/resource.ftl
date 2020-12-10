@@ -251,7 +251,7 @@
 
     [#local crossAccountReplication = false ]
     [#if replicationDestinationAccountId?has_content
-            && replicationDestinationAccountId != accountObject.AWSId ]
+            && replicationDestinationAccountId != accountObject.ProviderId ]
         [#local crossAccountReplication = true ]
     [/#if]
 

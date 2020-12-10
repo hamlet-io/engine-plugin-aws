@@ -106,7 +106,7 @@
                                 regionObject.Partition,
                                 "sns",
                                 region,
-                                accountObject.AWSId,
+                                accountObject.ProviderId,
                                 "smsPlaceHolder"
                             ),
                             getExistingReference(AWS_PROVIDER, id, ARN_ATTRIBUTE_TYPE)

@@ -99,7 +99,7 @@
 [#-- Include a reference to a resource --]
 [#-- Allows resources to share a template or be separated --]
 [#-- Note that if separate, creation order becomes important --]
-[#function migrateToResourceId resourceId legacyIds=[] inRegion="" inDeploymentUnit="" inAccount=(accountObject.AWSId)!""]
+[#function migrateToResourceId resourceId legacyIds=[] inRegion="" inDeploymentUnit="" inAccount=(accountObject.ProviderId)!""]
 
     [#list asArray(legacyIds) as legacyId]
         [#if getExistingReference(AWS_PROVIDER, legacyId, "", inRegion, inDeploymentUnit, inAccount)?has_content]

@@ -804,7 +804,7 @@
                             "\"" + core.Id + "\"" + " " +
                             "\"" + core.Name + "\"" + " " +
                             "\"" + accountId + "\"" + " " +
-                            "\"" + accountObject.AWSId + "\"" + " " +
+                            "\"" + accountObject.ProviderId + "\"" + " " +
                             "\"" + region + "\"" + " || return $?",
                     "#"
 
@@ -829,7 +829,7 @@
             [#if openapiIntegrations?is_hash]
                 [#local openapiContext =
                     {
-                        "Account" : accountObject.AWSId,
+                        "Account" : accountObject.ProviderId,
                         "Region" : region,
                         "CognitoPools" : cognitoPools,
                         "LambdaAuthorizers" : lambdaAuthorizers,
