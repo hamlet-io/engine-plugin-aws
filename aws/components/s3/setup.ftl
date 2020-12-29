@@ -272,7 +272,7 @@
             isPartOfCurrentDeploymentUnit(roleId)]
         [#local linkPolicies =
             getLinkTargetsOutboundRoles(links) +
-            replicateEncryptedData?then(
+            (replicationEnabled && replicateEncryptedData)?then(
                 s3EncryptionReadPermission(
                     kmsKeyId,
                     s3Name,
