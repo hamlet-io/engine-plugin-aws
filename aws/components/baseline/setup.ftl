@@ -423,6 +423,22 @@
                                         "",
                                         true,
                                         "Allow CloudFront Flow Logs to use the key"
+                                    ),
+                                    getPolicyStatement(
+                                        [
+                                            "kms:Encrypt",
+                                            "kms:Decrypt",
+                                            "kms:ReEncrypt",
+                                            "kms:GenerateDataKey",
+                                            "kms:DescribeKey"
+                                        ],
+                                        "*"
+                                        {
+                                            "Service" : "ses.amazonaws.com"
+                                        },
+                                        "",
+                                        true,
+                                        "Allow SES to use the key"
                                     )
                                 ]
                             outputId=cmkId

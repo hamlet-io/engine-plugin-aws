@@ -180,44 +180,86 @@
             [#local linkTargetConfiguration = linkTarget.Configuration ]
             [#local linkTargetResources = linkTarget.State.Resources ]
             [#local linkTargetAttributes = linkTarget.State.Attributes ]
+            [#local linkTargetRoles = linkTarget.State.Roles ]
             [#local linkDirection = linkTarget.Direction ]
+            [#local linkRole = linkTarget.Role]
 
             [#switch linkTargetCore.Type]
+                [#case MTA_RULE_COMPONENT_TYPE ]
+                    [#if (linkDirection == "inbound") && (linkRole == "save") ]
+                        [#local policyStatements +=
+                            s3WritePermission(
+                                s3Name,
+                                linkTargetRoles.Inbound[linkRole].Prefix!"",
+                                "*",
+                                {"Service" : linkTargetRoles.Inbound[linkRole].Principal!""},
+                                {
+                                    "StringEquals" : {
+                                        "aws:Referer" : linkTargetRoles.Inbound[linkRole].Referer!""
+                                    }
+                                }
+                            )
+                        ]
+                    [/#if]
+                    [#break]
+
                 [#case CDN_ROUTE_COMPONENT_TYPE ]
 
                     [#local originPath = (linkTargetConfiguration.Solution.Origin.BasePath)?remove_ending("/") ]
                     [#if linkDirection == "inbound" ]
                         [#local policyStatements +=
-                                s3ReadPermission(
-                                    s3Name,
-                                    originPath,
-                                    "*",
-                                    {
-                                        "CanonicalUser": cfAccessId
-                                    }
-                                ) +
-                                s3ListPermission(
-                                    s3Name,
-                                    originPath,
-                                    "*",
-                                    {
-                                        "CanonicalUser": cfAccessId
-                                    }
-                                )
+                            s3ReadPermission(
+                                s3Name,
+                                originPath,
+                                "*",
+                                {
+                                    "CanonicalUser": cfAccessId
+                                }
+                            ) +
+                            s3ListPermission(
+                                s3Name,
+                                originPath,
+                                "*",
+                                {
+                                    "CanonicalUser": cfAccessId
+                                }
+                            )
                         ]
                     [/#if]
                     [#break]
 
 
                 [#case EXTERNALSERVICE_COMPONENT_TYPE ]
-                    [#if linkTarget.Role  == "replicadestination" ]
-                        [#local replicationDestinationAccountId = linkTargetAttributes["ACCOUNT_ID"]!"" ]
-                        [#local replicationExternalPolicy +=   s3ReplicaDestinationPermission( linkTargetAttributes["ARN"] ) ]
-                    [/#if]
+                    [#switch linkRole ]
+                        [#case "replicadestination" ]
+                            [#local replicationDestinationAccountId = linkTargetAttributes["ACCOUNT_ID"]!"" ]
+                            [#local replicationExternalPolicy +=   s3ReplicaDestinationPermission( linkTargetAttributes["ARN"] ) ]
+                            [#break]
+
+                        [#case "save" ]
+                            [#if linkDirection == "inbound" ]
+                                [#local policyStatements +=
+                                    s3WritePermission(
+                                        s3Name,
+                                        linkTargetAttributes["PREFIX"]!"",
+                                        "*",
+                                        {"Service" : linkTargetAttributes["SERVICE"]!""},
+                                        {
+                                            "StringEquals" : {
+                                                "aws:Referer" : linkTargetAttributes["REFERER"]!""
+                                            }
+                                        }
+                                    )
+                                ]
+                            [/#if]
+                            [#break]
+                    [/#switch]
+                    [#break]
+
 
                 [#case S3_COMPONENT_TYPE ]
-                    [#switch linkTarget.Role ]
-                        [#case  "replicadestination" ]
+                    [#switch linkRole ]
+                        [#case "replicadestination" ]
                             [#local replicationEnabled = true]
                             [#local versioningEnabled = true]
 
