@@ -16,6 +16,7 @@
         }
     ]
 
+    [#-- The certificate is needed to know the email domain --]
     [#if ! isPresent(solution.Certificate) ]
         [@fatal
             message="MTA Certificate must be configured to determine the email domain"
@@ -52,16 +53,11 @@
             [#break]
 
         [#case "receive" ]
+            [#-- The account level SES receive configuration needs to be in the same region as the inbound mta --]
             [#assign componentState +=
                 {
-                    "Resources" : {
-                        "ruleset" : {
-                            "Id" : formatResourceId(AWS_SES_RECEIPT_RULESET_RESOURCE_TYPE, core.Id),
-                            "Name" : formatComponentFullName(core.Tier, core.Component, occurrence),
-                            "Type" : AWS_SES_RECEIPT_RULESET_RESOURCE_TYPE
-                        }
-                    },
                     "Attributes" : {
+                        "RULESET" : getExistingReference(formatSESReceiptRuleSetId(), NAME_ATTRIBUTE_TYPE, regionId),
                         "REGION" : regionId
                     }
                 }

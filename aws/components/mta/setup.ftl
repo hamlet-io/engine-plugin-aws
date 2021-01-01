@@ -8,10 +8,18 @@
 
     [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
-    [#local resources = occurrence.State.Resources ]
+    [#local attributes = occurrence.State.Attributes ]
 
     [#if solution.Direction != "receive"]
         [#-- Only support for receipt rules right now --]
+        [#return]
+    [/#if]
+
+    [#local ruleSetName = attributes["RULESET"] ]
+    [#if ! ruleSetName?has_content ]
+        [@fatal
+            message="SES account level configuration has not been completed in the current region. Run the account level sesruleset unit."
+        /]
         [#return]
     [/#if]
 
@@ -24,37 +32,7 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local kmsKeyId = baselineComponentIds["Encryption"]!""]
 
-    [#local ruleSetId = resources["ruleset"].Id ]
-    [#local ruleSetName = resources["ruleset"].Name ]
-
-    [#-- First add any required IP Address filtering --]
-    [#if getGroupCIDRs(solution.IPAddressGroups, true, occurrence, true)]
-        [#list (getGroupCIDRs(solution.IPAddressGroups, true, occurrence))?filter(cidr -> cidr?has_content) as cidr ]
-            [@createSESReceiptIPFilter
-                id=formatResourceId(AWS_SES_RECEIPT_FILTER_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(cidr,"X"))
-                name=formatComponentFullName(core.Tier, core.Component, occurrence,replaceAlphaNumericOnly(cidr,"-"))
-                cidr=cidr
-            /]
-        [/#list]
-
-        [#-- Add a default block all rule --]
-        [@createSESReceiptIPFilter
-                id=formatResourceId(AWS_SES_RECEIPT_FILTER_RESOURCE_TYPE, core.Id, "0X0X0X0X0")
-                name=formatComponentFullName(core.Tier, core.Component, occurrence, "0-0-0-0-0")
-                cidr="0.0.0.0/0"
-                allow=false
-            /]
-    [/#if]
-
-    [#if deploymentSubsetRequired(MTA_COMPONENT_TYPE, true) ]
-        [#-- Create a ruleset --]
-        [@createSESReceiptRuleSet
-            id=ruleSetId
-            name=ruleSetName
-        /]
-    [/#if]
-
-    [#local lastRuleName = ""]
+    [#local lastRuleName = getOccurrenceSettingValue(occurrence, ["AFTER","RULE","NAME"], true)]
 
     [#-- Process the rules according to the provided order --]
     [#list (occurrence.Occurrences![])?sort_by(['Configuration', 'Solution', 'Order']) as subOccurrence]
