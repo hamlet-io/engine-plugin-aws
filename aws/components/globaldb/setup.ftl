@@ -21,14 +21,43 @@
 
     [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
-    [#local dynamoTableKeys = getDynamoDbTableKey(tableKey , "hash")]
-    [#local dynamoTableKeyAttributes = getDynamoDbTableAttribute( tableKey, STRING_TYPE)]
+    [#-- attribute type overrides --]
+    [#local attributeTypes = solution.KeyTypes!{} ]
 
+    [#local attributes = {} ]
+
+    [#-- Configure the primary key --]
+    [#local dynamoTableKeys = getDynamoDbTableKey(tableKey , "hash")]
+    [#local attributes += { tableKey : (attributeTypes[tableKey].Type)!STRING_TYPE } ]
+
+    [#-- Configure the secondary key --]
     [#if tableSortKey?has_content ]
         [#local dynamoTableKeys += getDynamoDbTableKey(tableSortKey, "range" )]
-        [#local dynamoTableKeyAttributes += getDynamoDbTableAttribute(tableSortKey, STRING_TYPE)]
+        [#local attributes += { tableSortKey : (attributeTypes[tableSortKey].Type)!STRING_TYPE } ]
     [/#if]
 
+    [#-- Global Secondary Indexes --]
+    [#local globalSecondaryIndexes = [] ]
+    [#list solution.SecondaryIndexes!{} as key,value]
+        [#local globalSecondaryIndexes +=
+            getGlobalSecondaryIndex(
+                value.Name,
+                value.Keys,
+                value.KeyTypes,
+                value.Capacity.Write,
+                value.Capacity.Read
+            ) ]
+        [#-- pick up any key attribute types as well --]
+        [#list value.Keys as key]
+            [#local attributes += { key : (attributeTypes[key].Type)!STRING_TYPE } ]
+        [/#list]
+    [/#list]
+
+    [#-- Format the attributes --]
+    [#local dynamoTableKeyAttributes = [] ]
+    [#list attributes as key, value]
+        [#local dynamoTableKeyAttributes += getDynamoDbTableAttribute(key, value)]
+    [/#list]
 
     [#if deploymentSubsetRequired(GLOBALDB_COMPONENT_TYPE, true) ]
         [@createDynamoDbTable
@@ -43,6 +72,7 @@
             ttlKey=solution.TTLKey
             kmsKeyId=kmsKeyId
             keys=dynamoTableKeys
+            globalSecondaryIndexes=globalSecondaryIndexes
         /]
     [/#if]
 [/#macro]

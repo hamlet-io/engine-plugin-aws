@@ -105,6 +105,48 @@
     ]
 [/#function]
 
+[#function getProvisionedThroughput writeCapacity readCapacity]
+    [#return
+        valueIfTrue(
+            {
+                "ReadCapacityUnits" : readCapacity,
+                "WriteCapacityUnits" : writeCapacity
+            },
+            (writeCapacity != 0) && (readCapacity != 0)
+        )
+    ]
+[/#function]
+
+[#function getIndexProjection type keys=[] ]
+    [#return
+        {
+            "ProjectionType" : type?upper_case
+        } +
+        attributeIfContent("NonKeyAttributes", keys)
+    ]
+[/#function]
+
+[#function getGlobalSecondaryIndex name keys keyTypes=[] writeCapacity=0 readCapacity=0 projectionType="all"]
+    [#local keySchema = [] ]
+    [#list keys as key]
+        [#-- type default is hash, then range --]
+        [#local keySchema +=
+            getDynamoDbTableKey( key, keyTypes[key?index]!(valueIfTrue("hash",key?index == 0, "hash")) ) ]
+    [/#list]
+
+    [#local provisionedThroughput = getProvisionedThroughput(writeCapacity, readCapacity) ]
+    [#return
+        [
+            {
+                "IndexName" : name,
+                "KeySchema" : keySchema,
+                "Projection" : getIndexProjection(projectionType)
+            } +
+            attributeIfContent("ProvisionedThroughput", provisionedThroughput)
+        ]
+    ]
+[/#function]
+
 [#macro createDynamoDbTable id
         backupEnabled
         billingMode
@@ -119,6 +161,7 @@
         streamViewType=""
         writeCapacity=1
         readCapacity=1
+        globalSecondaryIndexes=[]
 ]
 
     [#switch billingMode?lower_case ]
@@ -183,6 +226,10 @@
                 "AttributeName" : ttlKey,
                 "Enabled" : true
                 }
+            ) +
+            attributeIfContent(
+                "GlobalSecondaryIndexes",
+                globalSecondaryIndexes
             )
         outputs=DYNAMODB_OUTPUT_MAPPINGS +
                     attributeIfTrue(
