@@ -162,6 +162,7 @@
                                                         publicIPWhiteList)]
                         [#break]
                 [/#switch]
+
             [/#if]
         [/#list]
     [/#list]
@@ -310,6 +311,16 @@
                                             )]
     [/#if]
 
+    [#local contextLinks = getLinkTargets(occurrence) ]
+    [#local _context =
+        {
+            "Links" : contextLinks,
+            "Policy" : []
+        }
+    ]
+    [#local _context = invokeExtensions( occurrence, _context )]
+
+
     [#if deploymentSubsetRequired("iam", true) &&
             isPartOfCurrentDeploymentUnit(roleId)]
         [#local linkPolicies =
@@ -354,6 +365,9 @@
 
     [#if deploymentSubsetRequired("s3", true)]
 
+        [#if _context.Policy?has_content ]
+            [#local policyStatements += _context.Policy /]
+        [/#if]
         [#if policyStatements?has_content ]
             [@createBucketPolicy
                 id=bucketPolicyId
