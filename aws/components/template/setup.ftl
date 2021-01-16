@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_template_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=[ "prologue", "template" ] /]
+    [@addDefaultGenerationContract subsets=[ "pregeneration", "prologue", "template" ] /]
 [/#macro]
 
 [#macro aws_template_cf_deployment_application occurrence ]
@@ -31,6 +31,32 @@
                                     solution.RootFile
                                 )]
 
+    [#local buildReference = getOccurrenceBuildReference(occurrence)]
+    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
+
+    [#local imageSource = solution.Image.Source]
+    [#if imageSource == "url" ]
+        [#local buildUnit = occurrence.Core.Name ]
+    [/#if]
+
+    [#if deploymentSubsetRequired("pregeneration", false) && imageSource == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=
+                getImageFromUrlScript(
+                    regionId,
+                    productName,
+                    environmentName,
+                    segmentName,
+                    occurrence,
+                    solution.Image.UrlSource.Url,
+                    "scripts",
+                    "scripts.zip",
+                    solution.Image.UrlSource.ImageHash,
+                    true
+                )
+        /]
+    [/#if]
+
     [#if deploymentSubsetRequired("prologue", false) ]
         [@addToDefaultBashScriptOutput
             content=
@@ -40,7 +66,8 @@
                     "scripts",
                     productName,
                     occurrence,
-                    "scripts.zip"
+                    "scripts.zip",
+                    buildUnit
                 ) +
                 syncFilesToBucketScript(
                     "cfnTemplates",
