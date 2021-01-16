@@ -17,39 +17,42 @@
         [#local fqdn = "${getExistingReference(fileServerId)}.server.transfer.${regionId}.amazonaws.com"]
     [/#if]
 
-    [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
-    [#local networkLink = occurrenceNetwork.Link!{} ]
-
-    [#local routeTableLinkTarget = getLinkTarget(occurrence, networkLink + { "RouteTable" : occurrenceNetwork.RouteTable })]
-    [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
-    [#local publicRouteTable = routeTableConfiguration.Public ]
-
     [#local securityGroupId = formatDependentSecurityGroupId(fileServerId) ]
     [#local availablePorts = [ "ssh" ]]
 
     [#local zoneResources = {}]
 
-    [#if publicRouteTable ]
-        [#if multiAZ!false ]
-            [#local resourceZones = zones ]
-        [#else]
-            [#local resourceZones = [ zones[0] ]]
-        [/#if]
+    [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
+    [#local networkLink = occurrenceNetwork.Link!{} ]
+    [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
+    [#local routeTableLinkTarget = getLinkTarget(occurrence, networkLink + { "RouteTable" : occurrenceNetwork.RouteTable })]
+
+    [#if routeTableLinkTarget?has_content ]
+        [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
+        [#local publicRouteTable = routeTableConfiguration.Public ]
+
+        [#if publicRouteTable ]
+            [#if multiAZ!false ]
+                [#local resourceZones = zones ]
+            [#else]
+                [#local resourceZones = [ zones[0] ]]
+            [/#if]
 
 
-        [#list resourceZones as zone ]
-            [#local eipId = formatResourceId(AWS_EIP_RESOURCE_TYPE, core.Id, zone.Id) ]
-            [#local zoneResources = mergeObjects( zoneResources,
-                    {
-                        zone.Id : {
-                            "eip" : {
-                                "Id" : eipId,
-                                "Name" : formatName(core.FullName, zone.Name),
-                                "Type" : AWS_EIP_RESOURCE_TYPE
+            [#list resourceZones as zone ]
+                [#local eipId = formatResourceId(AWS_EIP_RESOURCE_TYPE, core.Id, zone.Id) ]
+                [#local zoneResources = mergeObjects( zoneResources,
+                        {
+                            zone.Id : {
+                                "eip" : {
+                                    "Id" : eipId,
+                                    "Name" : formatName(core.FullName, zone.Name),
+                                    "Type" : AWS_EIP_RESOURCE_TYPE
+                                }
                             }
-                        }
-                    } )]
-        [/#list]
+                        } )]
+            [/#list]
+        [/#if]
     [/#if]
 
     [#assign componentState =
