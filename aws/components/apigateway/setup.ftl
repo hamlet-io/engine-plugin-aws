@@ -562,7 +562,7 @@
                             reportOK=alert.ReportOk
                             unit=alert.Unit
                             missingData=alert.MissingData
-                            dimensions=getMetricDimensions(alert, stageVariables, monitoredResource, resources)
+                            dimensions=getMetricDimensions(alert, monitoredResource, resources, stageVariables)
                         /]
                     [#break]
                 [/#switch]

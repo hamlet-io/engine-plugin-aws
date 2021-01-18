@@ -506,8 +506,8 @@
             [#continue]
         [/#if]
 
-        [@debug message="Rule" context=rule enabled=true /]
-        [#list rule.Destinations.Links?values as link ]
+        [@debug message="Rule" context=rule enabled=false /]
+        [#list (rule.Destinations.Links?values)!{} as link ]
 
             [#if link?is_hash]
                 [#local linkTarget = getLinkTarget(occurrence, link ) ]
