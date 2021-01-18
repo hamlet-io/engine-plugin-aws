@@ -5,6 +5,7 @@
     attributes=[
         {
             "Names": "Engine",
+            "Types" : STRING_TYPE,
             "Values" : [ "secretsmanager" ],
             "Default" : "aws:secretsmanager"
         }

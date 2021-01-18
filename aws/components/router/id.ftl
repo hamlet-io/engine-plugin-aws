@@ -8,19 +8,19 @@
             "Children" : [
                 {
                     "Names" : "Enabled",
-                    "Type" : BOOLEAN_TYPE,
+                    "Types" : BOOLEAN_TYPE,
                     "Default" : false
                 },
                 {
                     "Names" : "AccountPrincipals",
                     "Description" : "List of AWS Account Ids or Organisation ARNS to share the resource with",
-                    "Type": ARRAY_OF_STRING_TYPE,
+                    "Types": ARRAY_OF_STRING_TYPE,
                     "Default" : []
                 },
                 {
                     "Names" : "AllowExternalPrincipals",
                     "Description" : "Allow resources to be shared outside of the Organisation",
-                    "Type" : BOOLEAN_TYPE,
+                    "Types" : BOOLEAN_TYPE,
                     "Default" : false
                 }
             ]

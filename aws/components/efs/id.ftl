@@ -5,7 +5,7 @@
         {
             "Names" : "IAMRequired",
             "Description" : "Require IAM Access to EFS",
-            "Type" : BOOLEAN_TYPE,
+            "Types" : BOOLEAN_TYPE,
             "Default" : false
         }
     ]

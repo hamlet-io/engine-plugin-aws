@@ -13,13 +13,13 @@
                 {
                     "Names" : "aws:KinesisFirehose",
                     "Description" : "Send Access logs to a KinesisFirehose. By default, the Firehose destination is the OpsData DataBucket, but can be overwritten by specifying a DestinationLink.",
-                    "Type" : BOOLEAN_TYPE,
+                    "Types" : BOOLEAN_TYPE,
                     "Default" : false
                 },
                 {
                     "Names" : "aws:KeepLogGroup",
                     "Description" : "Prevent the destruction of existing LogGroups when enabling KinesisFirehose.",
-                    "Type" : BOOLEAN_TYPE,
+                    "Types" : BOOLEAN_TYPE,
                     "Default" : true
                 }
             ]

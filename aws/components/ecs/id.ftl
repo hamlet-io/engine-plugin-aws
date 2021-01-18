@@ -23,7 +23,7 @@
         {
             "Names" : "FargatePlatform",
             "Description" : "The version of the fargate platform to use",
-            "Type" : STRING_TYPE,
+            "Types" : STRING_TYPE,
             "Default" : "LATEST"
         }
     ]
@@ -38,7 +38,7 @@
         {
             "Names" : "FargatePlatform",
             "Description" : "The version of the fargate platform to use",
-            "Type" : STRING_TYPE,
+            "Types" : STRING_TYPE,
             "Default" : "LATEST"
         }
     ]

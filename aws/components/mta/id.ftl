@@ -17,17 +17,17 @@
         {
             "Names" : "Prefix",
             "Description" : "Prefix when saving to an S3 bucket",
-            "Type" : STRING_TYPE,
+            "Types" : STRING_TYPE,
             "Default" : ""
         },
         {
             "Names" : "Encryption",
             "Description" : "Details of message encryption",
-            "Type" : STRING_TYPE,
+            "Types" : STRING_TYPE,
             "Children" : [
                 {
                     "Names" : "Enabled",
-                    "Type" : BOOLEAN_TYPE,
+                    "Types" : BOOLEAN_TYPE,
                     "Default" : false
                 }
             ]

@@ -5,7 +5,7 @@
         {
             "Names" : "WAFLogFeed",
             "Description" : "Feed is intended for use with WAF. Enforces a strict naming convention required by the provider.",
-            "Type" : BOOLEAN_TYPE,
+            "Types" : BOOLEAN_TYPE,
             "Default" : false
         }
     ]
