@@ -1,5 +1,18 @@
 [#ftl]
 
+[#assign metricAttributes +=
+    {
+        AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE : {
+            "Namespace" : "AWS/VPN",
+            "Dimensions" : {
+                "VpnId" : {
+                    "Output" : ""
+                }
+            }
+        }
+    }
+]
+
 [#macro createVPNCustomerGateway
             id
             name

@@ -24,13 +24,44 @@
             [#continue]
         [/#if]
 
+        [#list solution.Alerts?values as alert ]
+
+            [#local monitoredResources = getMonitoredResources(core.Id, resources, alert.Resource)]
+            [#list monitoredResources as name,monitoredResource ]
+
+                [@debug message="Monitored resource" context=monitoredResource enabled=false /]
+
+                [#switch alert.Comparison ]
+                    [#case "Threshold" ]
+                        [@createAlarm
+                            id=formatDependentAlarmId(monitoredResource.Id, alert.Id )
+                            severity=alert.Severity
+                            resourceName=core.FullName
+                            alertName=alert.Name
+                            actions=getCWAlertActions(occurrence, solution.Profiles.Alert, alert.Severity )
+                            metric=getMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
+                            namespace=getResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
+                            description=alert.Description!alert.Name
+                            threshold=alert.Threshold
+                            statistic=alert.Statistic
+                            evaluationPeriods=alert.Periods
+                            period=alert.Time
+                            operator=alert.Operator
+                            reportOK=alert.ReportOk
+                            unit=alert.Unit
+                            missingData=alert.MissingData
+                            dimensions=getMetricDimensions(alert, monitoredResource, resources)
+                        /]
+                    [#break]
+                [/#switch]
+            [/#list]
+        [/#list]
+
+
         [#switch solution.Engine ]
             [#case "SiteToSite" ]
                 [#local customerGatewayId = resources["customerGateway"].Id ]
                 [#local customerGatewayName = resources["customerGateway"].Name ]
-
-                [#local vpnGatewayId = resources["vpnConnection"].Id ]
-                [#local vpnGatewayName = resources["vpnConnection"].Name ]
 
                 [#local vpnPublicIP = (solution.SiteToSite.PublicIP)!"" ]
 
@@ -55,7 +86,7 @@
                 [#break]
         [/#switch]
 
-        [#list solution.Links?values as link]
+        [#list solution.Links as id,link]
             [#if link?is_hash]
 
                 [#local linkTarget = getLinkTarget(occurrence, link) ]
@@ -77,11 +108,8 @@
                         [#switch solution.Engine ]
                             [#case "SiteToSite" ]
 
-                                [#local vpnConnectionId = formatResourceId(
-                                            AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE,
-                                            core.Id,
-                                            linkTarget.Core.Id
-                                        )]
+                                [#local vpnConnectionId = resources["VpnConnections"][id].Id ]
+                                [#local vpnConnectionName = resources["VpnConnections"][id].Name ]
 
                                 [#local transitGateway = getReference( linkTargetResources["transitGateway"].Id ) ]
                                 [#local transitGatewayRouteTable = getReference( linkTargetResources["routeTable"].Id )]
@@ -90,7 +118,7 @@
                                 [#if deploymentSubsetRequired(EXTERNALNETWORK_COMPONENT_TYPE, true)]
                                     [@createVPNConnection
                                         id=vpnConnectionId
-                                        name=formatName(core.FullName, linkTargetCore.Name)
+                                        name=vpnConnectionName
                                         staticRoutesOnly=( ! parentSolution.BGP.Enabled )
                                         customerGateway=getReference(customerGatewayId)
                                         transitGateway=transitGateway
