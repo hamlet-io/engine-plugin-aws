@@ -369,9 +369,22 @@
             [#local authProviderEngine = subSolution.Engine]
             [#local settingsPrefix = subSolution.SettingsPrefix?upper_case ]
 
-            [#local linkTargets = getLinkTargets(subOccurrence) ]
-            [#local baselineLinks = getBaselineLinks(subOccurrence, [] )]
-            [#local environment = defaultEnvironment( occurrence, linkTargets,  baselineLinks )]
+            [#local contextLinks = getLinkTargets(subOccurrence) ]
+            [#local _context =
+                {
+                    "Links" : contextLinks,
+                    "DefaultCoreVariables" : false,
+                    "DefaultEnvironmentVariables" : false,
+                    "DefaultLinkVariables" : false,
+                    "DefaultBaselineVariables" : false,
+                    "DefaultEnvironment" : defaultEnvironment(subOccurrence, contextLinks, {}),
+                    "Environment" : {}
+                }
+            ]
+            [#local _context = invokeExtensions(subOccurrence, _context )]
+            [#local environment = getFinalEnvironment(subOccurrence, _context).Environment ]
+
+            [#local linkTargets = _context.Links ]
 
             [#local authProviders += [ authProviderName ]]
 
@@ -412,15 +425,15 @@
                 [#case "Amazon"]
                     [#local providerDetails = {
                         "client_id" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "ID"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "CLIENT", "ID"],"_") ])!"",
                                             (subSolution[authProviderEngine].ClientId)!"HamletFatal: ClientId not defined"
                         ),
                         "client_secret" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "SECRET"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "CLIENT", "SECRET"],"_") ])!"",
                                             (subSolution[authProviderEngine].ClientSecret)!"HamletFatal: ClientSecret not defined"
                         ),
                         "authorize_scopes" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "SCOPES"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "SCOPES"],"_") ])!"",
                                             (subSolution[authProviderEngine].Scopes)!"HamletFatal: Scopes not defined"
                         )
                     }]
@@ -429,22 +442,22 @@
                 [#case "Facebook" ]
                     [#local providerDetails = {
                         "client_id" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "ID"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "CLIENT", "ID"],"_") ])!"",
                                             (subSolution[authProviderEngine].ClientId)!"HamletFatal: ClientId not defined"
                         ),
                         "client_secret" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "SECRET"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "CLIENT", "SECRET"],"_") ])!"",
                                             (subSolution[authProviderEngine].ClientSecret)!"HamletFatal: ClientSecret not defined"
                         ),
                         "authorize_scopes" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "SCOPES"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "SCOPES"],"_") ])!"",
                                             (subSolution[authProviderEngine].Scopes)!"HamletFatal: Scopes not defined"
                         )
                     } +
                     attributeIfContent(
                         "api_version",
                         contentIfContent(
-                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "API", "VERSION"],"_") ])!"",
+                            (environment[ concatenate([settingsPrefix, "API", "VERSION"],"_") ])!"",
                             (subSolution[authProviderEngine].APIVersion)!""
                         )
                     ) ]
@@ -453,23 +466,23 @@
                 [#case "Apple"]
                     [#local providerDetails = {
                         "client_id" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "CLIENT", "ID"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "CLIENT", "ID"],"_") ])!"",
                                             (subSolution[authProviderEngine].ClientId)!"HamletFatal: ClientId not defined"
                         ),
                         "team_id" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "TEAM", "ID"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "TEAM", "ID"],"_") ])!"",
                                             (subSolution[authProviderEngine].TeamId)!"HamletFatal: TeamId not defined"
                         ),
                         "key_id" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "KEY", "ID"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "KEY", "ID"],"_") ])!"",
                                             (subSolution[authProviderEngine].KeyId)!"HamletFatal: KeyId not defined"
                         ),
                         "private_key" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "PRIVATE", "KEY"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "PRIVATE", "KEY"],"_") ])!"",
                                             (subSolution[authProviderEngine].PrivateKey)!"HamletFatal: PrivateKey not defined"
                         ),
                         "authorize_scopes" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "SCOPES"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "SCOPES"],"_") ])!"",
                                             (subSolution[authProviderEngine].Scopes)!"HamletFatal: Scopes not defined"
                         )
                     }]
@@ -478,7 +491,7 @@
                 [#case "SAML" ]
                     [#local providerDetails = {
                         "MetadataURL" : contentIfContent(
-                                            (environment[ concatenate([settingsPrefix, authProviderName?upper_case, "SAML", "METADATA", "URL"],"_") ])!"",
+                                            (environment[ concatenate([settingsPrefix, "SAML", "METADATA", "URL"],"_") ])!"",
                                             (subSolution[authProviderEngine].MetadataUrl)!"HamletFatal: MetadataUrl not defined"
                         ),
                         "IDPSignout" :  subSolution.SAML.EnableIDPSignOut
@@ -611,7 +624,6 @@
 
                     [#list linkTarget.State.Resources as id,linkResource ]
 
-                        [@debug message="linkResource"  context=linkResource enabled=false /]
                         [#if linkResource.Type == AWS_COGNITO_USERPOOL_RESOURCESCOPE_RESOURCE_TYPE ]
                             [#if resourceScope.Scopes?seq_contains(linkResource.Name)]
 
