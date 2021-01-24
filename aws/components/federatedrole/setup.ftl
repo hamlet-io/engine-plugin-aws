@@ -93,7 +93,13 @@
                 "Links" : contextLinks,
                 "Policy" : standardPolicies(subOccurrence, baselineComponentIds),
                 "ManagedPolicy" : [],
-                "Assignment" : subCore.SubComponent.Id
+                "Assignment" : subCore.SubComponent.Id,
+                "DefaultCoreVariables" : false,
+                "DefaultEnvironmentVariables" : false,
+                "DefaultLinkVariables" : false,
+                "DefaultBaselineVariables" : false,
+                "DefaultEnvironment" : defaultEnvironment(subOccurrence, contextLinks, {}),
+                "Environment" : {}
             }
         ]
         [#-- Add in extension specifics including override of defaults --]
