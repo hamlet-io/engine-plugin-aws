@@ -8,7 +8,7 @@
 [/#macro]
 
 [#macro aws_spa_cf_deployment_generationcontract_application occurrence  ]
-    [@addDefaultGenerationContract subsets=["prologue", "config", "epilogue" ] /]
+    [@addDefaultGenerationContract subsets=["pregeneration", "prologue", "config", "epilogue" ] /]
 [/#macro]
 
 [#macro aws_spa_cf_deployment_application occurrence  ]
@@ -86,6 +86,30 @@
             content={ "RUN_ID" : commandLineOptions.Run.Id } + _context.Environment
         /]
     [/#if]
+
+    [#local imageSource = solution.Image.Source]
+    [#if imageSource == "url" ]
+        [#local buildUnit = occurrence.Core.Name ]
+    [/#if]
+
+    [#if deploymentSubsetRequired("pregeneration", false) && imageSource == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=
+                getImageFromUrlScript(
+                    regionId,
+                    productName,
+                    environmentName,
+                    segmentName,
+                    occurrence,
+                    solution.Image.UrlSource.Url,
+                    "spa",
+                    "spa.zip",
+                    solution.Image.UrlSource.ImageHash,
+                    true
+                )
+        /]
+    [/#if]
+
     [#if deploymentSubsetRequired("prologue", false)]
 
         [@addToDefaultBashScriptOutput
@@ -96,7 +120,8 @@
                     "spa",
                     productName,
                     occurrence,
-                    "spa.zip"
+                    "spa.zip",
+                    buildUnit
                 ) +
                 syncFilesToBucketScript(
                     "spaFiles",
