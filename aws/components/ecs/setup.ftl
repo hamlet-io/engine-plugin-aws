@@ -9,6 +9,7 @@
     [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources ]
+    [#local links = solution.Links ]
 
     [#local ecsId = resources["cluster"].Id ]
     [#local ecsName = resources["cluster"].Name ]
@@ -97,7 +98,7 @@
 
     [#local efsMountPoints = {}]
 
-    [#local contextLinks = getLinkTargets(occurrence) ]
+    [#local contextLinks = getLinkTargets(occurrence, links) ]
     [#local _context =
         {
             "DefaultEnvironment" : defaultEnvironment(occurrence, contextLinks, baselineLinks),
@@ -443,6 +444,22 @@
                             linkTargetAttributes.DIRECTORY,
                             linkId,
                             (linkTargetAttributes.ACCESS_POINT_ID)!""
+                        )]
+                    [#break]
+                [#case USER_COMPONENT_TYPE]
+                    [#local SSHPublicKeys = linkTargetConfiguration.Solution.SSHPublicKeys ]
+                    [#local SSHPublicKeysContent = "" ]
+                    [#list linkTargetConfiguration.Solution.SSHPublicKeys as id,publicKey ]
+                        [#if (linkTargetConfiguration.Environment.General[publicKey.SettingName])?has_content ]
+                            [#local SSHPublicKeysContent += linkTargetConfiguration.Environment.General[publicKey.SettingName] + " " + id ]
+                            [#if (SSHPublicKeys?keys)?seq_index_of(id) != ((SSHPublicKeys?keys)?size - 1)]
+                                [#local SSHPublicKeysContent += "\n"]
+                            [/#if]
+                        [/#if]
+                    [/#list]
+                    [#local configSets +=
+                        getInitConfigSSHPublicKeys(
+                            SSHPublicKeysContent
                         )]
                     [#break]
             [/#switch]

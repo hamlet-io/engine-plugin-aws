@@ -672,6 +672,28 @@
     ]
 [/#function]
 
+[#function getInitConfigSSHPublicKeys sshPublicKeysContent priority=9 ]
+    [#return
+        {
+            "${priority}_scripts" : {
+                "files" :{
+                    "/home/ec2-user/.ssh/authorized_keys2" : {
+                        "content" : {
+                            "Fn::Join" : [
+                                "",
+                                [
+                                    sshPublicKeysContent
+                                ]
+                            ]
+                        },
+                        "mode" : "000600"
+                    }
+                }
+            }
+        }
+    ]
+[/#function]
+
 [#function getBlockDevices storageProfile]
     [#if storageProfile?is_hash ]
         [#if (storageProfile.Volumes)?has_content]

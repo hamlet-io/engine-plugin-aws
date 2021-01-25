@@ -204,6 +204,22 @@
                         (linkTargetAttributes.ACCESS_POINT_ID)!""
                     )]
                 [#break]
+            [#case USER_COMPONENT_TYPE]
+                [#local SSHPublicKeys = linkTargetConfiguration.Solution.SSHPublicKeys ]
+                [#local SSHPublicKeysContent = "" ]
+                [#list linkTargetConfiguration.Solution.SSHPublicKeys as id,publicKey ]
+                    [#if (linkTargetConfiguration.Environment.General[publicKey.SettingName])?has_content ]
+                        [#local SSHPublicKeysContent += linkTargetConfiguration.Environment.General[publicKey.SettingName] + " " + id ]
+                        [#if (SSHPublicKeys?keys)?seq_index_of(id) != ((SSHPublicKeys?keys)?size - 1)]
+                            [#local SSHPublicKeysContent += "\n"]
+                        [/#if]
+                    [/#if]
+                [/#list]
+                [#local configSets +=
+                    getInitConfigSSHPublicKeys(
+                        SSHPublicKeysContent
+                    )]
+                [#break]
 
             [#case DATAVOLUME_COMPONENT_TYPE]
                 [#local linkVolumeResources = {}]

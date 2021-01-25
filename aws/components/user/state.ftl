@@ -54,7 +54,8 @@
                 "user" : {
                     "Id" : userId,
                     "Name" : core.ShortFullName,
-                    "Type" : AWS_IAM_USER_RESOURCE_TYPE
+                    "Type" : AWS_IAM_USER_RESOURCE_TYPE,
+                    "Deployed" : true
                 },
                 "apikey" : {
                     "Id" : formatDependentResourceId(AWS_APIGATEWAY_APIKEY_RESOURCE_TYPE, userId),
