@@ -191,7 +191,7 @@
                             s3EncryptionKinesisPermission(
                                 cmkKeyId,
                                 bucket.Name,
-                                logPrefix,
+                                bucketPrefix,
                                 region
                             ),
                             []
