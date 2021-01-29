@@ -1,5 +1,16 @@
 [#ftl]
 
+[#--
+Usage Note:
+
+Where a method permits the provision of streams or indexes, it should be noted that separate calls
+need to be made to grant permissions on the table itself (with no streams or indexes provided) and
+to the streams or indexes themselves.
+
+It is thus possible to grant permission to a stream or index without granting access to the table
+itself.
+--]
+
 [#function getDynamodbStatement actions tables=[] streams=[] indexes=[] principals="" conditions={} ]
     [#local result = [] ]
     [#if tables?has_content]
@@ -13,7 +24,6 @@
                                     )]
             [/#if]
 
-            [#local tableResource=["table", table] ]
             [#if !(streams?has_content || indexes?has_content)]
                 [#local result +=
                     [
@@ -181,49 +191,61 @@
             conditions)]
 [/#function]
 
-[#function dynamodbProducePermission tables="*" principals="" conditions={} ]
+[#-- position of indexes parameter based on ensuring backwards compatability when it was added --]
+[#function dynamodbProducePermission tables="*" principals="" conditions={} indexes=[] ]
     [#return
-        dynamodbReadPermission(
-            tables,
-            principals,
-            conditions
-            ) +
-        dynamodbWritePermission(
-            tables,
-            principals,
-            conditions) +
+        arrayIfTrue(
+            [#-- Table permissions only if no indexes specified --]
+            dynamodbReadPermission(
+                tables,
+                principals,
+                conditions
+                ) +
+            dynamodbWritePermission(
+                tables,
+                principals,
+                conditions),
+            !indexes?has_content
+        ) +
         dynamodbQueryPermission(
             tables,
-            [],
+            indexes,
             principals,
             conditions) +
         dynamodbScanPermission(
             tables,
-            [],
+            indexes,
             principals,
-            conditions) ]
+            conditions)
+    ]
 [/#function]
 
-[#function dynamodbConsumePermission tables="*" principals="" conditions={} ]
+[#-- position of indexes parameter based on ensuring backwards compatability when it was added --]
+[#function dynamodbConsumePermission tables="*" principals="" conditions={} indexes=[] ]
     [#return
-        dynamodbReadPermission(
-            tables,
-            principals,
-            conditions) +
-        dynamodbDeletePermission(
-            tables,
-            principals,
-            conditions) +
+        arrayIfTrue(
+            [#-- Table permissions only if no indexes specified --]
+            dynamodbReadPermission(
+                tables,
+                principals,
+                conditions) +
+            dynamodbDeletePermission(
+                tables,
+                principals,
+                conditions),
+            !indexes?has_content
+        ) +
         dynamodbQueryPermission(
             tables,
-            [],
+            indexes,
             principals,
             conditions) +
         dynamodbScanPermission(
             tables,
-            [],
+            indexes,
             principals,
-            conditions) ]
+            conditions)
+    ]
 [/#function]
 
 [#function dynamodbManageTablesPermission tables="*" principals="" conditions={} ]
@@ -243,18 +265,22 @@
 
 [#function dynamodbAllPermission tables="*" indexes=[] principals="" conditions={} ]
     [#return
-        dynamodbReadPermission(
-            tables,
-            principals,
-            conditions) +
-        dynamodbWritePermission(
-            tables,
-            principals,
-            conditions) +
-        dynamodbDeletePermission(
-            tables,
-            principals,
-            conditions) +
+        arrayIfTrue(
+            [#-- Table permissions only if no indexes specified --]
+            dynamodbReadPermission(
+                tables,
+                principals,
+                conditions) +
+            dynamodbWritePermission(
+                tables,
+                principals,
+                conditions) +
+            dynamodbDeletePermission(
+                tables,
+                principals,
+                conditions),
+            !indexes?has_content
+        ) +
         dynamodbQueryPermission(
             tables,
             indexes,
@@ -281,12 +307,16 @@
     ]
 [/#function]
 
-[#function dynamoDbViewerPermission tables="*" indexes="" principals="" conditions={} ]
+[#function dynamoDbViewerPermission tables="*" indexes=[] principals="" conditions={} ]
     [#return
-        dynamodbReadPermission(
-            tables,
-            principals,
-            conditions) +
+        arrayIfTrue(
+            [#-- Table permissions only if no indexes specified --]
+            dynamodbReadPermission(
+                tables,
+                principals,
+                conditions),
+            !indexes?has_content
+        ) +
         dynamodbQueryPermission(
             tables,
             indexes,

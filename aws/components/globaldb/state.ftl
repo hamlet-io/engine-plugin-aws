@@ -8,6 +8,11 @@
     [#local key = solution.PrimaryKey ]
     [#local sortKey = solution.SecondaryKey ]
 
+    [#local globalSecondaryIndexes = [] ]
+    [#list solution.SecondaryIndexes!{} as key,value]
+        [#local globalSecondaryIndexes += [value.Name] ]
+    [/#list]
+
     [#assign componentState =
         {
             "Resources" : {
@@ -37,12 +42,35 @@
                     "default" : "consume",
                     "consume" : dynamoDbViewerPermission(
                                     getReference(id, ARN_ATTRIBUTE_TYPE)
+                                ) +
+                                arrayIfContent(
+                                    dynamoDbViewerPermission(
+                                        getReference(id, ARN_ATTRIBUTE_TYPE),
+                                        globalSecondaryIndexes
+                                    ),
+                                    globalSecondaryIndexes
                                 ),
                     "produce" : dynamodbProducePermission(
                                     getReference(id, ARN_ATTRIBUTE_TYPE)
+                                ) +
+                                arrayIfContent(
+                                    dynamodbProducePermission(
+                                        getReference(id, ARN_ATTRIBUTE_TYPE),
+                                        "",
+                                        {},
+                                        globalSecondaryIndexes
+                                    ),
+                                    globalSecondaryIndexes
                                 ),
                     "all"     : dynamodbAllPermission(
                                     getReference(id,ARN_ATTRIBUTE_TYPE)
+                                ) +
+                                arrayIfContent(
+                                    dynamodbAllPermission(
+                                        getReference(id, ARN_ATTRIBUTE_TYPE),
+                                        globalSecondaryIndexes
+                                    ),
+                                    globalSecondaryIndexes
                                 )
                }
             }
