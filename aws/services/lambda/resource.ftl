@@ -170,7 +170,7 @@
                 source,
                 {
                     "Principal" : sourcePrincipal,
-                    "SourceArn" : getReference(sourceId, ARN_ATTRIBUTE_TYPE)
+                    "SourceArn" : getArn(sourceId)
                 }
             )
         outputs=LAMBDA_PERMISSION_OUTPUT_MAPPINGS

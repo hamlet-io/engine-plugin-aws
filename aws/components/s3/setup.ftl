@@ -78,8 +78,8 @@
                                 [#break]
 
                             [#case LAMBDA_FUNCTION_COMPONENT_TYPE ]
-                                [#local resourceId = linkTargetResources["lambda"].Id ]
-                                [#local resourceType = linkTargetResources["lambda"].Type ]
+                                [#local resourceId = linkTargetResources["function"].Id ]
+                                [#local resourceType = linkTargetResources["function"].Type ]
 
                                 [#local policyId =
                                     formatS3NotificationPolicyId(
@@ -92,7 +92,7 @@
                                     [@createLambdaPermission
                                         id=policyId
                                         targetId=resourceId
-                                        sourceId=s3Id
+                                        sourceId=formatGlobalArn("s3", s3Name, "")
                                         sourcePrincipal="s3.amazonaws.com"
                                     /]
                                 [/#if]
