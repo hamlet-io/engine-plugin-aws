@@ -266,11 +266,19 @@
 
                             [#if !replicationBucket?has_content ]
                                 [#if !linkTargetAttributes["ARN"]?has_content ]
-                                    [@fatal
-                                        message="Replication destination must be deployed before source"
-                                        context=
-                                            linkTarget
-                                    /]
+
+                                    [#-- do not validate replica sequence on delete --]
+                                    [#local deploymentMode = getDeploymentMode()]
+                                    [#local deploymentModeDetails = getDeploymentModeDetails(demploymentMode)]
+                                    [#local deploymentModeOperations = deploymentModeDetails.Operations]
+
+                                    [#if !(deploymentModeOperations?seq_contains("delete") )]
+                                        [@fatal
+                                            message="Replication destination must be deployed before source"
+                                            context=
+                                                linkTarget
+                                        /]
+                                    [/#if]
                                 [/#if]
                                 [#local replicationBucket = linkTargetAttributes["ARN"]]
                             [#else]
