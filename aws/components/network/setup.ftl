@@ -20,6 +20,19 @@
 
     [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
 
+    [#-- Flag that the flowlog configuration needs to be updated if enabled via flags --]
+    [#if
+        (
+            (environmentObject.Operations.FlowLogs.Enabled)!
+            (segmentObject.Operations.FlowLogs.Enabled)!
+            (solution.Logging.EnableFlowLogs)!false
+        ) &&
+        !(resources["flowLogs"]?has_content) ]
+        [@fatal
+            message="Flowlogs must now be explicitly configured on the network component"
+        /]
+    [/#if]
+
     [#list resources["flowLogs"]!{} as  id, flowLogResource ]
         [#local flowLogId = flowLogResource["flowLog"].Id ]
         [#local flowLogName = flowLogResource["flowLog"].Name ]

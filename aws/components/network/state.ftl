@@ -17,18 +17,6 @@
         [#local vpcName = core.FullName ]
     [/#if]
 
-    [#local vpcFlowLogEnabled = environmentObject.Operations.FlowLogs.Enabled!
-                                    segmentObject.Operations.FlowLogs.Enabled!
-                                    solution.Logging.EnableFlowLogs ]
-
-    [#local vpcFlowLogEnabled = isPresent(segmentObject.Operations)?then(
-        isPresent(environmentObject.Operations.FlowLogs) ||
-        isPresent(segmentObject.Operations.FlowLogs) ||
-        solution.Logging.EnableFlowLogs,
-        isPresent(environmentObject.Operations.FlowLogs) ||
-        solution.Logging.EnableFlowLogs
-    )]
-
     [#local networkCIDR = isPresent(network.CIDR)?then(
         network.CIDR.Address + "/" + network.CIDR.Mask,
         solution.Address.CIDR )]
@@ -38,13 +26,6 @@
                                 network.Tiers.Order?size,
                                 network.Zones.Order?size )]
     [#local subnetCIDRS = getSubnetsFromNetwork(networkCIDR, subnetCIDRMask)]
-
-    [#local flowLogLgName = legacyVpc?then(
-                                formatSegmentLogGroupName(AWS_VPC_FLOWLOG_RESOURCE_TYPE, "all")
-                                formatAbsolutePath(core.FullAbsolutePath, "all" ) )]
-    [#local flowLogId = legacyVpc?then(
-                                formatVPCFlowLogsId("all"),
-                                formatDependentResourceId(AWS_VPC_FLOWLOG_RESOURCE_TYPE, vpcId, "all" ))]
 
     [#local subnets = {} ]
     [#-- Define subnets --]
@@ -91,7 +72,18 @@
 
     [#local flowLogs = {} ]
     [#list solution.Logging.FlowLogs as id,flowlog ]
-        [#local flowLogId = formatResourceId(formatResourceId(AWS_VPC_FLOWLOG_RESOURCE_TYPE, core.Id, id ))]
+        [#local flowLogId = formatResourceId(AWS_VPC_FLOWLOG_RESOURCE_TYPE, core.Id, id ) ]
+        [#-- Needed to handle transition from flag based to explicit config based configuration --]
+        [#-- of flowlogs for existing installations                                             --]
+        [#local legacyFlowLogLgId = formatDependentLogGroupId(formatResourceId("vpc", core.Id, id )) ]
+        [#local flowLogLgId =
+            valueIfTrue(
+                legacyFlowLogLgId,
+                getExistingReference(legacyFlowLogLgId)?has_content,
+                formatDependentLogGroupId(flowLogId)
+            )
+        ]
+
         [#local flowLogs += {
             id : {
                 "flowLog" : {
@@ -108,7 +100,7 @@
                         "IncludeInDeploymentState" : false
                     },
                     "flowLogLg" : {
-                        "Id" : formatDependentLogGroupId(flowLogId, id),
+                        "Id" : flowLogLgId,
                         "Name" : formatAbsolutePath(core.FullAbsolutePath, id),
                         "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
                         "IncludeInDeploymentState" : false

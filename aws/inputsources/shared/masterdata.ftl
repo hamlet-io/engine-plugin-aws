@@ -883,7 +883,6 @@
     "alm": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         }
       }
@@ -891,7 +890,6 @@
     "alpha": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 2
         }
       }
@@ -899,7 +897,6 @@
     "beta": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         }
       }
@@ -907,7 +904,6 @@
     "int": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         }
       }
@@ -915,7 +911,6 @@
     "aat": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         }
       }
@@ -923,7 +918,6 @@
     "uat": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         }
       }
@@ -931,7 +925,6 @@
     "system": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         }
       }
@@ -939,7 +932,6 @@
     "preprod": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         },
         "DeadLetterQueue": {
@@ -950,7 +942,6 @@
     "stg": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         },
         "DeadLetterQueue": {
@@ -964,7 +955,6 @@
       },
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         },
         "DeadLetterQueue": {
@@ -975,7 +965,6 @@
     "trn": {
       "Operations": {
         "FlowLogs": {
-          "Enabled": true,
           "Expiration": 7
         }
       }

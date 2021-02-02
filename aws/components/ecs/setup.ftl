@@ -646,7 +646,7 @@
 [/#macro]
 
 [#macro aws_ecs_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=[ "pregeneration", "prologue", "template", "epilogue", "cli"] /]å
+    [@addDefaultGenerationContract subsets=[ "pregeneration", "prologue", "template", "epilogue", "cli"] /]
 [/#macro]
 
 [#macro aws_ecs_cf_deployment_application occurrence ]
