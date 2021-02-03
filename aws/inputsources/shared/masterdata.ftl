@@ -1046,7 +1046,12 @@
                 "Engine": "ssh"
               },
               "cmk": {
-                "Engine": "cmk"
+                "Engine": "cmk",
+                "Extensions" : [
+                    "_cmk_s3_access",
+                    "_cmk_ses_access",
+                    "_cmk_cloudfront_access"
+                ]
               },
               "oai": {
                 "Engine": "oai"
