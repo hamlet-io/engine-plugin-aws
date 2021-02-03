@@ -388,6 +388,8 @@
         [#-- Access Keys --]
         [#if subCore.Type == BASELINE_KEY_COMPONENT_TYPE ]
 
+            [#local contextLinks = getLinkTargets(subOccurrence) ]
+
             [#switch subSolution.Engine ]
                 [#case "cmk" ]
 
@@ -399,9 +401,19 @@
                     [#local cmkAliasName = subResources["cmkAlias"].Name]
 
 
+                    [#local _context =
+                        {
+                            "Links" : contextLinks,
+                            "Policy" : []
+                        }
+                    ]
+                    [#local _context = invokeExtensions( subOccurrence, _context )]
+
                     [#if ( deploymentSubsetRequired(BASELINE_COMPONENT_TYPE, true) && legacyCmk == false ) ||
                         ( deploymentSubsetRequired("cmk") && legacyCmk == true) ]
 
+                        [#-- Set the root policy as the default policy --]
+                        [#-- Extensions provide any additional policies --]
                         [@createCMK
                             id=cmkResourceId
                             description=cmkName
@@ -413,34 +425,8 @@
                                         {
                                             "AWS": formatAccountPrincipalArn()
                                         }
-                                    ),
-                                    getPolicyStatement(
-                                        "kms:GenerateDataKey",
-                                        "*"
-                                        {
-                                            "Service" : "delivery.logs.amazonaws.com"
-                                        },
-                                        "",
-                                        true,
-                                        "Allow CloudFront Flow Logs to use the key"
-                                    ),
-                                    getPolicyStatement(
-                                        [
-                                            "kms:Encrypt",
-                                            "kms:Decrypt",
-                                            "kms:ReEncrypt",
-                                            "kms:GenerateDataKey",
-                                            "kms:DescribeKey"
-                                        ],
-                                        "*"
-                                        {
-                                            "Service" : "ses.amazonaws.com"
-                                        },
-                                        "",
-                                        true,
-                                        "Allow SES to use the key"
                                     )
-                                ]
+                                ] + _context.Policy
                             outputId=cmkId
                         /]
 
