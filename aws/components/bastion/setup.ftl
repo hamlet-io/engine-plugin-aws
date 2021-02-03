@@ -9,6 +9,7 @@
     [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources ]
+    [#local links = solution.Links ]
 
     [#local bastionRoleId = resources["role"].Id ]
     [#local bastionEIPId = resources["eip"].Id ]
@@ -150,18 +151,10 @@
                     [#break]
                 [#case USER_COMPONENT_TYPE]
                     [#local SSHPublicKeys = linkTargetConfiguration.Solution.SSHPublicKeys ]
-                    [#local SSHPublicKeysContent = "" ]
-                    [#list linkTargetConfiguration.Solution.SSHPublicKeys as id,publicKey ]
-                        [#if (linkTargetConfiguration.Environment.General[publicKey.SettingName])?has_content ]
-                            [#local SSHPublicKeysContent += linkTargetConfiguration.Environment.General[publicKey.SettingName] + " " + id ]
-                            [#if (SSHPublicKeys?keys)?seq_index_of(id) != ((SSHPublicKeys?keys)?size - 1)]
-                                [#local SSHPublicKeysContent += "\n"]
-                            [/#if]
-                        [/#if]
-                    [/#list]
+                    [#local linkEnvironment = linkTargetConfiguration.Environment.General ]
                     [#local configSets +=
                         getInitConfigSSHPublicKeys(
-                            SSHPublicKeysContent
+                            SSHPublicKeys, linkEnvironment
                         )]
                     [#break]
             [/#switch]

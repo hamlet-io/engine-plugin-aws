@@ -672,7 +672,16 @@
     ]
 [/#function]
 
-[#function getInitConfigSSHPublicKeys sshPublicKeysContent priority=9 ]
+[#function getInitConfigSSHPublicKeys SSHPublicKeys linkEnvironment ignoreErrors=false priority=9 ]
+    [#local SSHPublicKeysContent = "" ]
+    [#list SSHPublicKeys as id,publicKey ]
+        [#if (linkEnvironment[publicKey.SettingName])?has_content ]
+            [#local SSHPublicKeysContent += linkEnvironment[publicKey.SettingName] + " " + id ]
+            [#if (SSHPublicKeys?keys)?seq_index_of(id) != ((SSHPublicKeys?keys)?size - 1)]
+                [#local SSHPublicKeysContent += "\n"]
+            [/#if]
+        [/#if]
+    [/#list]
     [#return
         {
             "${priority}_scripts" : {
@@ -682,11 +691,23 @@
                             "Fn::Join" : [
                                 "",
                                 [
-                                    sshPublicKeysContent
+                                    SSHPublicKeysContent
                                 ]
                             ]
                         },
-                        "mode" : "000600"
+                        "mode" : "000600",
+                        "group" : "ec2-user",
+                        "owner" : "ec2-user"
+                    }
+                },
+                "commands": {
+                    "01UpdateSSHDConfig" : {
+                        "command" : "sed -i 's#^\\(AuthorizedKeysFile.*$\\)#\\1 .ssh/authorized_keys2#' /etc/ssh/sshd_config",
+                        "ignoreErrors" : ignoreErrors
+                    },
+                    "02RestartSSHDService" : {
+                        "command" : "sudo service sshd restart",
+                        "ignoreErrors" : ignoreErrors
                     }
                 }
             }
