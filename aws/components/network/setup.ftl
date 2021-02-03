@@ -21,7 +21,7 @@
     [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
 
     [#-- Flag that the flowlog configuration needs to be updated if enabled via flags --]
-    [#if
+    [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true) &&
         (
             (environmentObject.Operations.FlowLogs.Enabled)!
             (segmentObject.Operations.FlowLogs.Enabled)!
