@@ -706,7 +706,7 @@
                         "ignoreErrors" : ignoreErrors
                     },
                     "02RestartSSHDService" : {
-                        "command" : "sudo service sshd restart",
+                        "command" : "service sshd restart",
                         "ignoreErrors" : ignoreErrors
                     }
                 }
