@@ -20,7 +20,10 @@
             getPolicyStatement(
                 [
                     "kms:Encrypt",
-                    "kms:GenerateDataKey"
+                    "kms:Decrypt",
+                    "kms:ReEncrypt*",
+                    "kms:GenerateDataKey*",
+                    "kms:DescribeKey"
                 ],
                 "*"
                 {
