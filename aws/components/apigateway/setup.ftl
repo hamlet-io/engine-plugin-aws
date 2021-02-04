@@ -713,7 +713,7 @@
 
             [#local publisherLinks = getLinkTargets(occurrence, publisher.Links )]
 
-            [#local publisherPath = getContentPath( occurrence, publisher.Path )]
+            [#local publisherPath = getContextPath( occurrence, publisher.Path )]
             [#if publisher.UsePathInName ]
                 [#local fileName = formatName( publisherPath, buildRegistry + ".json") ]
                 [#local publisherPath = "" ]

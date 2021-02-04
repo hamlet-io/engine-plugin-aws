@@ -17,7 +17,7 @@
                 }
             },
             "Attributes" : {
-                "PATH" : getContentPath(occurrence)
+                "PATH" : getContextPath(occurrence)
             },
             "Roles" : {
                 "Inbound" : {},

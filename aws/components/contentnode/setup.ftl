@@ -11,7 +11,7 @@
     [#local resources = occurrence.State.Resources]
 
     [#local contentNodeId = resources["contentnode"].Id ]
-    [#local pathObject = getContentPath(occurrence) ]
+    [#local pathObject = getContextPath(occurrence) ]
 
     [#if ! (solution.Links?has_content)]
         [@precondition
