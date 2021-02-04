@@ -684,9 +684,9 @@
     [/#list]
     [#return
         {
-            "${priority}_scripts" : {
+            "${priority}_authorized_keys_hamlet" : {
                 "files" :{
-                    "/home/ec2-user/.ssh/authorized_keys2" : {
+                    "/home/ec2-user/.ssh/authorized_keys_hamlet" : {
                         "content" : {
                             "Fn::Join" : [
                                 "",
@@ -702,7 +702,7 @@
                 },
                 "commands": {
                     "01UpdateSSHDConfig" : {
-                        "command" : "sed -i 's#^\\(AuthorizedKeysFile.*$\\)#\\1 .ssh/authorized_keys2#' /etc/ssh/sshd_config",
+                        "command" : "sed -i 's#^\\(AuthorizedKeysFile.*$\\)#\\1 .ssh/authorized_keys_hamlet#' /etc/ssh/sshd_config",
                         "ignoreErrors" : ignoreErrors
                     },
                     "02RestartSSHDService" : {
