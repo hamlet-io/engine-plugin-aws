@@ -73,6 +73,10 @@
                     "invoke" : {
                         "Principal" : "s3.amazonaws.com",
                         "SourceArn" : getReference(id, ARN_ATTRIBUTE_TYPE)
+                    },
+                    "inventorysrc" : {
+                        "Principal" : "s3.amazonaws.com",
+                        "SourceArn" : getReference(id, ARN_ATTRIBUTE_TYPE)
                     }
                 },
                 "Outbound" : {

@@ -13,6 +13,7 @@
 
     [#local s3Id = resources["bucket"].Id ]
     [#local s3Name = resources["bucket"].Name ]
+    [#local s3Arn = formatGlobalArn("s3", s3Name, "")]
 
     [#local bucketPolicyId = resources["bucketpolicy"].Id ]
 
@@ -263,6 +264,12 @@
 
 
                 [#case S3_COMPONENT_TYPE ]
+                    [#if (linkDirection == "inbound") && (linkRole == "inventorysrc") ]
+                        [#local policyStatements +=
+                            s3InventorySerivcePermssion(s3Name,  linkTargetRoles.Inbound[linkRole].SourceArn)
+                        ]
+                    [/#if]
+
                     [#switch linkRole ]
                         [#case "replicadestination" ]
                             [#local replicationEnabled = true]
@@ -385,12 +392,13 @@
                         getS3InventoryReportConfiguration(
                             inventoryId,
                             inventoryReport.InventoryFormat,
-                            formatGlobalArn("s3", s3Name, ""),
+                            s3Arn,
                             inventoryReport.Schedule
                             inventoryReport.InventoryPrefix,
                             inventoryReport.DestinationPrefix,
                             inventoryReport.IncludeVersions
                         )]]
+                    [#local policyStatements += s3InventorySerivcePermssion(s3Name, s3Arn)]
                 [#break]
 
             [#case "link"]

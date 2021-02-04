@@ -266,3 +266,37 @@
         )
     ]
 [/#function]
+
+
+[#function s3InventorySerivcePermssion sourceBucket destBucket="" sourceAccount={ "Ref" : "AWS::AccountId" } ]
+    [#return
+        getS3Statement(
+            [
+                "s3:PutObject"
+            ],
+            sourceBucket,
+            "*",
+            "",
+            {
+                "Service" : "s3.amazonaws.com"
+            },
+            { } +
+            destBucket?has_content?then(
+                {
+                    "ArnLike" : {
+                        "aws:SourceArn" : getArn(destBucket)
+                    },
+                    "StringEquals" : {
+                        "aws:SourceAccount" : sourceAccount,
+                        "s3:x-amz-acl" : "bucket-owner-full-control"
+                    }
+                },
+                {
+                    "StringEquals" : {
+                        "s3:x-amz-acl" : "bucket-owner-full-control"
+                    }
+                }
+            )
+        )
+    ]
+[/#function]
