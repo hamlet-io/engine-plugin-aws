@@ -70,6 +70,8 @@
 
     [#local processorProfile = getProcessor(occurrence, "bastion")]
 
+    [#local sshActive = sshActive || solution.Active ]
+
     [#local processorProfile += {
                 "MaxCount" : 2,
                 "MinCount" : sshActive?then(1,0),
