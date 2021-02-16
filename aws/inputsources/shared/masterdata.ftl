@@ -1210,13 +1210,13 @@
                 }
               }
             },
-            "DeploymentType": "EDGE",
-            "RunTime": "nodejs12.x",
-            "MemorySize": 128,
-            "Timeout": 1,
-            "FixedCodeVersion": {},
             "Functions": {
               "cfredirect": {
+                "DeploymentType": "EDGE",
+                "RunTime": "nodejs12.x",
+                "Memory": 128,
+                "Timeout": 1,
+                "FixedCodeVersion": {},
                 "Handler": "index.handler",
                 "VPCAccess": false,
                 "Permissions": {
