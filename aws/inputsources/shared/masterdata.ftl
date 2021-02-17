@@ -89,13 +89,11 @@
         "a": {
           "Title": "Zone A",
           "Description": "Zone A",
-          "Index": 0,
           "AWSZone": "ap-southeast-1a"
         },
         "b": {
           "Title": "Zone B",
           "Description": "Singapore Zone B",
-          "Index": 1,
           "AWSZone": "ap-southeast-1b"
         }
       },
@@ -1289,7 +1287,7 @@
         "CountPerZone": 1,
         "Master": {
           "Processor": "t2.small.elasticsearch",
-          "CountPerZone": 0
+          "Count": 0
         }
       },
       "service": {
@@ -1304,7 +1302,7 @@
       "Containers" : {
         "Default" : {
           "Provider" : "_autoscalegroup",
-          "Base" : 1
+          "RequiredCount" : 1
         }
       }
     },
@@ -1312,7 +1310,7 @@
       "Containers" : {
         "Default" : {
           "Provider" : "aws:fargate",
-          "Base" : 1
+          "RequiredCount" : 1
         }
       }
     },
@@ -1320,7 +1318,7 @@
       "Containers" : {
         "Default" : {
           "Provider" : "aws:fargate",
-          "Base" : 1
+          "RequiredCount" : 1
         },
         "Additional" : {
           "spot" : {
@@ -1333,7 +1331,7 @@
       "Containers" : {
         "Default" : {
           "Provider" : "aws:fargatespot",
-          "Base" : 1
+          "RequiredCount" : 1
         }
       }
     }
