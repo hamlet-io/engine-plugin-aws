@@ -1,0 +1,1038 @@
+{
+    "Environments": {
+        "alm": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                }
+            }
+        },
+        "alpha": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 2
+                }
+            }
+        },
+        "beta": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                }
+            }
+        },
+        "int": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                }
+            }
+        },
+        "aat": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                }
+            }
+        },
+        "uat": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                }
+            }
+        },
+        "system": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                }
+            }
+        },
+        "preprod": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                },
+                "DeadLetterQueue": {
+                    "MaxReceives": 13
+                }
+            }
+        },
+        "stg": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                },
+                "DeadLetterQueue": {
+                    "MaxReceives": 13
+                }
+            }
+        },
+        "prod": {
+            "RDS": {
+                "AutoMinorVersionUpgrade": false
+            },
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                },
+                "DeadLetterQueue": {
+                    "MaxReceives": 13
+                }
+            }
+        },
+        "trn": {
+            "Operations": {
+                "FlowLogs": {
+                    "Expiration": 7
+                }
+            }
+        }
+    },
+    "Tiers": {
+        "mgmt": {
+            "Components": {
+                "seg-cert": {
+                    "DeploymentUnits": [
+                        "cert"
+                    ]
+                },
+                "seg-dns": {
+                    "DeploymentUnits": [
+                        "dns"
+                    ],
+                    "Enabled": false
+                },
+                "seg-dashboard": {
+                    "DeploymentUnits": [
+                        "dashboard"
+                    ],
+                    "Enabled": false
+                },
+                "baseline": {
+                    "baseline": {
+                        "deployment:Unit": "baseline",
+                        "DataBuckets": {
+                            "opsdata": {
+                                "Role": "operations",
+                                "Encryption": {
+                                    "EncryptionSource": "LocalService"
+                                },
+                                "Lifecycles": {
+                                    "awslogs": {
+                                        "Prefix": "AWSLogs",
+                                        "Expiration": "_operations",
+                                        "Offline": "_operations"
+                                    },
+                                    "cloudfront": {
+                                        "Prefix": "CLOUDFRONTLogs",
+                                        "Expiration": "_operations",
+                                        "Offline": "_operations"
+                                    },
+                                    "docker": {
+                                        "Prefix": "DOCKERLogs",
+                                        "Expiration": "_operations",
+                                        "Offline": "_operations"
+                                    },
+                                    "waf": {
+                                        "Prefix": "WAF",
+                                        "Expiration": "_operations",
+                                        "Offline": "_operations"
+                                    }
+                                },
+                                "Links": {
+                                    "cf_key": {
+                                        "Tier": "mgmt",
+                                        "Component": "baseline",
+                                        "Instance": "",
+                                        "Version": "",
+                                        "Key": "oai"
+                                    }
+                                }
+                            },
+                            "appdata": {
+                                "Role": "appdata",
+                                "Lifecycles": {
+                                    "global": {
+                                        "Expiration": "_data",
+                                        "Offline": "_data"
+                                    }
+                                }
+                            }
+                        },
+                        "Keys": {
+                            "ssh": {
+                                "Engine": "ssh"
+                            },
+                            "cmk": {
+                                "Engine": "cmk"
+                            },
+                            "oai": {
+                                "Engine": "oai"
+                            }
+                        }
+                    }
+                },
+                "ssh": {
+                    "MultiAZ": true,
+                    "bastion": {
+                        "deployment:Unit": "ssh",
+                        "AutoScaling": {
+                            "DetailedMetrics": false,
+                            "ActivityCooldown": 180,
+                            "MinUpdateInstances": 0,
+                            "AlwaysReplaceOnUpdate": false
+                        }
+                    }
+                },
+                "vpc": {
+                    "MultiAZ": true,
+                    "network": {
+                        "deployment:Unit": "vpc",
+                        "RouteTables": {
+                            "internal": {},
+                            "external": {
+                                "Public": true
+                            }
+                        },
+                        "NetworkACLs": {
+                            "open": {
+                                "Rules": {
+                                    "in": {
+                                        "Priority": 200,
+                                        "Action": "allow",
+                                        "Source": {
+                                            "IPAddressGroups": [
+                                                "_global"
+                                            ]
+                                        },
+                                        "Destination": {
+                                            "IPAddressGroups": [
+                                                "_localnet"
+                                            ],
+                                            "Port": "any"
+                                        },
+                                        "ReturnTraffic": false
+                                    },
+                                    "out": {
+                                        "Priority": 200,
+                                        "Action": "allow",
+                                        "Source": {
+                                            "IPAddressGroups": [
+                                                "_localnet"
+                                            ]
+                                        },
+                                        "Destination": {
+                                            "IPAddressGroups": [
+                                                "_global"
+                                            ],
+                                            "Port": "any"
+                                        },
+                                        "ReturnTraffic": false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "igw": {
+                    "gateway": {
+                        "deployment:Unit": "igw",
+                        "Engine": "igw",
+                        "Destinations": {
+                            "default": {
+                                "IPAddressGroups": "_global",
+                                "Links": {
+                                    "external": {
+                                        "Tier": "mgmt",
+                                        "Component": "vpc",
+                                        "Version": "",
+                                        "Instance": "",
+                                        "RouteTable": "external"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "nat": {
+                    "gateway": {
+                        "deployment:Unit": "nat",
+                        "deployment:Priority": 75,
+                        "Engine": "natgw",
+                        "Destinations": {
+                            "default": {
+                                "IPAddressGroups": "_global",
+                                "Links": {
+                                    "internal": {
+                                        "Tier": "mgmt",
+                                        "Component": "vpc",
+                                        "Version": "",
+                                        "Instance": "",
+                                        "RouteTable": "internal"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "vpcendpoint": {
+                    "gateway": {
+                        "deployment:Unit": "vpcendpoint",
+                        "Engine": "privateservice",
+                        "DestinationPorts": [
+                            "http",
+                            "https"
+                        ],
+                        "Destinations": {
+                            "default": {
+                                "NetworkEndpointGroups": [
+                                    "storage",
+                                    "logs"
+                                ],
+                                "Links": {
+                                    "internal": {
+                                        "Tier": "mgmt",
+                                        "Component": "vpc",
+                                        "Version": "",
+                                        "Instance": "",
+                                        "RouteTable": "internal"
+                                    },
+                                    "external": {
+                                        "Tier": "mgmt",
+                                        "Component": "vpc",
+                                        "Version": "",
+                                        "Instance": "",
+                                        "RouteTable": "external"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "gbl": {
+            "Components": {
+                "cfredirect": {
+                    "Lambda": {
+                        "Instances": {
+                            "default": {
+                                "Versions": {
+                                    "v1": {
+                                        "deployment:Unit": "cfredirect-v1",
+                                        "Enabled": false,
+                                        "Extensions": [
+                                            "_cfredirect-v1"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "DeploymentType": "EDGE",
+                        "RunTime": "nodejs12.x",
+                        "MemorySize": 128,
+                        "Timeout": 1,
+                        "FixedCodeVersion": {},
+                        "Functions": {
+                            "cfredirect": {
+                                "Handler": "index.handler",
+                                "VPCAccess": false,
+                                "Permissions": {
+                                    "Decrypt": false,
+                                    "AsFile": false,
+                                    "AppData": false,
+                                    "AppPublic": false
+                                },
+                                "PredefineLogGroup": false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "Storage": {
+        "default": {
+            "EC2": {
+                "Volumes": {
+                    "codeontap": {
+                        "Device": "/dev/sdp",
+                        "Size": "30"
+                    }
+                }
+            },
+            "ECS": {},
+            "ElasticSearch": {},
+            "ComputeCluster": {},
+            "bastion": {}
+        }
+    },
+    "Processors": {
+        "default": {
+            "NAT": {
+                "Processor": "t2.micro"
+            },
+            "bastion": {
+                "Processor": "t2.micro"
+            },
+            "EC2": {
+                "Processor": "t2.micro"
+            },
+            "EMR": {
+                "Processor": "m4.large",
+                "DesiredCorePerZone": 1,
+                "DesiredTaskPerZone": 1
+            },
+            "ComputeCluster": {
+                "Processor": "t2.micro",
+                "MinPerZone": 1,
+                "MaxPerZone": 1,
+                "DesiredPerZone": 1
+            },
+            "ECS": {
+                "Processor": "t2.medium",
+                "MinPerZone": 1,
+                "MaxPerZone": 1,
+                "DesiredPerZone": 1
+            },
+            "ElastiCache": {
+                "Processor": "cache.t2.micro",
+                "CountPerZone": 1
+            },
+            "db": {
+                "Processor": "db.t2.small"
+            },
+            "ElasticSearch": {
+                "Processor": "t2.medium.elasticsearch",
+                "CountPerZone": 1,
+                "Master": {
+                    "Processor": "t2.small.elasticsearch",
+                    "CountPerZone": 0
+                }
+            },
+            "service": {
+                "DesiredPerZone": 1,
+                "MinPerZone": 1,
+                "MaxPerZone": 1
+            }
+        }
+    },
+    "ComputeProviders": {
+        "default": {
+            "Containers": {
+                "Default": {
+                    "Provider": "_autoscalegroup",
+                    "Base": 1
+                }
+            }
+        },
+        "fargate": {
+            "Containers": {
+                "Default": {
+                    "Provider": "aws:fargate",
+                    "Base": 1
+                }
+            }
+        },
+        "fargate-add-spot": {
+            "Containers": {
+                "Default": {
+                    "Provider": "aws:fargate",
+                    "Base": 1
+                },
+                "Additional": {
+                    "spot": {
+                        "Provider": "aws:fargatespot"
+                    }
+                }
+            }
+        },
+        "fargatespot": {
+            "Containers": {
+                "Default": {
+                    "Provider": "aws:fargatespot",
+                    "Base": 1
+                }
+            }
+        }
+    },
+    "Product": {
+        "cfredirect-v1": {
+            "Region": "us-east-1"
+        },
+        "Builds": {
+            "Data": {
+                "Environment": "int"
+            },
+            "Code": {
+                "Environment": "int"
+            }
+        }
+    },
+    "Segment": {
+        "Network": {
+            "InternetAccess": true,
+            "Tiers": {
+                "Order": [
+                    "web",
+                    "msg",
+                    "app",
+                    "db",
+                    "dir",
+                    "ana",
+                    "api",
+                    "spare",
+                    "elb",
+                    "ilb",
+                    "spare",
+                    "spare",
+                    "spare",
+                    "spare",
+                    "spare",
+                    "mgmt"
+                ]
+            },
+            "Zones": {
+                "Order": [
+                    "a",
+                    "b",
+                    "spare",
+                    "spare"
+                ]
+            }
+        },
+        "NAT": {
+            "Enabled": true,
+            "MultiAZ": false,
+            "Hosted": true
+        },
+        "Bastion": {
+            "Enabled": true,
+            "Active": false,
+            "IPAddressGroups": []
+        },
+        "S3": {
+            "IncludeTenant": false
+        },
+        "RotateKey": true,
+        "Tiers": {
+            "Order": [
+                "elb",
+                "api",
+                "web",
+                "msg",
+                "dir",
+                "ilb",
+                "app",
+                "db",
+                "ana",
+                "mgmt",
+                "docs",
+                "gbl",
+                "external"
+            ]
+        }
+    },
+    "CertificateBehaviours": {
+        "External": false,
+        "Wildcard": true,
+        "IncludeInHost": {
+            "Product": false,
+            "Segment": false,
+            "Tier": false
+        },
+        "HostParts": [
+            "Host",
+            "Tier",
+            "Component",
+            "Instance",
+            "Version",
+            "Segment",
+            "Environment",
+            "Product"
+        ],
+        "Qualifiers": {
+            "prod": {
+                "IncludeInHost": {
+                    "Environment": false
+                },
+                "IncludeInDomain": {
+                    "Environment": false
+                }
+            }
+        }
+    },
+    "LogFiles": {
+        "/var/log/update.log": {
+            "FilePath": "/var/log/update.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "/var/log/cfn-init.log": {
+            "FilePath": "/var/log/cfn-init.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "/var/log/cfn-init-cmd.log": {
+            "FilePath": "/var/log/cfn-init-cmd.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "/var/log/cloud-init.log": {
+            "FilePath": "/var/log/cloud-init.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "/var/log/cloud-init-output.log": {
+            "FilePath": "/var/log/cloud-init-output.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "/var/log/amazon/ssm/amazon-ssm-agent.log": {
+            "FilePath": "/var/log/amazon/ssm/amazon-ssm-agent.log",
+            "MultiLinePattern": "^INFO"
+        },
+        "/var/log/ecs/ecs-init.log": {
+            "FilePath": "/var/log/ecs/ecs-init.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "/var/log/ecs/ecs-agent.log": {
+            "FilePath": "/var/log/ecs/ecs-agent.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "/var/log/ecs/audit.log": {
+            "FilePath": "/var/log/ecs/audit.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        }
+    },
+    "LogFileGroups": {
+        "aws-ecs": {
+            "LogFiles": [
+                "/var/log/ecs/ecs-init.log",
+                "/var/log/ecs/ecs-agent.log",
+                "/var/log/ecs/audit.log"
+            ]
+        },
+        "aws-system": {
+            "LogFiles": [
+                "/var/log/update.log",
+                "/var/log/cfn-init.log",
+                "/var/log/cfn-init-cmd.log",
+                "/var/log/cloud-init.log",
+                "/var/log/cloud-init-output.log",
+                "/var/log/amazon/ssm/amazon-ssm-agent.log"
+            ]
+        }
+    },
+    "LogFileProfiles": {
+        "default": {
+            "EC2": {
+                "LogFileGroups": [
+                    "system",
+                    "aws-system",
+                    "security",
+                    "docker"
+                ]
+            },
+            "ComputeCluster": {
+                "LogFileGroups": [
+                    "system",
+                    "aws-system",
+                    "security",
+                    "docker"
+                ]
+            },
+            "ECS": {
+                "LogFileGroups": [
+                    "system",
+                    "aws-system",
+                    "security",
+                    "docker",
+                    "aws-ecs"
+                ]
+            },
+            "bastion": {
+                "LogFileGroups": [
+                    "system",
+                    "aws-system",
+                    "security"
+                ]
+            }
+        }
+    },
+    "CORSProfiles": {
+        "S3Write": {
+            "AllowedHeaders": [
+                "Content-Length",
+                "Content-Type",
+                "Content-MD5",
+                "Authorization",
+                "Expect",
+                "x-amz-content-sha256",
+                "x-amz-security-token"
+            ]
+        },
+        "S3Delete": {
+            "AllowedHeaders": [
+                "Content-Length",
+                "Content-Type",
+                "Content-MD5",
+                "Authorization",
+                "Expect",
+                "x-amz-content-sha256",
+                "x-amz-security-token"
+            ]
+        }
+    },
+    "BootstrapProfiles": {
+        "default": {
+            "EC2": {
+                "BootStraps": []
+            },
+            "ECS": {
+                "BootStraps": []
+            },
+            "ComputeCluster": {
+                "BootStraps": []
+            },
+            "bastion": {
+                "BootStraps": []
+            }
+        }
+    },
+    "LogFilters": {
+        "_sns-success": {
+            "Pattern": "{ $.status = \"SUCCESS\" }"
+        },
+        "_sns-failure": {
+            "Pattern": "{ $.status = \"FAILURE\" }"
+        }
+    },
+    "DeploymentProfiles": {
+        "_frontdoor": {
+            "Modes": {
+                "maintenance": {
+                    "lb": {
+                        "PortMappings": {
+                            "httpsmaintenance": {
+                                "Mapping": "https",
+                                "Priority": 50,
+                                "Fixed": {
+                                    "Message": "This application is currently undergoing scheduled maintenance. Please try again later.",
+                                    "ContentType": "text/plain",
+                                    "StatusCode": "503"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "_hibernate": {
+            "Modes": {
+                "maintenance": {
+                    "ecs": {
+                        "Hibernate": {
+                            "Enabled": true
+                        }
+                    },
+                    "rds": {
+                        "Hibernate": {
+                            "Enabled": true
+                        }
+                    },
+                    "cache": {
+                        "Hibernate": {
+                            "Enabled": true
+                        }
+                    }
+                }
+            }
+        },
+        "_moncpumem": {
+            "Modes": {
+                "*": {
+                    "ecs": {
+                        "Alerts": {
+                            "HighHostMemoryUsage": {
+                                "Description": "High Memory usage on ECS Host cluster",
+                                "Name": "HighHostMemoryUsage",
+                                "Metric": "MemoryUtilization",
+                                "Threshold": 95,
+                                "Severity": "Error",
+                                "Statistic": "Average",
+                                "Periods": 2,
+                                "Resource": {
+                                    "Type": "ecs"
+                                }
+                            },
+                            "HighHostCPUUsage": {
+                                "Description": "High CPU usage on ECS Host cluster",
+                                "Name": "HighHostCPUUsage",
+                                "Metric": "CPUUtilization",
+                                "Threshold": 95,
+                                "Severity": "Error",
+                                "Statistic": "Average",
+                                "Periods": 2,
+                                "Resource": {
+                                    "Type": "ecs"
+                                }
+                            }
+                        }
+                    },
+                    "service": {
+                        "Alerts": {
+                            "HighCPUUsage": {
+                                "Description": "Higher than expected CPU usage detected",
+                                "Name": "HighCPUUsage",
+                                "Metric": "CPUUtilization",
+                                "Threshold": 150,
+                                "Severity": "Warning",
+                                "Statistic": "Average"
+                            },
+                            "HighMemoryUsage": {
+                                "Description": "Higher than expected memory usage detected",
+                                "Name": "HighMemoryUsage",
+                                "Metric": "MemoryUtilization",
+                                "Threshold": 120,
+                                "Severity": "Warning",
+                                "Statistic": "Average"
+                            }
+                        }
+                    },
+                    "rds": {
+                        "Alerts": {
+                            "HighCPUUsage": {
+                                "Description": "Database under high CPU load",
+                                "Name": "HighCPUUsage",
+                                "Metric": "CPUUtilization",
+                                "Threshold": 90,
+                                "Severity": "Error",
+                                "Statistic": "Average",
+                                "Periods": 2
+                            },
+                            "LowDiskSpace": {
+                                "Description": "Database disk space is getting low only 1Gb free",
+                                "Name": "LowDiskSpace",
+                                "Metric": "FreeStorageSpace",
+                                "Threshold": 1024000000,
+                                "Severity": "Error",
+                                "Statistic": "Maximum",
+                                "Periods": 1,
+                                "Operator": "LessThanOrEqualToThreshold"
+                            }
+                        }
+                    },
+                    "cache": {
+                        "Alerts": {
+                            "HighCPUUsage": {
+                                "Description": "Redis cache under high CPU load",
+                                "Name": "HighCPUUsage",
+                                "Metric": "EngineCPUUtilization",
+                                "Threshold": 90,
+                                "Severity": "Error",
+                                "Statistic": "Average",
+                                "Periods": 2
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "PlacementProfiles": {
+        "default": {
+            "default": {
+                "Provider": "aws",
+                "Region": "ap-southeast-2",
+                "DeploymentFramework": "cf"
+            }
+        }
+    },
+    "NetworkEndpointGroups": {
+        "compute": {
+            "Services": [
+                "ec2",
+                "ec2messages",
+                "logs",
+                "elasticloadbalancing",
+                "monitoring"
+            ]
+        },
+        "security": {
+            "Services": [
+                "kms",
+                "logs"
+            ]
+        },
+        "configurationMgmt": {
+            "Services": [
+                "ssm",
+                "ssmmessages"
+            ]
+        },
+        "ecs": {
+            "Services": [
+                "ecs",
+                "ecs-agent",
+                "ecs-telemetry",
+                "ecr.api",
+                "ecr.dkr"
+            ]
+        },
+        "serverless": {
+            "Services": [
+                "sns",
+                "sqs",
+                "execute-api"
+            ]
+        },
+        "logs": {
+            "Services": [
+                "logs"
+            ]
+        },
+        "storage": {
+            "Services": [
+                "s3",
+                "dynamodb"
+            ]
+        }
+    },
+    "NetworkProfiles": {
+        "default": {
+            "BaseSecurityGroup": {
+                "Links": {
+                    "sshBastion": {
+                        "Tier": "mgmt",
+                        "Component": "ssh",
+                        "Instance": "",
+                        "Version": "",
+                        "Direction": "inbound",
+                        "Role": "networkacl"
+                    }
+                }
+            }
+        }
+    },
+    "BaselineProfiles": {
+        "default": {
+            "OpsData": "opsdata",
+            "AppData": "appdata",
+            "Encryption": "cmk",
+            "SSHKey": "ssh",
+            "CDNOriginKey": "oai"
+        }
+    },
+    "DeploymentGroups": {
+        "account": {
+            "Level": "",
+            "Priority": 10,
+            "ResourceSets": {
+                "iam": {
+                    "deployment:Unit": "iam",
+                    "ResourceLabels": [
+                        "iam"
+                    ]
+                },
+                "lg": {
+                    "deployment:Unit": "lg",
+                    "ResourceLabels": [
+                        "lg"
+                    ]
+                }
+            },
+            "CompositeTemplate": "accountList"
+        },
+        "segment": {
+            "ResourceSets": {
+                "iam": {
+                    "deployment:Unit": "iam",
+                    "ResourceLabels": [
+                        "iam"
+                    ]
+                },
+                "lg": {
+                    "deployment:Unit": "lg",
+                    "ResourceLabels": [
+                        "lg"
+                    ]
+                },
+                "eip": {
+                    "deployment:Unit": "eip",
+                    "ResourceLabels": [
+                        "eip"
+                    ]
+                },
+                "s3": {
+                    "deployment:Unit": "s3",
+                    "ResourceLabels": [
+                        "s3"
+                    ]
+                },
+                "cmk": {
+                    "deployment:Unit": "cmk",
+                    "ResourceLabels": [
+                        "cmk"
+                    ]
+                }
+            }
+        },
+        "solution": {
+            "ResourceSets": {
+                "eip": {
+                    "deployment:Unit": "eip",
+                    "ResourceLabels": [
+                        "eip"
+                    ]
+                },
+                "iam": {
+                    "deployment:Unit": "iam",
+                    "ResourceLabels": [
+                        "iam"
+                    ]
+                },
+                "lg": {
+                    "deployment:Unit": "lg",
+                    "ResourceLabels": [
+                        "lg"
+                    ]
+                }
+            }
+        },
+        "application": {
+            "ResourceSets": {
+                "iam": {
+                    "deployment:Unit": "iam",
+                    "ResourceLabels": [
+                        "iam"
+                    ]
+                },
+                "lg": {
+                    "deployment:Unit": "lg",
+                    "ResourceLabels": [
+                        "lg"
+                    ]
+                }
+            }
+        }
+    },
+    "ServiceRoles": {
+        "apigateway": {
+            "Enabled": true,
+            "ServiceName": "ops.apigateway.amazonaws.com",
+            "Description": "The Service Linked Role is used by Amazon API Gateway."
+        },
+        "autoscaling": {
+            "Enabled": true,
+            "ServiceName": "autoscaling.amazonaws.com",
+            "Description": "Default Service-Linked Role enables access to AWS Services and Resources used or managed by Auto Scaling"
+        },
+        "ecs": {
+            "Enabled": true,
+            "ServiceName": "ecs.amazonaws.com",
+            "Description": "Role to enable Amazon ECS to manage your cluster."
+        },
+        "es": {
+            "Enabled": true,
+            "ServiceName": "es.amazonaws.com"
+        }
+    }
+}
