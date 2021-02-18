@@ -119,9 +119,10 @@
                 state,
                 {
                     "CommandLineOptions" : {
-                    "Regions" : {
-                        "Segment" : "ap-southeast-2",
-                        "Account" : "ap-southeast-2"
+                        "Regions" : {
+                            "Segment" : "ap-southeast-2",
+                            "Account" : "ap-southeast-2"
+                        }
                     }
                 }
             )
