@@ -22,7 +22,7 @@
 
 /]
 
-[#macro aws_input_loader path]
+[#macro aws_inputloader path]
     [#assign aws_cmdb_regions =
         (
             getPluginTree(
@@ -53,7 +53,7 @@
     ]
 [/#macro]
 
-[#function aws_input_masterdata_seeder filter state]
+[#function aws_inputseeder_masterdata filter state]
 
     [#if getFilterAttribute(filter, "Provider")?seq_contains(AWS_PROVIDER)]
         [#local requiredRegions =
@@ -85,7 +85,7 @@
 
 [/#function]
 
-[#function aws_input_mock_seeder filter state]
+[#function aws_inputseeder_mock filter state]
 
     [#if getFilterAttribute(filter, "Provider")?seq_contains(AWS_PROVIDER)]
         [#return
@@ -111,7 +111,7 @@
 
 [/#function]
 
-[#function aws_input_commandlineoption_mock_seeder filter state]
+[#function aws_inputseeder_commandlineoption_mock filter state]
 
     [#if getFilterAttribute(filter, "Provider")?seq_contains(AWS_PROVIDER)]
         [#return
