@@ -20,7 +20,7 @@ This `AlertProfile` is intended to be used with components external to the modul
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "$id": "https://hamlet.io/schema/latest/blueprint/module-alarmslack-schema.json",
+  "$id": "",
   "definitions": {
     "alarmslack": {
       "type": "object",

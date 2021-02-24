@@ -23,7 +23,7 @@ Consolidation is performed through a DeploymentProfile created within the module
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "$id": "https://hamlet.io/schema/latest/blueprint/module-consolidatelogs-schema.json",
+  "$id": "",
   "definitions": {
     "consolidatelogs": {
       "type": "object",

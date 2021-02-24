@@ -1,11 +1,11 @@
-# no_master_resourcesets Hamlet Module 
+# no_master_vpc Hamlet Module 
 
 This is a Hamlet Deploy module.
 
 See docs.hamlet.io for more information.
 ## Description
 <!-- provide a summary of the purpose and use-case for your module -->
-Disables the default resource set configuration provided by the AWS Provider Plugin masterdata input source.
+Disables the default `vpc` included by the AWS Provider Plugin.
 
 ## Requirements
 - AWS Provider Plugin
@@ -23,7 +23,7 @@ Disables the default resource set configuration provided by the AWS Provider Plu
   "type": "object",
   "$id": "",
   "definitions": {
-    "no_master_resourcesets": {
+    "no_master_vpc": {
       "type": "object"
     }
   }
