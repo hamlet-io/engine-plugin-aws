@@ -5,7 +5,6 @@ This is a Hamlet Deploy module.
 See docs.hamlet.io for more information.
 
 ## Description
-<!-- provide a summary of the purpose and use-case for your module -->
 Solution-wide consolidation of logs into ops data bucket.
 
 Consolidation is performed through a DeploymentProfile created within the module.
@@ -14,11 +13,6 @@ Consolidation is performed through a DeploymentProfile created within the module
 - AWS Provider Plugin
 
 ## Usage
-<!--
- Provide an example configuration of the Module in a Solution.
-
- Ensure all parameters are listed, with "/* optional */" where applicable
--->
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
