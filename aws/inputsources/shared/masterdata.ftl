@@ -1058,7 +1058,7 @@
           }
         },
         "ssh": {
-          "multiAZ": true,
+          "MultiAZ": true,
           "bastion": {
             "deployment:Unit" : "ssh",
             "AutoScaling": {
@@ -1070,7 +1070,7 @@
           }
         },
         "vpc": {
-          "multiAZ": true,
+          "MultiAZ": true,
           "network": {
             "deployment:Unit" : "vpc",
             "RouteTables": {

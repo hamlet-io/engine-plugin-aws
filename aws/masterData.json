@@ -1054,7 +1054,7 @@
           "DeploymentUnits": [
             "ssh"
           ],
-          "multiAZ": true,
+          "MultiAZ": true,
           "bastion": {
             "AutoScaling": {
               "DetailedMetrics": false,
@@ -1068,7 +1068,7 @@
           "DeploymentUnits": [
             "vpc"
           ],
-          "multiAZ": true,
+          "MultiAZ": true,
           "network": {
             "RouteTables": {
               "internal": {},
