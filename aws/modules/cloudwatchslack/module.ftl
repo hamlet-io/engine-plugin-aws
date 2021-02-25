@@ -122,7 +122,7 @@
                             }
                         },
                         lambdaName : {
-                            "Lambda" : {
+                            "lambda" : {
                                 "Instances" : {
                                     "default" : {
                                         "DeploymentUnits" : [ lambdaName ]

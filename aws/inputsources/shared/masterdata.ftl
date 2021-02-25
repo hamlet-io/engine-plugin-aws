@@ -1058,7 +1058,7 @@
           }
         },
         "ssh": {
-          "MultiAZ": true,
+          "multiAZ": true,
           "bastion": {
             "deployment:Unit" : "ssh",
             "AutoScaling": {
@@ -1070,7 +1070,7 @@
           }
         },
         "vpc": {
-          "MultiAZ": true,
+          "multiAZ": true,
           "network": {
             "deployment:Unit" : "vpc",
             "RouteTables": {
@@ -1196,7 +1196,7 @@
     "gbl": {
       "Components": {
         "cfredirect": {
-          "Lambda": {
+          "lambda": {
             "Instances": {
               "default": {
                 "Versions": {
@@ -1394,7 +1394,7 @@
     "S3": {
       "IncludeTenant": false
     },
-    "RotateKey": true,
+    "RotateKeys": true,
     "Tiers": {
       "Order": [
         "elb",
