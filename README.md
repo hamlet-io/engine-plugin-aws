@@ -2,11 +2,11 @@
 
 This is a Hamlet Deploy plugin repository. It extends the Hamlet Deploy application with integration with the AWS cloud provider.
 
-This repository also includes a second Hamlet Deploy Plugin, specific to testing the AWS Plugin.
+This repository includes a collection of hamlet plugins specific to AWS
 
-| Name         | Directory     | Description                      | 
+| Name         | Directory     | Description                      |
 |--------------|---------------|----------------------------------|
-| aws          | aws/          | Core aws functionality           | 
+| aws          | aws/          | Core aws functionality           |
 | awstest      | awstest/      | Testing for aws functionality    |
 | awsdiagrams  | awsdiagrams/  | Diagram support for aws services |
 
