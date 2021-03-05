@@ -4,9 +4,11 @@ This is a Hamlet Deploy plugin repository. It extends the Hamlet Deploy applicat
 
 This repository also includes a second Hamlet Deploy Plugin, specific to testing the AWS Plugin.
 
-**AWS Plugin:**         ./aws
-
-**AWS Test Plugin:**    ./awstest
+| Name         | Directory     | Description                      | 
+|--------------|---------------|----------------------------------|
+| aws          | aws/          | Core aws functionality           | 
+| awstest      | awstest/      | Testing for aws functionality    |
+| awsdiagrams  | awsdiagrams/  | Diagram support for aws services |
 
 See https://docs.hamlet.io for more info on Hamlet Deploy
 
