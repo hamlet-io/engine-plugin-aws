@@ -1202,8 +1202,7 @@
                 "Versions": {
                   "v1": {
                     "deployment:Unit" : "cfredirect-v1",
-                    "Enabled": false,
-                    "Extensions": [ "_cfredirect-v1" ]
+                    "Enabled": false
                   }
                 }
               }
@@ -1223,6 +1222,7 @@
                   "AppData": false,
                   "AppPublic": false
                 },
+                "Extensions": [ "_cfredirect-v1" ],
                 "PredefineLogGroup": false
               }
             }
