@@ -29,7 +29,7 @@
         [#default]
             [#local family = engine + engineVersion]
             [#local scheme = engine ]
-            [#local port = solution.Port ]
+            [#local port = (solution.Port)!"" ]
     [/#switch]
 
     [#if (ports[port])?has_content]
@@ -69,10 +69,10 @@
         [#-- don't flag an error if credentials missing but component is not enabled --]
         [#local masterUsername = getOccurrenceSettingValue(occurrence, "MASTER_USERNAME", !solution.Enabled) ]
         [#local masterPassword = getOccurrenceSettingValue(occurrence, "MASTER_PASSWORD", !solution.Enabled) ]
-        [#local url = scheme + "://" + masterUsername + ":" + masterPassword + "@" + fqdn + ":" + portObject.Port + "/" + name]
+        [#local url = scheme + "://" + masterUsername + ":" + masterPassword + "@" + fqdn + ":" + (portObject.Port)!"" + "/" + name]
 
         [#if auroraCluster ]
-            [#local readUrl = scheme + "://" + masterUsername + ":" + masterPassword + "@" + readfqdn + ":" + portObject.Port + "/" + name ]
+            [#local readUrl = scheme + "://" + masterUsername + ":" + masterPassword + "@" + readfqdn + ":" + (portObject.Port)!"" + "/" + name ]
         [/#if]
     [/#if]
 
@@ -221,7 +221,7 @@
                 "TYPE" : auroraCluster?then("cluster", "instance"),
                 "SCHEME" : scheme,
                 "FQDN" : fqdn,
-                "PORT" : portObject.Port,
+                "PORT" : (portObject.Port)!"",
                 "NAME" : name,
                 "URL" : url,
                 "USERNAME" : masterUsername,
