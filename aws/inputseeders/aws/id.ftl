@@ -1,24 +1,29 @@
 [#ftl]
 
-[@addInputSeeder
+[@registerInputSeeder
     id=AWS_INPUT_SEEDER
     description="AWS provider inputs"
 /]
 
-[@addSeederToInputStage
-    inputStage=MASTERDATA_SHARED_INPUT_STAGE
-    inputSeeder=AWS_INPUT_SEEDER
+[@addSeederToInputPipeline
+    stage=MASTERDATA_SHARED_INPUT_STAGE
+    seeder=AWS_INPUT_SEEDER
 /]
 
-[@addSeederToInputStage
-    inputStage=MOCK_SHARED_INPUT_STAGE
-    inputSeeder=AWS_INPUT_SEEDER
+[@addSeederToInputPipeline
+    stage=FIXTURE_SHARED_INPUT_STAGE
+    seeder=AWS_INPUT_SEEDER
 /]
 
-[@addSeederToInputStage
-    inputSources=[MOCK_SHARED_INPUT_SOURCE]
-    inputStage=COMMANDLINEOPTIONS_SHARED_INPUT_STAGE
-    inputSeeder=AWS_INPUT_SEEDER
+[@addSeederToInputPipeline
+    stage=NORMALISE_SHARED_INPUT_STAGE
+    seeder=AWS_INPUT_SEEDER
+/]
+
+[@addSeederToInputPipeline
+    sources=[MOCK_SHARED_INPUT_SOURCE]
+    stage=COMMANDLINEOPTIONS_SHARED_INPUT_STAGE
+    seeder=AWS_INPUT_SEEDER
 
 /]
 
@@ -55,7 +60,7 @@
 
 [#function aws_inputseeder_masterdata filter state]
 
-    [#if getFilterAttribute(filter, "Provider")?seq_contains(AWS_PROVIDER)]
+    [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
         [#local requiredRegions =
             getArrayIntersection(
                 getFilterAttribute(filter, "Region")
@@ -79,15 +84,14 @@
                 }
             )
         ]
-    [#else]
-        [#return state]
     [/#if]
+    [#return state]
 
 [/#function]
 
-[#function aws_inputseeder_mock filter state]
+[#function aws_inputseeder_fixture filter state]
 
-    [#if getFilterAttribute(filter, "Provider")?seq_contains(AWS_PROVIDER)]
+    [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
         [#return
             mergeObjects(
                 state,
@@ -105,15 +109,14 @@
                 }
             )
         ]
-    [#else]
-        [#return state]
     [/#if]
+    [#return state]
 
 [/#function]
 
-[#function aws_inputseeder_commandlineoption_mock filter state]
+[#function aws_inputseeder_commandlineoptions_mock filter state]
 
-    [#if getFilterAttribute(filter, "Provider")?seq_contains(AWS_PROVIDER)]
+    [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
         [#return
             mergeObjects(
                 state,
@@ -128,4 +131,60 @@
             )
         ]
     [/#if]
+    [#return state]
+[/#function]
+
+[#-- Normalise cloud formation stack files to output sets --]
+[#function aws_inputseeder_normalise filter state]
+
+    [#-- disable this functionality for now --]
+    [#-- TODO(mfl): enable this as part of updated output processing --]
+    [#return state]
+
+    [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
+        [#local outputSets = [] ]
+
+        [#list ((state.Intermediate.Stacks)![])?filter(s -> s.ContentsAsJSON.Stacks?has_content) as stackFile]
+
+            [#-- Looks like a cloud formation stack file --]
+            [#local level = stackFile.FileName?split('-')[0] ]
+
+            [#list stackFile.ContentsAsJSON.Stacks?filter(s -> s.Outputs?has_content) as stack ]
+                [#-- Normalise to a set of outputs --]
+
+                [#local outputSet = {} ]
+
+                [#if stack.Outputs?is_sequence ]
+                    [#list stack.Outputs as output ]
+                        [#local outputSet += {
+                            output.OutputKey : output.OutputValue
+                        }]
+                    [/#list]
+                [/#if]
+
+                [#if stack.Outputs?is_hash ]
+                    [#local outputSet = stack.Outputs ]
+                [/#if]
+
+                [#if outputSet?has_content ]
+                    [#local outputSets += [ mergeObjects( { "Level" : level} , outputSet) ] ]
+                [/#if]
+
+            [/#list]
+        [/#list]
+
+        [#return
+            combineEntities(
+                state,
+                {
+                    "OutputSets" : outputSets
+                },
+                APPEND_COMBINE_BEHAVIOUR
+            ) +
+            {
+                "Intermediate" : removeObjectAttributes(state.Intermediate!{}, "Stacks")
+            }
+        ]
+    [/#if]
+    [#return state]
 [/#function]

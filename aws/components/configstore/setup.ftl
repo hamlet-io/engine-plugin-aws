@@ -35,7 +35,7 @@
     [/#if]
 
     [#local runIdAttributeName = "runId" ]
-    [#local runIdAttribute = getDynamoDbTableItem( ":run_id", commandLineOptions.Run.Id)]
+    [#local runIdAttribute = getDynamoDbTableItem( ":run_id", getRunId())]
 
     [#-- Lookup table name once it has been deployed --]
     [#if deploymentSubsetRequired("epilogue", false)]

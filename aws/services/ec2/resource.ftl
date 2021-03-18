@@ -106,8 +106,8 @@
                                 "",
                                 [
                                     "#!/bin/bash\n",
-                                    "echo \"cot:request="       + commandLineOptions.References.Request + "\"\n",
-                                    "echo \"cot:configuration=" + commandLineOptions.References.Configuration + "\"\n",
+                                    "echo \"cot:request="       + getRequestReference() + "\"\n",
+                                    "echo \"cot:configuration=" + getConfigurationReference() + "\"\n",
                                     "echo \"cot:accountRegion=" + accountRegionId         + "\"\n",
                                     "echo \"cot:tenant="        + tenantId                + "\"\n",
                                     "echo \"cot:account="       + accountId               + "\"\n",

@@ -36,7 +36,7 @@ if [[ "${process}" == "true" ]]; then
     ecs_amis["${region}"]="$(jq -r ".Images | sort_by(.CreationDate) | last(.[]).ImageId | select(.!=null)" < "amis/ecs/${region}.json")"
 
     jq -n --arg region "${region}" --arg nat "${nat_amis[${region}]}" --arg ec2 "${ec2_amis[${region}]}" --arg ecs "${ecs_amis[${region}]}" \
-      '{"Regions" : { ($region) : {"AMIs" : {"Centos" : {"NAT" : $nat, "EC2" : $ec2, "ECS" : $ecs}}}}}' > "amis/${region}.json"
+      '{ ($region) : {"AMIs" : {"Centos" : {"NAT" : $nat, "EC2" : $ec2, "ECS" : $ecs}}}}' > "amis/${region}.json"
 
     echo "${region}" "${nat_amis[${region}]}" "${ec2_amis[${region}]}" "${ecs_amis[${region}]}"
   done
@@ -47,31 +47,19 @@ fi
 # Merge with current master file
 echo "Generating master data ftl file ..."
 
-jq --indent 2 '.' masterData.json > amis/old_master.json
+jq --indent 4 '.' regions.json > amis/old_regions.json
 index=0
 filter=".[${index}]"
-files=("amis/old_master.json")
+files=("amis/old_regions.json")
 for region in "${regions[@]}"; do
   index=$(( $index + 1 ))
   filter="${filter} * .[$index]"
   files+=("amis/${region}.json")
 done
 
-jq --indent 2 -s "${filter}" "${files[@]}" > amis/new_master.json
+jq --indent 4 -s "${filter}" "${files[@]}" > amis/new_regions.json
 
-diff amis/old_master.json amis/new_master.json > /dev/null 2>&1; result=$?
+diff amis/old_regions.json amis/new_regions.json > /dev/null 2>&1; result=$?
 if [[ ${result} -ne 0 ]]; then
-  cp amis/new_master.json masterData.json
+  cp amis/new_regions.json regions.json
 fi
-
-cat << EOF > "inputsources/shared/masterdata.ftl"
-[#ftl]
-[#macro aws_input_shared_masterdata_seed ]
-  [@addMasterData
-    data=
-EOF
-cat masterData.json >> inputsources/shared/masterdata.ftl
-cat << EOF >> "inputsources/shared/masterdata.ftl"
-  /]
-[/#macro]
-EOF
