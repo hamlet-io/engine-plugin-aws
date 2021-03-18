@@ -43,7 +43,7 @@
         [#local logMetrics += {
             "lgMetric" + name : {
                 "Id" : formatDependentLogMetricId( lgId, logMetric.Id ),
-                "Name" : getMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
+                "Name" : getCWMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
                 "Type" : AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
                 "LogGroupName" : lgName,
                 "LogGroupId" : lgId,
@@ -51,7 +51,7 @@
             },
             "lgMetric" + name + "instancelog": {
                 "Id" : formatDependentLogMetricId( lgInstanceLogId, logMetric.Id ),
-                "Name" : formatName(getMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),  "instancelog"),
+                "Name" : formatName(getCWMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),  "instancelog"),
                 "Type" : AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
                 "LogGroupName" : lgInstanceLogName,
                 "LogGroupId" : lgInstanceLogId,
@@ -198,7 +198,7 @@
         [#local logMetrics += {
             "lgMetric" + name : {
                 "Id" : formatDependentLogMetricId( lgId, logMetric.Id ),
-                "Name" : getMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
+                "Name" : getCWMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
                 "Type" : AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
                 "LogGroupName" : lgName,
                 "LogGroupId" : lgId,
@@ -359,7 +359,7 @@
         [#local logMetrics += {
             "lgMetric" + name : {
                 "Id" : formatDependentLogMetricId( lgId, logMetric.Id ),
-                "Name" : getMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
+                "Name" : getCWMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
                 "Type" : AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
                 "LogGroupName" : lgName,
                 "LogGroupId" : lgId,

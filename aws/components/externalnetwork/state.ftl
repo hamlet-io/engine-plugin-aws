@@ -80,13 +80,33 @@
                                     [#local resources += {
                                         "VpnConnections" : {
                                             id : {
-                                                "Id" : formatResourceId(
-                                                    AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE,
-                                                    core.Id,
-                                                    linkTarget.Core.Id
-                                                ),
-                                                "Name" : formatName(core.FullName, linkTargetCore.Name),
-                                                "Type" : AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE
+                                                "vpnConnection" : {
+                                                    "Id" : formatResourceId(
+                                                        AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE,
+                                                        core.Id,
+                                                        linkTarget.Core.Id
+                                                    ),
+                                                    "Name" : formatName(core.FullName, linkTargetCore.Name),
+                                                    "Type" : AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE
+                                                },
+                                                "vpnTunnel1" : {
+                                                    "Id" : formatResourceId(
+                                                                AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE,
+                                                                core.Id,
+                                                                linkTarget.Core.Id,
+                                                                "Tunnel1"
+                                                            ),
+                                                    "Type" : AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE
+                                                },
+                                                "vpnTunnel2" : {
+                                                    "Id" : formatResourceId(
+                                                                AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE,
+                                                                core.Id,
+                                                                linkTarget.Core.Id,
+                                                                "Tunnel2"
+                                                            ),
+                                                    "Type" : AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE
+                                                }
                                             }
                                         }
                                     }]

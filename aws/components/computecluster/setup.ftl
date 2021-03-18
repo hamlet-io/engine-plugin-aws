@@ -356,7 +356,7 @@
                             [#local scalingTargetResources = resources ]
                         [/#if]
 
-                        [#local monitoredResources = getMonitoredResources(core.Id, scalingTargetResources, scalingMetricTrigger.Resource)]
+                        [#local monitoredResources = getCWMonitoredResources(core.Id, scalingTargetResources, scalingMetricTrigger.Resource)]
 
                         [#if monitoredResources?keys?size > 1 ]
                             [@fatal
@@ -378,9 +378,9 @@
 
                         [#local monitoredResource = monitoredResources[ (monitoredResources?keys)[0]] ]
 
-                        [#local metricDimensions = getResourceMetricDimensions(monitoredResource, scalingTargetResources )]
-                        [#local metricName = getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName)]
-                        [#local metricNamespace = getResourceMetricNamespace(monitoredResource.Type)]
+                        [#local metricDimensions = getCWResourceMetricDimensions(monitoredResource, scalingTargetResources )]
+                        [#local metricName = getCWMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName)]
+                        [#local metricNamespace = getCWResourceMetricNamespace(monitoredResource.Type)]
 
                         [#if scalingPolicy.Type?lower_case == "stepped" ]
                             [#if ! isPresent( scalingPolicy.Stepped )]
@@ -436,9 +436,9 @@
                             [/#if]
 
                             [#local metricSpecification = getAutoScalingCustomTrackMetric(
-                                                            getResourceMetricDimensions(monitoredResource, scalingTargetResources ),
-                                                            getMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName),
-                                                            getResourceMetricNamespace(monitoredResource.Type),
+                                                            getCWResourceMetricDimensions(monitoredResource, scalingTargetResources ),
+                                                            getCWMetricName(scalingMetricTrigger.Metric, monitoredResource.Type, scalingTargetCore.ShortFullName),
+                                                            getCWResourceMetricNamespace(monitoredResource.Type),
                                                             scalingMetricTrigger.Statistic
                                                         )]
 

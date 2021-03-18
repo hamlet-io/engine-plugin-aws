@@ -84,17 +84,215 @@
     ]
 [/#function]
 
+[#-- *** CloudWatch Metric Management *** --]
+
 [#-- Metric Dimensions are extended dynamically by each resouce type --]
-[#assign metricAttributes = {
-    "_none" : {
-        "Namespace" : "",
-        "Dimensions" : {
-            "None" : {
-                "None" : ""
+[#assign CWMetricAttributes = {}]
+
+[#macro addCWMetricAttributes resourceType namespace dimensions ]
+    [#assign CWMetricAttributes = mergeObjects(
+            CWMetricAttributes,
+            {
+                resourceType : {
+                    "Namespace" : namespace,
+                    "Dimensions" : dimensions
+                }
             }
+    )]
+[/#macro]
+
+[#-- Add dummy attribute --]
+[@addCWMetricAttributes
+    resourceType="_none"
+    namespace=""
+    dimensions={
+        "None" : {
+            "None" : ""
         }
     }
-}]
+/]
+
+[#function getCWMetricDimensions alert monitoredResource resources environment={}]
+    [#switch alert.DimensionSource]
+        [#case "Resource" ]
+            [#return getCWResourceMetricDimensions(monitoredResource, resources)]
+            [#break]
+
+        [#case "Configured" ]
+            [#local dimensions = [] ]
+            [#list alert.Dimensions as id, dimension ]
+                [#local value = ""]
+                [#if ((dimension.SettingEnvName)!"")?has_content ]
+                    [#local value = (environment["Environment"][dimension.SettingEnvName])!"" ]
+                [#else]
+                    [#local value = (dimension.Value)!"" ]
+                [/#if]
+
+                [#local dimensions += [ {
+                    "Name" : dimension.Key,
+                    "Value" : value
+                }]]
+            [/#list]
+            [#return dimensions]
+            [#break]
+    [/#switch]
+
+    [#return []]
+[/#function]
+
+[#function getCWResourceMetricDimensions resource resources]
+    [#local resourceMetricAttributes = CWMetricAttributes[resource.Type]!{} ]
+
+    [#if resourceMetricAttributes?has_content ]
+        [#local occurrenceDimensions = [] ]
+        [#list resourceMetricAttributes.Dimensions as name,property ]
+            [#list property as key,value ]
+                [#switch key]
+                    [#case "ResourceProperty" ]
+                        [#local occurrenceDimensions += [{
+                            "Name" : name,
+                            "Value" : resource[value]
+                        }]]
+                        [#break]
+                    [#case "OtherResourceProperty" ]
+                        [#local otherResource = getResourceFromId(resources, value.Id)]
+                        [#local occurrenceDimensions += [{
+                            "Name" : name,
+                            "Value" : otherResource[value.Property]
+                        }]]
+                        [#break]
+                    [#case "Output" ]
+                        [#if (value.MustExist)!false ]
+                            [#local occurrenceDimensions += [{
+                                "Name" : name,
+                                "Value" : getExistingReference(resource.Id, value.Attribute)
+                            }]]
+                        [#else]
+                            [#local occurrenceDimensions += [{
+                                "Name" : name,
+                                "Value" : getReference(resource.Id, value.Attribute)
+                            }]]
+                        [/#if]
+                        [#break]
+                    [#case "OtherOutput" ]
+                        [#local otherResource = getResourceFromId(resources, value.Id)]
+                        [#if (value.MustExist)!false ]
+                            [#local occurrenceDimensions += [{
+                                "Name" : name,
+                                "Value" : getExistingReference(otherResource.Id, value.Property)
+                            }]]
+                        [#else]
+                            [#local occurrenceDimensions += [{
+                                "Name" : name,
+                                "Value" : getReference(otherResource.Id, value.Property)
+                            }]]
+                        [/#if]
+                        [#break]
+                    [#case "PseudoOutput" ]
+                        [#local occurrenceDimensions += [{
+                            "Name" : name,
+                            "Value" : { "Ref" : value }
+                        }]]
+                        [#break]
+                [/#switch]
+            [/#list]
+        [/#list]
+
+        [#return occurrenceDimensions]
+    [#else]
+        [@fatal
+            message="Dimensions not mapped for this resource"
+            context=resource.Type
+        /]
+    [/#if]
+
+[/#function]
+
+[#function getCWResourceMetricNamespace resourceType override="" ]
+
+    [#if override?has_content ]
+        [#return override]
+    [/#if]
+
+    [#local resourceTypeNameSpace = (CWMetricAttributes[resourceType]).Namespace!"" ]
+
+    [#if resourceTypeNameSpace?has_content ]
+        [#switch resourceTypeNameSpace ]
+            [#case "_productPath" ]
+                [#return formatProductRelativePath()]
+                [#break]
+
+            [#default]
+                [#return resourceTypeNameSpace]
+        [/#switch]
+    [#else]
+        [@fatal
+            message="Namespace not mapped for this resource"
+            context=resource.Type
+        /]
+    [/#if]
+[/#function]
+
+[#function getCWMetricName metricName resourceType shortFullName ]
+
+    [#-- For some metrics we need to append the resourceName to add a qualifier if they don't support dimensions --]
+    [#switch resourceType]
+        [#case AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE ]
+            [#return formatName(metricName, shortFullName) ]
+    [#break]
+
+    [#default]
+        [#return metricName]
+    [/#switch]
+[/#function]
+
+[#function getCWMonitoredResources coreId resources resourceQualifier ]
+    [#local monitoredResources = {} ]
+
+    [#-- allow for a none type which disables dimension lookup --]
+    [#if resourceQualifier.Type?has_content && resourceQualifier.Type == "_none" ]
+        [#return { "_none" : { "Id" : coreId, "Type" : "_none" } }]
+    [/#if]
+
+    [#list resources as id,resource ]
+
+        [#if !resource["Type"]?has_content && resource?is_hash]
+            [#list resource as id,subResource ]
+                [#local monitoredResources += getCWMonitoredResources(coreId, {id : subResource}, resourceQualifier)]
+            [/#list]
+
+        [#else]
+
+            [#if resourceQualifier.Id?has_content || resourceQualifier.Type?has_content ]
+
+                [#if resourceQualifier.Id?has_content && resourceQualifier.Id == id  ]
+                    [#local monitoredResources += {
+                        id: resource
+                    }]
+                [/#if]
+
+                [#if resourceQualifier.Type?has_content && resourceQualifier.Type == resource["Type"]  ]
+                    [#local monitoredResources += {
+                        id: resource
+                    }]
+                [/#if]
+
+            [#else]
+
+                [#if resource["Type"]?has_content]
+
+                    [#if resource["Monitored"]!false ]
+                        [#local monitoredResources += {
+                            id : resource
+                        }]
+                    [/#if]
+                [/#if]
+
+            [/#if]
+        [/#if]
+    [/#list]
+    [#return monitoredResources ]
+[/#function]
 
 [#-- Include a reference to a resource --]
 [#-- Allows resources to share a template or be separated --]

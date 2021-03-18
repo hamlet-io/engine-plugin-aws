@@ -14,18 +14,15 @@
     }
 ]
 
-[#assign metricAttributes +=
-    {
-        AWS_LAMBDA_FUNCTION_RESOURCE_TYPE : {
-            "Namespace" : "AWS/Lambda",
-            "Dimensions" : {
-                "FunctionName" : {
-                    "ResourceProperty" : "Name"
-                }
-            }
+[@addCWMetricAttributes
+    resourceType=AWS_LAMBDA_FUNCTION_RESOURCE_TYPE
+    namespace="AWS/Lambda"
+    dimensions={
+        "FunctionName" : {
+            "ResourceProperty" : "Name"
         }
     }
-]
+/]
 
 [#assign LAMBDA_VERSION_OUTPUT_MAPPINGS =
     {

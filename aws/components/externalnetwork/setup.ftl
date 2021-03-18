@@ -26,7 +26,7 @@
 
         [#list solution.Alerts?values as alert ]
 
-            [#local monitoredResources = getMonitoredResources(core.Id, resources, alert.Resource)]
+            [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
             [#list monitoredResources as name,monitoredResource ]
 
                 [@debug message="Monitored resource" context=monitoredResource enabled=false /]
@@ -39,8 +39,8 @@
                             resourceName=core.FullName
                             alertName=alert.Name
                             actions=getCWAlertActions(occurrence, solution.Profiles.Alert, alert.Severity )
-                            metric=getMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
-                            namespace=getResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
+                            metric=getCWMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
+                            namespace=getCWResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
                             description=alert.Description!alert.Name
                             threshold=alert.Threshold
                             statistic=alert.Statistic
@@ -50,7 +50,7 @@
                             reportOK=alert.ReportOk
                             unit=alert.Unit
                             missingData=alert.MissingData
-                            dimensions=getMetricDimensions(alert, monitoredResource, resources)
+                            dimensions=getCWMetricDimensions(alert, monitoredResource, resources)
                         /]
                     [#break]
                 [/#switch]
@@ -108,8 +108,11 @@
                         [#switch solution.Engine ]
                             [#case "SiteToSite" ]
 
-                                [#local vpnConnectionId = resources["VpnConnections"][id].Id ]
-                                [#local vpnConnectionName = resources["VpnConnections"][id].Name ]
+                                [#local vpnConnectionId = resources["VpnConnections"][id]["vpnConnection"].Id ]
+                                [#local vpnConnectionName = resources["VpnConnections"][id]["vpnConnection"].Name ]
+
+                                [#local vpnConnectionTunnel1Id = resources["VpnConnections"][id]["vpnTunnel1"].Id ]
+                                [#local vpnConnectionTunnel2Id = resources["VpnConnections"][id]["vpnTunnel2"].Id ]
 
                                 [#local transitGateway = getReference( linkTargetResources["transitGateway"].Id ) ]
                                 [#local transitGatewayRouteTable = getReference( linkTargetResources["routeTable"].Id )]
@@ -149,6 +152,22 @@
                                                 r'       "' + vpnConnectionId + r'" ' +
                                                 r'       "${tmpdir}/cli-' +
                                                             vpnConnectionId + "-" + vpnOptionsCommand + r'.json" || return $?'
+                                                r'      tunnel_ips=$(get_vpn_connection_tunnel_ips ' +
+                                                r'       "' + region + r'" ' +
+                                                r'       "${STACK_NAME}"' +
+                                                r'       "' + vpnConnectionId + r'" )',
+                                                r'      tunnel_ip_1="${tunnel_ips[0]}"',
+                                                r'      tunnel_ip_2="${tunnel_ips[1]}"'
+                                            ] +
+                                                pseudoStackOutputScript(
+                                                        "Tunnel IP Addresses",
+                                                        {
+                                                            formatId(vpnConnectionTunnel1Id, IP_ADDRESS_ATTRIBUTE_TYPE) : "$\{tunnel_ip_1}",
+                                                            formatId(vpnConnectionTunnel2Id, IP_ADDRESS_ATTRIBUTE_TYPE) : "$\{tunnel_ip_2}"
+                                                        },
+                                                        "tunnelip"
+                                                ) +
+                                            [
                                                 r'       ;;',
                                                 r' esac'
                                             ]

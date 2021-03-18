@@ -14,24 +14,21 @@
     }
 ]
 
-[#assign metricAttributes +=
-    {
-        AWS_APIGATEWAY_RESOURCE_TYPE : {
-            "Namespace" : "AWS/ApiGateway",
-            "Dimensions" : {
-                "ApiName" : {
-                    "ResourceProperty" : "Name"
-                },
-                "Stage" : {
-                    "OtherResourceProperty" : {
-                        "Id" : "apistage",
-                        "Property" : "Name"
-                    }
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_APIGATEWAY_RESOURCE_TYPE
+    namespace="AWS/ApiGateway"
+    dimensions={
+        "ApiName" : {
+            "ResourceProperty" : "Name"
+        },
+        "Stage" : {
+            "OtherResourceProperty" : {
+                "Id" : "apistage",
+                "Property" : "Name"
             }
         }
     }
-]
+/]
 
 [#assign APIGATEWAY_APIKEY_OUTPUT_MAPPINGS =
     {
@@ -143,5 +140,3 @@
         dependencies=dependencies
     /]
 [/#macro]
-
-

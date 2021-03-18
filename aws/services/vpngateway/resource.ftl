@@ -1,17 +1,55 @@
 [#ftl]
 
-[#assign metricAttributes +=
-    {
-        AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE : {
-            "Namespace" : "AWS/VPN",
-            "Dimensions" : {
-                "VpnId" : {
-                    "Output" : ""
-                }
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE
+    mappings={
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+/]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE
+    mappings={
+        IP_ADDRESS_ATTRIBUTE_TYPE : {
+            "Attribute" : IP_ADDRESS_ATTRIBUTE_TYPE
+        }
+    }
+/]
+
+[@addCWMetricAttributes
+    resourceType=AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE
+    namespace="AWS/VPN"
+    dimensions={
+        "VpnId" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
             }
         }
     }
-]
+/]
+
+[@addCWMetricAttributes
+    resourceType=AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE
+    namespace="AWS/VPN"
+    dimensions={
+        "VpnId" : {
+            "OtherOutput" : {
+                "Id" : "vpnConnection",
+                "Property" : REFERENCE_ATTRIBUTE_TYPE
+            }
+        },
+        "TunnelIpAddress" : {
+            "Output" : {
+                "Attribute" : IP_ADDRESS_ATTRIBUTE_TYPE,
+                "MustExist" : true
+            }
+        }
+    }
+/]
 
 [#macro createVPNCustomerGateway
             id

@@ -27,22 +27,20 @@
     }
 ]
 
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_CACHE_RESOURCE_TYPE
     mappings=REDIS_OUTPUT_MAPPINGS
 /]
 
-[#assign metricAttributes +=
-    {
-        AWS_CACHE_RESOURCE_TYPE : {
-            "Namespace" : "AWS/ElastiCache",
-            "Dimensions" : {
-                "CacheClusterId" : {
-                    "Output" : ""
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_CACHE_RESOURCE_TYPE
+    namespace="AWS/ElastiCache"
+    dimensions={
+        "CacheClusterId" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
             }
         }
     }
-]
-
+/]

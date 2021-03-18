@@ -74,48 +74,59 @@
     /]
 [/#list]
 
-[#assign metricAttributes +=
-    {
-        AWS_LB_CLASSIC_RESOURCE_TYPE : {
-            "Namespace" : "AWS/ELB",
-            "Dimensions" : {
-                "LoadBalancerName" : {
-                    "Output" : ""
-                }
-            }
-        },
-        AWS_LB_APPLICATION_RESOURCE_TYPE : {
-            "Namespace" : "AWS/ApplicationELB",
-            "Dimensions" : {
-                "LoadBalancer" : {
-                    "Output" : NAME_ATTRIBUTE_TYPE
-                }
-            }
-        },
-        AWS_LB_NETWORK_RESOURCE_TYPE : {
-            "Namespace" : "AWS/NetworkELB",
-            "Dimensions" : {
-                "LoadBalancer" : {
-                    "Output" : NAME_ATTRIBUTE_TYPE
-                }
-            }
-        },
-        AWS_ALB_TARGET_GROUP_RESOURCE_TYPE : {
-            "Namespace" : "AWS/ApplicationELB",
-            "Dimensions" : {
-                "LoadBalancer" : {
-                    "OtherOutput" : {
-                        "Id" : "lb",
-                        "Property" : NAME_ATTRIBUTE_TYPE
-                    }
-                },
-                "TargetGroup" : {
-                    "Output" : NAME_ATTRIBUTE_TYPE
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_LB_CLASSIC_RESOURCE_TYPE
+    namespace="AWS/ELB"
+    dimensions={
+        "LoadBalancerName" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
             }
         }
     }
-]
+/]
+
+[@addCWMetricAttributes
+    resourceType=AWS_LB_APPLICATION_RESOURCE_TYPE
+    namespace="AWS/ApplicationELB"
+    dimensions={
+        "LoadBalancer" : {
+            "Output" : {
+                "Attribute" : NAME_ATTRIBUTE_TYPE
+            }
+        }
+    }
+/]
+
+[@addCWMetricAttributes
+    resourceType=AWS_LB_NETWORK_RESOURCE_TYPE
+    namespace="AWS/NetworkELB"
+    dimensions={
+        "LoadBalancer" : {
+            "Output" : {
+                "Attribute" : NAME_ATTRIBUTE_TYPE
+            }
+        }
+    }
+/]
+
+[@addCWMetricAttributes
+    resourceType=AWS_ALB_TARGET_GROUP_RESOURCE_TYPE
+    namespace="AWS/ApplicationELB"
+    dimensions={
+        "LoadBalancer" : {
+            "OtherOutput" : {
+                "Id" : "lb",
+                "Property" : NAME_ATTRIBUTE_TYPE
+            }
+        },
+        "TargetGroup" : {
+            "Output" : {
+                "Attribute" : NAME_ATTRIBUTE_TYPE
+            }
+        }
+    }
+/]
 
 [#macro createALB
     id
@@ -208,7 +219,7 @@
         [@fatal
             message="LB Certificate ARN could not be found. Check the certificate exists and is in the correct region."
             context=
-                { 
+                {
                     "CertificateId" : certificateId,
                     "Region" : regionId
                 }

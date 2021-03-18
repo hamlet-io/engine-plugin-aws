@@ -143,7 +143,7 @@
                     name=logMetric.Name
                     logGroup=logMetric.LogGroupName
                     filter=logFilters[logMetric.LogFilter].Pattern
-                    namespace=getResourceMetricNamespace(logMetric.Type)
+                    namespace=getCWResourceMetricNamespace(logMetric.Type)
                     value=1
                     dependencies=logMetric.LogGroupId
                 /]
@@ -152,7 +152,7 @@
 
             [#list solution.Alerts?values as alert ]
 
-                [#local monitoredResources = getMonitoredResources(core.Id, resources, alert.Resource)]
+                [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
                 [#list monitoredResources as name,monitoredResource ]
 
                     [@debug message="Monitored resource" context=monitoredResource enabled=false /]
@@ -165,8 +165,8 @@
                                 resourceName=core.FullName
                                 alertName=alert.Name
                                 actions=getCWAlertActions(subOccurrence, solution.Profiles.Alert, alert.Severity )
-                                metric=getMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
-                                namespace=getResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
+                                metric=getCWMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
+                                namespace=getCWResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
                                 description=alert.Description!alert.Name
                                 threshold=alert.Threshold
                                 statistic=alert.Statistic
@@ -176,7 +176,7 @@
                                 reportOK=alert.ReportOk
                                 unit=alert.Unit
                                 missingData=alert.MissingData
-                                dimensions=getMetricDimensions(alert, monitoredResource, resources)
+                                dimensions=getCWMetricDimensions(alert, monitoredResource, resources)
                             /]
                         [#break]
                     [/#switch]

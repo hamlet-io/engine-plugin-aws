@@ -19,24 +19,23 @@
         }
     }
 ]
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_SQS_RESOURCE_TYPE
     mappings=SQS_OUTPUT_MAPPINGS
 /]
 
-[#assign metricAttributes +=
-    {
-        AWS_SQS_RESOURCE_TYPE : {
-            "Namespace" : "AWS/SQS",
-            "Dimensions" : {
-                "QueueName" : {
-                    "Output" : NAME_ATTRIBUTE_TYPE
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_SQS_RESOURCE_TYPE
+    namespace="AWS/SQS"
+    dimensions={
+        "QueueName" : {
+            "Output" : {
+                "Attribute" : NAME_ATTRIBUTE_TYPE
             }
         }
     }
-]
+/]
 
 [#macro createSQSQueue id name delay="" maximumSize="" retention="" receiveWait="" visibilityTimout="" dlq="" dlqReceives=1 dependencies=""]
     [@cfResource

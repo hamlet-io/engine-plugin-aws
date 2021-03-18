@@ -18,18 +18,15 @@
 /]
 
 [#-- Dummy metricAttributes to allow for log watchers --]
-[#assign metricAttributes +=
-    {
-        AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE : {
-            "Namespace" : "_productPath",
-            "Dimensions" : {
-                "None" : {
-                    "None" : ""
-                }
-            }
+[@addCWMetricAttributes
+    resourceType=AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE
+    namespace="_productPath"
+    dimensions={
+        "None" : {
+            "None" : ""
         }
     }
-]
+/]
 
 [#macro setupLogGroup occurrence logGroupId logGroupName loggingProfile retention=0 ]
     [#local dependencies = []]

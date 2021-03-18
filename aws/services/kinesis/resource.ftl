@@ -34,18 +34,17 @@
     mappings=AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS
 /]
 
-[#assign metricAttributes +=
-    {
-        AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE : {
-            "Namespace" : "AWS/Firehose",
-            "Dimensions" : {
-                "DeliveryStreamName" : {
-                    "Output" : REFERENCE_ATTRIBUTE_TYPE
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE
+    namespace="AWS/Firehose"
+    dimensions={
+        "DeliveryStreamName" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
             }
         }
     }
-]
+/]
 
 [#macro createKinesisDataStream id name retentionHours="" shardCount=1 keyId="" dependencies=""]
     [#local encrpytionConfig = {}]

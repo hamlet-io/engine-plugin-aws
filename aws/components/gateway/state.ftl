@@ -182,6 +182,66 @@
             [#break]
 
         [#case "private" ]
+
+            [#local vpnConnections = {}]
+
+            [#list solution.Links?values as link]
+                [#if link?is_hash]
+                    [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+                    [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                    [#if !linkTarget?has_content]
+                        [#continue]
+                    [/#if]
+
+                    [#switch linkTarget.Core.Type]
+
+                        [#case EXTERNALNETWORK_CONNECTION_COMPONENT_TYPE ]
+                            [#switch linkTargetConfiguration.Solution.Engine ]
+
+                                [#case "SiteToSite" ]
+
+                                    [#local vpnConnections = mergeObjects(
+                                        vpnConnections,
+                                        {
+                                            linkTarget.Core.Id : {
+                                                "vpnConnection" : {
+                                                    "Id" : formatResourceId(
+                                                                AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE,
+                                                                core.Id,
+                                                                linkTarget.Core.Id
+                                                            ),
+                                                    "Type" : AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE
+                                                },
+                                                "vpnTunnel1" : {
+                                                    "Id" : formatResourceId(
+                                                                AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE,
+                                                                core.Id,
+                                                                linkTarget.Core.Id,
+                                                                "Tunnel1"
+                                                            ),
+                                                    "Type" : AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE
+                                                },
+                                                "vpnTunnel2" : {
+                                                    "Id" : formatResourceId(
+                                                                AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE,
+                                                                core.Id,
+                                                                linkTarget.Core.Id,
+                                                                "Tunnel2"
+                                                            ),
+                                                    "Type" : AWS_VPNGATEWAY_VPN_CONNECTION_TUNNEL_RESOURCE_TYPE
+                                                }
+                                            }
+                                        }
+                                    )]
+                                    [#break]
+                            [/#switch]
+                            [#break]
+                    [/#switch]
+                [/#if]
+            [/#list]
+
             [#local resources = mergeObjects(
                         resources,
                         {
@@ -199,7 +259,8 @@
                                             core.Id
                                 ),
                                 "Type" : AWS_VPNGATEWAY_VIRTUAL_GATEWAY_ATTACHMENT_RESOURCE_TYPE
-                            }
+                            },
+                            "VpnConnections" : vpnConnections
                         }
             )]
             [#break]

@@ -66,32 +66,36 @@
     /]
 [/#list]
 
-[#assign metricAttributes +=
-    {
-        AWS_ECS_RESOURCE_TYPE : {
-            "Namespace" : "AWS/ECS",
-            "Dimensions" : {
-                "ClusterName" : {
-                    "Output" : REFERENCE_ATTRIBUTE_TYPE
-                }
-            }
-        },
-        AWS_ECS_SERVICE_RESOURCE_TYPE : {
-            "Namespace" : "AWS/ECS",
-            "Dimensions" : {
-                "ClusterName" : {
-                    "OtherOutput" : {
-                        "Id" : "cluster",
-                        "Property" : ""
-                    }
-                },
-                "ServiceName" : {
-                    "Output" : NAME_ATTRIBUTE_TYPE
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_ECS_RESOURCE_TYPE
+    namespace="AWS/ECS"
+    dimensions={
+        "ClusterName" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
             }
         }
     }
-]
+/]
+
+[@addCWMetricAttributes
+    resourceType=AWS_ECS_SERVICE_RESOURCE_TYPE
+    namespace="AWS/ECS"
+    dimensions={
+        "ClusterName" : {
+            "OtherOutput" : {
+                "Id" : "cluster",
+                "Property" : ""
+            }
+        },
+        "ServiceName" : {
+            "Output" : {
+                "Attribute" : NAME_ATTRIBUTE_TYPE
+            }
+        }
+    }
+/]
+
 
 [#function getCapacityProviderStrategy capacityProvider weight base="" ]
     [#return

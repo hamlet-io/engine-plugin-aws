@@ -45,26 +45,29 @@
     mappings=RDS_CLUSTER_OUTPUT_MAPPINGS
 /]
 
-[#assign metricAttributes +=
-    {
-        AWS_RDS_RESOURCE_TYPE : {
-            "Namespace" : "AWS/RDS",
-            "Dimensions" : {
-                "DBInstanceIdentifier" : {
-                    "Output" : ""
-                }
-            }
-        },
-        AWS_RDS_CLUSTER_RESOURCE_TYPE : {
-            "Namespace" : "AWS/RDS",
-            "Dimensions" : {
-                "DBClusterIdentifier" : {
-                    "Output" : ""
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_RDS_RESOURCE_TYPE
+    namespace="AWS/RDS"
+    dimensions={
+        "DBInstanceIdentifier" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
             }
         }
     }
-]
+/]
+
+[@addCWMetricAttributes
+    resourceType=AWS_RDS_CLUSTER_RESOURCE_TYPE
+    namespace="AWS/RDS"
+    dimensions={
+        "DBClusterIdentifier" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
+            }
+        }
+    }
+/]
 
 [#macro createRDSInstance id name
     engine

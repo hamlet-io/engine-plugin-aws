@@ -49,7 +49,7 @@
         [#local logMetrics += {
             "lgMetric" + name : {
                 "Id" : formatDependentLogMetricId( lgId, logMetric.Id ),
-                "Name" : getMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
+                "Name" : getCWMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
                 "Type" : AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
                 "LogGroupName" : lgName,
                 "LogGroupId" : lgId,

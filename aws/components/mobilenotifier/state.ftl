@@ -54,7 +54,7 @@
         [#local logMetrics += {
             "lgMetric" + name + "success" : {
                 "Id" : formatDependentLogMetricId( lgId, logMetric.Id ),
-                "Name" : getMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
+                "Name" : getCWMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
                 "Type" : AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
                 "LogGroupName" : lgName,
                 "LogGroupId" : lgId,
@@ -62,7 +62,7 @@
             },
             "lgMetric" + name + "failure" : {
                 "Id" : formatDependentLogMetricId( lgFailureId, logMetric.Id ),
-                "Name" : getMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
+                "Name" : getCWMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),
                 "Type" : AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
                 "LogGroupName" : lgFailureName,
                 "LogGroupId" : lgFailureId,

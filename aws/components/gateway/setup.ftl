@@ -395,11 +395,9 @@
 
                                     [#local BGPEnabled = (linkTargetAttributes["BGP_ASN"]!"")?has_content ]
 
-                                    [#local vpnConnectionId = formatResourceId(
-                                                AWS_VPNGATEWAY_VPN_CONNECTION_RESOURCE_TYPE,
-                                                core.Id,
-                                                linkTarget.Core.Id
-                                            )]
+                                    [#local vpnConnectionId = resources["VpnConnections"][linkTarget.Core.Id]["vpnConnection"].Id ]
+                                    [#local vpnConnectionTunnel1Id = resources["VpnConnections"][linkTarget.Core.Id]["vpnTunnel1"].Id ]
+                                    [#local vpnConnectionTunnel2Id = resources["VpnConnections"][linkTarget.Core.Id]["vpnTunnel2"].Id ]
 
                                     [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                                         [@createVPNConnection
@@ -454,6 +452,22 @@
                                                     r'       "' + vpnConnectionId + r'" ' +
                                                     r'       "${tmpdir}/cli-' +
                                                                 vpnConnectionId + "-" + vpnOptionsCommand + r'.json" || return $?'
+                                                    r'      tunnel_ips=$(get_vpn_connection_tunnel_ips ' +
+                                                    r'       "' + region + r'" ' +
+                                                    r'       "${STACK_NAME}"' +
+                                                    r'       "' + vpnConnectionId + r'" )',
+                                                    r'      tunnel_ip_1="${tunnel_ips[0]}"',
+                                                    r'      tunnel_ip_2="${tunnel_ips[1]}"'
+                                                ] +
+                                                    pseudoStackOutputScript(
+                                                            "Tunnel IP Addresses",
+                                                            {
+                                                                formatId(vpnConnectionTunnel1Id, IP_ADDRESS_ATTRIBUTE_TYPE) : "$\{tunnel_ip_1}",
+                                                                formatId(vpnConnectionTunnel2Id, IP_ADDRESS_ATTRIBUTE_TYPE) : "$\{tunnel_ip_2}"
+                                                            },
+                                                            "tunnelip"
+                                                    ) +
+                                                [
                                                     r'       ;;',
                                                     r' esac'
                                                 ]

@@ -17,27 +17,26 @@
     }
 ]
 
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_ES_RESOURCE_TYPE
     mappings=ES_OUTPUT_MAPPINGS
 /]
 
-[#assign metricAttributes +=
-    {
-        AWS_ES_RESOURCE_TYPE : {
-            "Namespace" : "AWS/ES",
-            "Dimensions" : {
-                "DomainName" : {
-                    "Output" : ""
-                },
-                "ClientId" : {
-                    "PseudoOutput" : "AWS::AccountId"
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_ES_RESOURCE_TYPE
+    namespace="AWS/ES"
+    dimensions={
+        "DomainName" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
             }
+        },
+        "ClientId" : {
+            "PseudoOutput" : "AWS::AccountId"
         }
     }
-]
+/]
 
 [#function formatESDomainArn esId indexPath=["*"] region={ "Ref" : "AWS::Region" } account={ "Ref" : "AWS::AccountId" } ]
     [#return

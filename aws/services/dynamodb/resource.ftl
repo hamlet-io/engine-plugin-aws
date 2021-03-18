@@ -20,18 +20,17 @@
     mappings=DYNAMODB_OUTPUT_MAPPINGS
 /]
 
-[#assign metricAttributes +=
-    {
-        AWS_DYNAMODB_TABLE_RESOURCE_TYPE : {
-            "Namespace" : "AWS/DynamoDB",
-            "Dimensions" : {
-                "TableName" : {
-                    "Output" : ""
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_DYNAMODB_TABLE_RESOURCE_TYPE
+    namespace="AWS/DynamoDB"
+    dimensions={
+        "TableName" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
             }
         }
     }
-]
+/]
 
 [#function getDynamoDbAttributeType type ]
     [#switch type?upper_case ]

@@ -52,7 +52,7 @@
 
         [#list solution.Alerts?values as alert ]
 
-            [#local monitoredResources = getMonitoredResources(core.Id, resources, alert.Resource)]
+            [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
             [#list monitoredResources as name,monitoredResource ]
 
                 [#switch alert.Comparison ]
@@ -63,8 +63,8 @@
                             resourceName=core.FullName
                             alertName=alert.Name
                             actions=getCWAlertActions(occurrence, solution.Profiles.Alert, alert.Severity )
-                            metric=getMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
-                            namespace=getResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
+                            metric=getCWMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
+                            namespace=getCWResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
                             description=alert.Description!alert.Name
                             threshold=alert.Threshold
                             statistic=alert.Statistic
@@ -74,7 +74,7 @@
                             reportOK=alert.ReportOk
                             unit=alert.Unit
                             missingData=alert.MissingData
-                            dimensions=getMetricDimensions(alert, monitoredResource, resources)
+                            dimensions=getCWMetricDimensions(alert, monitoredResource, resources)
                         /]
                     [#break]
                 [/#switch]

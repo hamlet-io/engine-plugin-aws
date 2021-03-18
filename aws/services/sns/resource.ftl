@@ -13,27 +13,24 @@
         }
     }
 ]
-[@addOutputMapping 
+[@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_SNS_TOPIC_RESOURCE_TYPE
     mappings=SNS_TOPIC_OUTPUT_MAPPINGS
 /]
 
-[#assign metricAttributes +=
-    {
-        AWS_SNS_PLATFORMAPPLICATION_RESOURCE_TYPE : {
-            "Namespace" : "AWS/SNS",
-            "Dimensions" : {
-                "Application" : {
-                    "ResourceProperty" : "Name"
-                },
-                "Platform" : {
-                    "ResourceProperty" : "Engine"
-                }
-            }
+[@addCWMetricAttributes
+    resourceType=AWS_SNS_PLATFORMAPPLICATION_RESOURCE_TYPE
+    namespace="AWS/SNS"
+    dimensions={
+        "Application" : {
+            "ResourceProperty" : "Name"
+        },
+        "Platform" : {
+            "ResourceProperty" : "Engine"
         }
     }
-]
+/]
 
 [#macro createSNSTopic id name encrypted=false kmsKeyId="" fixedName=false dependencies=[]]
     [@cfResource
@@ -47,7 +44,7 @@
                 "TopicName",
                 fixedName,
                 name
-            ) + 
+            ) +
             attributeIfTrue(
                 "KmsMasterKeyId",
                 encrypted,
@@ -67,11 +64,11 @@
                 "Endpoint" : endpoint,
                 "Protocol" : protocol,
                 "TopicArn" : getReference(topicId, ARN_ATTRIBUTE_TYPE)
-            } + 
+            } +
             attributeIfContent(
                 "DeliveryPolicy",
                 deliveryPolicy
-            ) + 
+            ) +
             attributeIfTrue(
                 "RawMessageDelivery",
                 ( protocol == "sqs" || protocol == "http" || protocol = "https" ),
@@ -124,7 +121,7 @@
         "healthyRetryPolicy": {
             "backoffFunction" : deliveryPolicyConfig.BackOffMode,
             "numRetries" :  deliveryPolicyConfig.RetryAttempts
-        } + 
+        } +
         attributeIfContent(
             "minDelayTarget",
             deliveryPolicyConfig.MinimumDelay!""
@@ -136,11 +133,11 @@
         attributeIfContent(
             "numMinDelayRetries",
             deliveryPolicyConfig.AttemptsBeforeBackOff!""
-        ) + 
+        ) +
         attributeIfContent(
             "numMaxDelayRetries",
             deliveryPolicyConfig.AttemptsAfterBackOff!""
-        ) + 
+        ) +
         attributeIfContent(
             "numNoDelayRetries",
             deliveryPolicyConfig.numNoDelayRetries!""

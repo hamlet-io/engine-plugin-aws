@@ -19,18 +19,17 @@
     mappings=TRANSFER_SERVER_OUTPUT_MAPPINGS
 /]
 
-[#assign metricAttributes +=
-    {
-        AWS_TRANSFER_SERVER_RESOURCE_TYPE : {
-            "Namespace" : "AWS/Transfer",
-            "Dimensions" : {
-                "server-id" : {
-                    "Output" : NAME_ATTRIBUTE_TYPE
-                }
+[@addCWMetricAttributes
+    resourceType=AWS_TRANSFER_SERVER_RESOURCE_TYPE
+    namespace="AWS/Transfer"
+    dimensions={
+        "server-id" : {
+            "Output" : {
+                "Attribute" : NAME_ATTRIBUTE_TYPE
             }
         }
     }
-]
+/]
 
 [#function getTransferServerVpcDetails
             elasticIPIds
