@@ -24,20 +24,6 @@
         [#local sqsPolicyId = resources["queuePolicy"].Id ]
         [#local queuePolicyStatements = [] ]
 
-        [#if dlqRequired ]
-            [#local dlqId = resources["dlq"].Id ]
-            [#local dlqName = resources["dlq"].Name ]
-
-            [#local queueIds += [ dlqId ]]
-            [@createSQSQueue
-                id=dlqId
-                name=dlqName
-                retention=1209600
-                receiveWait=20
-            /]
-        [/#if]
-
-
         [#local fifoQueue = false]
 
         [#switch solution.Ordering ]
@@ -57,6 +43,20 @@
                     }
                 /]
         [/#switch]
+
+        [#if dlqRequired ]
+            [#local dlqId = resources["dlq"].Id ]
+            [#local dlqName = resources["dlq"].Name ]
+
+            [#local queueIds += [ dlqId ]]
+            [@createSQSQueue
+                id=dlqId
+                name=dlqName
+                retention=1209600
+                receiveWait=20
+                fifoQueue=fifoQueue
+            /]
+        [/#if]
 
         [@createSQSQueue
             id=sqsId
