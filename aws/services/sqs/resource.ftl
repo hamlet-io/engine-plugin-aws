@@ -37,7 +37,7 @@
     }
 /]
 
-[#macro createSQSQueue id name delay="" maximumSize="" retention="" receiveWait="" visibilityTimout="" dlq="" dlqReceives=1 dependencies=""]
+[#macro createSQSQueue id name delay="" maximumSize="" retention="" receiveWait="" visibilityTimout="" dlq="" dlqReceives=1 fifoQueue=false dependencies=""]
     [@cfResource
         id=id
         type="AWS::SQS::Queue"
@@ -56,7 +56,12 @@
                   "deadLetterTargetArn" : getReference(dlq, ARN_ATTRIBUTE_TYPE),
                   "maxReceiveCount" : dlqReceives
                 }) +
-            attributeIfContent("VisibilityTimeout", visibilityTimout)
+            attributeIfContent("VisibilityTimeout", visibilityTimout) +
+            attributeIfTrue(
+                "FifoQueue",
+                fifoQueue,
+                fifoQueue
+            )
         outputs=SQS_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]
