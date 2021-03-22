@@ -1,6 +1,9 @@
 [#ftl]
 [#macro aws_sqs_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets="template" /]
+    [@addDefaultGenerationContract
+        subsets="template"
+        alternatives=["primary", "replace1", "replace2"]
+    /]
 [/#macro]
 
 [#macro aws_sqs_cf_deployment_solution occurrence ]
@@ -34,6 +37,27 @@
             /]
         [/#if]
 
+
+        [#local fifoQueue = false]
+
+        [#switch solution.Ordering ]
+            [#case "FirstInFirstOut" ]
+                [#local fifoQueue = true ]
+                [#break]
+
+            [#case "BestEffort" ]
+                [#break]
+
+            [#default]
+                [@fatal
+                    message="SQS Queue Ordering method not supported"
+                    context={
+                        "Name" : core.Name,
+                        "Ordering" : solution.Ordering
+                    }
+                /]
+        [/#switch]
+
         [@createSQSQueue
             id=sqsId
             name=sqsName
@@ -48,6 +72,7 @@
                 solution.DeadLetterQueue.MaxReceives,
                 solution.DeadLetterQueue.MaxReceives > 0,
                 (environmentObject.Operations.DeadLetterQueue.MaxReceives)!3)
+            fifoQueue=fifoQueue
         /]
 
         [#list solution.Alerts?values as alert ]

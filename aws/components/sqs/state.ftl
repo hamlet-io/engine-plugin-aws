@@ -36,6 +36,28 @@
         [#local dlqId = formatDependentResourceId(AWS_SQS_RESOURCE_TYPE, id, "dlq") ]
         [#local dlqName = formatName(name, "dlq")]
 
+        [#-- override the Id ane Name for replacement --]
+        [#if ((commandLineOptions.Deployment.Unit.Alternative)!"") == "replace1" ]
+            [#local id = formatId(id, "replace" ) ]
+            [#local name = formatName(name, "replace")]
+
+            [#local dlqId = formatId(dlqId, "replace")]
+            [#local dlqName = formatName(dlqName, "replace")]
+        [/#if]
+
+        [#-- fifo Queues require specific naming --]
+        [#switch solution.Ordering ]
+            [#case "FirstInFirstOut" ]
+                [#local fifoSuffix = ".fifo" ]
+                [#local name = name?truncate_c(80 - fifoSuffix?length, '')?ensure_ends_with(fifoSuffix) ]
+                [#local dlqName = dlqName?truncate_c( (80 - (fifoSuffix)?length), '')?ensure_ends_with(fifoSuffix )]
+                [#break]
+
+            [#default]
+                [#local name = name?truncate_c(80) ]
+                [#local dlqName = dlqName?truncate_c(80) ]
+        [/#switch]
+
         [#local dlqRequired =
             isPresent(solution.DeadLetterQueue) ||
             ((environmentObject.Operations.DeadLetterQueue.Enabled)!false)]
