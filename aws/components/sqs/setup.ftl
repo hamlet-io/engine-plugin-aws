@@ -18,6 +18,12 @@
         [#local sqsId = resources["queue"].Id ]
         [#local sqsName = resources["queue"].Name ]
 
+        [#-- override the Id ane Name for replacement --]
+        [#if ((commandLineOptions.Deployment.Unit.Alternative)!"") == "replace1" ]
+            [#local sqsId = resources["queue"].ReplaceId ]
+            [#local sqsName = resources["queue"].ReplaceName ]
+        [/#if]
+
         [#local dlqRequired = (resources["dlq"]!{})?has_content ]
 
         [#local queueIds = [ sqsId ]]
@@ -47,6 +53,13 @@
         [#if dlqRequired ]
             [#local dlqId = resources["dlq"].Id ]
             [#local dlqName = resources["dlq"].Name ]
+
+            [#-- override the Id ane Name for replacement --]
+            [#if ((commandLineOptions.Deployment.Unit.Alternative)!"") == "replace1" ]
+                [#local dlqId = resources["dlq"].ReplaceId ]
+                [#local dlqName = resources["dlq"].ReplaceName ]
+            [/#if]
+
 
             [#local queueIds += [ dlqId ]]
             [@createSQSQueue
@@ -80,6 +93,35 @@
             [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
             [#list monitoredResources as name,monitoredResource ]
 
+                [#local resourceDimensions = []]
+                [#if ((commandLineOptions.Deployment.Unit.Alternative)!"") == "replace1" ]
+
+                    [@debug message="SQSMonResource" context=monitoredResource enabled=true /]
+                    [#switch monitoredResource.Id ]
+                        [#case resources["queue"].Id ]
+                            [#local resourceDimensions = [
+                                {
+                                    "Name": "QueueName",
+                                    "Value": resources["queue"].Name
+                                }
+                            ]]
+                            [#break]
+
+                        [#case resources["dlq"].Id ]
+                            [#local resourceDimensions = [
+                                {
+                                    "Name": "QueueName",
+                                    "Value": resources["dlq"].Name
+                                }
+                            ]]
+                            [#break]
+                    [/#switch]
+                [/#if]
+
+                [#if ! resourceDimensions?has_content ]
+                    [#local resourceDimensions = getCWMetricDimensions(alert, monitoredResource, resources)]
+                [/#if]
+
                 [#switch alert.Comparison ]
                     [#case "Threshold" ]
                         [@createAlarm
@@ -99,7 +141,7 @@
                             reportOK=alert.ReportOk
                             unit=alert.Unit
                             missingData=alert.MissingData
-                            dimensions=getCWMetricDimensions(alert, monitoredResource, resources)
+                            dimensions=resourceDimensions
                         /]
                     [#break]
                 [/#switch]

@@ -31,31 +31,32 @@
         [#local solution = occurrence.Configuration.Solution]
 
         [#local id = formatResourceId(AWS_SQS_RESOURCE_TYPE, core.Id) ]
+        [#local replaceId = formatId(id, "replace")]
         [#local name = core.FullName ]
+        [#local replaceName = formatName(name, "replace")]
 
         [#local dlqId = formatDependentResourceId(AWS_SQS_RESOURCE_TYPE, id, "dlq") ]
+        [#local dlqReplaceId = formatId(dlqId, "replace")]
         [#local dlqName = formatName(name, "dlq")]
-
-        [#-- override the Id ane Name for replacement --]
-        [#if ((commandLineOptions.Deployment.Unit.Alternative)!"") == "replace1" ]
-            [#local id = formatId(id, "replace" ) ]
-            [#local name = formatName(name, "replace")]
-
-            [#local dlqId = formatId(dlqId, "replace")]
-            [#local dlqName = formatName(dlqName, "replace")]
-        [/#if]
+        [#local dlqReplaceName = formatName(dlqName, "replace")]
 
         [#-- fifo Queues require specific naming --]
         [#switch solution.Ordering ]
             [#case "FirstInFirstOut" ]
                 [#local fifoSuffix = ".fifo" ]
                 [#local name = name?truncate_c(80 - fifoSuffix?length, '')?ensure_ends_with(fifoSuffix) ]
+                [#local replaceName = replaceName?truncate_c(80 - fifoSuffix?length, '')?ensure_ends_with(fifoSuffix) ]
+
                 [#local dlqName = dlqName?truncate_c( (80 - (fifoSuffix)?length), '')?ensure_ends_with(fifoSuffix )]
+                [#local dlqReplaceName = dlqReplaceName?truncate_c( (80 - (fifoSuffix)?length), '')?ensure_ends_with(fifoSuffix )]
                 [#break]
 
             [#default]
                 [#local name = name?truncate_c(80) ]
+                [#local replaceName = replaceName?truncate_c(80)]
+
                 [#local dlqName = dlqName?truncate_c(80) ]
+                [#local dlqReplaceName = dlqReplaceName?truncate_c(80)]
         [/#switch]
 
         [#local dlqRequired =
@@ -67,7 +68,9 @@
                 "Resources" : {
                     "queue" : {
                         "Id" : id,
+                        "ReplaceId" : replaceId,
                         "Name" : name,
+                        "ReplaceName" : replaceName,
                         "Type" : AWS_SQS_RESOURCE_TYPE,
                         "Monitored" : true
                     },
@@ -80,7 +83,9 @@
                     {
                         "dlq" : {
                             "Id" : dlqId,
+                            "ReplaceId" : dlqReplaceId,
                             "Name" : dlqName,
+                            "ReplaceName" : dlqReplaceName,
                             "Type" : AWS_SQS_RESOURCE_TYPE,
                             "Monitored" : true
                         }
