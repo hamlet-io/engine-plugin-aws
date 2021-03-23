@@ -41,7 +41,7 @@
                 "launchConfig" : {
 
                     "Id" : solution.AutoScaling.AlwaysReplaceOnUpdate?then(
-                                formatResourceId(AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE, core.Id, getRunId()),
+                                formatResourceId(AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE, core.Id, getCLORunId()),
                                 formatResourceId(AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE, core.Id)
                     ),
                     "Type" : AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE

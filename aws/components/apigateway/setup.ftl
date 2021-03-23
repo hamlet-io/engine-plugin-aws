@@ -32,7 +32,7 @@
     [#-- Determine the stage variables required --]
     [#local stageVariables = {} ]
 
-    [#local openapiFileName ="openapi_" + getRunId() + ".json"  ]
+    [#local openapiFileName ="openapi_" + getCLORunId() + ".json"  ]
     [#local openapiFileLocation = formatRelativePath(
                                                 getSettingsFilePrefix(occurrence),
                                                 "config",

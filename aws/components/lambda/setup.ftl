@@ -534,7 +534,7 @@
                     getLocalFileScript(
                         "configFiles",
                         "$\{CONFIG}",
-                        "config_" + getRunId() + ".json"
+                        "config_" + getCLORunId() + ".json"
                     ) +
                     syncFilesToBucketScript(
                         "configFiles",
@@ -604,7 +604,7 @@
                     getLocalFileScript(
                         "configFiles",
                         "$\{CONFIG}",
-                        "config_" + getRunId() + ".json"
+                        "config_" + getCLORunId() + ".json"
                     ) +
                     syncFilesToBucketScript(
                         "configFiles",

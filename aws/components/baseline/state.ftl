@@ -19,7 +19,7 @@
         [#if legacyVpc ]
             [#local segmentSeedValue = vpc?remove_beginning("vpc-")]
         [#else]
-            [#local segmentSeedValue = ( getRunId() + accountObject.Seed)[0..(solution.Seed.Length - 1)]  ]
+            [#local segmentSeedValue = ( getCLORunId() + accountObject.Seed)[0..(solution.Seed.Length - 1)]  ]
         [/#if]
     [#else]
         [#local segmentSeedValue = getExistingReference(segmentSeedId) ]

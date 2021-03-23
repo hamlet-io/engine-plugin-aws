@@ -31,7 +31,7 @@
 
     [#local buildConfig =
         {
-            "RUN_ID"            : getRunId(),
+            "RUN_ID"            : getCLORunId(),
             "CODE_SRC_BUCKET"   : codeSrcBucket,
             "CODE_SRC_PREFIX"   : codeSrcPrefix,
             "APP_BUILD_FORMATS" : solution.BuildFormats?join(","),

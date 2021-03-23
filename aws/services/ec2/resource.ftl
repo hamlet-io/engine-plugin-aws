@@ -106,8 +106,8 @@
                                 "",
                                 [
                                     "#!/bin/bash\n",
-                                    "echo \"cot:request="       + getRequestReference() + "\"\n",
-                                    "echo \"cot:configuration=" + getConfigurationReference() + "\"\n",
+                                    "echo \"cot:request="       + getCLORequestReference() + "\"\n",
+                                    "echo \"cot:configuration=" + getCLOConfigurationReference() + "\"\n",
                                     "echo \"cot:accountRegion=" + accountRegionId         + "\"\n",
                                     "echo \"cot:tenant="        + tenantId                + "\"\n",
                                     "echo \"cot:account="       + accountId               + "\"\n",

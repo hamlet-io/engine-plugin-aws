@@ -72,7 +72,7 @@
                                 [#-- changing the launch config logical Id forces a replacement of the autoscale group instances --]
                                 [#-- we only want this to happen when the build reference changes --]
                                 replaceAlphaNumericOnly(buildReference),
-                                getRunId()
+                                getCLORunId()
                             ),
                             formatResourceId(
                                 AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE,

@@ -5,22 +5,22 @@
     description="AWS provider inputs"
 /]
 
-[@addSeederToInputPipeline
+[@addSeederToConfigPipeline
     stage=MASTERDATA_SHARED_INPUT_STAGE
     seeder=AWS_INPUT_SEEDER
 /]
 
-[@addSeederToInputPipeline
+[@addSeederToConfigPipeline
     stage=FIXTURE_SHARED_INPUT_STAGE
     seeder=AWS_INPUT_SEEDER
 /]
 
-[@addSeederToInputPipeline
+[@addSeederToConfigPipeline
     stage=NORMALISE_SHARED_INPUT_STAGE
     seeder=AWS_INPUT_SEEDER
 /]
 
-[@addSeederToInputPipeline
+[@addSeederToConfigPipeline
     sources=[MOCK_SHARED_INPUT_SOURCE]
     stage=COMMANDLINEOPTIONS_SHARED_INPUT_STAGE
     seeder=AWS_INPUT_SEEDER
@@ -58,7 +58,7 @@
     ]
 [/#macro]
 
-[#function aws_inputseeder_masterdata filter state]
+[#function aws_configseeder_masterdata filter state]
 
     [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
         [#local requiredRegions =
@@ -89,7 +89,7 @@
 
 [/#function]
 
-[#function aws_inputseeder_fixture filter state]
+[#function aws_configseeder_fixture filter state]
 
     [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
         [#return
@@ -114,7 +114,7 @@
 
 [/#function]
 
-[#function aws_inputseeder_commandlineoptions_mock filter state]
+[#function aws_configseeder_commandlineoptions_mock filter state]
 
     [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
         [#return
@@ -135,7 +135,7 @@
 [/#function]
 
 [#-- Normalise cloud formation stack files to output sets --]
-[#function aws_inputseeder_normalise filter state]
+[#function aws_configseeder_normalise filter state]
 
     [#-- disable this functionality for now --]
     [#-- TODO(mfl): enable this as part of updated output processing --]
