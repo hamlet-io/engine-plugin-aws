@@ -96,7 +96,6 @@
                 [#local resourceDimensions = []]
                 [#if getCLODeploymentUnitAlternative() == "replace1" ]
 
-                    [@debug message="SQSMonResource" context=monitoredResource enabled=true /]
                     [#switch monitoredResource.Id ]
                         [#case resources["queue"].Id ]
                             [#local resourceDimensions = [
