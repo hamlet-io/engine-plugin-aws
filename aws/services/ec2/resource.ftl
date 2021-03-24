@@ -388,20 +388,63 @@
         [#local createMount = false ]
     [/#if]
 
+    [#local scriptName = "efs_mount_${mountId}" ]
+
+    [#local script = [
+        r'#!/bin/bash',
+        'exec > >(tee /var/log/codeontap/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1'
+    ]]
+
+    [#local efsOptions = [ "_netdev", "tls"]]
+    [#if iamEnabled ]
+        [#local efsOptions += [ "iam" ]]
+    [/#if]
+
+    [#if accessPointId?has_content ]
+        [#local efsOptions += [ "accesspoint=${accessPointId}" ]]
+    [/#if]
+
+    [#local efsOptions = efsOptions?join(",")]
+
+    [#if createMount ]
+        [#local script += [
+            r'# Create mount dir in EFS',
+            r'temp_dir="$(mktemp -d -t efs.XXXXXXXX)"',
+            r'mount -t efs "${efsId}:/" ${temp_dir} || exit $?',
+            r'if [[ ! -d "${temp_dir}/' + directory + r' ]]; then',
+            r'  mkdir -p "${temp_dir}/' + directory + r'"',
+            r'  # Allow Full Access to volume (Allows for unkown container access )',
+            r'  chmod -R ugo+rwx "${temp_dir}/' + directory + r'"',
+            r'fi',
+            r'umount ${temp_dir}'
+        ]]
+    [/#if]
+
+    [#local mountPath = "/mnt/clusterstorage/${osMount}" ]
+
+    [#local script += [
+        'mkdir -p "${mountPath}"',
+        'mount -t efs -o "${efsOptions}" "${efsId}:${directory}" "${mountPath}"',
+        'echo -e "${efsId}:${directory} ${mountPath} efs ${efsOptions} 0 0" >> /etc/fstab'
+    ]]
+
     [#return
         {
             "${priority}_EFSMount_" + mountId : {
+                "files" : {
+                    "/opt/codeontap/${scriptName}.sh" : {
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                script
+                            ]
+                        },
+                        "mode" : "000755"
+                    }
+                },
                 "commands" :  {
                     "MountEFS" : {
-                        "command" : "/opt/codeontap/bootstrap/efs.sh",
-                        "env" : {
-                            "EFS_FILE_SYSTEM_ID" : efsId,
-                            "EFS_MOUNT_PATH" : directory,
-                            "EFS_OS_MOUNT_PATH" : "/mnt/clusterstorage/" + osMount,
-                            "EFS_ACCESS_POINT_ID" : accessPointId,
-                            "EFS_IAM_ENABLED" : iamEnabled,
-                            "EFS_CREATE_MOUNT" : createMount
-                        },
+                        "command" : "/opt/codeontap/${scriptName}.sh",
                         "ignoreErrors" : ignoreErrors
                     }
                 }
