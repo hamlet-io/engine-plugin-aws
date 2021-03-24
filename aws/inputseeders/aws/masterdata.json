@@ -166,7 +166,12 @@
                                 "Engine": "ssh"
                             },
                             "cmk": {
-                                "Engine": "cmk"
+                                "Engine": "cmk",
+                                "Extensions": [
+                                    "_cmk_s3_access",
+                                    "_cmk_ses_access",
+                                    "_cmk_cloudfront_access"
+                                ]
                             },
                             "oai": {
                                 "Engine": "oai"
@@ -322,21 +327,18 @@
                                 "Versions": {
                                     "v1": {
                                         "deployment:Unit": "cfredirect-v1",
-                                        "Enabled": false,
-                                        "Extensions": [
-                                            "_cfredirect-v1"
-                                        ]
+                                        "Enabled": false
                                     }
                                 }
                             }
                         },
-                        "DeploymentType": "EDGE",
-                        "RunTime": "nodejs12.x",
-                        "MemorySize": 128,
-                        "Timeout": 1,
-                        "FixedCodeVersion": {},
                         "Functions": {
                             "cfredirect": {
+                                "DeploymentType": "EDGE",
+                                "RunTime": "nodejs12.x",
+                                "Memory": 128,
+                                "Timeout": 1,
+                                "FixedCodeVersion": {},
                                 "Handler": "index.handler",
                                 "VPCAccess": false,
                                 "Permissions": {
@@ -345,6 +347,9 @@
                                     "AppData": false,
                                     "AppPublic": false
                                 },
+                                "Extensions": [
+                                    "_cfredirect-v1"
+                                ],
                                 "PredefineLogGroup": false
                             }
                         }
@@ -409,7 +414,7 @@
                 "CountPerZone": 1,
                 "Master": {
                     "Processor": "t2.small.elasticsearch",
-                    "CountPerZone": 0
+                    "Count": 0
                 }
             },
             "service": {
@@ -424,7 +429,7 @@
             "Containers": {
                 "Default": {
                     "Provider": "_autoscalegroup",
-                    "Base": 1
+                    "RequiredCount": 1
                 }
             }
         },
@@ -432,7 +437,7 @@
             "Containers": {
                 "Default": {
                     "Provider": "aws:fargate",
-                    "Base": 1
+                    "RequiredCount": 1
                 }
             }
         },
@@ -440,7 +445,7 @@
             "Containers": {
                 "Default": {
                     "Provider": "aws:fargate",
-                    "Base": 1
+                    "RequiredCount": 1
                 },
                 "Additional": {
                     "spot": {
@@ -453,7 +458,7 @@
             "Containers": {
                 "Default": {
                     "Provider": "aws:fargatespot",
-                    "Base": 1
+                    "RequiredCount": 1
                 }
             }
         }

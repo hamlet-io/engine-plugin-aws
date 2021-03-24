@@ -20,8 +20,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-00d29e4cb217ae06b",
-                "EC2": "ami-079e6fb1e856e80c1",
-                "ECS": "ami-038baf2c70778954c"
+                "EC2": "ami-0c1d3ef2d886b20a4",
+                "ECS": "ami-02b9540848dd4195f"
             }
         }
     },
@@ -46,8 +46,42 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-0d98591cbf9ef1ffd",
-                "EC2": "ami-0e4a253fb5f082688",
-                "ECS": "ami-0600b12859a430de5"
+                "EC2": "ami-0437be501656e9762",
+                "ECS": "ami-0a0a5afd8f4e08152"
+            }
+        }
+    },
+    "ap-northeast-3": {
+        "Partition": "aws",
+        "Locality": "Osaka",
+        "Zones": {
+            "a": {
+                "Title": "Zone A",
+                "Description": "Zone A",
+                "Index": 0,
+                "AWSZone": "ap-northeast-3a"
+            },
+            "b": {
+                "Title": "Zone B",
+                "Description": "Zone B",
+                "Index": 1,
+                "AWSZone": "ap-northeast-3b"
+            },
+            "c": {
+                "Title": "Zone C",
+                "Description": "Zone C",
+                "Index": 2,
+                "AWSZone": "ap-northeast-3c"
+            }
+        },
+        "Accounts": {
+            "ELB": "383597477331"
+        },
+        "AMIs": {
+            "Centos": {
+                "NAT": "ami-06d1fd472c1ce3d6b",
+                "EC2": "ami-00858e947002f21bc",
+                "ECS": "ami-03afa041bf7667446"
             }
         }
     },
@@ -72,8 +106,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-00b3aa8a93dd09c13",
-                "EC2": "ami-01e074f40dfb9999d",
-                "ECS": "ami-08bd9dbddb2c49d1b"
+                "EC2": "ami-0937079e1319cc54c",
+                "ECS": "ami-0b9e4ef5570cc4506"
             }
         }
     },
@@ -89,7 +123,7 @@
             },
             "b": {
                 "Title": "Zone B",
-                "Description": "Singapore Zone B",
+                "Description": "Zone B",
                 "Index": 1,
                 "AWSZone": "ap-southeast-1b"
             }
@@ -100,8 +134,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-01514bb1776d5c018",
-                "EC2": "ami-0d9233e8ce73df7b2",
-                "ECS": "ami-0a3eb5a1af4a5ef33"
+                "EC2": "ami-0f52672219664b89c",
+                "ECS": "ami-021d336fb9495c9db"
             }
         }
     },
@@ -497,8 +531,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-062c04ec46aecd204",
-                "EC2": "ami-0c91f97cadcc8499e",
-                "ECS": "ami-0b141ff8507104345"
+                "EC2": "ami-0423c992cc7b1e818",
+                "ECS": "ami-05a55a4772f315410"
             }
         }
     },
@@ -523,8 +557,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-0b32354309da5bba5",
-                "EC2": "ami-003a0ba7ea76b2785",
-                "ECS": "ami-019da07261d31d7ed"
+                "EC2": "ami-0b9ebfae2a531bdca",
+                "ECS": "ami-071e98c87e4ebaa13"
             }
         }
     },
@@ -574,8 +608,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-06a5303d47fbd8c60",
-                "EC2": "ami-0ab838eeee7f316eb",
-                "ECS": "ami-045da97518c6e42f0"
+                "EC2": "ami-007eacfee66ce6c2a",
+                "ECS": "ami-004f5de8d7e98daf3"
             }
         }
     },
@@ -605,8 +639,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-024107e3e3217a248",
-                "EC2": "ami-071f4ce599deff521",
-                "ECS": "ami-0236ff433d797a702"
+                "EC2": "ami-0717dc2c13076628f",
+                "ECS": "ami-0f3faf20e73706772"
             }
         }
     },
@@ -631,8 +665,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-0ca65a55561666293",
-                "EC2": "ami-0e49551fc78560451",
-                "ECS": "ami-08b838527755a72b3"
+                "EC2": "ami-082b0b27a1aeb910d",
+                "ECS": "ami-0e6d65a55a5126c69"
             }
         }
     },
@@ -657,8 +691,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-0641e4dfc1427f114",
-                "EC2": "ami-0ec1d48c59dda554a",
-                "ECS": "ami-0afbb547e926cfe7b"
+                "EC2": "ami-0b2fda55432e99d81",
+                "ECS": "ami-06bdcd558447034ad"
             }
         }
     },
@@ -688,8 +722,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-057f5d52ff7ae75ae",
-                "EC2": "ami-04b202bf877b5027b",
-                "ECS": "ami-0d2938cee18a25f1f"
+                "EC2": "ami-0c6a87cdf11638c5a",
+                "ECS": "ami-03fc64224caefa232"
             }
         }
     },
@@ -724,8 +758,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-00a9d4a05375b2763",
-                "EC2": "ami-09d069a04349dc3cb",
-                "ECS": "ami-0bb34d57ff66af6b1"
+                "EC2": "ami-087099ed8e934cdf1",
+                "ECS": "ami-093400f992dcccd75"
             }
         }
     },
@@ -755,8 +789,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-00d1f8201864cc10c",
-                "EC2": "ami-0d542ef84ec55d71c",
-                "ECS": "ami-09b6c802b56e567e7"
+                "EC2": "ami-03c097d564dea7d12",
+                "ECS": "ami-0cdc5bca012286393"
             }
         }
     },
@@ -806,8 +840,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-097ad469381034fa2",
-                "EC2": "ami-04bc3da8f14823e88",
-                "ECS": "ami-0345bd1838f6a6de0"
+                "EC2": "ami-0735fb61fc4db5026",
+                "ECS": "ami-0a4c9c75bae1ae952"
             }
         }
     },
@@ -837,8 +871,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-0b840e8a1ce4cdf15",
-                "EC2": "ami-01460aa81365561fe",
-                "ECS": "ami-0bb440b58cea45263"
+                "EC2": "ami-0bf07f2cbba8c467c",
+                "ECS": "ami-06ae68eb48cce158a"
             }
         }
     },
@@ -868,8 +902,8 @@
         "AMIs": {
             "Centos": {
                 "NAT": "ami-28d15f56",
-                "EC2": "ami-0f1d8c8ad70ce9c62",
-                "ECS": "ami-02626828c8dc2ffac"
+                "EC2": "ami-09176aab87e77e559",
+                "ECS": "ami-0955f29636e6c7dde"
             }
         }
     }

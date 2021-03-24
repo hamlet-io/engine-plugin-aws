@@ -27,7 +27,7 @@
 [/#function]
 
 [#function formatAccountS3PrimaryBucketName bucketType ]
-    [#assign existingName = getExistingReference(formatAccountS3Id(bucketType), NAME_ATTRIBUTE_TYPE, commandLineOptions.Regions.Segment )]
+    [#assign existingName = getExistingReference(formatAccountS3Id(bucketType), NAME_ATTRIBUTE_TYPE, getCLOSegmentRegion() )]
     [#return valueIfContent(
                 existingName,
                 existingName,

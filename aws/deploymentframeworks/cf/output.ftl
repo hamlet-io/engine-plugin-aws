@@ -1,6 +1,6 @@
 [#ftl]
 
-[#function getCFTemplateCoreOutputs region={ "Ref" : "AWS::Region" } account={ "Ref" : "AWS::AccountId" } deploymentUnit=getDeploymentUnit() deploymentMode=commandLineOptions.Deployment.Mode ]
+[#function getCFTemplateCoreOutputs region={ "Ref" : "AWS::Region" } account={ "Ref" : "AWS::AccountId" } deploymentUnit=getCLODeploymentUnit() deploymentMode=getCLODeploymentMode() ]
     [#return {
         "Account" :{ "Value" : account },
         "Region" : {"Value" : region },
@@ -9,9 +9,9 @@
                 deploymentUnit +
                 (
                     (!(ignoreDeploymentUnitSubsetInOutputs!false)) &&
-                    (commandLineOptions.Deployment.Unit.Subset?has_content)
+                    (getCLODeploymentUnitSubset()?has_content)
                 )?then(
-                    "-" + commandLineOptions.Deployment.Unit.Subset?lower_case,
+                    "-" + getCLODeploymentUnitSubset()?lower_case,
                     ""
                 )
         },
@@ -22,7 +22,7 @@
 [#function getCfTemplateCoreTags name="" tier="" component="" zone="" propagate=false flatten=false maxTagCount=-1]
     [#local result =
         [
-            { "Key" : "cot:request", "Value" : commandLineOptions.References.Request }
+            { "Key" : "cot:request", "Value" : getCLORequestReference() }
         ] +
         accountObject.CostCentre?has_content?then(
             [
@@ -31,7 +31,7 @@
             []
         ) +
         [
-            { "Key" : "cot:configuration", "Value" : commandLineOptions.References.Configuration },
+            { "Key" : "cot:configuration", "Value" : getCLOConfigurationReference() },
             { "Key" : "cot:tenant", "Value" : tenantName },
             { "Key" : "cot:account", "Value" : accountName }
         ] +
@@ -248,7 +248,7 @@
         [@processFlows
             level=level
             framework=CLOUD_FORMATION_DEPLOYMENT_FRAMEWORK
-            flows=commandLineOptions.Flow.Names
+            flows=getCLOFlows()
         /]
     [/#if]
 
@@ -259,9 +259,9 @@
                 "Metadata" :
                     {
                         "Prepared" : .now?iso_utc,
-                        "RequestReference" : commandLineOptions.References.Request,
-                        "ConfigurationReference" : commandLineOptions.References.Configuration,
-                        "RunId" : commandLineOptions.Run.Id
+                        "RequestReference" : getCLORequestReference(),
+                        "ConfigurationReference" : getCLOConfigurationReference(),
+                        "RunId" : getCLORunId()
                     } +
                     attributeIfContent("CostCentre", accountObject.CostCentre!""),
                 "Resources" : getOutputContent("resources"),

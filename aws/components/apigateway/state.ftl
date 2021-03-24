@@ -364,7 +364,7 @@ created in either case.
                     "Monitored" : true
                 },
                 "apideploy" : {
-                    "Id" : formatResourceId(AWS_APIGATEWAY_DEPLOY_RESOURCE_TYPE, core.Id, commandLineOptions.Run.Id),
+                    "Id" : formatResourceId(AWS_APIGATEWAY_DEPLOY_RESOURCE_TYPE, core.Id, getCLORunId()),
                     "Type" : AWS_APIGATEWAY_DEPLOY_RESOURCE_TYPE
                 },
                 "apistage" : {

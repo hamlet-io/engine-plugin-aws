@@ -148,7 +148,7 @@
 
     [#local rdsPreDeploySnapshotId = formatName(
                                         rdsFullName,
-                                        (commandLineOptions.Run.Id)?split('')?reverse?join(''),
+                                        (getCLORunId())?split('')?reverse?join(''),
                                         "pre-deploy")]
 
     [#local rdsTags = getOccurrenceCoreTags(occurrence, rdsFullName)]
@@ -402,7 +402,7 @@
 
                 [#-- when replacing the instance the database is removed so we need to override refrences to keep the alarms around --]
                 [#if monitoredResource.Id == rdsId &&
-                        ((commandLineOptions.Deployment.Unit.Alternative!"") == "replace1" || hibernate ) ]
+                        (getCLODeploymentUnitAlternative() == "replace1" || hibernate ) ]
                     [#local resourceDimensions = [
                         {
                             "Name": "DBInstanceIdentifier",
@@ -439,7 +439,7 @@
             [/#list]
         [/#list]
 
-        [#switch commandLineOptions.Deployment.Unit.Alternative!"" ]
+        [#switch getCLODeploymentUnitAlternative() ]
             [#case "replace1" ]
                 [#local multiAZ = false]
                 [#local deletionPolicy = "Delete" ]

@@ -29,7 +29,7 @@
                     "Type" : SPA_COMPONENT_TYPE
                 }
             } +
-            getExistingReference(cfId, "", "", getDeploymentUnit())?has_content?then(
+            getExistingReference(cfId, "", "", getCLODeploymentUnit())?has_content?then(
                 {
                     "legacyCF" : {
                         "Id" : cfId,
