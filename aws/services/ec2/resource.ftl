@@ -296,14 +296,19 @@
         "exec > >(tee /var/log/codeontap/dirsfiles.log|logger -t codeontap-dirsfiles -s 2>/dev/console) 2>&1\n"
     ]]
     [#list directories as directoryName,directory ]
+
+        [#local mode = directory.mode ]
+        [#local owner = directory.owner ]
+        [#local group = directory.group ]
+
         [#local initDirFile += [
-            "if [[ ! -d \"" + directoryName + "\" ]]; then\n",
-            "   mkdir --parents --mode=" + directory.mode + " \"" + directoryName + "\"\n",
-            "   chown " + directory.owner + ":" + directory.group + " \"" + directoryName + "\"\n",
-            "else\n",
-            "   chown -R " + directory.owner + ":" + directory.group + " \"" + directoryName + "\"\n",
-            "   chmod " + directory.mode + " \"" + directoryName + "\"\n",
-            "fi\n"
+            'if [[ ! -d "${directoryName}" ]]; then',
+            '   mkdir --parents --mode="${mode}" "${directoryName}"',
+            '   chown ${owner}:${group} "${directoryName}"',
+            'else',
+            '   chown -R ${owner}:${group} "${directoryName}"',
+            '   chmod ${mode} "${directoryName}"',
+            'fi'
         ]]
     [/#list]
 
@@ -317,7 +322,7 @@
                     "/opt/codeontap/create_dirs.sh" : {
                         "content" : {
                             "Fn::Join" : [
-                                "",
+                                "\n",
                                 initDirFile
                             ]
                         },
