@@ -19,7 +19,7 @@
         [#local sqsName = resources["queue"].Name ]
 
         [#-- override the Id ane Name for replacement --]
-        [#if ((commandLineOptions.Deployment.Unit.Alternative)!"") == "replace1" ]
+        [#if getCLODeploymentUnitAlternative() == "replace1" ]
             [#local sqsId = resources["queue"].ReplaceId ]
             [#local sqsName = resources["queue"].ReplaceName ]
         [/#if]
@@ -55,7 +55,7 @@
             [#local dlqName = resources["dlq"].Name ]
 
             [#-- override the Id ane Name for replacement --]
-            [#if ((commandLineOptions.Deployment.Unit.Alternative)!"") == "replace1" ]
+            [#if getCLODeploymentUnitAlternative() == "replace1" ]
                 [#local dlqId = resources["dlq"].ReplaceId ]
                 [#local dlqName = resources["dlq"].ReplaceName ]
             [/#if]
@@ -94,7 +94,7 @@
             [#list monitoredResources as name,monitoredResource ]
 
                 [#local resourceDimensions = []]
-                [#if ((commandLineOptions.Deployment.Unit.Alternative)!"") == "replace1" ]
+                [#if getCLODeploymentUnitAlternative() == "replace1" ]
 
                     [@debug message="SQSMonResource" context=monitoredResource enabled=true /]
                     [#switch monitoredResource.Id ]
