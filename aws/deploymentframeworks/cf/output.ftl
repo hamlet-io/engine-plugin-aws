@@ -240,7 +240,10 @@
     [/#list]
 [/#macro]
 
-[#macro cf_output_resource level="" include=""]
+[#function cf_output_resource level="" include=""]
+
+    [@setOutputFileProperties format="json" /]
+
     [#-- Resources --]
     [#if include?has_content]
         [#include include?ensure_starts_with("/")]
@@ -252,8 +255,8 @@
         /]
     [/#if]
 
-    [#if getOutputContent("resources")?has_content || logMessages?has_content]
-        [@toJSON
+    [#if getOutputContent("resources")?has_content ]
+        [#return
             {
                 "AWSTemplateFormatVersion" : "2010-09-09",
                 "Metadata" :
@@ -268,11 +271,11 @@
                 "Outputs" :
                     getOutputContent("outputs") +
                     getCFTemplateCoreOutputs()
-            } +
-            attributeIfContent("HamletMessages", logMessages)
-        /]
+            }
+        ]
     [/#if]
-[/#macro]
+    [#return {}]
+[/#function]
 
 
 [#-- Initialise the possible outputs to make sure they are available to all steps --]
