@@ -161,13 +161,13 @@
 [#function getInitConfigEnvFacts envVariables={} ignoreErrors=false priority=2 ]
 
     [#local envContent = [
-        "#!/bin/bash\n"
+        "#!/bin/bash"
     ]]
 
     [#list envVariables as key,value]
         [#local envContent +=
             [
-                "echo \"" + key + "=" + value + "\"\n"
+                'echo "${key}=${value}"'
             ]
         ]
     [/#list]
@@ -179,7 +179,7 @@
                     "/etc/codeontap/env.sh" : {
                         "content" : {
                             "Fn::Join" : [
-                                "",
+                                "\n",
                                 envContent
                             ]
                         },
