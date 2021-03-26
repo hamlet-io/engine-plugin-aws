@@ -119,6 +119,22 @@
         getInitConfigEnvFacts(environmentVariables, false) +
         getInitConfigDirsFiles(_context.Files, _context.Directories) ]
 
+    [#-- Mount storage volumes if directory provided --]
+    [#list (storageProfile.Volumes)!{} as id,volume ]
+        [#if (volume.Enabled)!true
+                && ((volume.MountPath)!"")?has_content
+                && ((volume.Device)!"")?has_content ]
+            [#local configSets +=
+                getInitConfigDataVolumeMount(
+                    volume.Device,
+                    volume.MountPath,
+                    false,
+                    1
+                )
+            ]
+        [/#if]
+    [/#list]
+
     [#if sshEnabled ]
 
         [#list _context.Links as linkId,linkTarget]

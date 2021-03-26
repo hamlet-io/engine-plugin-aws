@@ -96,6 +96,22 @@
                 {}
             ) ]
 
+    [#-- Mount storage volumes if directory provided --]
+    [#list (storageProfile.Volumes)!{} as id,volume ]
+        [#if (volume.Enabled)!true
+                && ((volume.MountPath)!"")?has_content
+                && ((volume.Device)!"")?has_content ]
+            [#local configSets +=
+                getInitConfigDataVolumeMount(
+                    volume.Device,
+                    volume.MountPath,
+                    false,
+                    1
+                )
+            ]
+        [/#if]
+    [/#list]
+
     [#local efsMountPoints = {}]
 
     [#local contextLinks = getLinkTargets(occurrence, links) ]

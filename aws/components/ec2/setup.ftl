@@ -401,6 +401,21 @@
                     [/#if]
                 [/#list]
 
+                [#list (storageProfile.Volumes)!{} as id,volume ]
+                    [#if (volume.Enabled)!true
+                            && ((volume.MountPath)!"")?has_content
+                            && ((volume.Device)!"")?has_content ]
+                        [#local configSets +=
+                            getInitConfigDataVolumeMount(
+                                volume.Device,
+                                volume.MountPath,
+                                false,
+                                1
+                            )
+                        ]
+                    [/#if]
+                [/#list]
+
                 [@cfResource
                     id=zoneEc2InstanceId
                     type="AWS::EC2::Instance"

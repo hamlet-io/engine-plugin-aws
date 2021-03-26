@@ -502,16 +502,72 @@
 [/#function]
 
 [#function getInitConfigDataVolumeMount deviceId osMount ignoreErrors=false priority=4 ]
+
+    [#local scriptName = "data_volume_mount_" + replaceAlphaNumericOnly(deviceId) ]
+
+    [#local script = [
+        r'#!/bin/bash',
+        r'set -euo pipefail',
+        'exec > >(tee /var/log/codeontap/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1',
+
+        'device_id="${deviceId}"',
+        'os_mount="${osMount}"',
+
+        r'# Ensure device exists',
+        r'if [[ ! -b "${device_id}" ]]; then'
+        r'  echo "${device_id} not available"',
+        r'  exit 1',
+        r'fi',
+
+        r'# Create filesystem if required',
+        r'if [[ -z "$(file  -sL $device_id | grep "ext" || test $? =1 )" ]]; then',
+        r'  mkfs -t ext4 "${device_id}"',
+        r'else',
+        r'  echo "Using existing filesystem on ${device_id}"',
+        r'fi',
+
+        r'# Mount device to mount point',
+        r'for local_mount_point in $(findmnt -frnuo TARGET --source "${device_id}" || test $? = 1 ); do',
+        r'  if [[ "${local_mount_point}" == "${os_mount}" ]]; then',
+        r'      echo "${device_id} already mounted to ${os_mount}"',
+        r'      exit 0',
+        r'  else',
+        r'      echo "${device_id} is not mounted to ${os_mount}"',
+        r'  fi',
+        r'done',
+        r'mkdir -p "${os_mount}"',
+        r'mount "${device_id}" "${os_mount}"',
+
+        r'# Permanent mount',
+        r'if [[ -z "$( grep "${device_id}" /etc/fstab || test $? = 1 )" ]]; then',
+        r'  if [[ -n "$( findmnt -frnuo SOURCE --source "${device_id}" || test $? = 1 )" ]]; then',
+        r'      echo -e "${device_id} ${os_mount} ext4 defaults 0 0" >> /etc/fstab',
+        r'    else',
+        r'        echo "device ${device_id} is not mounted"',
+        r'        exit 1',
+        r'    fi',
+        r'else',
+        r'  echo "permanent mount setup ${device_id} to ${os_mount}"',
+        r'fi'
+    ]]
+
     [#return
         {
-            "${priority}_DataVolumeMount_" + deviceId : {
+            "${priority}_${scriptName}" : {
+                "files" : {
+                    "/opt/codeontap/${scriptName}.sh" : {
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                script
+                            ]
+                        },
+                        "mode" : "000755"
+                    }
+                },
                 "commands" :  {
                     "MountDataVolume" : {
-                        "command" : "/opt/codeontap/bootstrap/init.sh",
-                        "env" : {
-                            "DATA_VOLUME_MOUNT_DEVICE" : deviceId?ensure_starts_with("/dev/"),
-                            "DATA_VOLUME_MOUNT_DIR" : osMount
-                        },
+                        "command" : "/opt/codeontap/${scriptName}.sh",
                         "ignoreErrors" : ignoreErrors
                     }
                 }
