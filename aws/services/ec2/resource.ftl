@@ -349,20 +349,44 @@
 [/#function]
 
 [#function getInitConfigEIPAllocation allocationIds ignoreErrors=false priority=3 ]
+
+    [#local script = [
+        r'#!/bin/bash',
+        r'set -euo pipefail',
+        r'exec > >(tee /var/log/codeontap/eip.log|logger -t codeontap-eip -s 2>/dev/console) 2>&1',
+        r'INSTANCE=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)',
+        { "Fn::Sub" : r'export AWS_DEFAULT_REGION="${AWS::Region}"' },
+        {
+            "Fn::Sub" : [
+                r'available_eip="$(aws ec2 describe-addresses --filter "Name=allocation-id,Values=${AllocationIds}" --query ' + r"'Addresses[?AssociationId==`null`].AllocationId | [0]' " + '--output text )"',
+                { "AllocationIds": { "Fn::Join" : [ ",", [ allocationIds ] ] }}
+            ]
+        },
+        r'if [[ -n "${available_eip}" && "${available_eip}" != "None" ]]; then',
+        r'  aws ec2 associate-address --instance-id ${INSTANCE} --allocation-id ${available_eip} --no-allow-reassociation',
+        r'else',
+        r'  >&2 echo "No elastic IP available to allocate"',
+        r'  exit 255',
+        r'fi'
+    ]]
+
     [#return
         {
             "${priority}_AssignEIP" :  {
+                "files" : {
+                    "/opt/codeontap/eip_allocation.sh" : {
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                script
+                            ]
+                        },
+                        "mode" : "000755"
+                    }
+                },
                 "commands" : {
                     "01AssignEIP" : {
-                        "command" : "/opt/codeontap/bootstrap/eip.sh",
-                        "env" : {
-                            "EIP_ALLOCID" : {
-                                "Fn::Join" : [
-                                    " ",
-                                    asArray(allocationIds)
-                                ]
-                            }
-                        },
+                        "command" : "/opt/codeontap/eip_allocation.sh",
                         "ignoreErrors" : ignoreErrors
                     }
                 }
