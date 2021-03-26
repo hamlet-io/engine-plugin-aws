@@ -429,21 +429,6 @@
     ]
 [/#function]
 
-[#function getInitConfigPuppet ignoreErrors=false priority=3 ]
-    [#return
-        {
-            "${priority}_puppet": {
-                "commands": {
-                    "01SetupPuppet" : {
-                        "command" : "/opt/codeontap/bootstrap/puppet.sh",
-                        "ignoreErrors" : "false"
-                    }
-                }
-            }
-        }
-    ]
-[/#function]
-
 [#function getInitConfigEFSMount mountId efsId directory osMount accessPointId="" iamEnabled=true  ignoreErrors=false priority=4 ]
 
     [#local createMount = true]

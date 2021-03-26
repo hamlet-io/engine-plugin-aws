@@ -68,7 +68,6 @@
     [#local configSets =
             getInitConfigDirectories() +
             getInitConfigBootstrap(occurrence, operationsBucket, dataBucket) +
-            getInitConfigPuppet() +
             osPatching.Enabled?then(
                 getInitConfigOSPatching(
                     osPatching.Schedule,
