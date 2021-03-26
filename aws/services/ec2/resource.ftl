@@ -193,9 +193,9 @@
 
 [#function getInitConfigLogAgent logProfile logGroupName ignoreErrors=false priority=2 ]
     [#local logContent = [
-        "[general]\n",
-        "state_file = /var/lib/awslogs/agent-state\n",
-        "\n"
+        "[general]",
+        "state_file = /var/lib/awslogs/agent-state",
+        ""
     ]]
 
     [#list logProfile.LogFileGroups as logFileGroup ]
@@ -204,20 +204,20 @@
             [#local logFileDetails = logFiles[logFile] ]
             [#local logContent +=
                 [
-                    "[" + logFileDetails.FilePath + "]\n",
-                    "file = " + logFileDetails.FilePath + "\n",
-                    "log_group_name = " + logGroupName + "\n",
-                    "log_stream_name = {instance_id}" + logFileDetails.FilePath + "\n"
+                    "[" + logFileDetails.FilePath + "]",
+                    "file = " + logFileDetails.FilePath,
+                    "log_group_name = " + logGroupName,
+                    "log_stream_name = {instance_id}" + logFileDetails.FilePath
                 ] +
                 (logFileDetails.TimeFormat!"")?has_content?then(
-                    [ "datetime_format = " + logFileDetails.TimeFormat + "\n" ],
+                    [ "datetime_format = " + logFileDetails.TimeFormat ],
                     []
                 ) +
                 (logFileDetails.MultiLinePattern!"")?has_content?then(
-                    [ "awslogs-multiline-pattern = " + logFileDetails.MultiLinePattern + "\n" ],
+                    [ "awslogs-multiline-pattern = " + logFileDetails.MultiLinePattern ],
                     []
                 ) +
-                [ "\n" ]
+                [ "" ]
             ]
         [/#list]
     [/#list]
@@ -235,29 +235,63 @@
                     "/etc/awslogs/awscli.conf" : {
                         "content" : {
                             "Fn::Join" : [
-                                "",
+                                "\n",
                                 [
-                                    "[plugins]\n",
-                                    "cwlogs = cwlogs\n",
-                                    "[default]\n",
-                                    "region = " + regionId + "\n"
+                                    "[plugins]",
+                                    "cwlogs = cwlogs",
+                                    "[default]",
+                                    { "Fn::Sub" : r'region = ${AWS::Region}' }
                                 ]
                             ]
-                        }
+                        },
+                        "mode" : "000644"
                     },
                     "/etc/awslogs/awslogs.conf" : {
                         "content" : {
                             "Fn::Join" : [
-                                "",
+                                "\n",
                                 logContent
+                            ]
+                        },
+                        "mode" : "000644"
+                    },
+                    "/opt/codeontap/awslogs.sh" : {
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                [
+                                    r'#!/bin/bash',
+                                    r'# Metadata log details',
+                                    r"ecs_cluster=$(curl -s http://localhost:51678/v1/metadata | jq -r '. | .Cluster')",
+                                    r"ecs_container_instance_id=$(curl -s http://localhost:51678/v1/metadata | jq -r '. | .ContainerInstanceArn' | awk -F/ '{print $2}' )",
+                                    r'macs=$(curl http://169.254.169.254/latest/meta-data/network/interfaces/macs/ | head -1 )',
+                                    r'vpc_id=$(curl http://169.254.169.254/latest/meta-data/network/interfaces/macs/$macs/vpc-id )',
+                                    r'instance_id=$(curl http://169.254.169.254/latest/meta-data/instance-id)',
+                                    r'',
+                                    r'sed -i -e "s/{instance_id}/$instance_id/g" /etc/awslogs/awslogs.conf',
+                                    r'sed -i -e "s/{ecs_container_instance_id}/$ecs_container_instance_id/g" /etc/awslogs/awslogs.conf',
+                                    r'sed -i -e "s/{ecs_cluster}/$ecs_cluster/g" /etc/awslogs/awslogs.conf',
+                                    r'sed -i -e "s/{vpc_id}/$vpc_id/g" /etc/awslogs/awslogs.conf'
+                                ]
                             ]
                         },
                         "mode" : "000755"
                     }
                 },
+                "services" : {
+                    "sysvinit" : {
+                        "awslogs" : {
+                            "ensureRunning" : true,
+                            "enabled" : true,
+                            "files" : [ "/etc/awslogs/awslogs.conf", "/etc/awslogs/awscli.conf" ],
+                            "packages" : [ "awslogs" ],
+                            "commands" : [ "ConfigureLogsAgent" ]
+                        }
+                    }
+                },
                 "commands": {
                     "ConfigureLogsAgent" : {
-                        "command" : "/opt/codeontap/bootstrap/awslogs.sh",
+                        "command" : "/opt/codeontap/awslogs.sh",
                         "ignoreErrors" : ignoreErrors
                     }
                 }
