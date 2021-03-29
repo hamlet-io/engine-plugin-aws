@@ -579,54 +579,185 @@
 [#function getInitConfigECSAgent ecsId defaultLogDriver dockerUsers=[] dockerVolumeDrivers=[] ignoreErrors=false priority=5 ]
     [#local dockerUsersEnv = "" ]
 
+    [#local userInit = {}]
     [#if dockerUsers?has_content ]
         [#list dockerUsers as userName,details ]
-            [#local dockerUsersEnv += details.UserName?has_content?then(details.UserName,userName) + ":" + details.UID?c + "," ]
+
+            [#local userInit = mergeObjects(
+                                userInit,
+                                {
+                                    userName : {
+                                        "groups" : [ "docker" ],
+                                        "uid" : details.UID
+                                    }
+                                })]
         [/#list]
     [/#if]
-    [#local dockerUsersEnv = dockerUsersEnv?remove_ending(",")]
 
-    [#local dockerVolumeDriverEnvs = {} ]
+    [#local commands = {}]
+
+    [#local commands +=
+        {
+            "9_RestartECSAgent" : {
+                "command" : "stop ecs; start ecs",
+                "ignoreErrors" : ignoreErrors
+            }
+        }
+    ]
+
+    [#local dockerVolumeDriverScriptName = "ecs_volume_driver_install" ]
+    [#local dockerVolumeDriverScript = [] ]
     [#if dockerVolumeDrivers?has_content ]
         [#list dockerVolumeDrivers as dockerVolumeDriver ]
-            [#local dockerVolumeDriverEnvs += { "DOCKER_VOLUME_DRIVER_" + dockerVolumeDriver?upper_case : "true" }]
+
+            [#switch dockerVolumeDriver ]
+                [#case "ebs" ]
+
+                    [#local dockerVolumeDriverScript += [
+                        { "Fn::Sub" : r'docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION="${AWS::Region}" --grant-all-permissions' }
+                    ]]
+                    [#break]
+            [/#switch]
         [/#list]
     [/#if]
+
+    [#local commands +=
+        attributeIfContent(
+            "1_InstallVolumeDrivers",
+            dockerVolumeDriverScript,
+            {
+                "command" : "/opt/codeontap/${dockerVolumeDriverScriptName}.sh",
+                "ignoreErrors" : ignoreErrors
+            }
+        )]
+
+    [#if dockerVolumeDriverScript?has_content ]
+        [#local dockerVolumeDriverScript = [
+            r'#!/bin/bash',
+            r'set -euo pipefail',
+            'exec > >(tee /var/log/codeontap/${dockerVolumeDriverScriptName}.log | logger -t ${dockerVolumeDriverScriptName} -s 2>/dev/console) 2>&1'
+        ] + dockerVolumeDriverScript ]
+    [/#if]
+
+    [#local dockerLoggingDriverScriptName = "ecs_log_driver_config" ]
+    [#local dockerLoggingDriverScript = []]
+    [#switch defaultLogDriver ]
+        [#case "awslogs"]
+            [#break]
+
+        [#case "json-file"]
+        [#case "fluentd" ]
+            [#local dockerLoggingDriverScript += [
+                r'function update_log_driver {',
+                r'  local ecs_log_driver="$1"; shift',
+                r'  . /etc/sysconfig/docker',
+                r'  if [[ -n "${OPTIONS}" ]]; then',
+                r'     sed -i "s,^\(OPTIONS=\).*,\1\"${OPTIONS} --log-driver=${ecs_log_driver}\",g" /etc/sysconfig/docker',
+                r'  else',
+                r'     echo "OPTIONS=\"--log-driver=${ecs_log_driver}\"" >> /etc/sysconfig/docker',
+                r'    fi'
+                r'}',
+                'update_log_driver "${defaultLogDriver}"'
+            ]]
+            [#break]
+    [/#switch]
+
+    [#if dockerLoggingDriverScript?has_content ]
+        [#local dockerVolumeDriverScript = [
+            r'#!/bin/bash',
+            r'set -euo pipefail',
+            'exec > >(tee /var/log/codeontap/${dockerLoggingDriverScriptName}.log | logger -t ${dockerLoggingDriverScriptName} -s 2>/dev/console) 2>&1'
+        ] + dockerLoggingDriverScript ]
+    [/#if]
+
+    [#local commands +=
+        attributeIfContent(
+            "2_ConfigureDefaultLogDriver",
+            dockerLoggingDriverScript,
+            {
+                "command" : "/opt/codeontap/${dockerLoggingDriverScriptName}.sh",
+                "ignoreErrors" : ignoreErrors
+            }
+        )]
+
+    [#local ecsCluster = valueIfContent(
+                            getExistingReference(ecsId),
+                            getExistingReference(ecsId),
+                            getReference(ecsId)
+                    )]
 
     [#return
         {
-        "${priority}_ecs": {
-            "commands":
-                attributeIfTrue(
-                    "01Fluentd",
-                    defaultLogDriver == "fluentd",
+            "${priority}_ecs": {
+                "files" : {
+                    "/etc/ecs/ecs.config" : {
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                [
+                                    {
+                                        "Fn::Sub" : [
+                                            r'ECS_CLUSTER=${clusterId}',
+                                            { "clusterId": ecsCluster }
+                                        ]
+                                    }
+                                    r'ECS_LOGLEVEL=warn',
+                                    r'ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=10m',
+                                    r'ECS_AVAILABLE_LOGGING_DRIVERS=["awslogs","fluentd","gelf","json-file","journald","syslog"]'
+                                ]
+                            ]
+                        },
+                        "mode" : "000644"
+                    }
+                } +
+                attributeIfContent(
+                    "/opt/codeontap/${dockerVolumeDriverScriptName}.sh",
+                    dockerVolumeDriverScript,
                     {
-                        "command" : "/opt/codeontap/bootstrap/fluentd.sh",
-                        "ignoreErrors" : ignoreErrors
-                    }) +
-                {
-                    "03ConfigureCluster" : {
-                        "command" : "/opt/codeontap/bootstrap/ecs.sh",
-                        "env" : {
-                            "ECS_CLUSTER" : valueIfContent(
-                                                    getExistingReference(ecsId),
-                                                    getExistingReference(ecsId),
-                                                    getReference(ecsId)
-                                            ),
-                            "ECS_LOG_DRIVER" : defaultLogDriver
-                        } +
-                        attributeIfContent(
-                            "DOCKER_USERS",
-                            dockerUsersEnv
-                        ) +
-                        (dockerVolumeDriverEnvs?has_content)?then(
-                            dockerVolumeDriverEnvs,
-                            {}
-                        ),
-                        "ignoreErrors" : ignoreErrors
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                dockerVolumeDriverScript
+                            ]
+                        },
+                        "mode" : "000755"
+                    }
+                ) +
+                attributeIfContent(
+                    "/opt/codeontap/${dockerLoggingDriverScriptName}.sh",
+                    dockerLoggingDriverScript,
+                    {
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                dockerLoggingDriverScript
+                            ]
+                        }
+                    }
+                ),
+                "services" : {
+                    "sysvinit" : {
+                        "docker" : {
+                            "enabled" : true,
+                            "ensureRunning" : true,
+                            "files" : [ ] +
+                            valueIfContent(
+                                [ "/opt/codeontap/${dockerLoggingDriverScriptName}.sh" ],
+                                dockerLoggingDriverScript,
+                                []
+                            )
+                        }
                     }
                 }
-            }
+            } +
+            attributeIfContent(
+                "users",
+                userInit
+            ) +
+            attributeIfContent(
+                "commands",
+                commands
+            )
         }
     ]
 [/#function]
