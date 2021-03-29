@@ -302,7 +302,7 @@
                                 "",
                                 attributeType
     )]
-    [#return getStackOutput( AWS_PROVIDER, formatAttributeId(resourceId, attributeType), inDeploymentUnit, inRegion, inAccount) ]
+    [#return getStatePointValue( formatAttributeId(resourceId, attributeType), inDeploymentUnit, inAccount, inRegion) ]
 [/#function]
 
 [#function migrateToResourceId resourceId legacyIds=[] inRegion="" inDeploymentUnit="" inAccount=(accountObject.ProviderId)!""]

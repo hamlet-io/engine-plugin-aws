@@ -5,6 +5,17 @@
     description="AWS provider inputs"
 /]
 
+[@registerInputTransformer
+    id=AWS_INPUT_SEEDER
+    description="AWS provider inputs"
+/]
+
+[@addSeederToConfigPipeline
+    sources=[MOCK_SHARED_INPUT_SOURCE]
+    stage=COMMANDLINEOPTIONS_SHARED_INPUT_STAGE
+    seeder=AWS_INPUT_SEEDER
+/]
+
 [@addSeederToConfigPipeline
     stage=MASTERDATA_SHARED_INPUT_STAGE
     seeder=AWS_INPUT_SEEDER
@@ -15,16 +26,9 @@
     seeder=AWS_INPUT_SEEDER
 /]
 
-[@addSeederToConfigPipeline
+[@addTransformerToConfigPipeline
     stage=NORMALISE_SHARED_INPUT_STAGE
-    seeder=AWS_INPUT_SEEDER
-/]
-
-[@addSeederToConfigPipeline
-    sources=[MOCK_SHARED_INPUT_SOURCE]
-    stage=COMMANDLINEOPTIONS_SHARED_INPUT_STAGE
-    seeder=AWS_INPUT_SEEDER
-
+    transformer=AWS_INPUT_SEEDER
 /]
 
 [#macro aws_inputloader path]
@@ -62,8 +66,9 @@
 
     [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
         [#local requiredRegions =
-            getArrayIntersection(
-                getFilterAttribute(filter, "Region")
+            getMatchingFilterAttributeValues(
+                filter,
+                "Region",
                 aws_cmdb_regions?keys
             )
         ]
@@ -73,15 +78,14 @@
             [#local regions = aws_cmdb_regions]
         [/#if]
         [#return
-            mergeObjects(
+            addToConfigPipelineClass(
                 state,
+                BLUEPRINT_CONFIG_INPUT_CLASS,
+                aws_cmdb_masterdata +
                 {
-                    "Masterdata" :
-                        aws_cmdb_masterdata +
-                        {
-                            "Regions" : regions
-                        }
-                }
+                    "Regions" : regions
+                },
+                MASTERDATA_SHARED_INPUT_STAGE
             )
         ]
     [/#if]
@@ -93,20 +97,19 @@
 
     [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
         [#return
-            mergeObjects(
+            addToConfigPipelineClass(
                 state,
+                BLUEPRINT_CONFIG_INPUT_CLASS,
                 {
-                    "Blueprint" :
-                        {
-                            "Account": {
-                                "Region": "ap-southeast-2",
-                                "ProviderId": "0123456789"
-                            },
-                            "Product": {
-                                "Region": "ap-southeast-2"
-                            }
-                        }
-                }
+                    "Account": {
+                        "Region": "ap-southeast-2",
+                        "ProviderId": "0123456789"
+                    },
+                    "Product": {
+                        "Region": "ap-southeast-2"
+                    }
+                },
+                FIXTURE_SHARED_INPUT_STAGE
             )
         ]
     [/#if]
@@ -118,14 +121,13 @@
 
     [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
         [#return
-            mergeObjects(
+            addToConfigPipelineClass(
                 state,
+                COMMAND_LINE_OPTIONS_CONFIG_INPUT_CLASS,
                 {
-                    "CommandLineOptions" : {
-                        "Regions" : {
-                            "Segment" : "ap-southeast-2",
-                            "Account" : "ap-southeast-2"
-                        }
+                    "Regions" : {
+                        "Segment" : "ap-southeast-2",
+                        "Account" : "ap-southeast-2"
                     }
                 }
             )
@@ -134,57 +136,75 @@
     [#return state]
 [/#function]
 
-[#-- Normalise cloud formation stack files to output sets --]
-[#function aws_configseeder_normalise filter state]
-
-    [#-- disable this functionality for now --]
-    [#-- TODO(mfl): enable this as part of updated output processing --]
-    [#return state]
+[#-- Normalise cloud formation stack files to state point sets --]
+[#function aws_configtransformer_normalise filter state]
 
     [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
-        [#local outputSets = [] ]
 
-        [#list ((state.Intermediate.Stacks)![])?filter(s -> s.ContentsAsJSON.Stacks?has_content) as stackFile]
+        [#-- Anything to process? --]
+        [#local stackFiles =
+            getConfigPipelineClassCacheForStage(
+                state,
+                STATE_CONFIG_INPUT_CLASS,
+                CMDB_SHARED_INPUT_STAGE
+            )![]
+        ]
 
-            [#-- Looks like a cloud formation stack file --]
-            [#local level = stackFile.FileName?split('-')[0] ]
+        [#-- Normalise each stack to a point set --]
+        [#local pointSets = [] ]
 
-            [#list stackFile.ContentsAsJSON.Stacks?filter(s -> s.Outputs?has_content) as stack ]
-                [#-- Normalise to a set of outputs --]
-
-                [#local outputSet = {} ]
+        [#-- Looks like format from aws cli cloudformation describe-stacks command? --]
+        [#-- TODO(mfl) Remove check for .Content[0] once dynamic CMDB loading operational --]
+        [#list stackFiles?filter(s -> ((s.ContentsAsJSON!s.Content[0]).Stacks)?has_content) as stackFile]
+            [#list (stackFile.ContentsAsJSON!stackFile.Content[0]).Stacks?filter(s -> s.Outputs?has_content) as stack ]
+                [#local pointSet = {} ]
 
                 [#if stack.Outputs?is_sequence ]
                     [#list stack.Outputs as output ]
-                        [#local outputSet += {
+                        [#local pointSet += {
                             output.OutputKey : output.OutputValue
                         }]
                     [/#list]
                 [/#if]
 
                 [#if stack.Outputs?is_hash ]
-                    [#local outputSet = stack.Outputs ]
+                    [#local pointSet = stack.Outputs ]
                 [/#if]
 
-                [#if outputSet?has_content ]
-                    [#local outputSets += [ mergeObjects( { "Level" : level} , outputSet) ] ]
+                [#if pointSet?has_content ]
+                    [@debug
+                        message="Normalise stack file " + stackFile.FileName!""
+                        enabled=false
+                    /]
+                    [#local pointSets +=
+                        [
+                            validatePointSet(
+                                mergeObjects(
+                                    { "Level" : (stackFile.FileName!"")?split('-')[0]},
+                                    pointSet
+                                )
+                             )
+                        ]
+                    ]
                 [/#if]
-
             [/#list]
         [/#list]
 
-        [#return
-            combineEntities(
-                state,
-                {
-                    "OutputSets" : outputSets
-                },
-                APPEND_COMBINE_BEHAVIOUR
-            ) +
-            {
-                "Intermediate" : removeObjectAttributes(state.Intermediate!{}, "Stacks")
-            }
-        ]
+        [#if stackFiles?has_content]
+            [#return
+                removeConfigPipelineClassCacheForStage(
+                    combineEntities(
+                        state,
+                        {
+                            STATE_CONFIG_INPUT_CLASS : pointSets
+                        },
+                        APPEND_COMBINE_BEHAVIOUR
+                    ),
+                    STATE_CONFIG_INPUT_CLASS,
+                    CMDB_SHARED_INPUT_STAGE
+                )
+            ]
+        [/#if]
     [/#if]
     [#return state]
 [/#function]
