@@ -43,13 +43,59 @@
     } ]
 [/#function]
 
-[#function getInitConfigDirectories ignoreErrors=false priority=0 ]
+[#function getInitConfigBootstrap occurrence operationsBucket dataBucket envVariables={} ignoreErrors=false priority=1 ]
+    [#local role = (occurrence.Configuration.Settings.Product["Role"].Value)!""]
+
+    [#local envContent = [
+        r'# Set environment variables from hamlet configuration',
+        r'export cot_request="'       + getCLORequestReference()        + '"',
+        r'export cot_configuration="' + getCLOConfigurationReference()  + '"',
+        r'export cot_accountRegion="' + accountRegionId                 + '"',
+        r'export cot_tenant="'        + tenantId                        + '"',
+        r'export cot_account="'       + accountId                       + '"',
+        r'export cot_product="'       + productId                       + '"',
+        r'export cot_region="'        + regionId                        + '"',
+        r'export cot_segment="'       + segmentId                       + '"',
+        r'export cot_environment="'   + environmentId                   + '"',
+        r'export cot_tier="'          + occurrence.Core.Tier.Id         + '"',
+        r'export cot_component="'     + occurrence.Core.Component.Id    + '"',
+        r'export cot_role="'          + role                            + '"',
+        r'export cot_credentials="'   + credentialsBucket               + '"',
+        r'export cot_code="'          + codeBucket                      + '"',
+        r'export cot_logs="'          + operationsBucket                + '"',
+        r'export cot_backups="'       + dataBucket                      + '"'
+    ]]
+
+    [#list envVariables as key,value]
+        [#local envContent +=
+            [
+                'export ${key}="${value}"'
+            ]
+        ]
+    [/#list]
+
     [#return
         {
-            "${priority}_Directories" : {
+            "${priority}_Bootstrap": {
+                "packages" : {
+                    "yum" : {
+                        "aws-cli" : []
+                    }
+                },
+                "files" : {
+                    "/etc/profile.d/hamlet_env.sh" : {
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                envContent
+                            ]
+                        },
+                        "mode" : "000644"
+                    }
+                },
                 "commands": {
                     "01Directories" : {
-                        "command" : "mkdir --parents --mode=0755 /etc/codeontap && mkdir --parents --mode=0755 /opt/codeontap/bootstrap && mkdir --parents --mode=0755 /opt/codeontap/scripts && mkdir --parents --mode=0755 /var/log/codeontap",
+                        "command" : "mkdir --parents --mode=0755 /var/log/codeontap",
                         "ignoreErrors" : ignoreErrors
                     }
                 }
@@ -83,109 +129,6 @@
                         }
                     }
                 )
-            }
-        }
-    ]
-[/#function]
-
-[#function getInitConfigBootstrap occurrence operationsBucket dataBucket ignoreErrors=false priority=1 ]
-    [#local role = (occurrence.Configuration.Settings.Product["Role"].Value)!""]
-    [#return
-        {
-            "${priority}_Bootstrap": {
-                "packages" : {
-                    "yum" : {
-                        "aws-cli" : [],
-                        "amazon-efs-utils" : []
-                    }
-                },
-                "files" : {
-                    "/etc/codeontap/facts.sh" : {
-                        "content" : {
-                            "Fn::Join" : [
-                                "",
-                                [
-                                    "#!/bin/bash\n",
-                                    "echo \"cot:request="       + getCLORequestReference() + "\"\n",
-                                    "echo \"cot:configuration=" + getCLOConfigurationReference() + "\"\n",
-                                    "echo \"cot:accountRegion=" + accountRegionId         + "\"\n",
-                                    "echo \"cot:tenant="        + tenantId                + "\"\n",
-                                    "echo \"cot:account="       + accountId               + "\"\n",
-                                    "echo \"cot:product="       + productId               + "\"\n",
-                                    "echo \"cot:region="        + regionId                + "\"\n",
-                                    "echo \"cot:segment="       + segmentId               + "\"\n",
-                                    "echo \"cot:environment="   + environmentId           + "\"\n",
-                                    "echo \"cot:tier="          + occurrence.Core.Tier.Id + "\"\n",
-                                    "echo \"cot:component="     + occurrence.Core.Component.Id + "\"\n",
-                                    "echo \"cot:role="          + role                    + "\"\n",
-                                    "echo \"cot:credentials="   + credentialsBucket       + "\"\n",
-                                    "echo \"cot:code="          + codeBucket              + "\"\n",
-                                    "echo \"cot:logs="          + operationsBucket        + "\"\n",
-                                    "echo \"cot:backups="       + dataBucket              + "\"\n"
-                                ]
-                            ]
-                        },
-                        "mode" : "000755"
-                    },
-                    "/opt/codeontap/bootstrap/fetch.sh" : {
-                        "content" : {
-                            "Fn::Join" : [
-                                "",
-                                [
-                                    "#!/bin/bash -ex\n",
-                                    "exec > >(tee /var/log/codeontap/fetch.log|logger -t codeontap-fetch -s 2>/dev/console) 2>&1\n",
-                                    "REGION=$(/etc/codeontap/facts.sh | grep cot:accountRegion | cut -d '=' -f 2)\n",
-                                    "CODE=$(/etc/codeontap/facts.sh | grep cot:code | cut -d '=' -f 2)\n",
-                                    "aws --region " + r"${REGION}" + " s3 sync s3://" + r"${CODE}" + "/bootstrap/centos/ /opt/codeontap/bootstrap && chmod 0500 /opt/codeontap/bootstrap/*.sh\n"
-                                ]
-                            ]
-                        },
-                        "mode" : "000755"
-                    }
-                },
-                "commands": {
-                    "01Fetch" : {
-                        "command" : "/opt/codeontap/bootstrap/fetch.sh",
-                        "ignoreErrors" : ignoreErrors
-                    },
-                    "02Initialise" : {
-                        "command" : "/opt/codeontap/bootstrap/init.sh",
-                        "ignoreErrors" : ignoreErrors
-                    }
-                }
-            }
-        }
-    ]
-[/#function]
-
-[#function getInitConfigEnvFacts envVariables={} ignoreErrors=false priority=2 ]
-
-    [#local envContent = [
-        "#!/bin/bash"
-    ]]
-
-    [#list envVariables as key,value]
-        [#local envContent +=
-            [
-                'echo "${key}=${value}"'
-            ]
-        ]
-    [/#list]
-
-    [#return
-        {
-            "${priority}_EnvFacts" : {
-                "files" : {
-                    "/etc/codeontap/env.sh" : {
-                        "content" : {
-                            "Fn::Join" : [
-                                "\n",
-                                envContent
-                            ]
-                        },
-                        "mode" : "000755"
-                    }
-                }
             }
         }
     ]
@@ -326,9 +269,10 @@
     [/#list]
 
     [#local initDirFile = [
-        "#!/bin/bash\n"
-        "exec > >(tee /var/log/codeontap/dirsfiles.log|logger -t codeontap-dirsfiles -s 2>/dev/console) 2>&1\n"
+        '#!/bin/bash',
+        'exec > >(tee /var/log/codeontap/dirsfiles.log | logger -t codeontap-dirsfiles -s 2>/dev/console) 2>&1'
     ]]
+
     [#list directories as directoryName,directory ]
 
         [#local mode = directory.mode ]
@@ -479,6 +423,11 @@
     [#return
         {
             "${priority}_EFSMount_" + mountId : {
+                "packages" : {
+                    "yum" : {
+                        "amazon-efs-utils" : []
+                    }
+                },
                 "files" : {
                     "/opt/codeontap/${scriptName}.sh" : {
                         "content" : {
