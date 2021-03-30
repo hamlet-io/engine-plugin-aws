@@ -915,15 +915,35 @@
 [/#function]
 
 [#function getInitConfigLBTargetRegistration portId targetGroupArn ignoreErrors=false priority=8]
+
+    [#local scriptName = "register_targetgroup_${portId}" ]
     [#return
         {
-            "${priority}_RegisterWithTG_" + portId  : {
-                "commands" : {
-                        "RegsiterWithTG" : {
-                        "command" : "/opt/codeontap/bootstrap/register_targetgroup.sh",
-                        "env" : {
-                            "TARGET_GROUP_ARN" : targetGroupArn
+            "${priority}_RegisterWithTG_${portId}" : {
+                "files" : {
+                    "/opt/codeontap/${scriptName}.sh" : {
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                [
+                                    r'#!/bin/bash',
+                                    r'set -euo pipefail',
+                                    'exec > >(tee /var/log/codeontap/${scriptName}.log|logger -t ${scriptName} -s 2>/dev/console) 2>&1',
+                                    {
+                                        "Fn::Sub" : [
+                                            r'aws --region "${AWS::Region}" elbv2 register-targets --target-group-arn "${TargeGroupArn}" --targets "Id=$(curl http://169.254.169.254/latest/meta-data/instance-id)"',
+                                            { "TargeGroupArn": targetGroupArn }
+                                        ]
+                                    }
+                                ]
+                            ]
                         },
+                        "mode" : "000755"
+                    }
+                },
+                "commands" : {
+                    "RegsiterWithTG" : {
+                        "command" : "/opt/codeontap/${scriptName}.sh",
                         "ignoreErrors" : ignoreErrors
                     }
                 }
@@ -933,15 +953,35 @@
 [/#function]
 
 [#function getInitConfigLBClassicRegistration lbId ignoreErrors=false priority=8]
+
+    [#local scriptName = "register_classiclb_${lbId}" ]
     [#return
         {
-            "${priority}_RegisterWithLB_" + lbId : {
-                "commands" : {
-                    "RegisterWithLB" : {
-                        "command" : "/opt/codeontap/bootstrap/register.sh",
-                        "env" : {
-                            "LOAD_BALANCER" : getReference(lbId)
+            "${priority}_RegisterWithClassicLB_${lbId}" : {
+                "files" : {
+                     "/opt/codeontap/${scriptName}.sh" : {
+                         "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                [
+                                    r'#!/bin/bash',
+                                    r'set -euo pipefail',
+                                    'exec > >(tee /var/log/codeontap/${scriptName}.log|logger -t ${scriptName} -s 2>/dev/console) 2>&1',
+                                    {
+                                        "Fn::Sub" : [
+                                            r'aws --region "${AWS::Region}" elb register-instances-with-load-balancer --load-balancer-name "${LoadBalancer}" --instances "$(curl http://169.254.169.254/latest/meta-data/instance-id)"',
+                                            { "LoadBalancer": getReference(lbId) }
+                                        ]
+                                    }
+                                ]
+                            ]
                         },
+                        "mode" : "000755"
+                    }
+                },
+                "commands" : {
+                    "RegisterWithClassicLB" : {
+                        "command" : "/opt/codeontap/${scriptName}.sh",
                         "ignoreErrors" : ignoreErrors
                     }
                 }
