@@ -1,9 +1,72 @@
-# [0.0.0](https://github.com/hamlet-io/engine-plugin-aws/compare/v8.0.0...v0.0.0) (2021-01-11)
+# [0.0.0](https://github.com/hamlet-io/engine-plugin-aws/compare/v8.0.1...v0.0.0) (2021-03-30)
 
 
 ### Bug Fixes
 
-* change log generation ([c609435](https://github.com/hamlet-io/engine-plugin-aws/commit/c609435cce17df77347cb3d21610ba82241aa171))
+* enable fifo on dlq ([c86f711](https://github.com/hamlet-io/engine-plugin-aws/commit/c86f711dad4f6ee36ae661973e1835e2c81c060e))
+* handle naming changes for alerts ([8afae7b](https://github.com/hamlet-io/engine-plugin-aws/commit/8afae7b6fc52bcff78491ebb59a19511cc4076e2))
+* remove debug statement ([b288db2](https://github.com/hamlet-io/engine-plugin-aws/commit/b288db2e4c76d40cc49e5adc6b63d2d36902fab5))
+
+
+### Features
+
+* **sqs:** ordering configuration for queues ([67886c8](https://github.com/hamlet-io/engine-plugin-aws/commit/67886c88a36177e8f79875ab7218de7a21e0d7d8))
+
+
+
+## [8.0.1](https://github.com/hamlet-io/engine-plugin-aws/compare/v8.0.0...v8.0.1) (2021-03-18)
+
+
+### Bug Fixes
+
+* better control of opsdata encryption ([783ec2e](https://github.com/hamlet-io/engine-plugin-aws/commit/783ec2e6130707bc752331b08119ebac82135435))
+* correct a number of reference attributes ([d054a19](https://github.com/hamlet-io/engine-plugin-aws/commit/d054a195bad6d8c08db249f1c96f657d30a51670))
+* firehose encryption policy ([ef8cd8d](https://github.com/hamlet-io/engine-plugin-aws/commit/ef8cd8dc1955a124b68faeb40b3ee476fae0d44e))
+* flowlog tidyup ([fea2fef](https://github.com/hamlet-io/engine-plugin-aws/commit/fea2fef6049c1b928dd83ad8b1d0298a92822ffa))
+* invalid config handling for db ([#249](https://github.com/hamlet-io/engine-plugin-aws/issues/249)) ([da7a854](https://github.com/hamlet-io/engine-plugin-aws/commit/da7a854dff690c4aaadcfbd738ec2b20797bbf5b))
+* masterdata object validation errors ([166bc11](https://github.com/hamlet-io/engine-plugin-aws/commit/166bc115e7baf46875b66a4b5d4ea761b5f3cf76))
+* permission on globaldb secopndary indexes ([45bc79d](https://github.com/hamlet-io/engine-plugin-aws/commit/45bc79dd6251e196728ccaff89367c9a4225886f))
+* remove unnecessary sudo ([d556173](https://github.com/hamlet-io/engine-plugin-aws/commit/d556173b260df6d7d30c12fea9eab17bb4553493))
+* **apigateway:** throttle handling for apigw ([b87fa52](https://github.com/hamlet-io/engine-plugin-aws/commit/b87fa52b4df9279f960105ca18bbd9534f791675))
+* **baselinekey:** update permissions for SES ([#231](https://github.com/hamlet-io/engine-plugin-aws/issues/231)) ([50a38d9](https://github.com/hamlet-io/engine-plugin-aws/commit/50a38d948f3c3c4c6eeb613286d583891d472125))
+* **bastion:** support active config on component ([#234](https://github.com/hamlet-io/engine-plugin-aws/issues/234)) ([881072c](https://github.com/hamlet-io/engine-plugin-aws/commit/881072c5c56082034bf8392a4c69b3fda5e88930))
+* **s3:** do not validate replica sequence on delete ([3643173](https://github.com/hamlet-io/engine-plugin-aws/commit/364317323e449981e013e609c4a48546e3ba439b))
+* **s3:** s3event to lambda fixes ([1aef1f1](https://github.com/hamlet-io/engine-plugin-aws/commit/1aef1f1f8c18f6d2992f5cbc56ffab9a7a358c0f))
+* test args for hamlet cmds ([#248](https://github.com/hamlet-io/engine-plugin-aws/issues/248)) ([c768b56](https://github.com/hamlet-io/engine-plugin-aws/commit/c768b56aec6d0ea49bec1a20208d47f8344f6431))
+
+
+### Features
+
+* **ec2:** refactor getInitConfigSSHPublicKeys method ([32cfcfd](https://github.com/hamlet-io/engine-plugin-aws/commit/32cfcfd282db407dce849e55fb8deb2c0b11f8c8))
+* **ec2:** rename an additional authorized_keys file ([b62065a](https://github.com/hamlet-io/engine-plugin-aws/commit/b62065aeb7fad6a1071d2cd94af4ccb42261ab76))
+* **ec2:** SSH Key Import to ec2 instances ([096a8eb](https://github.com/hamlet-io/engine-plugin-aws/commit/096a8eb890a4e991e585d73df47825b7435b699f)), closes [hamlet-io/engine#1489](https://github.com/hamlet-io/engine/issues/1489)
+* **federatedrole:** support for env in assignemnts ([#217](https://github.com/hamlet-io/engine-plugin-aws/issues/217)) ([773bde2](https://github.com/hamlet-io/engine-plugin-aws/commit/773bde2702c5108417110d132d7719dd183372a6))
+* **gateway:** vpn gateway dpd action ([70b124c](https://github.com/hamlet-io/engine-plugin-aws/commit/70b124c65b4387092bc2957b7bd0692ac3200514))
+* **modules:** add no_master modules ([5cc477f](https://github.com/hamlet-io/engine-plugin-aws/commit/5cc477f6ec3b08ccc9346c527893e9af437e40d1))
+* **s3:** adds bucket policy for inventory ([#230](https://github.com/hamlet-io/engine-plugin-aws/issues/230)) ([eaa6fb4](https://github.com/hamlet-io/engine-plugin-aws/commit/eaa6fb4ec874fa362b0248df24b3c4d98e33d3cd))
+* **s3:** extension support for bucket policy [#203](https://github.com/hamlet-io/engine-plugin-aws/issues/203) ([79a97ce](https://github.com/hamlet-io/engine-plugin-aws/commit/79a97ce253e67bc8cbc441d8cf2f1c799df89ed5))
+* **s3:** inventory report support ([241c299](https://github.com/hamlet-io/engine-plugin-aws/commit/241c299df55cfbe5a34ee2d4398ac7590124d6d5))
+* **spa:** image source via url ([#216](https://github.com/hamlet-io/engine-plugin-aws/issues/216)) ([d70743a](https://github.com/hamlet-io/engine-plugin-aws/commit/d70743ad009d1f612fe05eb764d5d95b58b95bec))
+* **template:** url image source ([#211](https://github.com/hamlet-io/engine-plugin-aws/issues/211)) ([1d1f001](https://github.com/hamlet-io/engine-plugin-aws/commit/1d1f001756f7fb3404025f5695e1c992a102be93))
+* **userpool:** adds constraints for schema ([#245](https://github.com/hamlet-io/engine-plugin-aws/issues/245)) ([5407236](https://github.com/hamlet-io/engine-plugin-aws/commit/540723625724793e3ea2715dc2fcc70ee4dc00fa))
+* **userpool:** extension support for providers ([#215](https://github.com/hamlet-io/engine-plugin-aws/issues/215)) ([e0283d6](https://github.com/hamlet-io/engine-plugin-aws/commit/e0283d65b6f4bfb4be53f89be5d072e7588e7090))
+* baselinekey extensions and policy migration ([#229](https://github.com/hamlet-io/engine-plugin-aws/issues/229)) ([2f69207](https://github.com/hamlet-io/engine-plugin-aws/commit/2f69207c8a713b4a12cf98dda6c363303258e823))
+* input seeders ([#236](https://github.com/hamlet-io/engine-plugin-aws/issues/236)) ([043e86f](https://github.com/hamlet-io/engine-plugin-aws/commit/043e86f1648284261edcdad2a536f338cc515192))
+* whatif input provider ([#233](https://github.com/hamlet-io/engine-plugin-aws/issues/233)) ([71b5e7a](https://github.com/hamlet-io/engine-plugin-aws/commit/71b5e7a5e3e48a1f73166ef4ba78bab2d67b0f6e))
+
+
+### BREAKING CHANGES
+
+* In hamlet-io/engine#1548 the composite object model is being updated
+to allow for validation of the structure - including errors when
+additional parameters are present.
+
+Testing of that has surfaced a number of incorrect objects in this
+plugin that have gone unnoticed
+
+Commit is a breaking change as - though no new functionality has been
+implemented - the corrections will impact existing deployments (to
+their originally intended state).
 
 
 
@@ -23,47 +86,9 @@
 * Auth provider configuration defaulting logic ([e498f69](https://github.com/hamlet-io/engine-plugin-aws/commit/e498f691dd62e781f166726809e75bd78fa7227f))
 * bastion eip subset ([54a41bf](https://github.com/hamlet-io/engine-plugin-aws/commit/54a41bfe04d7c07577f3570a15718b2308eb47fd))
 * **iam:** typo in resource deploy check ([675d024](https://github.com/hamlet-io/engine-plugin-aws/commit/675d024aa92ecebeb9d121988fe98d76e79b311f))
+* change log generation ([c609435](https://github.com/hamlet-io/engine-plugin-aws/commit/c609435cce17df77347cb3d21610ba82241aa171))
+* **sqs:** move policy management for a queue into the component ([8238afb](https://github.com/hamlet-io/engine-plugin-aws/commit/8238afbc5e28a7f7623e0c88eeae9bb306a63e2e))
 * check component subset for cfn resources ([f1c7120](https://github.com/hamlet-io/engine-plugin-aws/commit/f1c7120690b9cb0b6e8d0d7536da2dd32b7319b6))
-* check pattern verb ([4984ea8](https://github.com/hamlet-io/engine-plugin-aws/commit/4984ea8caa53a6840f120fec558329ad7492ba4b))
-* Default throttling checks ([9c18797](https://github.com/hamlet-io/engine-plugin-aws/commit/9c18797d49679dac21d4da4e0a55621663d45895))
-* diagram mapping for ecs ([#145](https://github.com/hamlet-io/engine-plugin-aws/issues/145)) ([e5a24b6](https://github.com/hamlet-io/engine-plugin-aws/commit/e5a24b68242b549323c55ca69fa11d74f746de3a))
-* disable cfn nag on template testing ([9c2385a](https://github.com/hamlet-io/engine-plugin-aws/commit/9c2385a86a56b08a32ec7af80800690357c09d60))
-* don't delete authorizer openapi.json file ([4161114](https://github.com/hamlet-io/engine-plugin-aws/commit/4161114ab1459967c04a94264217f7807f16c4df))
-* enable concurrent builds and remove build wait ([3acd7be](https://github.com/hamlet-io/engine-plugin-aws/commit/3acd7be9c3f139c13aac817e841a9f4f3a2cfbff))
-* enable segment iam resource set ([#122](https://github.com/hamlet-io/engine-plugin-aws/issues/122)) ([b52f8ea](https://github.com/hamlet-io/engine-plugin-aws/commit/b52f8ead83b9dc4b5e703cddd4eb3b6d8e88d8b6))
-* enable testing and check for link ([176ab93](https://github.com/hamlet-io/engine-plugin-aws/commit/176ab934b0bfb7fbb3d0efeaed3f8da96eef6146))
-* fail testing fast ([7a5662d](https://github.com/hamlet-io/engine-plugin-aws/commit/7a5662d3d66b2b2044d12a84168b5a5601bd1ea6))
-* Force lambda@edge to have no environment ([b259278](https://github.com/hamlet-io/engine-plugin-aws/commit/b2592789c5939de3491a7c7277888b4a64110b45))
-* formatting of definition file ([1635bcf](https://github.com/hamlet-io/engine-plugin-aws/commit/1635bcf2d503cbe56a5a3a4b928900acbc1440c0))
-* Gateway endpoint es role ([f2d6f70](https://github.com/hamlet-io/engine-plugin-aws/commit/f2d6f706dcc7871cfd9bc65da74da411145a2956))
-* globaldb sortKey logic ([ce418ff](https://github.com/hamlet-io/engine-plugin-aws/commit/ce418ff7691f46778caff676d14fbd4990384785))
-* hamlet test generate command ([defa570](https://github.com/hamlet-io/engine-plugin-aws/commit/defa570418c9a742cf8e37cccc0d437c8d6cd576))
-* inbounPorts for containers ([#151](https://github.com/hamlet-io/engine-plugin-aws/issues/151)) ([7e9b258](https://github.com/hamlet-io/engine-plugin-aws/commit/7e9b25849d7147349981408ad30cc30afb636874))
-* init configuration ordering for ec2 ([55917f0](https://github.com/hamlet-io/engine-plugin-aws/commit/55917f05b47580900bf7fdcf1c041a45838847e1))
-* integration patterns into explicit method path throttles ([52ac249](https://github.com/hamlet-io/engine-plugin-aws/commit/52ac249c47cd35f8e48c94fd396d6aa5a0cd1f5a))
-* naming fixes for large deployments ([27939ea](https://github.com/hamlet-io/engine-plugin-aws/commit/27939ead3d337ff81af93dc96d7187ab5c8f2a1e))
-* only add resource sets for aws ([eb4e4a6](https://github.com/hamlet-io/engine-plugin-aws/commit/eb4e4a6b2aee323a0f0165c5fdad143a63583372))
-* only alert on notifications in S3 template ([9c52397](https://github.com/hamlet-io/engine-plugin-aws/commit/9c523979a1f056ea67d8ad0d5ac61f8dabb40104))
-* only check patterns for method settings if throttling set ([9daa887](https://github.com/hamlet-io/engine-plugin-aws/commit/9daa8873cacd933af3b19f0b5945196c440c2e8d))
-* Permit iam/lg pass for uncreated components ([00d1888](https://github.com/hamlet-io/engine-plugin-aws/commit/00d18883725ae4c7d06842417b3b400382571339))
-* Permit iam/lg passes before component created ([5d4e82e](https://github.com/hamlet-io/engine-plugin-aws/commit/5d4e82eedecfa5c8d8999816f3d040085fcd2e03))
-* prodiver id migration cleanup ([#196](https://github.com/hamlet-io/engine-plugin-aws/issues/196)) ([73f26f3](https://github.com/hamlet-io/engine-plugin-aws/commit/73f26f3ffd67e8c640076cf4740a56edac531fea))
-* remove cf resources check ([daf6554](https://github.com/hamlet-io/engine-plugin-aws/commit/daf6554181cd531c4aee6ae81425b010c5065e45))
-* remove check for unique regions between replicating buckets ([1abe647](https://github.com/hamlet-io/engine-plugin-aws/commit/1abe647fc03677f65bdd041ec807b84867aa3122))
-* remove FullName for backwards compat ([5e153c4](https://github.com/hamlet-io/engine-plugin-aws/commit/5e153c4c1c82bb50cef4431aed7dd0e446328ac0))
-* remove unnecessary check around methodSettings ([ac57c49](https://github.com/hamlet-io/engine-plugin-aws/commit/ac57c49d56170d76bb75454430ef39fb5cc13931))
-* s3 encrypted bucket policy for ssm ([5aaf043](https://github.com/hamlet-io/engine-plugin-aws/commit/5aaf043f6470c102cec9804490f71eafcae62108))
-* s3 encryption replication role ([1a6ed51](https://github.com/hamlet-io/engine-plugin-aws/commit/1a6ed519643112714138f9d069b49473c3341a20))
-* s3 event notification lookup ([#176](https://github.com/hamlet-io/engine-plugin-aws/issues/176)) ([7997dd9](https://github.com/hamlet-io/engine-plugin-aws/commit/7997dd9b8d3ff273f7cd2da15c2394b6c96cdfef))
-* security group references for security groups ([ac2fcf7](https://github.com/hamlet-io/engine-plugin-aws/commit/ac2fcf7e006d11cae808833320a0b9b43a4e6801))
-* set destination ports for default private service ([ba62efa](https://github.com/hamlet-io/engine-plugin-aws/commit/ba62efa838dcdf8fd2eccbe56e9139835cbb6074))
-* set nat gateway priority for mgmt contract ([c8d8487](https://github.com/hamlet-io/engine-plugin-aws/commit/c8d8487f02201b50e407dedb0755d96f377d7a3a))
-* spa state handles no baseline ([#136](https://github.com/hamlet-io/engine-plugin-aws/issues/136)) ([f5e7574](https://github.com/hamlet-io/engine-plugin-aws/commit/f5e757498cd67637003612fc002a920ffde62f3b))
-* template testing script ([8712b11](https://github.com/hamlet-io/engine-plugin-aws/commit/8712b11b04a01cbf9ab6fc67c27a22bd9fa2cddb))
-* typo in function name ([5b24fc9](https://github.com/hamlet-io/engine-plugin-aws/commit/5b24fc9e4701f6c18ed187da973d19a0d3139ac9))
-* typo in gateway and router components ([5dcb62a](https://github.com/hamlet-io/engine-plugin-aws/commit/5dcb62a571047197dafa39068c8755135535f62d))
-* typo in log messaage ([f190d72](https://github.com/hamlet-io/engine-plugin-aws/commit/f190d7227112a32dcf850dde8e2338d8834a67cc))
-* typo in switch name ([4463824](https://github.com/hamlet-io/engine-plugin-aws/commit/4463824bf902617983296c67e153021991916e3b))
 * **apigateway:** fix new deployments without stage ([a2d5b4d](https://github.com/hamlet-io/engine-plugin-aws/commit/a2d5b4d5b22903e2e663abd89499aa423267cbc7))
 * **apigateway:** waf depedency on stage ([#163](https://github.com/hamlet-io/engine-plugin-aws/issues/163)) ([3788d60](https://github.com/hamlet-io/engine-plugin-aws/commit/3788d60d90376b15d387f0a67fa5e8e7731fa398))
 * **awstest:** fix file comments ([c44ca3a](https://github.com/hamlet-io/engine-plugin-aws/commit/c44ca3a2c69d34e2947a066c0e95b595d42b1d17))
@@ -72,6 +97,7 @@
 * **bastion:** networkprofile for bastion links ([c65d7d4](https://github.com/hamlet-io/engine-plugin-aws/commit/c65d7d450fd03d4a5a3dcfe2cf3289a9ea3e176d))
 * **bastion:** publicRouteTable  default value ([cb050f6](https://github.com/hamlet-io/engine-plugin-aws/commit/cb050f68b6c7ebd73f92ebbec1923666c862d9b9))
 * **cache:** remove networkprofile param from security group ([62baa1f](https://github.com/hamlet-io/engine-plugin-aws/commit/62baa1fdaed0255cd233b03a020480169ca26483))
+* s3 encrypted bucket policy for ssm ([5aaf043](https://github.com/hamlet-io/engine-plugin-aws/commit/5aaf043f6470c102cec9804490f71eafcae62108))
 * **cdn:** add behaviour for mobile ota ([a29af17](https://github.com/hamlet-io/engine-plugin-aws/commit/a29af17a669e3dbbd24b0822c851240c4cbed787))
 * **cdn:** dont use s3 website endpoint in s3 backed origins ([#35](https://github.com/hamlet-io/engine-plugin-aws/issues/35)) ([3f62646](https://github.com/hamlet-io/engine-plugin-aws/commit/3f6264699c434b06db63eb5ed34a64e7e9337cce))
 * **consolidatelogs:** disable log fwd for datafeed ([#174](https://github.com/hamlet-io/engine-plugin-aws/issues/174)) ([8d61615](https://github.com/hamlet-io/engine-plugin-aws/commit/8d61615a8a13233cf43b965740f585ebdf372e37))
@@ -83,6 +109,7 @@
 * **ecs:** handle scale in protection during updates ([f82cf16](https://github.com/hamlet-io/engine-plugin-aws/commit/f82cf16ac3d3f336789bcdd60d17a46bc1f11642))
 * **ecs:** link id for efs setup ([357ca8b](https://github.com/hamlet-io/engine-plugin-aws/commit/357ca8b048704e7e1e339c7eb4fcc94973094b24))
 * **ecs:** name state for ecs service ([8d17e00](https://github.com/hamlet-io/engine-plugin-aws/commit/8d17e00ee032362b19e1691a0a8bbcf263f7c69e))
+* remove FullName for backwards compat ([5e153c4](https://github.com/hamlet-io/engine-plugin-aws/commit/5e153c4c1c82bb50cef4431aed7dd0e446328ac0))
 * **ecs:** require replacement for capacity provider scaling ([#192](https://github.com/hamlet-io/engine-plugin-aws/issues/192)) ([750cf3e](https://github.com/hamlet-io/engine-plugin-aws/commit/750cf3e3421e042504a80dd97cf6481a9441c9ac))
 * **ecs:** volume driver configuration properties ([1ac6669](https://github.com/hamlet-io/engine-plugin-aws/commit/1ac6669f7143ace96b5b81a39b705ccb37917994))
 * **efs:** networkacl lookup from parent ([9702027](https://github.com/hamlet-io/engine-plugin-aws/commit/9702027712170071fa404c0cfb33c7488cfe8cd7))
@@ -110,16 +137,53 @@
 * **router:** remove routetable requirement for external router ([c57be61](https://github.com/hamlet-io/engine-plugin-aws/commit/c57be61ccbea08e893f89270d8bc3e33e8db1e67))
 * **s3:** fix for buckets without encryption ([ac8b7e4](https://github.com/hamlet-io/engine-plugin-aws/commit/ac8b7e4282a55210e5da84afe1e1a3ea0c49b43c))
 * **segment:** network deployment state lookup ([5858cd7](https://github.com/hamlet-io/engine-plugin-aws/commit/5858cd75a5b4ee511a2877c16ff0c03e338c56fa))
-* **sqs:** move policy management for a queue into the component ([8238afb](https://github.com/hamlet-io/engine-plugin-aws/commit/8238afbc5e28a7f7623e0c88eeae9bb306a63e2e))
 * **tests:** mkdir not mrkdir ([47a6f13](https://github.com/hamlet-io/engine-plugin-aws/commit/47a6f13f61ed991e6c435d888f140be530051d66))
 * **transfer:** security policy name property ([9571439](https://github.com/hamlet-io/engine-plugin-aws/commit/957143902e544eb8a611dd63fa14ae7784ad9929))
 * **transitgateway:** remove dynamic tags from cfn updates ([be66174](https://github.com/hamlet-io/engine-plugin-aws/commit/be661743c095e7b678e920bcfacd7a68b5f8f8fa))
 * **userpool:** set userpool region for multi region deployments ([1b5b636](https://github.com/hamlet-io/engine-plugin-aws/commit/1b5b63600962bd05491c396c86ffdd4e09a1e939))
 * **vpc:** Check network rule array items for content ([4708862](https://github.com/hamlet-io/engine-plugin-aws/commit/47088624c302135987b8910df31761b819ee96a5))
-* use mock runId for apigw resources ([2d3faf9](https://github.com/hamlet-io/engine-plugin-aws/commit/2d3faf90d9f1aa425bfb017565748e1c2f686f04))
 * **vpc:** implement explicit control on egress ([d4c41b7](https://github.com/hamlet-io/engine-plugin-aws/commit/d4c41b7997eee54694ed60f20d721a436ce42439))
 * **vpc:** remove ports completey for all protocol ([9065ac2](https://github.com/hamlet-io/engine-plugin-aws/commit/9065ac251e69486389cecd025c8f3cd851a2986b))
+* check pattern verb ([4984ea8](https://github.com/hamlet-io/engine-plugin-aws/commit/4984ea8caa53a6840f120fec558329ad7492ba4b))
+* Default throttling checks ([9c18797](https://github.com/hamlet-io/engine-plugin-aws/commit/9c18797d49679dac21d4da4e0a55621663d45895))
+* diagram mapping for ecs ([#145](https://github.com/hamlet-io/engine-plugin-aws/issues/145)) ([e5a24b6](https://github.com/hamlet-io/engine-plugin-aws/commit/e5a24b68242b549323c55ca69fa11d74f746de3a))
+* disable cfn nag on template testing ([9c2385a](https://github.com/hamlet-io/engine-plugin-aws/commit/9c2385a86a56b08a32ec7af80800690357c09d60))
+* don't delete authorizer openapi.json file ([4161114](https://github.com/hamlet-io/engine-plugin-aws/commit/4161114ab1459967c04a94264217f7807f16c4df))
+* enable concurrent builds and remove build wait ([3acd7be](https://github.com/hamlet-io/engine-plugin-aws/commit/3acd7be9c3f139c13aac817e841a9f4f3a2cfbff))
+* enable segment iam resource set ([#122](https://github.com/hamlet-io/engine-plugin-aws/issues/122)) ([b52f8ea](https://github.com/hamlet-io/engine-plugin-aws/commit/b52f8ead83b9dc4b5e703cddd4eb3b6d8e88d8b6))
+* enable testing and check for link ([176ab93](https://github.com/hamlet-io/engine-plugin-aws/commit/176ab934b0bfb7fbb3d0efeaed3f8da96eef6146))
+* fail testing fast ([7a5662d](https://github.com/hamlet-io/engine-plugin-aws/commit/7a5662d3d66b2b2044d12a84168b5a5601bd1ea6))
+* Force lambda@edge to have no environment ([b259278](https://github.com/hamlet-io/engine-plugin-aws/commit/b2592789c5939de3491a7c7277888b4a64110b45))
+* formatting of definition file ([1635bcf](https://github.com/hamlet-io/engine-plugin-aws/commit/1635bcf2d503cbe56a5a3a4b928900acbc1440c0))
+* Gateway endpoint es role ([f2d6f70](https://github.com/hamlet-io/engine-plugin-aws/commit/f2d6f706dcc7871cfd9bc65da74da411145a2956))
+* globaldb sortKey logic ([ce418ff](https://github.com/hamlet-io/engine-plugin-aws/commit/ce418ff7691f46778caff676d14fbd4990384785))
+* hamlet test generate command ([defa570](https://github.com/hamlet-io/engine-plugin-aws/commit/defa570418c9a742cf8e37cccc0d437c8d6cd576))
+* inbounPorts for containers ([#151](https://github.com/hamlet-io/engine-plugin-aws/issues/151)) ([7e9b258](https://github.com/hamlet-io/engine-plugin-aws/commit/7e9b25849d7147349981408ad30cc30afb636874))
+* init configuration ordering for ec2 ([55917f0](https://github.com/hamlet-io/engine-plugin-aws/commit/55917f05b47580900bf7fdcf1c041a45838847e1))
+* integration patterns into explicit method path throttles ([52ac249](https://github.com/hamlet-io/engine-plugin-aws/commit/52ac249c47cd35f8e48c94fd396d6aa5a0cd1f5a))
+* naming fixes for large deployments ([27939ea](https://github.com/hamlet-io/engine-plugin-aws/commit/27939ead3d337ff81af93dc96d7187ab5c8f2a1e))
+* only add resource sets for aws ([eb4e4a6](https://github.com/hamlet-io/engine-plugin-aws/commit/eb4e4a6b2aee323a0f0165c5fdad143a63583372))
+* only alert on notifications in S3 template ([9c52397](https://github.com/hamlet-io/engine-plugin-aws/commit/9c523979a1f056ea67d8ad0d5ac61f8dabb40104))
+* only check patterns for method settings if throttling set ([9daa887](https://github.com/hamlet-io/engine-plugin-aws/commit/9daa8873cacd933af3b19f0b5945196c440c2e8d))
+* Permit iam/lg pass for uncreated components ([00d1888](https://github.com/hamlet-io/engine-plugin-aws/commit/00d18883725ae4c7d06842417b3b400382571339))
+* Permit iam/lg passes before component created ([5d4e82e](https://github.com/hamlet-io/engine-plugin-aws/commit/5d4e82eedecfa5c8d8999816f3d040085fcd2e03))
+* prodiver id migration cleanup ([#196](https://github.com/hamlet-io/engine-plugin-aws/issues/196)) ([73f26f3](https://github.com/hamlet-io/engine-plugin-aws/commit/73f26f3ffd67e8c640076cf4740a56edac531fea))
+* remove cf resources check ([daf6554](https://github.com/hamlet-io/engine-plugin-aws/commit/daf6554181cd531c4aee6ae81425b010c5065e45))
+* remove check for unique regions between replicating buckets ([1abe647](https://github.com/hamlet-io/engine-plugin-aws/commit/1abe647fc03677f65bdd041ec807b84867aa3122))
+* remove unnecessary check around methodSettings ([ac57c49](https://github.com/hamlet-io/engine-plugin-aws/commit/ac57c49d56170d76bb75454430ef39fb5cc13931))
+* s3 encryption replication role ([1a6ed51](https://github.com/hamlet-io/engine-plugin-aws/commit/1a6ed519643112714138f9d069b49473c3341a20))
+* s3 event notification lookup ([#176](https://github.com/hamlet-io/engine-plugin-aws/issues/176)) ([7997dd9](https://github.com/hamlet-io/engine-plugin-aws/commit/7997dd9b8d3ff273f7cd2da15c2394b6c96cdfef))
+* security group references for security groups ([ac2fcf7](https://github.com/hamlet-io/engine-plugin-aws/commit/ac2fcf7e006d11cae808833320a0b9b43a4e6801))
+* set destination ports for default private service ([ba62efa](https://github.com/hamlet-io/engine-plugin-aws/commit/ba62efa838dcdf8fd2eccbe56e9139835cbb6074))
+* set nat gateway priority for mgmt contract ([c8d8487](https://github.com/hamlet-io/engine-plugin-aws/commit/c8d8487f02201b50e407dedb0755d96f377d7a3a))
+* spa state handles no baseline ([#136](https://github.com/hamlet-io/engine-plugin-aws/issues/136)) ([f5e7574](https://github.com/hamlet-io/engine-plugin-aws/commit/f5e757498cd67637003612fc002a920ffde62f3b))
+* template testing script ([8712b11](https://github.com/hamlet-io/engine-plugin-aws/commit/8712b11b04a01cbf9ab6fc67c27a22bd9fa2cddb))
 * **vpc:** support any protocol sec group rules ([5925ad8](https://github.com/hamlet-io/engine-plugin-aws/commit/5925ad895c87de3de8c23355bb0d8b033bab9ab5))
+* typo in function name ([5b24fc9](https://github.com/hamlet-io/engine-plugin-aws/commit/5b24fc9e4701f6c18ed187da973d19a0d3139ac9))
+* typo in gateway and router components ([5dcb62a](https://github.com/hamlet-io/engine-plugin-aws/commit/5dcb62a571047197dafa39068c8755135535f62d))
+* typo in log messaage ([f190d72](https://github.com/hamlet-io/engine-plugin-aws/commit/f190d7227112a32dcf850dde8e2338d8834a67cc))
+* typo in switch name ([4463824](https://github.com/hamlet-io/engine-plugin-aws/commit/4463824bf902617983296c67e153021991916e3b))
+* use mock runId for apigw resources ([2d3faf9](https://github.com/hamlet-io/engine-plugin-aws/commit/2d3faf90d9f1aa425bfb017565748e1c2f686f04))
 * wording ([ddc41be](https://github.com/hamlet-io/engine-plugin-aws/commit/ddc41bec7f917af7d212592fca5b91433b931191))
 * wording ([813fcd7](https://github.com/hamlet-io/engine-plugin-aws/commit/813fcd77a15fe944ef5bf792f7fb8d212db6a455))
 
