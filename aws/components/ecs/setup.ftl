@@ -81,21 +81,6 @@
 
     [#local environmentVariables = {}]
 
-    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
-
-    [#local configSetName = occurrence.Core.Type]
-    [#local configSets =
-            getInitConfigDirectories() +
-            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket) +
-            getInitConfigECSAgent(ecsId, defaultLogDriver, solution.DockerUsers, solution.VolumeDrivers ) +
-            osPatching.Enabled?then(
-                getInitConfigOSPatching(
-                    osPatching.Schedule,
-                    osPatching.SecurityOnly
-                ),
-                {}
-            ) ]
-
     [#-- Mount storage volumes if directory provided --]
     [#list (storageProfile.Volumes)!{} as id,volume ]
         [#if (volume.Enabled)!true
@@ -137,9 +122,20 @@
 
     [#local environmentVariables += getFinalEnvironment(occurrence, _context).Environment ]
 
-    [#local configSets +=
-        getInitConfigEnvFacts(environmentVariables, false) +
-        getInitConfigDirsFiles(_context.Files, _context.Directories) ]
+    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
+
+    [#local configSetName = occurrence.Core.Type]
+    [#local configSets =
+            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
+            getInitConfigECSAgent(ecsId, defaultLogDriver, solution.DockerUsers, solution.VolumeDrivers ) +
+            osPatching.Enabled?then(
+                getInitConfigOSPatching(
+                    osPatching.Schedule,
+                    osPatching.SecurityOnly
+                ),
+                {}
+            ) +
+            getInitConfigDirsFiles(_context.Files, _context.Directories) ]
 
     [#list bootstrapProfile.BootStraps as bootstrapName ]
         [#if bootstraps[bootstrapName]?? ]

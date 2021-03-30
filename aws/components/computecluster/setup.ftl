@@ -91,18 +91,6 @@
         [/#if]
     [/#list]
 
-    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
-    [#local configSets =
-            getInitConfigDirectories() +
-            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket) +
-            osPatching.Enabled?then(
-                getInitConfigOSPatching(
-                    osPatching.Schedule,
-                    osPatching.SecurityOnly
-                ),
-                {}
-            ) ]
-
     [#-- Mount storage volumes if directory provided --]
     [#list (storageProfile.Volumes)!{} as id,volume ]
         [#if (volume.Enabled)!true
@@ -159,9 +147,17 @@
 
     [#local environmentVariables += getFinalEnvironment(occurrence, _context ).Environment ]
 
-    [#local configSets +=
-        getInitConfigEnvFacts(environmentVariables, false) +
-        getInitConfigDirsFiles(_context.Files, _context.Directories) ]
+    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
+    [#local configSets =
+            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
+            osPatching.Enabled?then(
+                getInitConfigOSPatching(
+                    osPatching.Schedule,
+                    osPatching.SecurityOnly
+                ),
+                {}
+            ) +
+            getInitConfigDirsFiles(_context.Files, _context.Directories) ]
 
     [#list bootstrapProfile.BootStraps as bootstrapName ]
         [#local bootstrap = bootstraps[bootstrapName]]
