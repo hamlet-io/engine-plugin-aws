@@ -137,7 +137,12 @@
                 "FQDN" : getExistingReference(bucketId, DNS_ATTRIBUTE_TYPE)
             },
             "Roles" : {
-                "Inbound" : {},
+                "Inbound" : {
+                    "invoke" : {
+                        "Principal" : "s3.amazonaws.com",
+                        "SourceArn" : getReference(bucketId, ARN_ATTRIBUTE_TYPE)
+                    }
+                },
                 "Outbound" : {
                     "datafeed" : s3KinesesStreamPermission(bucketId) + s3AllEncryptionPolicy
                 }
