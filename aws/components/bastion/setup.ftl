@@ -260,7 +260,11 @@
                         "Ports" : [ "ssh" ],
                         "IPAddressGroups" :
                             sshEnabled?then(
-                                (solution.IPAddressGroups)!(segmentObject.Bastion.IPAddressGroups)!(segmentObject.IPAddressGroups)![],
+                                combineEntities(
+                                    (segmentObject.Bastion.IPAddressGroups)!(segmentObject.IPAddressGroups)![],
+                                    (solution.IPAddressGroups)![],
+                                    UNIQUE_COMBINE_BEHAVIOUR
+                                ),
                                 []
                             ),
                         "Description" : "Bastion Access Groups"
