@@ -205,3 +205,42 @@
             clientContext
         )]
 [/#function]
+
+[#-- SSM Parameter Resolution in CFN Templates --]
+[#-- Allows for Cloudformation to return parameter data from SSM Paramter Store --]
+
+[#macro addCFNSSMStringParam id default="" description="" ]
+    [@cfParameter
+        id=id
+        type="AWS::SSM::Parameter::Value<String>"
+        default=default
+        description=description
+    /]
+[/#macro]
+
+[#macro addCFNSSMStringListParam id default="" description="" ]
+    [@cfParameter
+        id=id
+        type="AWS::SSM::Parameter::Value<List<String>>"
+        default=default
+        description=description
+    /]
+[/#macro]
+
+[#macro addCFNSSMCommaListParam id default="" description="" ]
+    [@cfParameter
+        id=id
+        type="AWS::SSM::Parameter::Value<CommaDelimitedList>"
+        default=default
+        description=description
+    /]
+[/#macro]
+
+[#macro addCFNSSMEC2ImageParam id default="" description="" ]
+    [@cfParameter
+        id=id
+        type="AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+        default=default
+        description=description
+    /]
+[/#macro]

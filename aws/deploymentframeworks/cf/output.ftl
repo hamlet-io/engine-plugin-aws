@@ -240,6 +240,67 @@
     [/#list]
 [/#macro]
 
+[#macro cfParameter
+            id
+            type
+            default=""
+            description=""
+            allowedPattern=""
+            allowedValues=""
+            constraintDescription=""
+            maxLength=""
+            maxValue=""
+            minLength=""
+            minValue=""
+    ]
+
+    [@mergeWithJsonOutput
+        name="parameters"
+        content=
+            {
+                id : {
+                    "Type" : type
+                } +
+                attributeIfContent(
+                    "AllowedPattern",
+                    allowedPattern
+                ) +
+                attributeIfContent(
+                    "AllowedValues",
+                    allowedValues
+                ) +
+                attributeIfContent(
+                    "ConstraintDescription",
+                    constraintDescription
+                ) +
+                attributeIfContent(
+                    "Default",
+                    default
+                ) +
+                attributeIfContent(
+                    "Description",
+                    description
+                ) +
+                attributeIfContent(
+                    "MaxLength",
+                    maxLength
+                ) +
+                attributeIfContent(
+                    "MaxValue",
+                    maxValue
+                ) +
+                attributeIfContent(
+                    "MinLength",
+                    minLength
+                ) +
+                attributeIfContent(
+                    "MinValue",
+                    minValue
+                )
+            }
+    /]
+[/#macro]
+
 [#function cf_output_resource level="" include=""]
 
     [@setOutputFileProperties format="json" /]
@@ -271,7 +332,11 @@
                 "Outputs" :
                     getOutputContent("outputs") +
                     getCFTemplateCoreOutputs()
-            }
+            } +
+            attributeIfContent(
+                "Parameters",
+                getOutputContent("parameters")
+            )
         ]
     [/#if]
     [#return {}]
@@ -279,6 +344,7 @@
 
 
 [#-- Initialise the possible outputs to make sure they are available to all steps --]
+[@initialiseJsonOutput name="parameters" /]
 [@initialiseJsonOutput name="resources" /]
 [@initialiseJsonOutput name="outputs" /]
 
