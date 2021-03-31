@@ -62,21 +62,6 @@
 
     [#local environmentVariables = {}]
 
-    [#local configSetName = occurrence.Core.Type]
-
-    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
-    [#local configSets =
-            getInitConfigDirectories() +
-            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket) +
-            getInitConfigPuppet() +
-            osPatching.Enabled?then(
-                getInitConfigOSPatching(
-                    osPatching.Schedule,
-                    osPatching.SecurityOnly
-                ),
-                {}
-            ) ]
-
     [#local efsMountPoints = {}]
 
     [#local componentDependencies = []]
@@ -126,9 +111,19 @@
 
     [#local environmentVariables += getFinalEnvironment(occurrence, _context ).Environment ]
 
-    [#local configSets +=
-        getInitConfigEnvFacts(environmentVariables, false) +
-        getInitConfigDirsFiles(_context.Files, _context.Directories) ]
+    [#local configSetName = occurrence.Core.Type]
+
+    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
+    [#local configSets =
+            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
+            osPatching.Enabled?then(
+                getInitConfigOSPatching(
+                    osPatching.Schedule,
+                    osPatching.SecurityOnly
+                ),
+                {}
+            ) +
+            getInitConfigDirsFiles(_context.Files, _context.Directories) ]
 
     [#list bootstrapProfile.BootStraps as bootstrapName ]
         [#local bootstrap = bootstraps[bootstrapName]]
@@ -399,6 +394,21 @@
                                 )
                             ]
                         [/#if]
+                    [/#if]
+                [/#list]
+
+                [#list (storageProfile.Volumes)!{} as id,volume ]
+                    [#if (volume.Enabled)!true
+                            && ((volume.MountPath)!"")?has_content
+                            && ((volume.Device)!"")?has_content ]
+                        [#local configSets +=
+                            getInitConfigDataVolumeMount(
+                                volume.Device,
+                                volume.MountPath,
+                                false,
+                                1
+                            )
+                        ]
                     [/#if]
                 [/#list]
 

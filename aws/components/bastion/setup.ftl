@@ -78,19 +78,6 @@
                 "DesiredCount" : sshActive?then(1,0)
     }]
 
-    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
-
-    [#local configSets =
-            getInitConfigDirectories() +
-            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket) +
-            osPatching.Enabled?then(
-                getInitConfigOSPatching(
-                    osPatching.Schedule,
-                    osPatching.SecurityOnly
-                ),
-                {}
-            )]
-
     [#local contextLinks = getLinkTargets(occurrence, links) ]
     [#local _context =
         {
@@ -111,13 +98,37 @@
 
     [#-- Add in extension specifics including override of defaults --]
     [#local _context = invokeExtensions( occurrence, _context )]
-
-    [#local environmentVariables = getFinalEnvironment(occurrence, _context).Environment ]
     [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
-    [#local configSets +=
-        getInitConfigEnvFacts(environmentVariables, false) +
-        getInitConfigDirsFiles(_context.Files, _context.Directories) ]
+    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
+    [#local environmentVariables = getFinalEnvironment(occurrence, _context).Environment ]
+
+    [#local configSets =
+            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
+            osPatching.Enabled?then(
+                getInitConfigOSPatching(
+                    osPatching.Schedule,
+                    osPatching.SecurityOnly
+                ),
+                {}
+            ) +
+            getInitConfigDirsFiles(_context.Files, _context.Directories) ]
+
+    [#-- Mount storage volumes if directory provided --]
+    [#list (storageProfile.Volumes)!{} as id,volume ]
+        [#if (volume.Enabled)!true
+                && ((volume.MountPath)!"")?has_content
+                && ((volume.Device)!"")?has_content ]
+            [#local configSets +=
+                getInitConfigDataVolumeMount(
+                    volume.Device,
+                    volume.MountPath,
+                    false,
+                    1
+                )
+            ]
+        [/#if]
+    [/#list]
 
     [#if sshEnabled ]
 
