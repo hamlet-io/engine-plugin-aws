@@ -15,6 +15,8 @@
     [#local buildRegistry = (buildSettings["BUILD_FORMATS"].Value[0])!"HamletFatal No build format defined" ]
     [#local roles = occurrence.State.Roles]
 
+    [#local definitionsObject =  getDefinitions() ]
+
     [#local apiId      = resources["apigateway"].Id]
     [#local apiName    = resources["apigateway"].Name]
 

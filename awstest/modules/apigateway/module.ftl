@@ -10,8 +10,8 @@
 [#macro awstest_module_apigateway ]
 
     [#-- Base apigateway setup - No solution parameters --]
-    [@addDefinition
-        definition={
+    [@loadModule
+        definitions={
             "appXapigatewaybase" : {
                 "swagger": "2.0",
                 "info": {
@@ -33,9 +33,6 @@
                 }
             }
         }
-    /]
-
-    [@loadModule
         settingSets=[
             {
                 "Type" : "Settings",
