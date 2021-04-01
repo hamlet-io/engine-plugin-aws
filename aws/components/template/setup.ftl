@@ -16,6 +16,7 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"], NAME_ATTRIBUTE_TYPE )]
+    [#local operationsBucketFQDN = getExistingReference(baselineComponentIds["OpsData"], DNS_ATTRIBUTE_TYPE)]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"], NAME_ATTRIBUTE_TYPE )]
     [#local kmsKeyArn = getExistingReference(baselineComponentIds["Encryption"], ARN_ATTRIBUTE_TYPE )]
 
@@ -24,12 +25,16 @@
         "templates"
     )]
 
-    [#local templateRootFileUrl = formatRelativePath(
-                                    "https://s3.amazonaws.com/",
-                                    operationsBucket,
-                                    templatePath,
-                                    solution.RootFile
-                                )]
+    [#local templateRootFileUrl = {
+                                    "Fn::Join" : [
+                                        "/",
+                                        [
+                                            "https://${operationsBucketFQDN}"
+                                            templatePath,
+                                            solution.RootFile
+                                        ]
+                                    ]
+                                }]
 
     [#local buildReference = getOccurrenceBuildReference(occurrence)]
     [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
