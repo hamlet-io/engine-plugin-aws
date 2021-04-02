@@ -15,6 +15,7 @@ pipeline {
         HAMLET_CLONE_ROOT       = '/tmp/hamlet-latest'
         GENERATION_BASE_DIR     = '/tmp/hamlet-latest/executor'
         GENERATION_DIR          = '/tmp/hamlet-latest/executor/cli'
+        GENERATION_ENGINE_DIR   = '/tmp/hamlet-latest/engine/core'
         GENERATION_PLUGIN_DIRS  = ''
     }
 
