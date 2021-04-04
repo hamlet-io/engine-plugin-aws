@@ -307,7 +307,14 @@
 
     [#-- Resources --]
     [#if include?has_content]
-        [#include include?ensure_starts_with("/")]
+        [#if include?contains("[#ftl]") ]
+            [#-- treat as interpretable content --]
+            [#local inlineInclude = include?interpret]
+            [@inlineInclude /]
+        [#else]
+            [#-- assume a filename --]
+            [#include include?ensure_starts_with("/") ]
+        [/#if]
     [#else]
         [@processFlows
             level=level
