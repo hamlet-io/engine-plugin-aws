@@ -364,8 +364,6 @@
         ]]
 
         [#-- Integration Patterns (as Regex) into Matching Method Throttling (as explicit paths) --]
-
-        [@debug message="DefsObject" context=definitionsObject enabled=true /]
         [#if definitionsObject[core.Id]?has_content]
             [#list definitionsObject[core.Id].paths as path,pathConfig]
                 [#list pathConfig?keys as verb]
