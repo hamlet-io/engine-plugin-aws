@@ -341,8 +341,10 @@
         /]
 
         [#-- Throttling Configuration --]
-        [#local openapiIntegrations =
-            getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true)]
+        [#local openapiIntegrations = valueIfContent(
+                                        getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true),
+                                        getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true),
+                                        {})]
 
         [#local methodSettings = [
             {
@@ -779,30 +781,56 @@
         /]
     [/#if]
 
-    [#if deploymentSubsetRequired("pregeneration", false)]
-        [@addToDefaultBashScriptOutput
-            content=
-                getBuildScript(
-                    "openapiFiles",
-                    regionId,
-                    buildRegistry,
-                    productName,
-                    occurrence,
-                    buildRegistry + ".zip"
-                ) +
-                [
-                    "get_openapi_definition_file" + " " +
-                            "\"" + buildRegistry + "\"" + " " +
-                            "\"$\{openapiFiles[0]}\"" + " " +
-                            "\"" + core.Id + "\"" + " " +
-                            "\"" + core.Name + "\"" + " " +
-                            "\"" + accountId + "\"" + " " +
-                            "\"" + accountObject.ProviderId + "\"" + " " +
-                            "\"" + region + "\"" + " || return $?",
-                    "#"
+    [#local imageSource = solution.Image.Source]
+    [#if imageSource == "url" ]
+        [#local buildUnit = occurrence.Core.Name ]
+    [/#if]
 
-                ]
-        /]
+    [#if deploymentSubsetRequired("pregeneration", false)]
+        [#if imageSource = "url" ]
+            [@addToDefaultBashScriptOutput
+                content=
+                    getImageFromUrlScript(
+                        regionId,
+                        productName,
+                        environmentName,
+                        segmentName,
+                        occurrence,
+                        solution.Image.UrlSource.Url,
+                        "openapi",
+                        "openapi.zip",
+                        solution.Image.UrlSource.ImageHash,
+                        true
+                    )
+            /]
+        [/#if]
+
+
+        [#if imageSource == "url" || imageSource == "registry" ]
+            [@addToDefaultBashScriptOutput
+                content=
+                    getBuildScript(
+                        "openapiFiles",
+                        regionId,
+                        buildRegistry,
+                        productName,
+                        occurrence,
+                        buildRegistry + ".zip"
+                    ) +
+                    [
+                        "get_openapi_definition_file" + " " +
+                                "\"" + buildRegistry + "\"" + " " +
+                                "\"$\{openapiFiles[0]}\"" + " " +
+                                "\"" + core.Id + "\"" + " " +
+                                "\"" + core.Name + "\"" + " " +
+                                "\"" + accountId + "\"" + " " +
+                                "\"" + accountObject.ProviderId + "\"" + " " +
+                                "\"" + region + "\"" + " || return $?",
+                        "#"
+
+                    ]
+            /]
+        [/#if]
     [/#if]
 
     [#if definitionsObject[core.Id]?? ]
@@ -829,7 +857,7 @@
                         "FQDN" : attributes["FQDN"],
                         "Scheme" : attributes["SCHEME"],
                         "BasePath" : attributes["BASE_PATH"],
-                        "BuildReference" : (buildSettings["APP_REFERENCE"].Value)!buildSettings["BUILD_REFERENCE"].Value,
+                        "BuildReference" : ((buildSettings["APP_REFERENCE"].Value)!buildSettings["BUILD_REFERENCE"].Value)!"",
                         "Name" : apiName
                     } ]
 
