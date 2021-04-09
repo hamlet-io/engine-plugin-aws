@@ -5,11 +5,6 @@
     description="AWS provider inputs"
 /]
 
-[@registerInputTransformer
-    id=AWS_INPUT_SEEDER
-    description="AWS provider inputs"
-/]
-
 [@addSeederToConfigPipeline
     sources=[MOCK_SHARED_INPUT_SOURCE]
     stage=COMMANDLINEOPTIONS_SHARED_INPUT_STAGE
@@ -24,11 +19,6 @@
 [@addSeederToConfigPipeline
     stage=FIXTURE_SHARED_INPUT_STAGE
     seeder=AWS_INPUT_SEEDER
-/]
-
-[@addTransformerToConfigPipeline
-    stage=NORMALISE_SHARED_INPUT_STAGE
-    transformer=AWS_INPUT_SEEDER
 /]
 
 [@addSeederToStatePipeline
@@ -144,77 +134,6 @@
 
     [#return state]
 
-[/#function]
-
-[#-- Normalise cloud formation stack files to state point sets --]
-[#function aws_configtransformer_normalise filter state]
-
-    [#if filterAttributeContainsValue(filter, "Provider", AWS_PROVIDER) ]
-
-        [#-- Anything to process? --]
-        [#local stackFiles =
-            (getConfigPipelineClassCacheForStages(
-                state,
-                STATE_CONFIG_INPUT_CLASS,
-                [
-                    FIXTURE_SHARED_INPUT_STAGE,
-                    MODULE_SHARED_INPUT_STAGE,
-                    CMDB_SHARED_INPUT_STAGE
-                ]
-            )[STATE_CONFIG_INPUT_CLASS])![]
-        ]
-
-        [#-- Normalise each stack to a point set --]
-        [#local pointSets = [] ]
-
-        [#-- Looks like format from aws cli cloudformation describe-stacks command? --]
-        [#-- TODO(mfl) Remove check for .Content[0] once dynamic CMDB loading operational --]
-        [#list stackFiles?filter(s -> ((s.ContentsAsJSON!s.Content[0]).Stacks)?has_content) as stackFile]
-            [#list (stackFile.ContentsAsJSON!stackFile.Content[0]).Stacks?filter(s -> s.Outputs?has_content) as stack ]
-                [#local pointSet = {} ]
-
-                [#if stack.Outputs?is_sequence ]
-                    [#list stack.Outputs as output ]
-                        [#local pointSet += {
-                            output.OutputKey : output.OutputValue
-                        }]
-                    [/#list]
-                [/#if]
-
-                [#if stack.Outputs?is_hash ]
-                    [#local pointSet = stack.Outputs ]
-                [/#if]
-
-                [#if pointSet?has_content ]
-                    [@debug
-                        message="Normalise stack file " + stackFile.FileName!""
-                        enabled=false
-                    /]
-                    [#local pointSets +=
-                        [
-                            validatePointSet(
-                                mergeObjects(
-                                    { "Level" : (stackFile.FileName!"")?split('-')[0]},
-                                    pointSet
-                                )
-                             )
-                        ]
-                    ]
-                [/#if]
-            [/#list]
-        [/#list]
-
-        [#if stackFiles?has_content]
-            [#return
-                addToConfigPipelineClass(
-                    state,
-                    STATE_CONFIG_INPUT_CLASS,
-                    pointSets
-                )
-            ]
-        [/#if]
-    [/#if]
-    [#return state]
 [/#function]
 
 [#-- AWS Mock Output --]
