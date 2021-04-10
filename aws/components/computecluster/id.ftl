@@ -21,32 +21,37 @@
     provider=AWS_PROVIDER
     extensions=[
         {
-            "Names" : "Image",
+            "Names" : "ComputeInstance",
             "Children" : [
                 {
-                    "Names" : "Source",
-                    "Description" : "The source of the image",
-                    "Values" : [ "AMI", "SSMParam" ]
-                },
-                {
-                    "Names" : "Source:AMI",
-                    "Description" : "Use an explicit AMI for the image ",
+                    "Names" : "Image",
                     "Children" : [
                         {
-                            "Names" : "ImageId",
-                            "Types" : STRING_TYPE
-                        }
-                    ]
-                },
-                {
-                    "Names" : "Source:SSMParam",
-                    "Description" : "Lookup the image Id using the SSM ParameterStore",
-                    "Children" : [
+                            "Names" : "Source",
+                            "Description" : "The source of the image",
+                            "Values" : [ "AMI", "SSMParam" ]
+                        },
                         {
-                            "Names" : "Name",
-                            "Description" : "The name of the parameter to lookup",
-                            "Types" : STRING_TYPE,
-                            "Default" : "/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-ebs"
+                            "Names" : "Source:AMI",
+                            "Description" : "Use an explicit AMI for the image ",
+                            "Children" : [
+                                {
+                                    "Names" : "ImageId",
+                                    "Types" : STRING_TYPE
+                                }
+                            ]
+                        },
+                        {
+                            "Names" : "Source:SSMParam",
+                            "Description" : "Lookup the image Id using the SSM ParameterStore",
+                            "Children" : [
+                                {
+                                    "Names" : "Name",
+                                    "Description" : "The name of the parameter to lookup",
+                                    "Types" : STRING_TYPE,
+                                    "Default" : "/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-ebs"
+                                }
+                            ]
                         }
                     ]
                 }
