@@ -563,7 +563,7 @@
             securityGroupId=computeClusterSecurityGroupId
             instanceProfileId=computeClusterInstanceProfileId
             resourceId=computeClusterAutoScaleGroupId
-            imageId=imageId
+            imageId=getEC2AMIImageId(solution.Image, computeClusterLaunchConfigId)
             publicIP=publicRouteTable
             configSet=configSetName
             enableCfnSignal=(solution.UseInitAsService != true)

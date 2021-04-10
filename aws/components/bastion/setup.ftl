@@ -312,7 +312,7 @@
                 securityGroupId=bastionSecurityGroupToId
                 instanceProfileId=bastionInstanceProfileId
                 resourceId=bastionAutoScaleGroupId
-                imageId=imageId
+                imageId=getEC2AMIImageId(solution.Image, bastionLaunchConfigId)
                 publicIP=publicRouteTable
                 configSet=configSetName
                 enableCfnSignal=true

@@ -29,7 +29,7 @@
     [#local logFileProfile         = getLogFileProfile(occurrence, "EC2")]
     [#local bootstrapProfile       = getBootstrapProfile(occurrence, "EC2")]
     [#local networkProfile         = getNetworkProfile(solution.Profiles.Network)]
-    [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
+    [#local loggingProfile         = getLoggingProfile(solution.Profiles.Logging)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -367,6 +367,8 @@
                 [#local zoneEc2EIPName             = zoneResources[zone.Id]["ec2EIP"].Id]
                 [#local zoneEc2EIPAssociationId    = zoneResources[zone.Id]["ec2EIPAssociation"].Id]
 
+                [#local imageId = getEC2AMIImageId(solution.Image, zoneEc2InstanceId)]
+
                 [#local updateCommand = "yum clean all && yum -y update"]
                 [#local dailyUpdateCron = 'echo \"59 13 * * * ${updateCommand} >> /var/log/update.log 2>&1\" >crontab.txt && crontab crontab.txt']
                 [#if environmentId == "prod"]
@@ -426,6 +428,7 @@
                             "InstanceType": processorProfile.Processor,
                             "KeyName": getExistingReference(sshKeyPairId, NAME_ATTRIBUTE_TYPE),
                             "Monitoring" : false,
+                            "ImageId": imageId,
                             "NetworkInterfaces" : [
                                 {
                                     "DeviceIndex" : "0",
@@ -435,27 +438,39 @@
                             "UserData" : {
                                 "Fn::Base64" : {
                                     "Fn::Join" : [
-                                        "",
+                                        "\n",
                                         [
-                                            "#!/bin/bash -ex\n",
-                                            "exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1\n",
-                                            updateCommand, "\n",
-                                            dailyUpdateCron, "\n",
-                                            "yum install -y aws-cfn-bootstrap\n",
-                                            "# Remainder of configuration via metadata\n",
-                                            "/opt/aws/bin/cfn-init -v",
-                                            "         --stack ", { "Ref" : "AWS::StackName" },
-                                            "         --resource ", zoneEc2InstanceId,
-                                            "         --region ", regionId, " --configsets ",  configSetName, "\n"
+                                            "#!/bin/bash -ex",
+                                            "exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1",
+                                            "yum install -y aws-cfn-bootstrap",
+                                            "# Remainder of configuration via metadata",
+                                            {
+                                                "Fn::Sub" : [
+                                                    r'/opt/aws/bin/cfn-init -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${ConfigSet}',
+                                                    {
+                                                        "StackName" : { "Ref" : "AWS::StackName" },
+                                                        "Region" : { "Ref" : "AWS::Region" },
+                                                        "Resource" : zoneEc2InstanceId,
+                                                        "ConfigSet" : configSetName
+                                                    }
+                                                ]
+                                            },
+                                            "# Signal the status from cfn-init",
+                                            {
+                                                "Fn::Sub" : [
+                                                    r'/opt/aws/bin/cfn-signal -e $? --stack ${StackName} --resource ${Resource} --region ${Region}',
+                                                    {
+                                                        "StackName" : { "Ref" : "AWS::StackName" },
+                                                        "Region" : { "Ref" : "AWS::Region" },
+                                                        "Resource" : zoneEc2InstanceId
+                                                    }
+                                                ]
+                                            }
                                         ]
                                     ]
                                 }
                             }
-                        } +
-                        dockerHost?then(
-                            { "ImageId" : regionObject.AMIs.Centos.ECS},
-                            { "ImageId" : regionObject.AMIs.Centos.EC2}
-                        )
+                        }
                     tags=
                         getOccurrenceCoreTags(
                             occurrence,
@@ -467,6 +482,12 @@
                         fixedIP?then(
                             [zoneEc2EIPAssociationId],
                             [])
+                    creationPolicy={
+                        "ResourceSignal" : {
+                            "Count" : 1,
+                            "Timeout" : "PT5M"
+                        }
+                    }
                 /]
 
                 [@cfResource

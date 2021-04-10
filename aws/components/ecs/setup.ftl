@@ -638,7 +638,7 @@
             instanceProfileId=ecsInstanceProfileId
             securityGroupId=ecsSecurityGroupId
             resourceId=ecsAutoScaleGroupId
-            imageId=regionObject.AMIs.Centos.ECS
+            imageId=getEC2AMIImageId(solution.HostImage, ecsLaunchConfigId)
             publicIP=publicRouteTable
             configSet=configSetName
             environmentId=environmentId
