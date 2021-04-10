@@ -1,5 +1,8 @@
 [#ftl]
 
+[#-- Parameter Type --]
+[#assign AWS_EC2_AMI_PARATMETER_TYPE = "amiParam"]
+
 [#-- Resources --]
 [#assign AWS_EC2_INSTANCE_RESOURCE_TYPE = "ec2Instance" ]
 [@addServiceResource

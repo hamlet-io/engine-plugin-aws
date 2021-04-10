@@ -1300,3 +1300,42 @@
         dependencies=dependencies
     /]
 [/#macro]
+
+
+[#function getEC2AMIImageId imageConfiguration ec2ResourceId ]
+    [#local imageId = ""]
+    [#switch imageConfiguration.Source ]
+        [#case "Source:Reference"]
+            [#local OSFamily = imageConfiguration["Source:Reference"]["OS"]]
+            [#local OSType = imageConfiguration["Source:Reference"]["Type"]]
+
+            [#local imageId = regionObject.AMIs[OSFamily][OSType]]
+            [#break]
+
+        [#case "aws:Source:AMI"]
+            [#local imageId = imageConfiguration["aws:Source:AMI"]["ImageId"]]
+            [#break]
+
+        [#case "aws:Source:SSMParam"]
+
+            [#local param = imageConfiguration["aws:Source:SSMParam"]["Name"]]
+            [#local paramId = formatResourceId(AWS_EC2_AMI_PARATMETER_TYPE, ec2ResourceId) ]
+
+            [@addCFNSSMEC2ImageParam
+                id=paramId
+                default=param
+                description="AMI Image for EC2 Instance"
+            /]
+
+            [#local imageId = getReference(paramId)]
+            [#break]
+
+        [#default]
+            [@fatal
+                message="Invalid AMI Image Source"
+                context={ "ec2Resoruce" : ec2ResourceId, "ImageConfiguration" : imageConfiguration }
+            /]
+    [/#switch]
+
+    [#return imageId ]
+[/#function]
