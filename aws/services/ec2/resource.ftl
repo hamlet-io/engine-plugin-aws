@@ -469,7 +469,7 @@
         r'fi',
 
         r'# Create filesystem if required',
-        r'if [[ -z "$(file  -sL $device_id | grep "ext" || test $? =1 )" ]]; then',
+        r'if [[ -z "$(file  -sL $device_id | grep "ext" || test $? = 1 )" ]]; then',
         r'  mkfs -t ext4 "${device_id}"',
         r'else',
         r'  echo "Using existing filesystem on ${device_id}"',
