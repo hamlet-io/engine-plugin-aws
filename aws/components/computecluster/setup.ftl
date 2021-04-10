@@ -147,7 +147,7 @@
 
     [#local environmentVariables += getFinalEnvironment(occurrence, _context ).Environment ]
 
-    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
     [#local configSets =
             getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
             osPatching.Enabled?then(
@@ -563,7 +563,7 @@
             securityGroupId=computeClusterSecurityGroupId
             instanceProfileId=computeClusterInstanceProfileId
             resourceId=computeClusterAutoScaleGroupId
-            imageId=getEC2AMIImageId(solution.Image, computeClusterLaunchConfigId)
+            imageId=getEC2AMIImageId(solution.ComputeInstance.Image, computeClusterLaunchConfigId)
             publicIP=publicRouteTable
             configSet=configSetName
             enableCfnSignal=(solution.UseInitAsService != true)

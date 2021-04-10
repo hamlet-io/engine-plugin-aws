@@ -100,7 +100,7 @@
     [#local _context = invokeExtensions( occurrence, _context )]
     [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
-    [#local osPatching = mergeObjects((solution.OSPatching)!{}, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
     [#local environmentVariables = getFinalEnvironment(occurrence, _context).Environment ]
 
     [#local configSets =
@@ -312,7 +312,7 @@
                 securityGroupId=bastionSecurityGroupToId
                 instanceProfileId=bastionInstanceProfileId
                 resourceId=bastionAutoScaleGroupId
-                imageId=getEC2AMIImageId(solution.Image, bastionLaunchConfigId)
+                imageId=getEC2AMIImageId(solution.ComputeInstance.Image, bastionLaunchConfigId)
                 publicIP=publicRouteTable
                 configSet=configSetName
                 enableCfnSignal=true

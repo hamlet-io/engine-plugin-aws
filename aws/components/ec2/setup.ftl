@@ -113,7 +113,7 @@
 
     [#local configSetName = occurrence.Core.Type]
 
-    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
     [#local configSets =
             getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
             osPatching.Enabled?then(
@@ -367,7 +367,7 @@
                 [#local zoneEc2EIPName             = zoneResources[zone.Id]["ec2EIP"].Id]
                 [#local zoneEc2EIPAssociationId    = zoneResources[zone.Id]["ec2EIPAssociation"].Id]
 
-                [#local imageId = getEC2AMIImageId(solution.Image, zoneEc2InstanceId)]
+                [#local imageId = getEC2AMIImageId(solution.ComputeInstance.Image, zoneEc2InstanceId)]
 
                 [#local updateCommand = "yum clean all && yum -y update"]
                 [#local dailyUpdateCron = 'echo \"59 13 * * * ${updateCommand} >> /var/log/update.log 2>&1\" >crontab.txt && crontab crontab.txt']

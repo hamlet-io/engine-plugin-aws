@@ -1319,7 +1319,7 @@
         [#case "aws:Source:SSMParam"]
 
             [#local param = imageConfiguration["aws:Source:SSMParam"]["Name"]]
-            [#local paramId = formatResourceId(AWS_EC2_AMI_PARATMETER_TYPE, ec2ResourceId) ]
+            [#local paramId = formatResourceId(AWS_EC2_AMI_PARAMETER_TYPE, ec2ResourceId) ]
 
             [@addCFNSSMEC2ImageParam
                 id=paramId

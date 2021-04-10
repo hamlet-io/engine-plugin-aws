@@ -122,7 +122,7 @@
 
     [#local environmentVariables += getFinalEnvironment(occurrence, _context).Environment ]
 
-    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
 
     [#local configSetName = occurrence.Core.Type]
     [#local configSets =
@@ -638,7 +638,7 @@
             instanceProfileId=ecsInstanceProfileId
             securityGroupId=ecsSecurityGroupId
             resourceId=ecsAutoScaleGroupId
-            imageId=getEC2AMIImageId(solution.HostImage, ecsLaunchConfigId)
+            imageId=getEC2AMIImageId(solution.ComputeInstance.Image, ecsLaunchConfigId)
             publicIP=publicRouteTable
             configSet=configSetName
             environmentId=environmentId
