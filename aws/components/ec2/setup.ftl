@@ -23,13 +23,14 @@
     [#local ec2LogGroupId          = resources["lg"].Id]
     [#local ec2LogGroupName        = resources["lg"].Name]
 
-
     [#local processorProfile       = getProcessor(occurrence, "EC2")]
     [#local storageProfile         = getStorage(occurrence, "EC2")]
     [#local logFileProfile         = getLogFileProfile(occurrence, "EC2")]
     [#local bootstrapProfile       = getBootstrapProfile(occurrence, "EC2")]
     [#local networkProfile         = getNetworkProfile(solution.Profiles.Network)]
     [#local loggingProfile         = getLoggingProfile(solution.Profiles.Logging)]
+
+    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -100,10 +101,16 @@
             "DefaultBaselineVariables" : true,
             "Policy" : [],
             "ManagedPolicy" : [],
+            "ComputeTasks" : [],
             "Files" : {},
             "Directories" : {},
             "DataVolumes" : {},
-            "VolumeMounts" : {}
+            "VolumeMounts" : {},
+            "StorageProfile" : storageProfile,
+            "LogFileProfile" : logFileProfile,
+            "BootstrapProfile" : bootstrapProfile,
+            "InstanceLogGroup" : ec2LogGroupName,
+            "InstanceOSPatching" : osPatching
         }
     ]
 
@@ -113,23 +120,9 @@
 
     [#local configSetName = occurrence.Core.Type]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
-    [#local configSets =
-            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
-            osPatching.Enabled?then(
-                getInitConfigOSPatching(
-                    osPatching.Schedule,
-                    osPatching.SecurityOnly
-                ),
-                {}
-            ) +
-            getInitConfigDirsFiles(_context.Files, _context.Directories) ]
-
-    [#list bootstrapProfile.BootStraps as bootstrapName ]
-        [#local bootstrap = bootstraps[bootstrapName]]
-        [#local configSets +=
-            getInitConfigUserBootstrap(bootstrapName, bootstrap, environmentVariables )!{}]
-    [/#list]
+    [#local componentComputeTasks = resources["autoScaleGroup"].ComputeTasks]
+    [#local userComputeTasks = solution.ComputeInstance.ComputeTasks.UserTasksRequired ]
+    [#local computeTaskExtensions = solution.ComputeInstance.ComputeTasks.Extensions ]
 
     [#list links as linkId,link]
         [#local linkTarget = getLinkTarget(occurrence, link) ]
@@ -173,41 +166,7 @@
                         [#break]
                 [/#switch]
 
-                [#switch linkTargetAttributes["ENGINE"]]
-
-                    [#case "application"]
-                    [#case "network"]
-                        [#local configSets += getInitConfigLBTargetRegistration(linkTargetCore.Id, linkTargetAttributes["TARGET_GROUP_ARN"])]
-
-                        [#break]
-
-                    [#case "classic" ]
-                        [#local lbId =  linkTargetAttributes["LB"] ]
-                        [#local configSets +=
-                            getInitConfigLBClassicRegistration(lbId)]
-                        [#break]
-                    [/#switch]
-                [#break]
-            [#case EFS_COMPONENT_TYPE ]
-            [#case EFS_MOUNT_COMPONENT_TYPE]
-                [#local configSets +=
-                    getInitConfigEFSMount(
-                        linkTargetCore.Id,
-                        linkTargetAttributes.EFS,
-                        linkTargetAttributes.DIRECTORY,
-                        link.Id,
-                        (linkTargetAttributes.ACCESS_POINT_ID)!""
-                    )]
-                [#break]
-            [#case USER_COMPONENT_TYPE]
-                [#local SSHPublicKeys = linkTargetConfiguration.Solution.SSHPublicKeys ]
-                [#local linkEnvironment = linkTargetConfiguration.Environment.General ]
-                [#local configSets +=
-                    getInitConfigSSHPublicKeys(
-                        SSHPublicKeys, linkEnvironment
-                    )]
-                [#break]
-            [#case DATAVOLUME_COMPONENT_TYPE]
+        [#case DATAVOLUME_COMPONENT_TYPE]
                 [#local linkVolumeResources = {}]
                 [#list linkTargetResources["Zones"] as zoneId, linkZoneResources ]
                     [#local linkVolumeResources += {
@@ -317,12 +276,6 @@
         loggingProfile=loggingProfile
     /]
 
-    [#local configSets +=
-        getInitConfigLogAgent(
-            logFileProfile,
-            ec2LogGroupName
-        )]
-
     [#if deploymentSubsetRequired(EC2_COMPONENT_TYPE, true)]
 
         [@createSecurityGroup
@@ -368,56 +321,12 @@
                 [#local zoneEc2EIPAssociationId    = zoneResources[zone.Id]["ec2EIPAssociation"].Id]
 
                 [#local imageId = getEC2AMIImageId(solution.ComputeInstance.Image, zoneEc2InstanceId)]
-
-                [#local updateCommand = "yum clean all && yum -y update"]
-                [#local dailyUpdateCron = 'echo \"59 13 * * * ${updateCommand} >> /var/log/update.log 2>&1\" >crontab.txt && crontab crontab.txt']
-                [#if environmentId == "prod"]
-                    [#-- for production update only security packages --]
-                    [#local updateCommand += " --security"]
-                    [#local dailyUpdateCron = 'echo \"29 13 * * 6 ${updateCommand} >> /var/log/update.log 2>&1\" >crontab.txt && crontab crontab.txt']
-                [/#if]
-
-                [#-- Data Volume Mounts --]
-                [#list _context.VolumeMounts as mountId,volumeMount ]
-                    [#local dataVolume = _context.DataVolumes[mountId]!{} ]
-                    [#if dataVolume?has_content ]
-                        [#local zoneVolume = (dataVolume[zone.Id].VolumeId)!"" ]
-                        [#if zoneVolume?has_content ]
-                            [@createEBSVolumeAttachment
-                                id=formatDependentResourceId(AWS_EC2_EBS_ATTACHMENT_RESOURCE_TYPE,zoneEc2InstanceId,mountId)
-                                device=volumeMount.DeviceId
-                                instanceId=zoneEc2InstanceId
-                                volumeId=zoneVolume
-                            /]
-                            [#local configSets +=
-                                getInitConfigDataVolumeMount(
-                                    volumeMount.DeviceId
-                                    volumeMount.MountPath
-                                )
-                            ]
-                        [/#if]
-                    [/#if]
-                [/#list]
-
-                [#list (storageProfile.Volumes)!{} as id,volume ]
-                    [#if (volume.Enabled)!true
-                            && ((volume.MountPath)!"")?has_content
-                            && ((volume.Device)!"")?has_content ]
-                        [#local configSets +=
-                            getInitConfigDataVolumeMount(
-                                volume.Device,
-                                volume.MountPath,
-                                false,
-                                1
-                            )
-                        ]
-                    [/#if]
-                [/#list]
+                [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, _context, zoneEc2InstanceId, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
 
                 [@cfResource
                     id=zoneEc2InstanceId
                     type="AWS::EC2::Instance"
-                    metadata=getInitConfig(configSetName, configSets )
+                    metadata=getCFNInitFromComputeTasks(computeTaskConfig)
                     properties=
                         getBlockDevices(storageProfile) +
                         {
@@ -435,41 +344,7 @@
                                     "NetworkInterfaceId" : getReference(zoneEc2ENIId)
                                 }
                             ],
-                            "UserData" : {
-                                "Fn::Base64" : {
-                                    "Fn::Join" : [
-                                        "\n",
-                                        [
-                                            "#!/bin/bash -ex",
-                                            "exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1",
-                                            "yum install -y aws-cfn-bootstrap",
-                                            "# Remainder of configuration via metadata",
-                                            {
-                                                "Fn::Sub" : [
-                                                    r'/opt/aws/bin/cfn-init -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${ConfigSet}',
-                                                    {
-                                                        "StackName" : { "Ref" : "AWS::StackName" },
-                                                        "Region" : { "Ref" : "AWS::Region" },
-                                                        "Resource" : zoneEc2InstanceId,
-                                                        "ConfigSet" : configSetName
-                                                    }
-                                                ]
-                                            },
-                                            "# Signal the status from cfn-init",
-                                            {
-                                                "Fn::Sub" : [
-                                                    r'/opt/aws/bin/cfn-signal -e $? --stack ${StackName} --resource ${Resource} --region ${Region}',
-                                                    {
-                                                        "StackName" : { "Ref" : "AWS::StackName" },
-                                                        "Region" : { "Ref" : "AWS::Region" },
-                                                        "Resource" : zoneEc2InstanceId
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    ]
-                                }
-                            }
+                            "UserData" : getUserDataFromComputeTasks(computeTaskConfig)
                         }
                     tags=
                         getOccurrenceCoreTags(

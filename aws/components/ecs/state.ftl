@@ -88,6 +88,34 @@
         [/#list]
     [/#if]
 
+    [#local processorProfile = getProcessor(occurrence, "ECS")]
+    [#if processorProfile.MaxCount?has_content]
+        [#local maxSize = processorProfile.MaxCount ]
+    [#else]
+        [#local maxSize = processorProfile.MaxPerZone]
+        [#if multiAZ]
+            [#local maxSize = maxSize * zones?size]
+        [/#if]
+    [/#if]
+
+    [#local fixedIP = solution.FixedIP ]
+    [#local eipResources = {} ]
+    [#if fixedIP]
+        [#list 1..maxSize as index]
+            [#local eipResources +=
+                {
+                    index : {
+                        "eip" : {
+                            "Id" : formatResourceId(AWS_EIP_RESOURCE_TYPE, core.Id, index),
+                            "Name" : formatName(core.FullName, index),
+                            "Type" : AWS_EIP_RESOURCE_TYPE
+                        }
+                    }
+                }
+            ]
+        [/#list]
+    [/#if]
+
     [#-- TODO(mfl): Use formatDependentRoleId() for roles --]
     [#assign componentState =
         {
@@ -114,7 +142,21 @@
                 },
                 "autoScaleGroup" : {
                     "Id" : autoScaleGroupId,
-                    "Type" : AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE
+                    "Type" : AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
+                    "ComputeTasks" : [
+                        COMPUTE_TASK_RUN_STARTUP_CONFIG,
+                        COMPUTE_TASK_AWS_CFN_SIGNAL,
+                        COMPUTE_TASK_DATA_VOLUME_MOUNTING,
+                        COMPUTE_TASK_FILE_DIR_CREATION,
+                        COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
+                        COMPUTE_TASK_OS_SECURITY_PATCHING,
+                        COMPUTE_TASK_AWS_CLI,
+                        COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
+                        COMPUTE_TASK_AWS_ECS_AGENT_SETUP,
+                        COMPUTE_TASK_USER_ACCESS,
+                        COMPUTE_TASK_EFS_MOUNT,
+                        COMPUTE_TASK_USER_BOOTSTRAP
+                    ]
                 },
                 "launchConfig" : {
                     "Id" : solution.AutoScaling.AlwaysReplaceOnUpdate?then(
@@ -141,6 +183,7 @@
                 }
             } +
             attributeIfContent("logMetrics", logMetrics) +
+            attributeIfContent("eips", eipResources) +
             autoScaling,
             "Attributes" : {
                 "ARN" : getExistingReference(clusterId, ARN_ATTRIBUTE_TYPE)
