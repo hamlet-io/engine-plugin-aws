@@ -1,5 +1,9 @@
 [#ftl]
 
+[#-- ComputeTask config Engines --]
+[#assign AWS_EC2_USERDATA_COMPUTE_TASK_CONFIG_TYPE = "userdata"]
+[#assign AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE = "cfninit" ]
+
 [#-- Parameter Type --]
 [#assign AWS_EC2_AMI_PARAMETER_TYPE = "amiParam"]
 
