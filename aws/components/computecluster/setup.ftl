@@ -30,6 +30,8 @@
     [#local networkProfile   = getNetworkProfile(solution.Profiles.Network)]
     [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
 
+    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
@@ -91,22 +93,6 @@
         [/#if]
     [/#list]
 
-    [#-- Mount storage volumes if directory provided --]
-    [#list (storageProfile.Volumes)!{} as id,volume ]
-        [#if (volume.Enabled)!true
-                && ((volume.MountPath)!"")?has_content
-                && ((volume.Device)!"")?has_content ]
-            [#local configSets +=
-                getInitConfigDataVolumeMount(
-                    volume.Device,
-                    volume.MountPath,
-                    false,
-                    1
-                )
-            ]
-        [/#if]
-    [/#list]
-
     [#local scriptsPath =
             formatRelativePath(
             getRegistryEndPoint("scripts", occurrence),
@@ -137,8 +123,15 @@
             "DefaultBaselineVariables" : true,
             "Policy" : [],
             "ManagedPolicy" : [],
+            "ComputeTasks" : [],
             "Files" : {},
-            "Directories" : {}
+            "Directories" : {},
+            "StorageProfile" : storageProfile,
+            "LogFileProfile" : logFileProfile,
+            "BootstrapProfile" : bootstrapProfile,
+            "InstanceLogGroup" : computeClusterLogGroupName,
+            "InstanceOSPatching" : osPatching,
+            "ScriptsFile" : scriptsFile
         }
     ]
 
@@ -147,23 +140,10 @@
 
     [#local environmentVariables += getFinalEnvironment(occurrence, _context ).Environment ]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
-    [#local configSets =
-            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
-            osPatching.Enabled?then(
-                getInitConfigOSPatching(
-                    osPatching.Schedule,
-                    osPatching.SecurityOnly
-                ),
-                {}
-            ) +
-            getInitConfigDirsFiles(_context.Files, _context.Directories) ]
-
-    [#list bootstrapProfile.BootStraps as bootstrapName ]
-        [#local bootstrap = bootstraps[bootstrapName]]
-        [#local configSets +=
-            getInitConfigUserBootstrap(bootstrapName, bootstrap, environmentVariables )!{}]
-    [/#list]
+    [#local componentComputeTasks = resources["autoScaleGroup"].ComputeTasks]
+    [#local userComputeTasks = solution.ComputeInstance.ComputeTasks.UserTasksRequired ]
+    [#local computeTaskExtensions = solution.ComputeInstance.ComputeTasks.Extensions ]
+    [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, computeClusterAutoScaleGroupId, _context, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
 
     [#if deploymentSubsetRequired("iam", true) &&
             isPartOfCurrentDeploymentUnit(computeClusterRoleId)]
@@ -275,17 +255,6 @@
                     [/#switch]
                 [#break]
 
-            [#case EFS_COMPONENT_TYPE ]
-            [#case EFS_MOUNT_COMPONENT_TYPE]
-                [#local configSets +=
-                    getInitConfigEFSMount(
-                        linkTargetCore.Id,
-                        linkTargetAttributes.EFS,
-                        linkTargetAttributes.DIRECTORY,
-                        link.Id,
-                        (linkTargetAttributes.ACCESS_POINT_ID)!""
-                    )]
-                [#break]
         [/#switch]
 
         [#if deploymentSubsetRequired(COMPUTECLUSTER_COMPONENT_TYPE, true)]
@@ -323,20 +292,12 @@
         [/#if]
     [/#list]
 
-    [#local configSets += getInitConfigScriptsDeployment(scriptsFile, environmentVariables, solution.UseInitAsService, false)]
-
     [@setupLogGroup
         occurrence=occurrence
         logGroupId=computeClusterLogGroupId
         logGroupName=computeClusterLogGroupName
         loggingProfile=loggingProfile
     /]
-
-    [#local configSets +=
-        getInitConfigLogAgent(
-            logFileProfile,
-            computeClusterLogGroupName
-        )]
 
     [#if deploymentSubsetRequired(COMPUTECLUSTER_COMPONENT_TYPE, true)]
 
@@ -531,16 +492,10 @@
             outputs={}
         /]
 
-
-        [#local autoScalingConfig = solution.AutoScaling + {
-                                            "WaitForSignal" : (solution.UseInitAsService != true)
-                                    }]
-
         [@createEc2AutoScaleGroup
             id=computeClusterAutoScaleGroupId
             tier=core.Tier
-            configSetName=configSetName
-            configSets=configSets
+            computeTaskConfig=computeTaskConfig
             launchConfigId=computeClusterLaunchConfigId
             processorProfile=processorProfile
             autoScalingConfig=autoScalingConfig
@@ -551,11 +506,6 @@
             networkResources=networkResources
         /]
 
-        [#local imageId = dockerHost?then(
-            regionObject.AMIs.Centos.ECS,
-            regionObject.AMIs.Centos.EC2
-        )]
-
         [@createEC2LaunchConfig
             id=computeClusterLaunchConfigId
             processorProfile=processorProfile
@@ -565,8 +515,7 @@
             resourceId=computeClusterAutoScaleGroupId
             imageId=getEC2AMIImageId(solution.ComputeInstance.Image, computeClusterLaunchConfigId)
             publicIP=publicRouteTable
-            configSet=configSetName
-            enableCfnSignal=(solution.UseInitAsService != true)
+            computeTaskConfig=computeTaskConfig
             environmentId=environmentId
             keyPairId=baselineComponentIds["SSHKey"]
         /]

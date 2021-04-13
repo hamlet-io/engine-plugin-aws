@@ -25,33 +25,33 @@
             "Names" : "ComputeInstance",
             "Children" : [
                 {
+                    "Names" : "OperatingSystem",
+                    "AttributeSet" : AWS_OPERATINGSYSTEM_ATTRIBUTESET_TYPE
+                },
+                {
                     "Names" : "Image",
+                    "AttributeSet" : AWS_ECS_COMPUTEIMAGE_ATTRIBUTESET_TYPE
+                },
+                {
+                    "Names" : "ComputeTasks",
+                    "Description" : "Customisation to setup the compute instance from its image",
                     "Children" : [
                         {
-                            "Names" : "Source",
-                            "Description" : "The source of the image",
-                            "Values" : [ "AMI", "SSMParam" ]
-                        },
-                        {
-                            "Names" : "Source:AMI",
-                            "Description" : "Use an explicit AMI for the image ",
-                            "Children" : [
-                                {
-                                    "Names" : "ImageId",
-                                    "Types" : STRING_TYPE
-                                }
-                            ]
-                        },
-                        {
-                            "Names" : "Source:SSMParam",
-                            "Description" : "Lookup the image Id using the SSM ParameterStore",
-                            "Children" : [
-                                {
-                                    "Names" : "Name",
-                                    "Description" : "The name of the parameter to lookup",
-                                    "Types" : STRING_TYPE,
-                                    "Default" : "/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id"
-                                }
+                            "Names" : "Extensions",
+                            "Default" : [
+                                "_computetask_awslinux_cfninit",
+                                "_computetask_linux_hamletenv",
+                                "_computetask_linux_volumemount",
+                                "_computetask_awslinux_ospatching",
+                                "_computetask_linux_filedir",
+                                "_computetask_linux_sshkeys",
+                                "_computetask_awscli",
+                                "_computetask_awslinux_cwlog",
+                                "_computetask_awslinux_efsmount",
+                                "_computetask_awslinux_eip",
+                                "_computetask_linux_userbootstrap",
+                                "_computetask_awslinux_ssm",
+                                "_computetask_awslinux_ecs"
                             ]
                         }
                     ]

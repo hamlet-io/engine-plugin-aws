@@ -30,7 +30,21 @@
                 "autoScaleGroup" : {
                     "Id" : formatResourceId( AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, core.Id ),
                     "Name" : core.FullName,
-                    "Type" : AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE
+                    "Type" : AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
+                    "ComputeTasks" : [
+                        COMPUTE_TASK_RUN_STARTUP_CONFIG,
+                        COMPUTE_TASK_AWS_CFN_SIGNAL,
+                        COMPUTE_TASK_DATA_VOLUME_MOUNTING,
+                        COMPUTE_TASK_FILE_DIR_CREATION,
+                        COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
+                        COMPUTE_TASK_OS_SECURITY_PATCHING,
+                        COMPUTE_TASK_AWS_CLI,
+                        COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
+                        COMPUTE_TASK_AWS_EIP,
+                        COMPUTE_TASK_USER_ACCESS,
+                        COMPUTE_TASK_EFS_MOUNT,
+                        COMPUTE_TASK_USER_BOOTSTRAP
+                    ]
                 },
                 "lg" : {
                     "Id" : formatLogGroupId(core.Id),

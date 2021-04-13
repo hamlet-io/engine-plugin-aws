@@ -23,7 +23,6 @@
     [#local bastionLgId = resources["lg"].Id]
     [#local bastionLgName = resources["lg"].Name]
 
-    [#local bastionOS = (solution.OS)!"linux" ]
     [#local bastionType = occurrence.Core.Type]
     [#local configSetName = bastionType]
 
@@ -35,12 +34,6 @@
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
     [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
-
-    [#switch bastionOS ]
-        [#case "linux" ]
-            [#local imageId = regionObject.AMIs.Centos.EC2]
-            [#break]
-    [/#switch]
 
     [#if deploymentSubsetRequired("eip", false) || deploymentSubsetRequired("bastion", true) ]
         [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
@@ -70,6 +63,8 @@
 
     [#local processorProfile = getProcessor(occurrence, "bastion")]
 
+    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+
     [#local sshActive = sshActive || solution.Active ]
 
     [#local processorProfile += {
@@ -77,6 +72,21 @@
                 "MinCount" : sshActive?then(1,0),
                 "DesiredCount" : sshActive?then(1,0)
     }]
+
+    [#if publicRouteTable ]
+        [#if deploymentSubsetRequired("eip", true) &&
+                isPartOfCurrentDeploymentUnit(bastionEIPId)]
+            [@createEIP
+                id=bastionEIPId
+                tags=getOccurrenceCoreTags(
+                        occurrence,
+                        bastionEIPName
+                    )
+            /]
+        [/#if]
+    [#else]
+        [#local bastionEIPId = ""]
+    [/#if]
 
     [#local contextLinks = getLinkTargets(occurrence, links) ]
     [#local _context =
@@ -91,8 +101,15 @@
             "DefaultLinkVariables" : true,
             "Policy" : standardPolicies(occurrence, baselineComponentIds),
             "ManagedPolicy" : [],
+            "ComputeTasks" : [],
             "Files" : {},
-            "Directories" : {}
+            "Directories" : {},
+            "StorageProfile" : storageProfile,
+            "LogFileProfile" : logFileProfile,
+            "BootstrapProfile" : bootstrapProfile,
+            "InstanceLogGroup" : bastionLgName,
+            "InstanceOSPatching" : osPatching,
+            "ElasticIPs" : asArray(bastionEIPId)
         }
     ]
 
@@ -100,35 +117,13 @@
     [#local _context = invokeExtensions( occurrence, _context )]
     [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
     [#local environmentVariables = getFinalEnvironment(occurrence, _context).Environment ]
 
-    [#local configSets =
-            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
-            osPatching.Enabled?then(
-                getInitConfigOSPatching(
-                    osPatching.Schedule,
-                    osPatching.SecurityOnly
-                ),
-                {}
-            ) +
-            getInitConfigDirsFiles(_context.Files, _context.Directories) ]
+    [#local componentComputeTasks = resources["autoScaleGroup"].ComputeTasks]
+    [#local userComputeTasks = solution.ComputeInstance.ComputeTasks.UserTasksRequired ]
+    [#local computeTaskExtensions = solution.ComputeInstance.ComputeTasks.Extensions ]
 
-    [#-- Mount storage volumes if directory provided --]
-    [#list (storageProfile.Volumes)!{} as id,volume ]
-        [#if (volume.Enabled)!true
-                && ((volume.MountPath)!"")?has_content
-                && ((volume.Device)!"")?has_content ]
-            [#local configSets +=
-                getInitConfigDataVolumeMount(
-                    volume.Device,
-                    volume.MountPath,
-                    false,
-                    1
-                )
-            ]
-        [/#if]
-    [/#list]
+    [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, bastionAutoScaleGroupId, _context, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
 
     [#if sshEnabled ]
 
@@ -148,29 +143,6 @@
                     networkProfile=networkProfile
                 /]
             [/#if]
-
-
-            [#switch linkTargetCore.Type]
-                [#case EFS_COMPONENT_TYPE ]
-                [#case EFS_MOUNT_COMPONENT_TYPE]
-                    [#local configSets +=
-                        getInitConfigEFSMount(
-                            linkTargetCore.Id,
-                            linkTargetAttributes.EFS,
-                            linkTargetAttributes.DIRECTORY,
-                            linkId,
-                            (linkTargetAttributes.ACCESS_POINT_ID)!""
-                        )]
-                    [#break]
-                [#case USER_COMPONENT_TYPE]
-                    [#local SSHPublicKeys = linkTargetConfiguration.Solution.SSHPublicKeys ]
-                    [#local linkEnvironment = linkTargetConfiguration.Environment.General ]
-                    [#local configSets +=
-                        getInitConfigSSHPublicKeys(
-                            SSHPublicKeys, linkEnvironment
-                        )]
-                    [#break]
-            [/#switch]
         [/#list]
 
         [#if deploymentSubsetRequired("iam", true) &&
@@ -207,25 +179,6 @@
             /]
         [/#if]
 
-        [#if publicRouteTable ]
-            [#if deploymentSubsetRequired("eip", true) &&
-                    isPartOfCurrentDeploymentUnit(bastionEIPId)]
-                [@createEIP
-                    id=bastionEIPId
-                    tags=getOccurrenceCoreTags(
-                            occurrence,
-                            bastionEIPName
-                        )
-                /]
-            [/#if]
-
-            [#local configSets +=
-                getInitConfigEIPAllocation(
-                    getReference(
-                        bastionEIPId,
-                        ALLOCATION_ATTRIBUTE_TYPE
-                    ))]
-        [/#if]
 
         [@setupLogGroup
             occurrence=occurrence
@@ -233,12 +186,6 @@
             logGroupName=bastionLgName
             loggingProfile=loggingProfile
         /]
-
-        [#local configSets +=
-            getInitConfigLogAgent(
-                logFileProfile,
-                bastionLgName
-            )]
 
         [#if deploymentSubsetRequired("bastion", true)]
             [@createSecurityGroup
@@ -290,8 +237,7 @@
             [@createEc2AutoScaleGroup
                 id=bastionAutoScaleGroupId
                 tier=core.Tier
-                configSetName=configSetName
-                configSets=configSets
+                computeTaskConfig=computeTaskConfig
                 launchConfigId=bastionLaunchConfigId
                 processorProfile=processorProfile
                 autoScalingConfig=solution.AutoScaling
@@ -314,8 +260,7 @@
                 resourceId=bastionAutoScaleGroupId
                 imageId=getEC2AMIImageId(solution.ComputeInstance.Image, bastionLaunchConfigId)
                 publicIP=publicRouteTable
-                configSet=configSetName
-                enableCfnSignal=true
+                computeTaskConfig=computeTaskConfig
                 environmentId=environmentId
                 sshFromProxy=[]
                 keyPairId=sshKeyPairId

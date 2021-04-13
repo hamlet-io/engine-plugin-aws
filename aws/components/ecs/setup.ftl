@@ -23,6 +23,7 @@
     [#local ecsLogGroupName = resources["lg"].Name ]
     [#local ecsInstanceLogGroupId = resources["lgInstanceLog"].Id]
     [#local ecsInstanceLogGroupName = resources["lgInstanceLog"].Name]
+    [#local ecsEIPs = (resources["eips"])!{} ]
 
     [#local ecsASGCapacityProviderId = resources["ecsASGCapacityProvider"].Id]
 
@@ -48,6 +49,8 @@
     [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
     [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
     [#local computeProviderProfile = getComputeProviderProfile(solution.Profiles.ComputeProvider)]
+
+    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -81,22 +84,6 @@
 
     [#local environmentVariables = {}]
 
-    [#-- Mount storage volumes if directory provided --]
-    [#list (storageProfile.Volumes)!{} as id,volume ]
-        [#if (volume.Enabled)!true
-                && ((volume.MountPath)!"")?has_content
-                && ((volume.Device)!"")?has_content ]
-            [#local configSets +=
-                getInitConfigDataVolumeMount(
-                    volume.Device,
-                    volume.MountPath,
-                    false,
-                    1
-                )
-            ]
-        [/#if]
-    [/#list]
-
     [#local efsMountPoints = {}]
 
     [#local contextLinks = getLinkTargets(occurrence, links) ]
@@ -112,8 +99,15 @@
             "DefaultBaselineVariables" : true,
             "Policy" : [],
             "ManagedPolicy" : [],
+            "ComputeTasks" : [],
             "Files" : {},
-            "Directories" : {}
+            "Directories" : {},
+            "StorageProfile" : storageProfile,
+            "LogFileProfile" : logFileProfile,
+            "BootstrapProfile" : bootstrapProfile,
+            "InstanceLogGroup" : ecsInstanceLogGroupName,
+            "InstanceOSPatching" : osPatching,
+            "ElasticIPs" : ecsEIPs?values?map( eip -> eip.Id )
         }
     ]
 
@@ -122,37 +116,12 @@
 
     [#local environmentVariables += getFinalEnvironment(occurrence, _context).Environment ]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
-
     [#local configSetName = occurrence.Core.Type]
-    [#local configSets =
-            getInitConfigBootstrap(occurrence, operationsBucket, dataBucket, environmentVariables) +
-            getInitConfigECSAgent(ecsId, defaultLogDriver, solution.DockerUsers, solution.VolumeDrivers ) +
-            osPatching.Enabled?then(
-                getInitConfigOSPatching(
-                    osPatching.Schedule,
-                    osPatching.SecurityOnly
-                ),
-                {}
-            ) +
-            getInitConfigDirsFiles(_context.Files, _context.Directories) ]
 
-    [#list bootstrapProfile.BootStraps as bootstrapName ]
-        [#if bootstraps[bootstrapName]?? ]
-            [#local bootstrap = bootstraps[bootstrapName]]
-            [#local configSets +=
-                getInitConfigUserBootstrap(bootstrapName, bootstrap, environmentVariables )!{}]
-        [/#if]
-        [@debug
-            message="Available Bootstraps"
-            context={
-                "Name" : bootstrapName,
-                "Bootstraps" : bootstraps,
-                "Raw" : blueprintObject.Bootstraps
-            }
-            enabled=true
-        /]
-    [/#list]
+    [#local componentComputeTasks = resources["autoScaleGroup"].ComputeTasks]
+    [#local userComputeTasks = solution.ComputeInstance.ComputeTasks.UserTasksRequired ]
+    [#local computeTaskExtensions = solution.ComputeInstance.ComputeTasks.Extensions ]
+    [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, ecsAutoScaleGroupId, _context, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
 
     [#if deploymentSubsetRequired("iam", true) &&
             isPartOfCurrentDeploymentUnit(ecsRoleId)]
@@ -224,12 +193,6 @@
         logGroupName=ecsInstanceLogGroupName
         loggingProfile=loggingProfile
     /]
-
-    [#local configSets +=
-        getInitConfigLogAgent(
-            logFileProfile,
-            ecsInstanceLogGroupName
-        )]
 
     [#local capacityProviderScalingPolicy = { "managedScaling" : false, "managedTermination" : false } ]
 
@@ -446,27 +409,6 @@
                 networkProfile=networkProfile
             /]
 
-            [#switch linkTargetCore.Type]
-                [#case EFS_COMPONENT_TYPE ]
-                [#case EFS_MOUNT_COMPONENT_TYPE]
-                    [#local configSets +=
-                        getInitConfigEFSMount(
-                            linkTargetCore.Id,
-                            linkTargetAttributes.EFS,
-                            linkTargetAttributes.DIRECTORY,
-                            linkId,
-                            (linkTargetAttributes.ACCESS_POINT_ID)!""
-                        )]
-                    [#break]
-                [#case USER_COMPONENT_TYPE]
-                    [#local SSHPublicKeys = linkTargetConfiguration.Solution.SSHPublicKeys ]
-                    [#local linkEnvironment = linkTargetConfiguration.Environment.General ]
-                    [#local configSets +=
-                        getInitConfigSSHPublicKeys(
-                            SSHPublicKeys, linkEnvironment
-                        )]
-                    [#break]
-            [/#switch]
         [/#list]
 
         [@createSecurityGroup
@@ -584,28 +526,15 @@
             outputs={}
         /]
 
-        [#local allocationIds = [] ]
-        [#if fixedIP]
-            [#list 1..maxSize as index]
-                [@createEIP
-                    id=formatComponentEIPId(core.Tier, core.Component, index)
-                    tags=getOccurrenceCoreTags(
-                        occurrence,
-                        formatName(core.FullName, index)
-                    )
-                /]
-                [#local allocationIds +=
-                    [
-                        getReference(formatComponentEIPId(core.Tier, core.Component, index), ALLOCATION_ATTRIBUTE_TYPE)
-                    ]
-                ]
-            [/#list]
-        [/#if]
-
-        [#if allocationIds?has_content ]
-            [#local configSets +=
-                getInitConfigEIPAllocation(allocationIds)]
-        [/#if]
+        [#list ecsEIPs as index,eip ]
+            [@createEIP
+                id=eip["eip"].Id
+                tags=getOccurrenceCoreTags(
+                    occurrence,
+                    eip["eip"].Name
+                )
+            /]
+        [/#list]
 
         [#-- workaround for a known bug with a circular dependency with the capacity provider asg and ecs cluster name --]
         [#if getExistingReference(ecsId)?has_content ]
@@ -619,8 +548,7 @@
         [@createEc2AutoScaleGroup
             id=ecsAutoScaleGroupId
             tier=core.Tier
-            configSetName=configSetName
-            configSets=configSets
+            computeTaskConfig=computeTaskConfig
             launchConfigId=ecsLaunchConfigId
             processorProfile=processorProfile
             autoScalingConfig=autoScalingConfig
@@ -640,9 +568,8 @@
             resourceId=ecsAutoScaleGroupId
             imageId=getEC2AMIImageId(solution.ComputeInstance.Image, ecsLaunchConfigId)
             publicIP=publicRouteTable
-            configSet=configSetName
+            computeTaskConfig=computeTaskConfig
             environmentId=environmentId
-            enableCfnSignal=solution.AutoScaling.WaitForSignal
             keyPairId=sshKeyPairId
         /]
     [/#if]
