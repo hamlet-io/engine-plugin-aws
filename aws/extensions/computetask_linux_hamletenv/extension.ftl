@@ -31,22 +31,22 @@
 
     [#local envContent = [
         r'# Set environment variables from hamlet configuration',
-        r'export cot_request="'       + getCLORequestReference()        + '"',
-        r'export cot_configuration="' + getCLOConfigurationReference()  + '"',
-        r'export cot_accountRegion="' + accountRegionId                 + '"',
-        r'export cot_tenant="'        + tenantId                        + '"',
-        r'export cot_account="'       + accountId                       + '"',
-        r'export cot_product="'       + productId                       + '"',
-        r'export cot_region="'        + regionId                        + '"',
-        r'export cot_segment="'       + segmentId                       + '"',
-        r'export cot_environment="'   + environmentId                   + '"',
-        r'export cot_tier="'          + occurrence.Core.Tier.Id         + '"',
-        r'export cot_component="'     + occurrence.Core.Component.Id    + '"',
-        r'export cot_role="'          + role                            + '"',
-        r'export cot_credentials="'   + credentialsBucket               + '"',
-        r'export cot_code="'          + codeBucket                      + '"',
-        r'export cot_logs="'          + operationsBucket                + '"',
-        r'export cot_backups="'       + dataBucket                      + '"'
+        r'export hamlet_request="'       + getCLORequestReference()        + '"',
+        r'export hamlet_configuration="' + getCLOConfigurationReference()  + '"',
+        r'export hamlet_accountRegion="' + accountRegionId                 + '"',
+        r'export hamlet_tenant="'        + tenantId                        + '"',
+        r'export hamlet_account="'       + accountId                       + '"',
+        r'export hamlet_product="'       + productId                       + '"',
+        r'export hamlet_region="'        + regionId                        + '"',
+        r'export hamlet_segment="'       + segmentId                       + '"',
+        r'export hamlet_environment="'   + environmentId                   + '"',
+        r'export hamlet_tier="'          + occurrence.Core.Tier.Id         + '"',
+        r'export hamlet_component="'     + occurrence.Core.Component.Id    + '"',
+        r'export hamlet_role="'          + role                            + '"',
+        r'export hamlet_credentials="'   + credentialsBucket               + '"',
+        r'export hamlet_code="'          + codeBucket                      + '"',
+        r'export hamlet_logs="'          + operationsBucket                + '"',
+        r'export hamlet_backups="'       + dataBucket                      + '"'
     ]]
 
     [#list envVariables as key,value]
