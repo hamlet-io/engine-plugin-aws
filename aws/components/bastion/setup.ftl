@@ -100,7 +100,7 @@
     [#local _context = invokeExtensions( occurrence, _context )]
     [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
-    [#local osPatching = mergeObjects(solution.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects((solution.OSPatching)!{}, environmentObject.OSPatching )]
     [#local environmentVariables = getFinalEnvironment(occurrence, _context).Environment ]
 
     [#local configSets =
