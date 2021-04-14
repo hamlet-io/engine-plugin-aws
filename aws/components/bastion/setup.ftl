@@ -23,7 +23,7 @@
     [#local bastionLgId = resources["lg"].Id]
     [#local bastionLgName = resources["lg"].Name]
 
-    [#local bastionOS = solution.OS ]
+    [#local bastionOS = (solution.OS)!"linux" ]
     [#local bastionType = occurrence.Core.Type]
     [#local configSetName = bastionType]
 
