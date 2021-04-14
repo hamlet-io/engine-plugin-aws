@@ -1209,7 +1209,7 @@
             },
             {
                 "AutoScalingRollingUpdate" : {
-                    "WaitOnResourceSignals" : autoScalingConfig.WaitForSignal,
+                    "WaitOnResourceSignals" : (autoScalingConfig.WaitForSignal)!true,
                     "MinInstancesInService" : autoscalingMinUpdateInstances,
                     "MinSuccessfulInstancesPercent" : autoScalingConfig.MinSuccessInstances,
                     "PauseTime" : "PT" + autoScalingConfig.UpdatePauseTime,
@@ -1224,7 +1224,7 @@
             }
         )
         creationPolicy=
-            autoScalingConfig.WaitForSignal?then(
+            ((autoScalingConfig.WaitForSignal)!true)?then(
                 {
                     "ResourceSignal" : {
                         "Count" : desiredCapacity,
