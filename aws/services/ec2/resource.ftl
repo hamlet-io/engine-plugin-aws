@@ -100,7 +100,7 @@
                                 "Ebs" : {
                                     "DeleteOnTermination" : true,
                                     "Encrypted" : false,
-                                    "VolumeSize" : volume.Size,
+                                    "VolumeSize" : (volume.Size)?number,
                                     "VolumeType" : "gp2"
                                 }
                             }
@@ -247,15 +247,15 @@
             ) +
             multiAZ?then(
                 {
-                    "MinSize": minSize,
-                    "MaxSize": maxSize,
-                    "DesiredCapacity": desiredCapacity,
+                    "MinSize": minSize?c,
+                    "MaxSize": maxSize?c,
+                    "DesiredCapacity": desiredCapacity?c,
                     "VPCZoneIdentifier": getSubnets(tier, networkResources)
                 },
                 {
-                    "MinSize": minSize,
-                    "MaxSize": maxSize,
-                    "DesiredCapacity": desiredCapacity,
+                    "MinSize": minSize?c,
+                    "MaxSize": maxSize?c,
+                    "DesiredCapacity": desiredCapacity?c,
                     "VPCZoneIdentifier" : getSubnets(tier, networkResources)[0..0]
                 }
             ) +
