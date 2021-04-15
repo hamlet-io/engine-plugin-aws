@@ -437,7 +437,7 @@
                     volume,
                     {
                         "EBSEnabled" : true,
-                        "VolumeSize" : volume.Size,
+                        "VolumeSize" : (volume.Size)?number,
                         "VolumeType" : volume.Type
                     } +
                     attributeIfTrue(

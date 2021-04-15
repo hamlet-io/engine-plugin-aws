@@ -86,7 +86,7 @@
         [#list result as entry]
             [#local returnValue +=
                 [
-                    entry + {"PropagateAtLaunch" : "True" }
+                    entry + {"PropagateAtLaunch" : true }
                 ]
             ]
         [/#list]
