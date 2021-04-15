@@ -378,18 +378,18 @@
 [#function getEC2AMIImageId imageConfiguration ec2ResourceId ]
     [#local imageId = ""]
     [#switch (imageConfiguration.Source)!"" ]
-        [#case "Source:Reference"]
+        [#case "Reference"]
             [#local OSFamily = imageConfiguration["Source:Reference"]["OS"]]
             [#local OSType = imageConfiguration["Source:Reference"]["Type"]]
 
             [#local imageId = regionObject.AMIs[OSFamily][OSType]]
             [#break]
 
-        [#case "aws:Source:AMI"]
+        [#case "aws:AMI"]
             [#local imageId = imageConfiguration["aws:Source:AMI"]["ImageId"]]
             [#break]
 
-        [#case "aws:Source:SSMParam"]
+        [#case "aws:SSMParam"]
 
             [#local param = imageConfiguration["aws:Source:SSMParam"]["Name"]]
             [#local paramId = formatResourceId(AWS_EC2_AMI_PARAMETER_TYPE, ec2ResourceId) ]
