@@ -399,6 +399,16 @@
             "ElasticSearch": {},
             "ComputeCluster": {},
             "bastion": {}
+        },
+        "ecs_awslinux2" : {
+            "ECS" : {
+                "Volumes" : {
+                    "root" : {
+                        "Device" : "/dev/xvda",
+                        "Size" : 50
+                    }
+                }
+            }
         }
     },
     "Processors": {
@@ -862,6 +872,75 @@
                                 "Severity": "Error",
                                 "Statistic": "Average",
                                 "Periods": 2
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "_awslinux2" : {
+            "Modes" : {
+                "*" : {
+                    "ecs" : {
+                        "Profiles" : {
+                            "Storage" : "ecs_awslinux2"
+                        },
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "linux",
+                                "Distribution" : "awslinux",
+                                "MajorVersion" : "2"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+                                }
+                            }
+                        }
+                    },
+                    "computecluster" : {
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "linux",
+                                "Distribution" : "awslinux",
+                                "MajorVersion" : "2"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+                                }
+                            }
+                        }
+                    },
+                    "bastion" : {
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "linux",
+                                "Distribution" : "awslinux",
+                                "MajorVersion" : "2"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+                                }
+                            }
+                        }
+                    },
+                    "ec2" : {
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "linux",
+                                "Distribution" : "awslinux",
+                                "MajorVersion" : "2"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+                                }
                             }
                         }
                     }

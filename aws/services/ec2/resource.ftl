@@ -149,7 +149,6 @@
         id=id
         type="AWS::AutoScaling::LaunchConfiguration"
         properties=
-            getBlockDevices(storageProfile) +
             {
                 "KeyName" : getExistingReference(keyPairId, NAME_ATTRIBUTE_TYPE),
                 "InstanceType": processorProfile.Processor,
@@ -167,7 +166,8 @@
                 "IamInstanceProfile" : getReference(instanceProfileId),
                 "AssociatePublicIpAddress" : publicIP,
                 "UserData" : getUserDataFromComputeTasks(computeTaskConfig)
-            }
+            } +
+            getBlockDevices(storageProfile)
         outputs={}
         outputId=outputId
         dependencies=dependencies

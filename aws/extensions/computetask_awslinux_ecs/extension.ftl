@@ -28,6 +28,12 @@
 
     [#local dockerUsersEnv = "" ]
 
+    [#local commands = {}]
+    [#local services = {}]
+
+    [#local solution = occurrence.Configuration.Solution ]
+    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
+
     [#local userInit = {}]
     [#if dockerUsers?has_content ]
         [#list dockerUsers as userName,details ]
@@ -42,17 +48,6 @@
                                 })]
         [/#list]
     [/#if]
-
-    [#local commands = {}]
-
-    [#local commands +=
-        {
-            "9_RestartECSAgent" : {
-                "command" : "stop ecs; start ecs",
-                "ignoreErrors" : false
-            }
-        }
-    ]
 
     [#local dockerVolumeDriverScriptName = "ecs_volume_driver_install" ]
     [#local dockerVolumeDriverScript = [] ]
@@ -129,6 +124,52 @@
             }
         )]
 
+    [#local services += {
+        "sysvinit" : {
+            "docker" : {
+                "enabled" : true,
+                "ensureRunning" : true,
+                "files" : [ ] +
+                valueIfContent(
+                    [ "/opt/hamlet_cfninit/${dockerLoggingDriverScriptName}.sh" ],
+                    dockerLoggingDriverScript,
+                    []
+                )
+            }
+        }
+    }]
+
+    [#-- Handle restart to get everything happy --]
+    [#switch operatingSystem.Family ]
+        [#case "linux" ]
+            [#switch operatingSystem.Distribution ]
+                [#case "awslinux" ]
+                    [#switch operatingSystem.MajorVersion ]
+                        [#case "2"]
+                            [#local commands += {
+                                "9_RestartECSAgent" : {
+                                    "command" : "systemctl enable --now --no-block ecs.service",
+                                    "ignoreErrors" : false
+                                }
+                            }]
+                            [#break]
+                        [#case "1" ]
+
+                            [#local commands += {
+                                "9_RestartECSAgent" : {
+                                    "command" : "stop ecs; start ecs",
+                                    "ignoreErrors" : false
+                                }
+                            }]
+                            [#break]
+                    [/#switch]
+                    [#break]
+            [/#switch]
+            [#break]
+        [#break]
+    [/#switch]
+
+
     [#local ecsCluster = valueIfContent(
                             getExistingReference(ecsId),
                             getExistingReference(ecsId),
@@ -186,21 +227,7 @@
                             ]
                         }
                     }
-                ),
-                "services" : {
-                    "sysvinit" : {
-                        "docker" : {
-                            "enabled" : true,
-                            "ensureRunning" : true,
-                            "files" : [ ] +
-                            valueIfContent(
-                                [ "/opt/hamlet_cfninit/${dockerLoggingDriverScriptName}.sh" ],
-                                dockerLoggingDriverScript,
-                                []
-                            )
-                        }
-                    }
-                }
+                )
             } +
             attributeIfContent(
                 "users",
@@ -209,6 +236,10 @@
             attributeIfContent(
                 "commands",
                 commands
+            ) +
+            attributeIfContent(
+                "services",
+                services
             )
     /]
 [/#macro]
