@@ -23,6 +23,14 @@
                                 "Provider" : "awstest",
                                 "Name" : "apigateway"
                             },
+                            "bastion" : {
+                                "Provider" : "awstest",
+                                "Name" : "bastion"
+                            },
+                            "ecs" : {
+                                "Provider" : "awstest",
+                                "Name" : "ecs"
+                            },
                             "db" : {
                                 "Provider" : "awstest",
                                 "Name" : "db"

@@ -85,6 +85,9 @@
                                         "DeploymentUnits" : ["aws-apigateway-base"]
                                     }
                                 },
+                                "Image" : {
+                                    "Source" : "none"
+                                },
                                 "IPAddressGroups" : [ "_global" ],
                                 "Profiles" : {
                                     "Testing" : [ "apigatewaybase" ]
