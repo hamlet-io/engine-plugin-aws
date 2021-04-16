@@ -142,6 +142,7 @@
                 },
                 "autoScaleGroup" : {
                     "Id" : autoScaleGroupId,
+                    "Name" : core.FullName,
                     "Type" : AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
                     "ComputeTasks" : [
                         COMPUTE_TASK_RUN_STARTUP_CONFIG,
