@@ -14,7 +14,6 @@
             ]
         }
     ]
-    [#return resourceType + resourceSeparator + resource]
 [/#function]
 
 [#function formatArn partition service region account resource asString=false]

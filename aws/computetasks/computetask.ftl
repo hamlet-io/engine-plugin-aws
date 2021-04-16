@@ -11,6 +11,17 @@
     ]
 /]
 
+[#assign COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL = "aws_asg_startup_signal" ]
+[@addComputeTask
+    type=COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL
+    properties=[
+        {
+            "Type" : "Description",
+            "Value" : "Notify an autoscale group that the instance has completed a its lifecyle startup process"
+        }
+    ]
+/]
+
 [#assign COMPUTE_TASK_AWS_CLI = "aws_cli" ]
 [@addComputeTask
     type=COMPUTE_TASK_AWS_CLI

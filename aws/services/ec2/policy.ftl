@@ -12,6 +12,30 @@
     ]
 [/#function]
 
+[#function ec2AutoScaleGroupLifecyclePermission asgName ]
+    [#return
+        [
+            getPolicyStatement(
+                [
+                    "autoscaling:CompleteLifecycleAction"
+                ],
+                "*",
+                "",
+                {
+                    "StringEquals" : {
+                        "autoscaling:ResourceTag/Name" : asgName
+                    }
+                }
+            ),
+            getPolicyStatement(
+                [
+                    "autoscaling:DescribeAutoScalingInstances"
+                ]
+            )
+        ]
+    ]
+[/#function]
+
 [#function ec2IPAddressUpdatePermission ]
     [#return
         [
