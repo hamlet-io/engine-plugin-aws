@@ -16,6 +16,7 @@
     [#local ecsRoleId = resources["role"].Id ]
     [#local ecsInstanceProfileId = resources["instanceProfile"].Id ]
     [#local ecsAutoScaleGroupId = resources["autoScaleGroup"].Id ]
+    [#local ecsAutoScaleGroupName = resources["autoScaleGroup"].Name ]
     [#local ecsLaunchConfigId = resources["launchConfig"].Id ]
     [#local ecsSecurityGroupId = resources["securityGroup"].Id ]
     [#local ecsSecurityGroupName = resources["securityGroup"].Name ]
@@ -79,7 +80,7 @@
     [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
     [#local publicRouteTable = routeTableConfiguration.Public ]
 
-    [#local ecsAsgTags = getOccurrenceCoreTags(occurrence, ecsName, "", true)]
+    [#local ecsAsgTags = getOccurrenceCoreTags(occurrence, ecsAutoScaleGroupName, "", true)]
     [#local ecsTags = getOccurrenceCoreTags(occurrence, ecsName )]
 
     [#local environmentVariables = {}]
