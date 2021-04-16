@@ -37,7 +37,7 @@
                         {
                             "Names" : "Extensions",
                             "Default" : [
-                                "_computetask_awslinux_cfninit",
+                                "_computetask_awslinux_cfninit_asg",
                                 "_computetask_linux_hamletenv",
                                 "_computetask_linux_volumemount",
                                 "_computetask_awslinux_ospatching",

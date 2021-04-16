@@ -34,6 +34,7 @@
                     "ComputeTasks" : [
                         COMPUTE_TASK_RUN_STARTUP_CONFIG,
                         COMPUTE_TASK_AWS_CFN_SIGNAL,
+                        COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL,
                         COMPUTE_TASK_DATA_VOLUME_MOUNTING,
                         COMPUTE_TASK_FILE_DIR_CREATION,
                         COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,

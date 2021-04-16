@@ -174,6 +174,88 @@
     /]
 [/#macro]
 
+[#function getEc2AutoScaleGroupLifecycleHook
+        name
+        transition
+        timeout=600
+        defaultResult="abandon"
+        notificationMetadata=""
+        notificationTargetId=""
+        roleId=""
+    ]
+
+    [#switch defaultResult?upper_case ]
+        [#case "CONTINUE"]
+        [#case "ABANDON"]
+            [#local defaultResult = defaultResult?upper_case]
+            [#break]
+
+        [#default]
+            [@fatal
+                message="Unsupported ASG lifcycle hook result"
+                context={
+                    "HookName" : name,
+                    "ProvidedDefaultResult" : defaultResult
+                }
+            /]
+    [/#switch]
+
+    [#switch transition?upper_case ]
+        [#case "AUTOSCALING:EC2_INSTANCE_LAUNCHING"]
+        [#case "LAUNCHING"]
+            [#local transition = "autoscaling:EC2_INSTANCE_LAUNCHING"]
+            [#break]
+        [#case "AUTOSCALING:EC2_INSTANCE_TERMINATING"]
+        [#case "TERMINATING"]
+            [#local transition = "autoscaling:EC2_INSTANCE_TERMINATING"]
+            [#break]
+
+        [#default]
+            [@fatal
+                message="Unsupported ASG lifecycle hook transition event"
+                context={
+                    "HookName" : name,
+                    "PrivoidedTransition" : transition
+                }
+            /]
+    [/#switch]
+
+    [#if notificationTargetId?has_content ]
+        [#if ! (roleId?has_content)]
+            [@fatal
+                message="Missing roleId for ASG lifecycle hook notifications"
+                context={
+                    "HookName" : name,
+                    "NotificationTargetId" : notificationTargetId
+                }
+            /]
+        [/#if]
+    [/#if]
+
+    [#return
+        [
+            {
+                "LifecycleHookName" : name,
+                "DefaultResult" : defaultResult,
+                "HeartbeatTimeout" : (timeout)?number,
+                "LifecycleTransition" : transition
+            } +
+            attributeIfContent(
+                "NotificationMetadata",
+                notificationMetadata
+            ) +
+            attributeIfContent(
+                "NotificationTargetARN",
+                getArn(notificationTargetId)
+            ) +
+            attributeIfContent(
+                "RoleARN",
+                getArn(roleId)
+            )
+        ]
+    ]
+[/#function]
+
 [#macro createEc2AutoScaleGroup id
     tier
     computeTaskConfig
@@ -185,6 +267,8 @@
     networkResources
     scaleInProtection=false
     hibernate=false
+    includeStartupHook=true
+    lifecycleHooks=[]
     loadBalancers=[]
     targetGroups=[]
     dependencies=""
@@ -226,6 +310,12 @@
         [#assign autoscalingMinUpdateInstances = 0 ]
     [/#if]
 
+    [#-- The startup hook is a default hook that we use for cloud task processing --]
+    [#-- It can be implemented as part of other lifecycle hook setups --]
+    [#if includeStartupHook ]
+        [#local lifecycleHooks += getEc2AutoScaleGroupLifecycleHook(id, "LAUNCHING" )]
+    [/#if]
+
     [@cfResource
         id=id
         type="AWS::AutoScaling::AutoScalingGroup"
@@ -261,18 +351,20 @@
             ) +
             attributeIfContent(
                 "LoadBalancerNames",
-                loadBalancers,
                 loadBalancers
             ) +
             attributeIfContent(
                 "TargetGroupARNs",
-                targetGroups,
                 targetGroups
             ) +
             attributeIfTrue(
                 "NewInstancesProtectedFromScaleIn",
                 scaleInProtection,
                 true
+            ) +
+            attributeIfContent(
+                "LifecycleHookSpecificationList",
+                lifecycleHooks
             )
         tags=tags
         outputs=AWS_EC2_AUTO_SCALE_GROUP_OUTPUT_MAPPINGS

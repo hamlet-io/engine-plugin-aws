@@ -153,6 +153,7 @@
                 policies=
                     [
                         getPolicyDocument(
+                            ec2AutoScaleGroupLifecyclePermission(bastionAutoScaleGroupName) +
                             ec2IPAddressUpdatePermission() +
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(codeBucket) +

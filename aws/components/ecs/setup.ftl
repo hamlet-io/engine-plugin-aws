@@ -136,6 +136,7 @@
             policies=
                 [
                     getPolicyDocument(
+                            ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(credentialsBucket, accountId + "/alm/docker") +
                             s3AccountEncryptionReadPermission(

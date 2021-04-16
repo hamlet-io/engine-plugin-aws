@@ -153,6 +153,7 @@
             policies=
                 [
                     getPolicyDocument(
+                        ec2AutoScaleGroupLifecyclePermission(computeClusterAutoScaleGroupName) +
                         s3ReadPermission(
                             formatRelativePath(
                                 getRegistryEndPoint("scripts", occurrence),
