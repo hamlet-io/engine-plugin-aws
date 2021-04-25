@@ -13,3 +13,10 @@
                 extensions)]
 [/#function]
 
+
+[#assign AWS_ROUTE53_HEALTHCHECK_RESOURCE_TYPE = "route53HealthCheck" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_ROUTE53_SERVICE
+    resource=AWS_ROUTE53_HEALTHCHECK_RESOURCE_TYPE
+/]

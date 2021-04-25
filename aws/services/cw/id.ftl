@@ -38,6 +38,13 @@
     resource=AWS_CLOUDWATCH_ALARM_RESOURCE_TYPE
 /]
 
+[#assign AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE = "canary" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_CLOUDWATCH_SERVICE
+    resource=AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE
+/]
+
 [#assign AWS_EVENT_RULE_RESOURCE_TYPE = "event" ]
 [@addServiceResource
     provider=AWS_PROVIDER
