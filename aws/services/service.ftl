@@ -73,7 +73,7 @@
 [#assign AWS_RESOURCE_ACCESS_SERVICE = "resourceaccess" ]
 [@addService provider=AWS_PROVIDER service=AWS_RESOURCE_ACCESS_SERVICE /]
 
-[#assign AWS_ROUTE53_SERVICE = "dns"]
+[#assign AWS_ROUTE53_SERVICE = "route53"]
 [@addService provider=AWS_PROVIDER service=AWS_ROUTE53_SERVICE /]
 
 [#assign AWS_SECRETS_MANAGER_SERVICE = "secretsmanager" ]

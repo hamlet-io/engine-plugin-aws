@@ -537,3 +537,106 @@
 
     [#return alertActions ]
 [/#function]
+
+
+[#assign AWS_CANARY_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE
+    mappings=AWS_CANARY_OUTPUT_MAPPINGS
+/]
+
+[@addCWMetricAttributes
+    resourceType=AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE
+    namespace="CloudWatchSynthetics"
+    dimensions={
+        "CanaryName" : {
+            "Output" : {
+                "Attribute" : REFERENCE_ATTRIBUTE_TYPE
+            }
+        }
+    }
+/]
+
+[#macro createCWCanary
+    id
+    name
+    handler
+    artifactS3Url
+    roleId
+    runTime
+    scheduleExpression
+    memory
+    activeTracing
+    environment
+    successRetention
+    failureRetention
+    s3Bucket=""
+    s3Key=""
+    script=""
+    vpcEnabled=false
+    securityGroupIds=[]
+    subnets=[]
+    vpcId=""
+    tags=[]
+    dependencies=[] ]
+
+    [@cfResource
+        id=id
+        type="AWS::Synthetics::Canary"
+        properties={
+            "Name" : name,
+            "ArtifactS3Location" : artifactS3Url,
+            "Code" : {
+                "Handler" : handler
+            } +
+            attributeIfContent(
+                "Script",
+                script
+            ) +
+            attributeIfContent(
+                "S3Bucket",
+                s3Bucket
+            )+
+            attributeIfContent(
+                "S3Key",
+                s3Key
+            ),
+            "ExecutionRoleArn" : getArn(roleId),
+            "RuntimeVersion" : runTime,
+            "Schedule" : {
+                "Expression" : scheduleExpression
+            },
+            "StartCanaryAfterCreation" : true,
+
+            "RunConfig" : {
+                "ActiveTracing" : activeTracing,
+                "EnvironmentVariables" : environment,
+                "MemoryInMB" : memory
+            },
+
+            "SuccessRetentionPeriod" : successRetention,
+            "FailureRetentionPeriod" : failureRetention
+        } +
+        attributeIfTrue(
+            "VPCConfig"
+            vpcEnabled,
+            {
+                "SecurityGroupIds" : asFlattenedArray(securityGroupIds),
+                "SubnetIds" : subnets,
+                "VpcId" : getReference(vpcId)
+            }
+        )
+        outputs=AWS_CANARY_OUTPUT_MAPPINGS
+        tags=tags
+        dependencies=dependencies
+    /]
+
+[/#macro]

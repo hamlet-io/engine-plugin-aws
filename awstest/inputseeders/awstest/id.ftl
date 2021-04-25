@@ -39,9 +39,17 @@
                                 "Provider" : "awstest",
                                 "Name" : "db"
                             },
+                            "ecs" : {
+                                "Provider" : "awstest",
+                                "Name" : "ecs"
+                            },
                             "filetransfer" : {
                                 "Provider" : "awstest",
                                 "Name" : "filetransfer"
+                            },
+                            "healthcheck" : {
+                                "Provider" : "awstest",
+                                "Name" : "healthcheck"
                             },
                             "lb" : {
                                 "Provider" : "awstest",
