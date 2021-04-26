@@ -74,6 +74,50 @@
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=[]
+
+/]
+
+[@addResourceGroupAttributeValues
+    type=ECS_SERVICE_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names" : "Engine",
+            "Values" : [ "shared:fargate", "fargate" ]
+        },
+        {
+            "Names" : "NetworkMode",
+            "Values" : [ "shared:awsvpc", "awsvpc" ]
+        },
+        {
+            "Names" : "Placement",
+            "Children" : [
+                {
+                    "Names" : "ComputeProvider",
+                    "Children" : [
+                        {
+                            "Names" : "Default",
+                            "Children" : [
+                                {
+                                    "Names" : "Provider",
+                                    "Values" : [ "fargate", "fargate_spot" ]
+                                }
+                            ]
+                        },
+                        {
+                            "Names" : "Additional",
+                            "Children" : [
+                                {
+                                    "Names" : "Provider",
+                                    "Values" : [ "fargate", "fargate_spot" ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
 /]
 
 [@addResourceGroupInformation
@@ -89,4 +133,19 @@
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=[]
+/]
+
+[@addResourceGroupAttributeValues
+    type=ECS_TASK_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names" : "Engine",
+            "Values" : [ "shared:fargate", "fargate" ]
+        },
+        {
+            "Names" : "NetworkMode",
+            "Values" : [ "shared:awsvpc", "awsvpc" ]
+        }
+    ]
 /]
