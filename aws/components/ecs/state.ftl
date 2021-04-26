@@ -179,9 +179,13 @@
                     "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
                     "IncludeInDeploymentState" : false
                 },
+                "ecsCapacityProvierAssociation" : {
+                    "Id" : formatResourceId(AWS_ECS_CAPACITY_PROVIDER_ASSOCIATION_RESOURCE_TYPE, core.Id),
+                    "Type" : AWS_ECS_CAPACITY_PROVIDER_ASSOCIATION_RESOURCE_TYPE
+                },
                 "ecsASGCapacityProvider" : {
-                    "Id" : formatResourceId(AWS_ECS_CAPACIITY_PROVIDER_RESOURCE_TYPE, core.Id, "asg" ),
-                    "Type" : AWS_ECS_CAPACIITY_PROVIDER_RESOURCE_TYPE
+                    "Id" : formatResourceId(AWS_ECS_CAPACITY_PROVIDER_RESOURCE_TYPE, core.Id, "asg" ),
+                    "Type" : AWS_ECS_CAPACITY_PROVIDER_RESOURCE_TYPE
                 }
             } +
             attributeIfContent("logMetrics", logMetrics) +
@@ -320,7 +324,7 @@
                 }) +
             attributeIfTrue(
                 "executionRole",
-                solution.Engine == "fargate",
+                (solution.Engine == "fargate" || solution.Engine == "aws:fargate"),
                 {
                     "Id" : formatDependentRoleId(taskId, "execution"),
                     "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
@@ -477,7 +481,7 @@
                 }) +
             attributeIfTrue(
                 "executionRole",
-                solution.Engine == "fargate",
+                ( solution.Engine == "fargate" || solution.Engine == "aws:fargate"),
                 {
                     "Id" : executionRoleId,
                     "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,

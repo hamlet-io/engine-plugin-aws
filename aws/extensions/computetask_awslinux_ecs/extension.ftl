@@ -170,11 +170,7 @@
     [/#switch]
 
 
-    [#local ecsCluster = valueIfContent(
-                            getExistingReference(ecsId),
-                            getExistingReference(ecsId),
-                            getReference(ecsId)
-                    )]
+    [#local ecsCluster = getReference(ecsId) ]
 
     [@computeTaskConfigSection
         computeTaskTypes=[ COMPUTE_TASK_AWS_ECS_AGENT_SETUP ]

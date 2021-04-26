@@ -26,6 +26,7 @@
     [#local ecsInstanceLogGroupName = resources["lgInstanceLog"].Name]
     [#local ecsEIPs = (resources["eips"])!{} ]
 
+    [#local ecsCapacityProvierAssociationId = resources["ecsCapacityProvierAssociation"].Id ]
     [#local ecsASGCapacityProviderId = resources["ecsASGCapacityProvider"].Id]
 
     [#local cliAutoScaleGroupId = formatId(ecsAutoScaleGroupId, "cli" ) ]
@@ -483,36 +484,40 @@
             [/#if]
         [/#if]
 
-        [#local defaultCapacityProviderStrategies = []]
+        [#local defaultCapacityProviderStrategies = [
+            getECSCapacityProviderStrategy(computeProviderProfile.Containers.Default, ecsASGCapacityProviderId)
+        ]]
 
-        [#if getExistingReference(ecsId)?has_content ]
-            [#local defaultCapacityProviderStrategies += [
-                    getECSCapacityProviderStrategy(computeProviderProfile.Containers.Default, ecsASGCapacityProviderId)
-            ]]
-            [#list (computeProviderProfile.Containers.Additional)?values as providerRule ]
-                [#local defaultCapacityProviderStrategies +=
-                    [
-                        getECSCapacityProviderStrategy(providerRule, ecsASGCapacityProviderId)
-                    ]
+        [#list (computeProviderProfile.Containers.Additional)?values as providerRule ]
+            [#local defaultCapacityProviderStrategies +=
+                [
+                    getECSCapacityProviderStrategy(providerRule, ecsASGCapacityProviderId)
                 ]
-            [/#list]
-        [/#if]
-
-        [#local capacityProviders =
-            [
-                "FARGATE",
-                "FARGATE_SPOT"
-            ] +
-            valueIfContent(
-                [ getReference(ecsASGCapacityProviderId) ],
-                getExistingReference(ecsAutoScaleGroupId),
-                []
-            )
-        ]
+            ]
+        [/#list]
 
         [@createECSCluster
             id=ecsId
             tags=ecsTags
+        /]
+
+        [#local capacityProviders =
+            [
+                "FARGATE",
+                "FARGATE_SPOT",
+                getReference(ecsASGCapacityProviderId)
+            ]
+        ]
+
+        [@createECSCapacityProvider?with_args(capacityProviderScalingPolicy)
+            id=ecsASGCapacityProviderId
+            asgId=ecsAutoScaleGroupId
+            tags=ecsTags
+        /]
+
+        [@createECSCapacityProviderAssociation
+            id=ecsCapacityProvierAssociationId
+            clusterId=ecsId
             capacityProviders=capacityProviders
             defaultCapacityProviderStrategies=defaultCapacityProviderStrategies
         /]
@@ -537,15 +542,6 @@
                 )
             /]
         [/#list]
-
-        [#-- workaround for a known bug with a circular dependency with the capacity provider asg and ecs cluster name --]
-        [#if getExistingReference(ecsId)?has_content ]
-            [@createECSCapacityProvider?with_args(capacityProviderScalingPolicy)
-                id=ecsASGCapacityProviderId
-                asgId=ecsAutoScaleGroupId
-                tags=ecsTags
-            /]
-        [/#if]
 
         [@createEc2AutoScaleGroup
             id=ecsAutoScaleGroupId
@@ -608,6 +604,17 @@
     [#local ecsId = parentResources["cluster"].Id ]
     [#local ecsClusterName = parentResources["cluster"].Name ]
     [#local ecsSecurityGroupId = parentResources["securityGroup"].Id ]
+    [#local ecsASGCapacityProviderId = parentResources["ecsASGCapacityProvider"].Id]
+
+    [#if ! (getExistingReference(ecsId)?has_content) ]
+        [@fatal
+            message="ECS Cluster not deployed or active"
+            context={
+                "ECSClusterId" : occurrence.Core.RawName,
+                "DeployState" : isOccurrenceDeployed(occurrence)
+            }
+        /]
+    [/#if]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption" ] )]
@@ -652,8 +659,30 @@
         [#local networkMode = solution.NetworkMode ]
         [#local lbTargetType = "instance"]
         [#local networkLinks = [] ]
-        [#local engine = solution.Engine?lower_case ]
         [#local executionRoleId = ""]
+
+        [#local engine = solution.Engine?lower_case ]
+        [#if engine == "aws:fargate" ]
+            [#local engine = "fargate"]
+        [/#if]
+
+        [#local useCapacityProvider = true ]
+
+        [#-- Provides warning for hosting updates this will still deploy but using fixed launch type --]
+        [#if ( engine == "ec2") && ( ! (getExistingReference(ecsASGCapacityProviderId)?has_content)) ]
+            [#local useCapacityProvider = false ]
+            [@warn
+                message="Could not find ECS Capacity provider for Ec2 - Update the solution ecs component"
+                detail="Updating will use capacity providers which handle scaling up hosts for you"
+                context={
+                    "ECSId" : ecsClusterName,
+                    "Service" : {
+                        "Name" : core.RawName,
+                        "Engine" : engine
+                    }
+                }
+            /]
+        [/#if]
 
         [#local subnets = multiAZ?then(
                 getSubnets(core.Tier, networkResources),
@@ -734,6 +763,7 @@
 
             [#if deploymentSubsetRequired("ecs", true)]
 
+                [#local useCircuitBreaker = true ]
                 [#local loadBalancers = [] ]
                 [#local serviceRegistries = []]
                 [#local dependencies = [] ]
@@ -809,6 +839,9 @@
                                                         }
                                                 /]
                                             [/#if]
+
+                                            [#-- ECS Service Circuit breaker not supported with classic lb --]
+                                            [#local useCircuitBreaker = false ]
 
                                             [#local lbId =  linkAttributes["LB"] ]
                                             [#-- Classic ELB's register the instance so we only need 1 registration --]
@@ -954,7 +987,6 @@
                         [/#list]
                     [/#if]
                 [/#list]
-
 
                 [#local processorProfile = getProcessor(subOccurrence, "service" )]
                 [#local processorCounts = getProcessorCounts(processorProfile, multiAZ, solution.DesiredCount ) ]
@@ -1158,6 +1190,96 @@
                     /]
 
                 [/#if]
+
+                [#local capacityProviderStrategy = []]
+
+                [#local baseCapacityProvider = solution.Placement.ComputeProvider.Default ]
+                [#local additionalCapacityProviders = solution.Placement.ComputeProvider.Additional ]
+
+                [#if useCapacityProvider ]
+                    [#switch engine ]
+                        [#case "ec2"]
+                            [#if baseCapacityProvider.Provider == "_engine" ]
+                                [#local capacityProviderStrategy += [
+                                    getECSCapacityProviderStrategy(
+                                        baseCapacityProvider + { "Provider" : "_autoscalegroup" },
+                                        ecsASGCapacityProviderId
+                                    )
+                                ]]
+                            [#else]
+                                [@fatal
+                                    message="ECS Service engine Ec2 only supports the _engine compute provider"
+                                    context={
+                                        "ServiceId" : core.RawId,
+                                        "Engine" : engine,
+                                        "DefaultComputeProvider" : baseCapacityProvider
+                                    }
+                                /]
+                            [/#if]
+
+                            [#if additionalCapacityProviders?has_content ]
+                                [@fatal
+                                    message="ECS Service engine Ec2 doesn't support additional compute providers"
+                                    context={
+                                        "ServiceId" : core.RawId,
+                                        "Engine" : engine,
+                                        "AdditonalComputeProvider" : additionalCapacityProviders
+                                    }
+                                /]
+                            [/#if]
+                            [#break]
+
+                        [#case "aws:fargate"]
+                        [#case "fargate"]
+                            [#if baseCapacityProvider.Provider == "_engine" ]
+                                [#local capacityProviderStrategy += [
+                                    getECSCapacityProviderStrategy(
+                                        baseCapacityProvider + { "Provider" : "aws:fargate" }
+                                    )
+                                ]]
+                            [#elseif baseCapacityProvider.Provider == "aws:fargate" || baseCapacityProvider.Provider == "aws:fargate_spot" ]
+                                [#local capacityProviderStrategy += [
+                                    getECSCapacityProviderStrategy(
+                                        baseCapacityProvider
+                                    )
+                                ]]
+                            [#else]
+                                [@fatal
+                                    message="ECS Service engine fargate only supports fargate based providers"
+                                    context={
+                                        "ServiceId" : core.RawId,
+                                        "Engine" : engine,
+                                        "DefaultComputeProvider" : baseCapacityProvider
+                                    }
+                                /]
+                            [/#if]
+
+                            [#list additionalCapacityProviders?values as additionalProvider]
+                                [#if additionalProvider.Provider == "_engine"]
+                                    [#local additionalProvider += { "Provider" : "aws:fargate" }]
+                                [/#if]
+
+                                [#if [ "aws:fargate", "aws:fargate_spot" ]?seq_contains(additionalProvider.Provider) ]
+                                    [#local capacityProviderStrategy += [
+                                        getECSCapacityProviderStrategy(
+                                            additionalProvider
+                                        )
+                                    ]]
+                                [#else]
+                                    [@fatal
+                                        message="ECS Service engine fargate only supports fargate based providers"
+                                        context={
+                                            "ServiceId" : core.RawId,
+                                            "Engine" : engine,
+                                            "AdditonalComputeProviders" : additionalCapacityProviders
+                                        }
+                                    /]
+                                [/#if]
+                            [/#list]
+                            [#break]
+                    [/#switch]
+                [/#if]
+
                 [@createECSService
                     id=serviceId
                     ecsId=ecsId
@@ -1170,7 +1292,9 @@
                     networkConfiguration=aswVpcNetworkConfiguration!{}
                     placement=solution.Placement
                     platformVersion=solution["aws:FargatePlatform"]
+                    capacityProviderStrategy=capacityProviderStrategy
                     dependencies=dependencies
+                    circuitBreaker=useCircuitBreaker
                 /]
             [/#if]
         [/#if]
@@ -1301,7 +1425,6 @@
 
                     [#if engine == "fargate" ]
                         [#local ecsParameters += {
-                            "LaunchType" : "FARGATE",
                             "PlatformVersion" : solution["aws:FargatePlatform"]
                         }]
                     [/#if]
