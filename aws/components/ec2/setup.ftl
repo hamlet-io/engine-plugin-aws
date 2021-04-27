@@ -120,7 +120,6 @@
 
     [#local configSetName = occurrence.Core.Type]
 
-    [#local componentComputeTasks = resources["autoScaleGroup"].ComputeTasks]
     [#local userComputeTasks = solution.ComputeInstance.ComputeTasks.UserTasksRequired ]
     [#local computeTaskExtensions = solution.ComputeInstance.ComputeTasks.Extensions ]
 
@@ -315,13 +314,14 @@
             [#if multiAZ || (zones[0].Id = zone.Id)]
                 [#local zoneEc2InstanceId          = zoneResources[zone.Id]["ec2Instance"].Id ]
                 [#local zoneEc2InstanceName        = zoneResources[zone.Id]["ec2Instance"].Name ]
+                [#local zoneEc2ComputeTasks        = zoneResources[zone.Id]["ec2Instance"].ComputeTasks]
                 [#local zoneEc2ENIId               = zoneResources[zone.Id]["ec2ENI"].Id ]
                 [#local zoneEc2EIPId               = zoneResources[zone.Id]["ec2EIP"].Id]
                 [#local zoneEc2EIPName             = zoneResources[zone.Id]["ec2EIP"].Id]
                 [#local zoneEc2EIPAssociationId    = zoneResources[zone.Id]["ec2EIPAssociation"].Id]
 
                 [#local imageId = getEC2AMIImageId(solution.ComputeInstance.Image, zoneEc2InstanceId)]
-                [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, _context, zoneEc2InstanceId, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
+                [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, _context, zoneEc2InstanceId, computeTaskExtensions, zoneEc2ComputeTasks, userComputeTasks)]
 
                 [@cfResource
                     id=zoneEc2InstanceId
