@@ -47,8 +47,7 @@
                                 "_computetask_awslinux_cwlog",
                                 "_computetask_awslinux_efsmount",
                                 "_computetask_linux_userbootstrap",
-                                "_computetask_linux_scriptsdeployment"
-                                "_computetask_linux_vpc_lb"
+                                "_computetask_awslinux_vpc_lb"
                             ]
                         }
                     ]

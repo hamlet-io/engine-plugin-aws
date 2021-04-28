@@ -130,7 +130,7 @@
     [/#if]
 
     [@computeTaskConfigSection
-        computeTaskTypes=[ COMPUTE_TASK_OS_SECURITY_PATCHING ]
+        computeTaskTypes=[ COMPUTE_TASK_AWS_LB_REGISTRATION ]
         id="LoadBalancerRegistration"
         priority=8
         engine=AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE

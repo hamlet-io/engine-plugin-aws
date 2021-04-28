@@ -27,6 +27,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "bastion"
                             },
+                            "ec2" : {
+                                "Provider" : "awstest",
+                                "Name" : "ec2"
+                            },
                             "ecs" : {
                                 "Provider" : "awstest",
                                 "Name" : "ecs"
