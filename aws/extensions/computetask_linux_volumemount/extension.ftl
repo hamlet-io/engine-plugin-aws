@@ -29,6 +29,8 @@
 
     [#-- Support for data volumes as linked components to single instances --]
     [#if occurrence.Core.Type == EC2_COMPONENT_TYPE ]
+
+        [#local zoneResources = occurrence.State.Resources.Zones]
         [#list zones as zone]
             [#if multiAZ || (zones[0].Id = zone.Id)]
                 [#local zoneEc2InstanceId = zoneResources[zone.Id]["ec2Instance"].Id ]

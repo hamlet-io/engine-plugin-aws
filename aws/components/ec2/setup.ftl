@@ -321,7 +321,7 @@
                 [#local zoneEc2EIPAssociationId    = zoneResources[zone.Id]["ec2EIPAssociation"].Id]
 
                 [#local imageId = getEC2AMIImageId(solution.ComputeInstance.Image, zoneEc2InstanceId)]
-                [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, _context, zoneEc2InstanceId, computeTaskExtensions, zoneEc2ComputeTasks, userComputeTasks)]
+                [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, zoneEc2InstanceId, _context, computeTaskExtensions, zoneEc2ComputeTasks, userComputeTasks)]
 
                 [@cfResource
                     id=zoneEc2InstanceId
