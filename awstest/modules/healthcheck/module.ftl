@@ -114,14 +114,12 @@
                         "CFN" : {
                             "Resource" : {
                                 "healthCheck" : {
-                                    "Name" : "transferServerXappXfiletransferbase",
-                                    "Type" : "AWS::Transfer::Server"
+                                    "Name" : "route53HealthCheckXappXhealthchecksimplebase",
+                                    "Type" : "AWS::Route53::HealthCheck"
                                 }
                             },
                             "Output" : [
-                                "transferServerXappXfiletransferbase",
-                                "transferServerXappXfiletransferbaseXarn",
-                                "transferServerXappXfiletransferbaseXname"
+                                "route53HealthCheckXappXhealthchecksimplebase"
                             ]
                         }
                     }
@@ -147,11 +145,11 @@
                             "Match" : {
                                 "CanaryName" : {
                                     "Path"  : "Resources.canaryXappXhealthcheckcomplexbase.Properties.Name",
-                                    "Value" : "mockoutputxseedxsegme"
+                                    "Value" : "healthcheckcomplexbas"
                                 },
                                 "ArtifactS3Location" : {
                                     "Path"  : "Resources.canaryXappXhealthcheckcomplexbase.Properties.ArtifactS3Location",
-                                    "Value" : "s3://##MockOutputXs3XsegmentXoperationsX##/appdata/mockedup/integration/application/healthcheckcomplexbase"
+                                    "Value" : "s3://##MockOutputXs3XsegmentXapplicationX##/appdata/mockedup/integration/application/healthcheckcomplexbase"
                                 },
                                 "EnvVars" : {
                                     "Path" : "Resources.canaryXappXhealthcheckcomplexbase.Properties.RunConfig.EnvironmentVariables.LB_FQDN",
