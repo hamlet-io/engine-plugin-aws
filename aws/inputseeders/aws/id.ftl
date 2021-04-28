@@ -91,7 +91,7 @@
             )
         ]
         [#return
-            addToConfigPipelineClass(
+            addToConfigPipelineStageCacheForClass(
                 state,
                 BLUEPRINT_CONFIG_INPUT_CLASS,
                 aws_cmdb_masterdata +
