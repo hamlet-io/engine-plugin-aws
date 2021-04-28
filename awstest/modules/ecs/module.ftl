@@ -55,6 +55,10 @@
                                 "ecsCluster" : {
                                     "Name" : "ecsXappXecsbase",
                                     "Type" : "AWS::ECS::Cluster"
+                                },
+                                "asgCapacityProvider" : {
+                                    "Name" : "ecsCapacityProviderXappXecsbaseXasg",
+                                    "Type" : "AWS::ECS::CapacityProvider"
                                 }
                             },
                             "Output" : [
@@ -75,7 +79,7 @@
                                     "Value" : "##MockOutputXvpcXsegmentXvpcX##"
                                 },
                                 "ECSCapacityProviders" : {
-                                    "Path" : "Resources.ecsXappXecsbase.Properties.CapacityProviders",
+                                    "Path" : "Resources.ecsCapacityProviderAssocXappXecsbase.Properties.CapacityProviders",
                                     "Value" : [
                                         "FARGATE",
                                         "FARGATE_SPOT",
