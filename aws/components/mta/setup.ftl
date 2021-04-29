@@ -6,6 +6,11 @@
 [#macro aws_mta_cf_deployment_solution occurrence ]
     [@debug message="Entering" context=occurrence enabled=false /]
 
+    [#-- Nothing to do if not running the template pass --]
+    [#if ! deploymentSubsetRequired(MTA_COMPONENT_TYPE, true) ]
+        [#return]
+    [/#if]
+
     [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
     [#local attributes = occurrence.State.Attributes ]
@@ -114,7 +119,7 @@
                 [#break]
         [/#switch]
 
-        [#if actions?has_content && deploymentSubsetRequired(MTA_COMPONENT_TYPE, true)]
+        [#if actions?has_content]
             [@createSESReceiptRule
                 id=ruleId
                 name=ruleName
