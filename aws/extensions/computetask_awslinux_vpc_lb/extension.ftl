@@ -22,8 +22,7 @@
     [#local files = {}]
     [#local commands = {}]
 
-    [#list _context.Links as linkId,link]
-        [#local linkTarget = getLinkTarget(occurrence, link) ]
+    [#list _context.Links as linkId,linkTarget]
 
         [@debug message="Link Target" context=linkTarget enabled=false /]
 
