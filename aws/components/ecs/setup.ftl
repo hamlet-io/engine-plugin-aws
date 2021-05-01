@@ -99,7 +99,7 @@
             "DefaultEnvironmentVariables" : true,
             "DefaultLinkVariables" : true,
             "DefaultBaselineVariables" : true,
-            "Policy" : [],
+            "Policy" : standardPolicies(occurrence, baselineComponentIds),
             "ManagedPolicy" : [],
             "ComputeTasks" : [],
             "Files" : {},
