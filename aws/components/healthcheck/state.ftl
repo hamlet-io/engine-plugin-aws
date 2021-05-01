@@ -38,7 +38,8 @@
                                 ?truncate_c(21, "")
                                 ?lower_case,
                     "TagName" : core.FullName,
-                    "Type" : AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE
+                    "Type" : AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE,
+                    "Monitored" : true
                 },
                 "role" : {
                     "Id" : formatDependentRoleId(canaryId),
