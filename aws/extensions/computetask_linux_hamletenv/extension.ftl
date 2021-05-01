@@ -30,29 +30,32 @@
     [#local role = (occurrence.Configuration.Settings.Product["Role"].Value)!""]
 
     [#local envContent = [
-        r'# Set environment variables from hamlet configuration',
-        r'export hamlet_request="'       + getCLORequestReference()        + '"',
-        r'export hamlet_configuration="' + getCLOConfigurationReference()  + '"',
-        r'export hamlet_accountRegion="' + accountRegionId                 + '"',
-        r'export hamlet_tenant="'        + tenantId                        + '"',
-        r'export hamlet_account="'       + accountId                       + '"',
-        r'export hamlet_product="'       + productId                       + '"',
-        r'export hamlet_region="'        + regionId                        + '"',
-        r'export hamlet_segment="'       + segmentId                       + '"',
-        r'export hamlet_environment="'   + environmentId                   + '"',
-        r'export hamlet_tier="'          + occurrence.Core.Tier.Id         + '"',
-        r'export hamlet_component="'     + occurrence.Core.Component.Id    + '"',
-        r'export hamlet_role="'          + role                            + '"',
-        r'export hamlet_credentials="'   + credentialsBucket               + '"',
-        r'export hamlet_code="'          + codeBucket                      + '"',
-        r'export hamlet_logs="'          + operationsBucket                + '"',
-        r'export hamlet_backups="'       + dataBucket                      + '"'
+        "# hamlet provided env"
+    ]]
+
+    [#local envVariables += {
+        "hamlet_request" : getCLORequestReference(),
+        "hamlet_configuration" : getCLOConfigurationReference(),
+        "hamlet_accountRegion" : accountRegionId,
+        "hamlet_tenant" : tenantId,
+        "hamlet_account" : accountId,
+        "hamlet_product" : productId,
+        "hamlet_region" : regionId,
+        "hamlet_segment" : segmentId,
+        "hamlet_environment" : environmentId,
+        "hamlet_tier" : occurrence.Core.Tier.Id ,
+        "hamlet_component" : occurrence.Core.Component.Id,
+        "hamlet_credentials" : credentialsBucket,
+        "hamlet_code" : codeBucket,
+        "hamlet_logs" : operationsBucket,
+        "hamlet_backups" : dataBucket
+    }
     ]]
 
     [#list envVariables as key,value]
         [#local envContent +=
             [
-                'export ${key}="${value}"'
+                "export ${key}='${value}'"
             ]
         ]
     [/#list]
@@ -64,19 +67,36 @@
         engine=AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE
         content={
                 "files" : {
-                    "/etc/profile.d/hamlet_env.sh" : {
+                    "/opt/hamlet_cfninit/set_env.sh" : {
                         "content" : {
                             "Fn::Join" : [
                                 "\n",
-                                envContent
+                                envContent + [""]
                             ]
                         },
-                        "mode" : "000644"
+                        "mode" : "000755"
+                    },
+                    "/opt/hamlet_cfninit/set_bash_env.sh" : {
+                        "content" : {
+                            "Fn::Join" : [
+                                "\n",
+                                [
+                                    r'if [[ $(grep -L "/opt/hamlet_cfninit/set_env.sh" /etc/bashrc) ]]; then',
+                                    r'    echo "source /opt/hamlet_cfninit/set_env.sh" >> /etc/bashrc',
+                                    r'fi'
+                                ]
+                            ]
+                        },
+                        "mode" : "000755"
                     }
                 },
                 "commands": {
                     "01Directories" : {
                         "command" : "mkdir --parents --mode=0755 /var/log/codeontap",
+                        "ignoreErrors" : false
+                    },
+                    "02SetBashEnv" : {
+                        "command" : "/opt/hamlet_cfninit/set_bash_env.sh",
                         "ignoreErrors" : false
                     }
                 }
