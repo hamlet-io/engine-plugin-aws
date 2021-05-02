@@ -1,6 +1,14 @@
 [#ftl]
 [#macro aws_lambda_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=[ "pregeneration", "prologue", "template", "config", "epilogue"] /]
+
+    [#local converters = []]
+    [#list occurrence.Occurrences as subOccurrence ]
+        [#if subOccurrence.Configuration.Solution.Environment.FileFormat == "yaml" ]
+            [#local converters = [ { "subset" : "config", "converter" : "config_yaml" }]]
+        [/#if]
+    [/#list]
+
+    [@addDefaultGenerationContract subsets=[ "pregeneration", "prologue", "template", "config", "epilogue"] converters=converters /]
 [/#macro]
 
 [#macro aws_lambda_cf_deployment_application occurrence ]
@@ -228,6 +236,16 @@
 
     [#local finalEnvironment = getFinalEnvironment(fn, _context, solution.Environment) ]
     [#local finalAsFileEnvironment = getFinalEnvironment(fn, _context, solution.Environment + {"AsFile" : false}) ]
+    [#local asFileFormat = solution.Environment.FileFormat ]
+    [#switch asFileFormat ]
+        [#case "json" ]
+            [#local asFileSuffix = ".json"]
+            [#break]
+        [#case "yaml"]
+            [#local asFileSuffix = ".yaml"]
+            [#break]
+    [/#switch]
+
     [#local _context += finalEnvironment ]
 
     [#local roleId = formatDependentRoleId(fnId)]
@@ -534,7 +552,7 @@
                     getLocalFileScript(
                         "configFiles",
                         "$\{CONFIG}",
-                        "config_" + getCLORunId() + ".json"
+                        "config_" + getCLORunId() + asFileSuffix
                     ) +
                     syncFilesToBucketScript(
                         "configFiles",
@@ -604,7 +622,7 @@
                     getLocalFileScript(
                         "configFiles",
                         "$\{CONFIG}",
-                        "config_" + getCLORunId() + ".json"
+                        "config_" + getCLORunId() + asFileSuffix
                     ) +
                     syncFilesToBucketScript(
                         "configFiles",

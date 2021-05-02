@@ -1,6 +1,15 @@
 [#ftl]
 [#macro aws_adaptor_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=["prologue", "config", "epilogue" ] /]
+
+    [#local converters = []]
+    [#if occurrence.Configuration.Solution.Environment.FileFormat == "yaml" ]
+        [#local converters += [ { "subset" : "config", "converter" : "config_yaml" }]]
+    [/#if]
+
+    [@addDefaultGenerationContract
+        subsets=["pregeneration", "config", "prologue", "epilogue" ]
+        converters=converters
+    /]
 [/#macro]
 
 [#macro aws_adaptor_cf_deployment_application occurrence ]
@@ -14,16 +23,31 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
 
-    [#local codeSrcBucket = getRegistryEndPoint("scripts", occurrence)]
-    [#local codeSrcPrefix = formatRelativePath(
-                                getRegistryPrefix("scripts", occurrence),
-                                    getOccurrenceBuildProduct(occurrence, productName),
-                                    getOccurrenceBuildScopeExtension(occurrence),
-                                    getOccurrenceBuildUnit(occurrence),
-                                    getOccurrenceBuildReference(occurrence))]
+    [#local imageSource = solution.Image.Source]
 
-    [#local buildSettings = occurrence.Configuration.Settings.Build ]
-    [#local buildRegistry = buildSettings["BUILD_FORMATS"].Value[0] ]
+    [#if imageSource == "url" ]
+        [#local buildUnit = occurrence.Core.Name ]
+    [/#if]
+
+    [#if deploymentSubsetRequired("pregeneration", false)]
+        [#if imageSource = "url" ]
+            [@addToDefaultBashScriptOutput
+                content=
+                    getImageFromUrlScript(
+                        regionId,
+                        productName,
+                        environmentName,
+                        segmentName,
+                        occurrence,
+                        solution.Image.UrlSource.Url,
+                        "scripts",
+                        "scripts.zip",
+                        solution.Image.UrlSource.ImageHash,
+                        true
+                    )
+            /]
+        [/#if]
+    [/#if]
 
     [#local asFiles = getAsFileSettings(occurrence.Configuration.Settings.Product) ]
 
@@ -52,6 +76,17 @@
     ]
 
     [#local finalEnvironment = getFinalEnvironment(occurrence, _context, EnvironmentSettings) ]
+
+    [#local configFileFormat = solution.Environment.FileFormat ]
+    [#switch configFileFormat ]
+        [#case "json" ]
+            [#local configFileName = "config.json"]
+            [#break]
+        [#case "yaml"]
+            [#local configFileName = "config.yaml"]
+            [#break]
+    [/#switch]
+
     [#if deploymentSubsetRequired("config", false)]
         [@addToDefaultJsonOutput
             content=finalEnvironment.Environment
@@ -61,18 +96,21 @@
     [#if deploymentSubsetRequired("epilogue", false) ]
         [@addToDefaultBashScriptOutput
             content=
-                getBuildScript(
-                    "src_zip",
-                    regionId,
-                    buildRegistry,
-                    productName,
-                    occurrence,
-                    buildRegistry + ".zip"
+                ( imageSource != "none" )?then(
+                    getBuildScript(
+                        "src_zip",
+                        regionId,
+                        "scripts",
+                        productName,
+                        occurrence,
+                        "scripts.zip"
+                    ) +
+                    [
+                        "addToArray src \"$\{tmpdir}/src/\"",
+                        "unzip \"$\{src_zip}\" -d \"$\{src}\""
+                    ],
+                    []
                 ) +
-                [
-                    "addToArray src \"$\{tmpdir}/src/\"",
-                    "unzip \"$\{src_zip}\" -d \"$\{src}\""
-                ] +
                 asFiles?has_content?then(
                      findAsFilesScript("settingsFiles", asFiles),
                      []
