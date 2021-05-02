@@ -2,7 +2,11 @@
 [#macro aws_db_cf_deployment_generationcontract_solution occurrence ]
     [@addDefaultGenerationContract
         subsets=["prologue", "template", "epilogue"]
-        alternatives=["primary", "replace1", "replace2"]
+        alternatives=[
+            "primary",
+            { "subset" : "template", "alternative" : "replace1"},
+            { "subset" : "template", "alternative" : "replace2"}
+        ]
     /]
 [/#macro]
 
