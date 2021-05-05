@@ -12,6 +12,57 @@
 
     [#local wafPresent = isPresent(solution.WAF) ]
 
+    [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
+    [#local networkLink = occurrenceNetwork.Link!{} ]
+    [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
+    [#if networkLinkTarget?has_content ]
+        [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
+        [#local networkResources = networkLinkTarget.State.Resources ]
+        [#local vpcId = networkResources["vpc"].Id ]
+        [#local routeTableLinkTarget = getLinkTarget(occurrence, networkLink + { "RouteTable" : occurrenceNetwork.RouteTable })]
+        [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
+    [/#if]
+
+    [#local publicFacing = (routeTableConfiguration.Public)!false ]
+
+    [#-- Link based resources --]
+    [#local apiGatewayLink = {}]
+
+    [#local links = getLinkTargets(occurrence, {}, false) ]
+    [#list links as linkId,linkTarget]
+
+        [#local linkTargetCore = linkTarget.Core ]
+        [#local linkTargetConfiguration = linkTarget.Configuration ]
+        [#local linkTargetResources = linkTarget.State.Resources ]
+        [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+        [#switch linkTargetCore.Type]
+            [#case APIGATEWAY_COMPONENT_TYPE ]
+                [#-- A Network load balancer can only be associated with one API Gateway VPC Link --]
+                [#-- So we create the link if there are any inbound links to an APIGateway --]
+                [#if linkTarget.Direction == "inbound" ]
+                    [#if solution.Engine == "network" ]
+                        [#local apiGatewayLink = {
+                            "Id" : formatResourceId(AWS_APIGATEWAY_VPCLINK_RESOURCE_TYPE, id ),
+                            "Name" : core.FullName,
+                            "Type" : AWS_APIGATEWAY_VPCLINK_RESOURCE_TYPE
+                        }]
+                    [#else]
+                        [@fatal
+                            message="Private API Connection only available for network engine"
+                            detail={
+                                "LBId" : core.RawId,
+                                "Link" : linkId,
+                                "Engine" : solution.Engine
+                            }
+
+                        /]
+                    [/#if]
+                [/#if]
+                [#break]
+        [/#switch]
+    [/#list]
+
     [#local wafResources = {} ]
     [#if wafPresent && solution.Engine == "application" ]
         [#local wafResources =
@@ -77,11 +128,13 @@
                     "Name" : core.FullName,
                     "ShortName" : (core.ShortFullName)?truncate_c(32, ''),
                     "Type" : resourceType,
+                    "PublicFacing" : publicFacing,
                     "Monitored" : true
                 }
             } +
             attributeIfContent("wafacl", wafResources) +
-            attributeIfContent("wafLogStreaming", wafLogStreamResources),
+            attributeIfContent("wafLogStreaming", wafLogStreamResources) +
+            attributeIfContent("apiGatewayLink", apiGatewayLink),
             "Attributes" : {
                 "INTERNAL_FQDN" : getExistingReference(id, DNS_ATTRIBUTE_TYPE)
             },
@@ -219,6 +272,10 @@
                     "Name" : formatName(parentCore.FullName, sourcePortId),
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }
+            ) +
+            attributeIfContent(
+                "apiGatewayLink",
+                (parentState.Resources["apiGatewayLink"])!{}
             ),
             "Attributes" : {
                 "LB" : lbId,
