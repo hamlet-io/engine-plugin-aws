@@ -140,3 +140,34 @@
         dependencies=dependencies
     /]
 [/#macro]
+
+[#assign APIGATEWAY_VPCLINK_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_APIGATEWAY_VPCLINK_RESOURCE_TYPE
+    mappings=APIGATEWAY_VPCLINK_OUTPUT_MAPPINGS
+/]
+
+[#macro createAPIGatewayVPCLink id name networkLBId description="" dependencies=[] ]
+    [@cfResource
+        id=id
+        type="AWS::ApiGateway::VpcLink"
+        properties={
+            "Name" : name,
+            "TargetArns" : getReferences(asArray(networkLBId), ARN_ATTRIBUTE_TYPE)
+        } +
+        attributeIfContent(
+            "Description",
+            description
+        )
+        outputs=APIGATEWAY_VPCLINK_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]

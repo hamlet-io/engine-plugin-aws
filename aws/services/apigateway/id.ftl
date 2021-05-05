@@ -58,6 +58,13 @@
     resource=AWS_APIGATEWAY_USAGEPLAN_MEMBER_RESOURCE_TYPE
 /]
 
+[#assign AWS_APIGATEWAY_VPCLINK_RESOURCE_TYPE = "apiVPCLink" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_APIGATEWAY_SERVICE
+    resource=AWS_APIGATEWAY_VPCLINK_RESOURCE_TYPE
+/]
+
 [#function formatDependentAPIGatewayAuthorizerId resourceId extensions...]
     [#return formatDependentResourceId(
                 AWS_APIGATEWAY_AUTHORIZER_RESOURCE_TYPE,
