@@ -10,7 +10,8 @@
             AWS_WEB_APPLICATION_FIREWALL_SERVICE,
             AWS_KINESIS_SERVICE,
             AWS_CLOUDWATCH_SERVICE,
-            AWS_IDENTITY_SERVICE
+            AWS_IDENTITY_SERVICE,
+            AWS_APIGATEWAY_SERVICE
         ]
 /]
 

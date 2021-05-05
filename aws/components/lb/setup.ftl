@@ -72,8 +72,7 @@
     [#local classicStickinessPolicies = []]
     [#local classicConnectionDrainingTimeouts = []]
 
-    [#local ruleCleanupScript = []]
-    [#local cliCleanUpRequired = false ]
+    [#local cleanupStates = {}]
 
     [#local classicHTTPSPolicyName = "ELBSecurityPolicy"]
     [#if engine == "classic" ]
@@ -179,6 +178,7 @@
         [#local defaultTargetGroupId = resources["defaulttg"].Id]
         [#local defaultTargetGroupName = resources["defaulttg"].Name]
 
+        [#local ruleCleanupScript = []]
         [#local cliCleanUpRequired = getExistingReference(listenerId, "cleanup")?has_content ]
 
         [#local firstMappingForPort = !listenerPortsSeen?seq_contains(listenerId) ]
@@ -551,6 +551,7 @@
                         {}
                     )]
 
+                [#-- This is to handle the migration from creating listener rules via the cli into Cloudformation --]
                 [#if firstMappingForPort ]
                     [#if getExistingReference(listenerId)?has_content && ! getExistingReference(listenerRuleId)?has_content ]
                         [#local ruleCleanupScript += [
@@ -559,7 +560,31 @@
                                 "       \"" + getExistingReference(listenerId, ARN_ATTRIBUTE_TYPE) + "\" "
                             ]]
                     [/#if]
+
+                    [#if deploymentSubsetRequired("prologue", false)
+                        && !cliCleanUpRequired
+                        && listenerId?has_content
+                        && ruleCleanupScript?has_content ]
+
+                        [#local cleanupContent = [
+                                r'case ${STACK_OPERATION} in',
+                                r'  create|update)',
+                                r'    # Apply CLI level updates to ELB listener',
+                                '    info "Removing rules created by cli rules - listener ${listenerId}"'
+                            ] +
+                            ruleCleanupScript +
+                            [
+                                r'    ;;',
+                                r'esac'
+                            ]]
+
+                        [@addToDefaultBashScriptOutput
+                            content=cleanupContent
+                        /]
+                    [/#if]
                 [/#if]
+
+                [#local cleanupStates += { formatId(listenerId, "cleanup")  : true?c }]
 
                 [#-- Basic Forwarding --]
                 [#if listenerForwardRule ]
@@ -670,28 +695,16 @@
         [/#switch]
     [/#list]
 
-    [#if deploymentSubsetRequired("prologue", false) && !cliCleanUpRequired ]
-
-        [@addToDefaultBashScriptOutput
-            content=
-                [
-                    "case $\{STACK_OPERATION} in",
-                    "  create|update)",
-                    "    # Apply CLI level updates to ELB listener",
-                    "    info \"Removing rules created by cli rules\""
-                ] +
-                ruleCleanupScript +
-                pseudoStackOutputScript(
-                    "CLI Rule Cleanup",
-                    {
-                        formatId(listenerId, "cleanup") : true?c
-                    }
-                ) +
-                [
-                    "    ;;",
-                    "esac"
-                ]
-        /]
+    [#if cleanupStates?has_content ]
+        [#if deploymentSubsetRequired("prologue", false)]
+            [@addToDefaultBashScriptOutput
+                content=
+                    pseudoStackOutputScript(
+                        "CLI Rule Cleanup",
+                        cleanupStates
+                    )
+            /]
+        [/#if]
     [/#if]
 
     [#-- Port Protocol Validation --]
@@ -776,6 +789,14 @@
                     type=engine
                     bucket=operationsBucket
                     idleTimeout=idleTimeout /]
+
+                [#if resources["apiGatewayLink"]?has_content ]
+                    [@createAPIGatewayVPCLink
+                        id=resources["apiGatewayLink"].Id
+                        name=resources["apiGatewayLink"].Name
+                        networkLBId=lbId
+                    /]
+                [/#if]
             [/#if]
             [#break]
 
