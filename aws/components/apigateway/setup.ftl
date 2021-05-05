@@ -57,17 +57,19 @@
             "DefaultBaselineVariables" : false,
             "DefaultEnvironmentVariables" : false,
             "DefaultLinkVariables" : false,
-            "Policy" : []
+            "Policy" : [],
+            "OpenAPIDefinition" : (definitionsObject[core.Id])!{}
         }
     ]
-
     [#-- Add in extension specifics including override of defaults --]
     [#local _context = invokeExtensions( occurrence, _context )]
 
     [#local stageVariables += getFinalEnvironment(occurrence, _context ).Environment ]
+    [#local openapiDefinition = _context.OpenAPIDefinition ]
 
     [#local cognitoPools = {} ]
     [#local lambdaAuthorizers = {} ]
+    [#local privateHTTPEndpoints = {} ]
 
     [#list solution.Links?values as link]
         [#if link?is_hash]
@@ -93,6 +95,26 @@
                                 formatSettingName(true, link.Name, "DOCKER") : linkTargetAttributes.FQDN
                             }
                         ]
+                    [/#if]
+                    [#break]
+
+                [#case LB_PORT_COMPONENT_TYPE]
+
+                    [#local portUrlStageVariable = formatSettingName(true, link.Name, "HTTP", "URL" ) ]
+                    [#local stageVariables +=
+                        {
+                            portUrlStageVariable : linkTargetAttributes.URL
+                        }
+                    ]
+
+                    [#if ((linkTargetResources["apiGatewayLink"])!{})?has_content ]
+                        [#local privateHTTPEndpoints += {
+                            link.Name : {
+                                "StageVariable" : portUrlStageVariable,
+                                "connectionId" : getExistingReference( linkTargetResources["apiGatewayLink"].Id ),
+                                "uri" : linkTargetAttributes.URL
+                            }
+                        }]
                     [/#if]
                     [#break]
 
@@ -364,8 +386,8 @@
         ]]
 
         [#-- Integration Patterns (as Regex) into Matching Method Throttling (as explicit paths) --]
-        [#if definitionsObject[core.Id]?has_content]
-            [#list definitionsObject[core.Id].paths as path,pathConfig]
+        [#if openapiDefinition?has_content]
+            [#list openapiDefinition.paths as path,pathConfig]
                 [#list pathConfig?keys as verb]
                     [#list openapiIntegrations.Patterns![] as pattern]
                         [#if path?matches( (pattern.Path)!"" ) && verb?matches( (pattern.Verb)!"" )]
@@ -833,8 +855,7 @@
         [/#if]
     [/#if]
 
-    [#if definitionsObject[core.Id]?? ]
-        [#local openapiDefinition = definitionsObject[core.Id] ]
+    [#if openapiDefinition?has_content ]
         [#if openapiDefinition["x-amazon-apigateway-request-validator"]?? ]
             [#-- Pass definition through - it is legacy and has already has been processed --]
             [#local extendedOpenapiDefinition = openapiDefinition ]
@@ -854,6 +875,7 @@
                         "Region" : region,
                         "CognitoPools" : cognitoPools,
                         "LambdaAuthorizers" : lambdaAuthorizers,
+                        "PrivateHTTPEndpoints" : privateHTTPEndpoints,
                         "FQDN" : attributes["FQDN"],
                         "Scheme" : attributes["SCHEME"],
                         "BasePath" : attributes["BASE_PATH"],
