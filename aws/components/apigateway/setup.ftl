@@ -279,6 +279,117 @@
             ] ]
     [/#if]
 
+    [#-- mutualTLS client certificates --]
+    [#local mutualTLSConfig = solution.MutualTLS ]
+    [#local mutualTLS = solution.MutualTLS.Enabled ]
+    [#if mutualTLS && ! customDomainResources?has_content ]
+        [@fatal
+            message="Mutual TLS can only be enabled if a Certifcate/Custom domain has been configured"
+            detail="Configure the Certificate section of the apigateway"
+            context={
+                "APIGWId" : core.RawName,
+                "MututalTLSConfig" : solution.MutualTLS
+            }
+        /]
+    [/#if]
+
+    [#local mutualTLSRootCAFileName = ""]
+    [#local mutualTLSTrustStore = ""]
+    [#local mutualTLSTrustPrefix = formatRelativePath(
+                getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
+                "mutualTLS"
+            )]
+
+    [#if mutualTLS ]
+
+        [#switch mutualTLSConfig.CertificateAuthority.Source ]
+            [#case "link"]
+
+                [#local mutualTLSRootCAFileName = "rootCA.pem"]
+                [#local certificateAuthorityLink = getLinkTarget(occurrence, mutualTLSConfig.CertificateAuthority["Source:link"].Link )]
+
+                [#local certificateAuthorityLinkAttribute = mutualTLSConfig.CertificateAuthority["Source:link"]["RootCACertAttribute"] ]
+                [#if certificateAuthorityLink?has_content ]
+                    [#local certificateAuthorityRootPublicCert = (linkTarget.State.Attributes[certificateAuthorityLinkAttribute])!"" ]
+
+                    [#if ! (certificateAuthorityRootPublicCert?has_content) ]
+                        [@fatal
+                            message="RootCA link attribute could not be found or was empty"
+                            context={
+                                "APIGWId" : core.RawName,
+                                "MututalTLSConfig" : mutualTLSConfig
+                            }
+                        /]
+                    [/#if]
+
+                    [#if certificateAuthorityRootPublicCert?has_content  ]
+
+                        [#if deploymentSubsetRequired("prologue", false)]
+                            [@addToDefaultBashScriptOutput
+                                content=
+                                    writeFileForSync(
+                                        "rootCAFile",
+                                        mutualTLSRootCAFileName,
+                                        certificateAuthorityRootPublicCert
+                                    ) +
+                                    syncFilesToBucketScript(
+                                        "rootCAFile",
+                                        regionId,
+                                        operationsBucket,
+                                        mutualTLSTrustPrefix,
+                                        false
+                                    )
+                            /]
+                        [/#if]
+                    [/#if]
+                [/#if]
+                [#break]
+
+            [#case "filesetting"]
+                [#local mutualTLSRootCAFileName = mutualTLSConfig.CertificateAuthority["Source:filesetting"].FileName ]
+                [#local caFileAvailable = getAsFileSettings(occurrence.Configuration.Settings.Product)
+                            ?filter( x -> x.Value == mutualTLSRootCAFileName)
+                            ?has_content ]
+
+                [#if ! caFileAvailable ]
+                    [@fatal
+                        message="Cound not find mutualTLS Root CA from filesetting"
+                        detail={
+                            "APIGWId" : core.RawName,
+                            "MututalTLSConfig" : mutualTLSConfig,
+                            "FileSettings" : getAsFileSettings(occurrence.Configuration.Settings.Product)
+                        }
+                    /]
+                [/#if]
+
+                [#if deploymentSubsetRequired("prologue", false)]
+                        [#-- Copy any asFiles needed by the task --]
+                        [#local asFiles = getAsFileSettings(occurrence.Configuration.Settings.Product) ]
+                        [#if asFiles?has_content]
+                            [@addToDefaultBashScriptOutput
+                                content=
+                                    findAsFilesScript("filesToSync", asFiles) +
+                                    syncFilesToBucketScript(
+                                        "filesToSync",
+                                        regionId,
+                                        operationsBucket,
+                                        mutualTLSTrustPrefix
+                                        false
+                                    )
+                                /]
+                        [/#if]
+                    [/#if]
+                [#break]
+        [/#switch]
+
+        [#local mutualTLSTrustStore = formatRelativePath(
+                                        "s3://",
+                                        operationsBucket,
+                                        mutualTLSTrustPrefix
+                                        mutualTLSRootCAFileName
+                                    )]
+    [/#if]
+
     [#local accessLogging = solution.AccessLogging ]
     [#if accessLogging.Enabled]
 
@@ -346,6 +457,11 @@
                     "Policy",
                     apiPolicyStatements,
                     getPolicyDocumentContent(apiPolicyStatements)
+                ) +
+                attributeIfTrue(
+                    "DisableExecuteApiEndpoint",
+                    customDomainResources?has_content,
+                    true
                 )
             outputs=APIGATEWAY_OUTPUT_MAPPINGS
         /]
@@ -544,6 +660,15 @@
                                     "HamletFatal: Could not find certificate " + value["domain"].CertificateId
                                 )
                         }
+                    ) +
+                    valueIfTrue(
+                        {
+                            "MutualTlsAuthentication" : {
+                                "TruststoreUri" : mutualTLSTrustStore
+                            }
+                        },
+                        mutualTLS,
+                        {}
                     )
                 outputs={}
                 dependencies=apiId
