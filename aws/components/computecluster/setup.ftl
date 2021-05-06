@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_computecluster_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets="template" /]
+    [@addDefaultGenerationContract subsets=[ "pregeneration", "template" ] /]
 [/#macro]
 
 [#macro aws_computecluster_cf_deployment_application occurrence ]
@@ -10,8 +10,6 @@
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources ]
     [#local links = solution.Links ]
-
-    [#local dockerHost = solution.DockerHost]
 
     [#local computeClusterRoleId               = resources["role"].Id ]
     [#local computeClusterInstanceProfileId    = resources["instanceProfile"].Id ]
@@ -31,6 +29,8 @@
     [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
 
     [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+
+    [#local autoScalingConfig = solution.AutoScaling ]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -56,6 +56,33 @@
     [#local routeTableLinkTarget = getLinkTarget(occurrence, networkLink + { "RouteTable" : occurrenceNetwork.RouteTable })]
     [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
     [#local publicRouteTable = routeTableConfiguration.Public ]
+
+    [#local imageSource = solution.Image.Source]
+
+    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
+    [#if imageSource == "url" ]
+        [#local buildUnit = occurrence.Core.Name ]
+    [/#if]
+
+    [#if deploymentSubsetRequired("pregeneration", false)]
+        [#if imageSource = "url" ]
+            [@addToDefaultBashScriptOutput
+                content=
+                    getImageFromUrlScript(
+                        regionId,
+                        productName,
+                        environmentName,
+                        segmentName,
+                        occurrence,
+                        solution.Image["Source:url"].Url,
+                        "scripts",
+                        "scripts.zip",
+                        solution.Image["Source:url"].ImageHash,
+                        true
+                    )
+            /]
+        [/#if]
+    [/#if]
 
     [#local computeAutoScaleGroupTags =
             getOccurrenceCoreTags(
@@ -93,22 +120,25 @@
         [/#if]
     [/#list]
 
-    [#local scriptsPath =
-            formatRelativePath(
-            getRegistryEndPoint("scripts", occurrence),
-            getRegistryPrefix("scripts", occurrence),
-            getOccurrenceBuildProduct(occurrence, productName),
-            getOccurrenceBuildScopeExtension(occurrence),
-            getOccurrenceBuildUnit(occurrence),
-            getOccurrenceBuildReference(occurrence)
-            ) ]
+    [#local scriptsFile = ""]
+    [#if imageSource != "none" ]
+        [#local scriptsPath =
+                formatRelativePath(
+                    getRegistryEndPoint("scripts", occurrence),
+                    getRegistryPrefix("scripts", occurrence),
+                    getOccurrenceBuildProduct(occurrence, productName),
+                    getOccurrenceBuildScopeExtension(occurrence),
+                    buildUnit,
+                    getOccurrenceBuildReference(occurrence)
+                )]
 
-    [#local scriptsFile =
-        formatRelativePath(
-            scriptsPath,
-            "scripts.zip"
-        )
-    ]
+        [#local scriptsFile =
+            formatRelativePath(
+                scriptsPath,
+                "scripts.zip"
+            )
+        ]
+    [/#if]
 
     [#local contextLinks = getLinkTargets(occurrence, links) ]
     [#local _context =
@@ -153,7 +183,9 @@
             policies=
                 [
                     getPolicyDocument(
-                        ec2AutoScaleGroupLifecyclePermission(computeClusterAutoScaleGroupName) +
+                        ec2AutoScaleGroupLifecyclePermission(
+                            computeClusterAutoScaleGroupName
+                        ) +
                         s3ReadPermission(
                             formatRelativePath(
                                 getRegistryEndPoint("scripts", occurrence),
@@ -176,7 +208,8 @@
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +
                         cwLogsProducePermission(computeClusterLogGroupName),
-                        "basic"),
+                        "basic"
+                    ),
                     getPolicyDocument(
                         ssmSessionManagerPermission(),
                         "ssm"
