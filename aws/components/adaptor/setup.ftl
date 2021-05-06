@@ -23,6 +23,9 @@
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
 
+    [#local buildReference = getOccurrenceBuildReference(occurrence)]
+    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
+
     [#local imageSource = solution.Image.Source]
 
     [#if imageSource == "url" ]
@@ -103,7 +106,8 @@
                         "scripts",
                         productName,
                         occurrence,
-                        "scripts.zip"
+                        "scripts.zip",
+                        buildUnit
                     ) +
                     [
                         "addToArray src \"$\{tmpdir}/src/\"",
