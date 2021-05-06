@@ -27,6 +27,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "bastion"
                             },
+                            "computecluster" : {
+                                "Provider" : "awstest",
+                                "Name" : "computecluster"
+                            },
                             "ec2" : {
                                 "Provider" : "awstest",
                                 "Name" : "ec2"
