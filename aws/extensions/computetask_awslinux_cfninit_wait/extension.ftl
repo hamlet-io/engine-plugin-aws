@@ -3,7 +3,8 @@
 [@addExtension
     id="computetask_awslinux_cfninit_wait"
     aliases=[
-        "_computetask_awslinux_cfninit_wait"
+        "_computetask_awslinux_cfninit_wait",
+        "_computetask_awslinux_cfninit"
     ]
     description=[
         "Updates and runs the cfn init process based on the provided cfninit metadata",
@@ -17,7 +18,7 @@
     ]
 /]
 
-[#macro shared_extension_computetask_awslinux_cfninit_deployment_computetask occurrence ]
+[#macro shared_extension_computetask_awslinux_cfninit_wait_deployment_computetask occurrence ]
 
     [#local computeResourceId = (_context.ComputeResourceId)!""]
     [#local waitHandleId      = (_context.WaitHandleId)!""]
