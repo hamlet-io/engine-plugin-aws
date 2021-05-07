@@ -319,9 +319,20 @@
                 [#local zoneEc2EIPId               = zoneResources[zone.Id]["ec2EIP"].Id]
                 [#local zoneEc2EIPName             = zoneResources[zone.Id]["ec2EIP"].Id]
                 [#local zoneEc2EIPAssociationId    = zoneResources[zone.Id]["ec2EIPAssociation"].Id]
+                [#local zoneWaitHandleId           = zoneResources[zone.Id]["waitHandle"].Id ]
+                [#local zoneWaitConditionId        = zoneResources[zone.Id]["waitCondition"].Id]
 
                 [#local imageId = getEC2AMIImageId(solution.ComputeInstance.Image, zoneEc2InstanceId)]
-                [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, zoneEc2InstanceId, _context, computeTaskExtensions, zoneEc2ComputeTasks, userComputeTasks)]
+
+                [#local zoneContext = _context + { "WaitHandleId" : zoneWaitHandleId }]
+                [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, zoneEc2InstanceId, zoneContext, computeTaskExtensions, zoneEc2ComputeTasks, userComputeTasks)]
+
+                [@createCFNWait
+                    conditionId=zoneWaitConditionId
+                    handleId=zoneWaitHandleId
+                    signalCount=1
+                    waitDependencies=[ zoneEc2InstanceId ]
+                /]
 
                 [@cfResource
                     id=zoneEc2InstanceId

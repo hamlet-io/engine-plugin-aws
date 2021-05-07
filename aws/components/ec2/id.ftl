@@ -11,7 +11,8 @@
             AWS_IDENTITY_SERVICE,
             AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE,
             AWS_KEY_MANAGEMENT_SERVICE,
-            AWS_SYSTEMS_MANAGER_SERVICE
+            AWS_SYSTEMS_MANAGER_SERVICE,
+            AWS_CLOUDFORMATION_SERVICE
         ]
 /]
 
@@ -37,7 +38,7 @@
                         {
                             "Names" : "Extensions",
                             "Default" : [
-                                "_computetask_awslinux_cfninit",
+                                "_computetask_awslinux_cfninit_wait",
                                 "_computetask_linux_hamletenv",
                                 "_computetask_linux_volumemount",
                                 "_computetask_awslinux_ospatching",

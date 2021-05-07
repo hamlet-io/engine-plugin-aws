@@ -21,6 +21,9 @@
     [#local computeClusterLogGroupId           = resources["lg"].Id]
     [#local computeClusterLogGroupName         = resources["lg"].Name]
 
+    [#local AutoScaleGroupWaitCondition       = resources["asgWaitCondition"].Id]
+    [#local AutoScaleGroupWaitHandle          = resources["asgWaitHandle"].Id ]
+
     [#local processorProfile = getProcessor(occurrence, "ComputeCluster")]
     [#local storageProfile   = getStorage(occurrence, "ComputeCluster")]
     [#local logFileProfile   = getLogFileProfile(occurrence, "ComputeCluster")]

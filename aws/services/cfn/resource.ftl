@@ -64,3 +64,40 @@
         dependencies=dependencies
     /]
 [/#macro]
+
+[#assign CFN_CONDITION_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        },
+        RESULT_ATTRIBUTE_TYPE : {
+            "Attribute" : "Data"
+        }
+    }]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_CLOUDFORMATION_WAIT_HANDLE_RESOURCE_TYPE
+    mappings=CFN_STACK_OUTPUT_MAPPINGS
+/]
+
+[#macro createCFNWait conditionId handleId signalCount timeout=600 waitDependencies=[] ]
+
+    [@cfResource
+        id=conditionId
+        type="AWS::CloudFormation::WaitCondition"
+        properties={
+            "Count" : signalCount,
+            "Handle" : getReference(handleId),
+            "Timeout" : timeout
+        }
+        dependencies=waitDependencies
+    /]
+
+    [@cfResource
+        id=handleId
+        type="AWS::CloudFormation::WaitConditionHandle"
+        properties={}
+    /]
+
+[/#macro]
