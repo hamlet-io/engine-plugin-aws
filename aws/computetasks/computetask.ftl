@@ -11,6 +11,17 @@
     ]
 /]
 
+[#assign COMPUTE_TASK_AWS_CFN_WAIT_SIGNAL = "aws_cfn_wait_signal" ]
+[@addComputeTask
+    type=COMPUTE_TASK_AWS_CFN_SIGNAL
+    properties=[
+        {
+            "Type" : "Description",
+            "Value" : "Use cfn-signal to notify a wait resource for post create provisioning"
+        }
+    ]
+/]
+
 [#assign COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL = "aws_asg_startup_signal" ]
 [@addComputeTask
     type=COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL

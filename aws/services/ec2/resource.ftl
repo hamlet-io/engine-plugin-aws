@@ -34,16 +34,34 @@
 
     [#local cfnInitTasks = {}]
     [#local configSetTaskList = []]
+
+    [#local waitConfigSetName = ""]
+    [#local waitConfigSetTaskList = []]
+
     [#list computeTaskConfig as id, task ]
+
+        [#local configSetName = (cfnInitTask.ComputeResourceId)!configSetName ]
+
         [#if ((task[AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE])!{})?has_content ]
             [#local cfnInitTask = task[AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE]]
-
-            [#local configSetName = cfnInitTask.ComputeResourceId ]
 
             [#if ((cfnInitTask.Content)!{})?has_content ]
 
                 [#local configSetId = "${cfnInitTask.Priorty}_${id}" ]
                 [#local configSetTaskList += [ configSetId ] ]
+                [#local cfnInitTasks += {
+                    configSetId : cfnInitTask.Content
+                }]
+            [/#if]
+        [/#if]
+
+         [#if ((task[AWS_EC2_CFN_INIT_WAIT_COMPUTE_TASK_CONFIG_TYPE])!{})?has_content ]
+            [#local cfnInitTask = task[AWS_EC2_CFN_INIT_WAIT_COMPUTE_TASK_CONFIG_TYPE]]
+
+            [#if ((cfnInitTask.Content)!{})?has_content ]
+
+                [#local configSetId = "${cfnInitTask.Priorty}_${id}_wait" ]
+                [#local waitConfigSetTaskList += [ configSetId ] ]
                 [#local cfnInitTasks += {
                     configSetId : cfnInitTask.Content
                 }]
@@ -56,7 +74,8 @@
             {
                 "AWS::CloudFormation::Init" : {
                     "configSets" : {
-                        configSetName : configSetTaskList?sort
+                        configSetName : configSetTaskList?sort,
+                        formatName(configSetName, "wait") : waitConfigSetTaskList?sort
                     }
                 } + cfnInitTasks
             }]
@@ -457,7 +476,7 @@
         id=id
         type="AWS::EC2::VolumeAttachment"
         properties={
-            "Device" : "/dev/" + device,
+            "Device" : device?ensure_starts_with("/dev/"),
             "InstanceId" : getReference(instanceId),
             "VolumeId" : getReference(volumeId)
         }

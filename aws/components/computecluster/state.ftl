@@ -61,7 +61,7 @@
                         COMPUTE_TASK_RUN_STARTUP_CONFIG,
                         COMPUTE_TASK_AWS_CFN_SIGNAL,
                         COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL,
-                        COMPUTE_TASK_DATA_VOLUME_MOUNTING,
+                        COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
                         COMPUTE_TASK_FILE_DIR_CREATION,
                         COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
                         COMPUTE_TASK_OS_SECURITY_PATCHING,
@@ -73,6 +73,14 @@
                         COMPUTE_TASK_RUN_SCRIPTS_DEPLOYMENT,
                         COMPUTE_TASK_AWS_LB_REGISTRATION
                     ]
+                },
+                "asgWaitHandle" : {
+                    "Id" : formatResourceId(AWS_CLOUDFORMATION_WAIT_HANDLE_RESOURCE_TYPE, core.Id, "asg" ),
+                    "Type" : AWS_CLOUDFORMATION_WAIT_HANDLE_RESOURCE_TYPE
+                },
+                "asgWaitCondition" : {
+                    "Id" : formatResourceId(AWS_CLOUDFORMATION_WAIT_CONDITION_RESOURCE_TYPE, core.Id, "asg" ),
+                    "Type" : AWS_CLOUDFORMATION_WAIT_CONDITION_RESOURCE_TYPE
                 },
                 "lg" : {
                     "Id" : formatLogGroupId(core.Id),

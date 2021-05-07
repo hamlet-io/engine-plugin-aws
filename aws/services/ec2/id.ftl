@@ -3,6 +3,7 @@
 [#-- ComputeTask config Engines --]
 [#assign AWS_EC2_USERDATA_COMPUTE_TASK_CONFIG_TYPE = "userdata"]
 [#assign AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE = "cfninit" ]
+[#assign AWS_EC2_CFN_INIT_WAIT_COMPUTE_TASK_CONFIG_TYPE = "cfninitwait"]
 
 [#-- Parameter Type --]
 [#assign AWS_EC2_AMI_PARAMETER_TYPE = "amiParam"]

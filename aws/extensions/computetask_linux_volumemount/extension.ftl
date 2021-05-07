@@ -27,6 +27,9 @@
     [#local files = {}]
     [#local commands = {}]
 
+    [#local waitFiles = {}]
+    [#local waitCommands = {}]
+
     [#-- Support for data volumes as linked components to single instances --]
     [#if occurrence.Core.Type == EC2_COMPONENT_TYPE ]
 
@@ -53,7 +56,8 @@
                             [#local volumes += {
                                 mountId : {
                                     "MountPath" : volumeMount.MountPath,
-                                    "Device" : volumeMount.DeviceId
+                                    "Device" : volumeMount.DeviceId,
+                                    "DataVolume" : true
                                 }
                             }]
 
@@ -75,6 +79,7 @@
 
             [#local deviceId = volume.Device]
             [#local osMount = volume.MountPath]
+            [#local dataVolume = (volume.DataVolume)!false]
 
         [#else]
             [#continue]
@@ -91,6 +96,9 @@
             'os_mount="${osMount}"',
 
             r'# Ensure device exists',
+            r'if [[ ! -b "${device_id}" ]]; then'
+            r'  sleep 30s',
+            r'fi',
             r'if [[ ! -b "${device_id}" ]]; then'
             r'  echo "${device_id} not available"',
             r'  exit 1',
@@ -128,28 +136,52 @@
             r'fi'
         ]]
 
-        [#local files += {
-            "/opt/hamlet_cfninit/${scriptName}.sh" : {
-                "content" : {
-                    "Fn::Join" : [
-                        "\n",
-                        script
-                    ]
-                },
-                "mode" : "000755"
-            }
-        }]
+        [#if dataVolume ]
 
-        [#local commands += {
-            scriptName : {
-                "command" : "/opt/hamlet_cfninit/${scriptName}.sh",
-                "ignoreErrors" : false
-            }
-        }]
+            [#local waitFiles += {
+                "/opt/hamlet_cfninit/${scriptName}.sh" : {
+                    "content" : {
+                        "Fn::Join" : [
+                            "\n",
+                            script
+                        ]
+                    },
+                    "mode" : "000755"
+                }
+            }]
+
+            [#local waitCommands += {
+                scriptName : {
+                    "command" : "/opt/hamlet_cfninit/${scriptName}.sh",
+                    "ignoreErrors" : false
+                }
+            }]
+
+        [#else]
+
+            [#local files += {
+                "/opt/hamlet_cfninit/${scriptName}.sh" : {
+                    "content" : {
+                        "Fn::Join" : [
+                            "\n",
+                            script
+                        ]
+                    },
+                    "mode" : "000755"
+                }
+            }]
+
+            [#local commands += {
+                scriptName : {
+                    "command" : "/opt/hamlet_cfninit/${scriptName}.sh",
+                    "ignoreErrors" : false
+                }
+            }]
+        [/#if]
 
     [/#list]
 
-
+    [#-- System mounts are disks provided to the intance on startup and belong to that instance --]
     [#local content = {}]
     [#if files?has_content && commands?has_content ]
         [#local content = {
@@ -159,11 +191,28 @@
     [/#if]
 
     [@computeTaskConfigSection
-        computeTaskTypes=[ COMPUTE_TASK_DATA_VOLUME_MOUNTING ]
-        id="VolumeMount"
+        computeTaskTypes=[ COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING ]
+        id="SystemVolumeMount"
         priority=1
         engine=AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE
         content=content
+    /]
+
+    [#-- Data Volume mounts are an independent component and are attached after the creation of the instance --]
+    [#local waitContent = {}]
+    [#if waitFiles?has_content && waitCommands?has_content ]
+        [#local waitContent = {
+            "files" : waitFiles,
+            "commands" : waitCommands
+        }]
+    [/#if]
+
+    [@computeTaskConfigSection
+        computeTaskTypes=[ COMPUTE_TASK_DATA_VOLUME_MOUNTING ]
+        id="DataVolumeMount"
+        priority=1
+        engine=AWS_EC2_CFN_INIT_WAIT_COMPUTE_TASK_CONFIG_TYPE
+        content=waitContent
     /]
 
 [/#macro]
