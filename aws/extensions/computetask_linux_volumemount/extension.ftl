@@ -42,16 +42,18 @@
                     [#if dataVolume?has_content ]
                         [#local zoneVolume = (dataVolume[zone.Id].VolumeId)!"" ]
                         [#if zoneVolume?has_content ]
-                            [@createEBSVolumeAttachment
-                                id=formatDependentResourceId(
-                                    AWS_EC2_EBS_ATTACHMENT_RESOURCE_TYPE,
-                                    zoneEc2InstanceId,
-                                    mountId
-                                )
-                                device=volumeMount.DeviceId
-                                instanceId=zoneEc2InstanceId
-                                volumeId=zoneVolume
-                            /]
+                            [#if ! ( getCLODeploymentUnitAlternative() == "replace1" ) ]
+                                [@createEBSVolumeAttachment
+                                    id=formatDependentResourceId(
+                                        AWS_EC2_EBS_ATTACHMENT_RESOURCE_TYPE,
+                                        zoneEc2InstanceId,
+                                        mountId
+                                    )
+                                    device=volumeMount.DeviceId
+                                    instanceId=zoneEc2InstanceId
+                                    volumeId=zoneVolume
+                                /]
+                            [/#if]
 
                             [#local volumes += {
                                 mountId : {

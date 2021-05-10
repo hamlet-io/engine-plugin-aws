@@ -1,6 +1,13 @@
 [#ftl]
 [#macro aws_ec2_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets="template" /]
+    [@addDefaultGenerationContract
+        subsets=[ "template" ]
+        alternatives=[
+            "primary",
+            { "subset" : "template", "alternative" : "replace1" },
+            { "subset" : "template", "alternative" : "replace2" }
+        ]
+    /]
 [/#macro]
 
 [#macro aws_ec2_cf_deployment_solution occurrence ]
@@ -327,99 +334,107 @@
                 [#local zoneContext = _context + { "WaitHandleId" : zoneWaitHandleId }]
                 [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, zoneEc2InstanceId, zoneContext, computeTaskExtensions, zoneEc2ComputeTasks, userComputeTasks)]
 
-                [@createCFNWait
-                    conditionId=zoneWaitConditionId
-                    handleId=zoneWaitHandleId
-                    signalCount=1
-                    waitDependencies=[ zoneEc2InstanceId ]
-                /]
+                [#if ! ( getCLODeploymentUnitAlternative() == "replace1" ) ]
+                    [@createCFNWait
+                        conditionId=zoneWaitConditionId
+                        handleId=zoneWaitHandleId
+                        signalCount=1
+                        waitDependencies=[ zoneEc2InstanceId ]
+                    /]
 
-                [@cfResource
-                    id=zoneEc2InstanceId
-                    type="AWS::EC2::Instance"
-                    metadata=getCFNInitFromComputeTasks(computeTaskConfig)
-                    properties=
-                        getBlockDevices(storageProfile) +
-                        {
-                            "DisableApiTermination" : false,
-                            "EbsOptimized" : false,
-                            "IamInstanceProfile" : { "Ref" : ec2InstanceProfileId },
-                            "InstanceInitiatedShutdownBehavior" : "stop",
-                            "InstanceType": processorProfile.Processor,
-                            "KeyName": getExistingReference(sshKeyPairId, NAME_ATTRIBUTE_TYPE),
-                            "Monitoring" : false,
-                            "ImageId": imageId,
-                            "NetworkInterfaces" : [
-                                {
-                                    "DeviceIndex" : "0",
-                                    "NetworkInterfaceId" : getReference(zoneEc2ENIId)
-                                }
-                            ],
-                            "UserData" : getUserDataFromComputeTasks(computeTaskConfig)
+                    [@cfResource
+                        id=zoneEc2InstanceId
+                        type="AWS::EC2::Instance"
+                        metadata=getCFNInitFromComputeTasks(computeTaskConfig)
+                        properties=
+                            getBlockDevices(storageProfile) +
+                            {
+                                "DisableApiTermination" : false,
+                                "EbsOptimized" : false,
+                                "IamInstanceProfile" : { "Ref" : ec2InstanceProfileId },
+                                "InstanceInitiatedShutdownBehavior" : "stop",
+                                "InstanceType": processorProfile.Processor,
+                                "KeyName": getExistingReference(sshKeyPairId, NAME_ATTRIBUTE_TYPE),
+                                "Monitoring" : false,
+                                "ImageId": imageId,
+                                "NetworkInterfaces" : [
+                                    {
+                                        "DeviceIndex" : "0",
+                                        "NetworkInterfaceId" : getReference(zoneEc2ENIId)
+                                    }
+                                ],
+                                "UserData" : getUserDataFromComputeTasks(computeTaskConfig)
+                            }
+                        tags=
+                            getOccurrenceCoreTags(
+                                occurrence,
+                                formatComponentFullName(core.Tier, core.Component, zone),
+                                zone)
+                        outputs={}
+                        dependencies=[zoneEc2ENIId] +
+                            componentDependencies +
+                            (fixedIP || publicRouteTable)?then(
+                                [zoneEc2EIPAssociationId],
+                                [])
+                        creationPolicy={
+                            "ResourceSignal" : {
+                                "Count" : 1,
+                                "Timeout" : "PT5M"
+                            }
                         }
-                    tags=
-                        getOccurrenceCoreTags(
-                            occurrence,
-                            formatComponentFullName(core.Tier, core.Component, zone),
-                            zone)
-                    outputs={}
-                    dependencies=[zoneEc2ENIId] +
-                        componentDependencies +
-                        fixedIP?then(
-                            [zoneEc2EIPAssociationId],
-                            [])
-                    creationPolicy={
-                        "ResourceSignal" : {
-                            "Count" : 1,
-                            "Timeout" : "PT5M"
-                        }
-                    }
-                /]
+                    /]
 
-                [@cfResource
-                    id=zoneEc2ENIId
-                    type="AWS::EC2::NetworkInterface"
-                    properties=
-                        {
-                            "Description" : "eth0",
-                            "SubnetId" : getSubnets(core.Tier, networkResources, zone.Id)[0],
-                            "SourceDestCheck" : true,
-                            "GroupSet" :
-                                [getReference(ec2SecurityGroupId)] +
-                                sshFromProxySecurityGroup?has_content?then(
-                                    [sshFromProxySecurityGroup],
-                                    []
-                                )
-                        }
-                    tags=
-                        getOccurrenceCoreTags(
-                            occurrence,
-                            formatComponentFullName(core.Tier, core.Component, zone, "eth0"),
-                            zone)
-                    outputs={}
-                /]
+                    [@cfResource
+                        id=zoneEc2ENIId
+                        type="AWS::EC2::NetworkInterface"
+                        properties=
+                            {
+                                "Description" : "eth0",
+                                "SubnetId" : getSubnets(core.Tier, networkResources, zone.Id)[0],
+                                "SourceDestCheck" : true,
+                                "GroupSet" :
+                                    [getReference(ec2SecurityGroupId)] +
+                                    sshFromProxySecurityGroup?has_content?then(
+                                        [sshFromProxySecurityGroup],
+                                        []
+                                    )
+                            }
+                        tags=
+                            getOccurrenceCoreTags(
+                                occurrence,
+                                formatComponentFullName(core.Tier, core.Component, zone, "eth0"),
+                                zone)
+                        outputs={}
+                    /]
+                [/#if]
 
                 [#if fixedIP || publicRouteTable]
                     [@createEIP
                         id=zoneEc2EIPId
-                        dependencies=[zoneEc2ENIId]
+                        dependencies=(! ( getCLODeploymentUnitAlternative() == "replace1" ))?then(
+                                            [zoneEc2ENIId],
+                                            []
+                                    )
                         tags=getOccurrenceCoreTags(
                             occurrence,
                             zoneEc2EIPName
                         )
                     /]
 
-                    [@cfResource
-                        id=zoneEc2EIPAssociationId
-                        type="AWS::EC2::EIPAssociation"
-                        properties=
-                            {
-                                "AllocationId" : getReference(zoneEc2EIPId, ALLOCATION_ATTRIBUTE_TYPE),
-                                "NetworkInterfaceId" : getReference(zoneEc2ENIId)
-                            }
-                        dependencies=[zoneEc2EIPId]
-                        outputs={}
-                    /]
+                    [#if ! ( getCLODeploymentUnitAlternative() == "replace1" ) ]
+
+                        [@cfResource
+                            id=zoneEc2EIPAssociationId
+                            type="AWS::EC2::EIPAssociation"
+                            properties=
+                                {
+                                    "AllocationId" : getReference(zoneEc2EIPId, ALLOCATION_ATTRIBUTE_TYPE),
+                                    "NetworkInterfaceId" : getReference(zoneEc2ENIId)
+                                }
+                            dependencies=[zoneEc2EIPId]
+                            outputs={}
+                        /]
+                    [/#if]
                 [/#if]
             [/#if]
         [/#list]

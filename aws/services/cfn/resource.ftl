@@ -89,7 +89,7 @@
         properties={
             "Count" : signalCount,
             "Handle" : getReference(handleId),
-            "Timeout" : timeout
+            "Timeout" : timeout?c
         }
         dependencies=waitDependencies
     /]
