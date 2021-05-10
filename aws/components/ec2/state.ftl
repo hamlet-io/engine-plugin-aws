@@ -17,7 +17,7 @@
         [#local zoneResources +=
             { zone.Id : {
                 "ec2Instance" : {
-                    "Id"   : formatResourceId(AWS_EC2_INSTANCE_RESOURCE_TYPE, core.Id, zone.Id, runId),
+                    "Id"   : formatResourceId(AWS_EC2_INSTANCE_RESOURCE_TYPE, core.Id, zone.Id),
                     "Name" : formatName(tenantId, formatComponentFullName(core.Tier, core.Component), zone.Id),
                     "Type" : AWS_EC2_INSTANCE_RESOURCE_TYPE,
                     "ComputeTasks" : [
@@ -38,16 +38,16 @@
                     ]
                 },
                 "ec2ENI" : {
-                    "Id" : formatResourceId(AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE, core.Id, zone.Id, "eth0", runId),
+                    "Id" : formatResourceId(AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE, core.Id, zone.Id, "eth0"),
                     "Type" : AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE
                 },
                 "ec2EIP" : {
-                    "Id" : formatEIPId( core.Id, zone.Id, "eth0", runId),
+                    "Id" : formatEIPId( core.Id, zone.Id, "eth0"),
                     "Name" : formatName(core.FullName, zone.Name),
                     "Type" : AWS_EIP_RESOURCE_TYPE
                 },
                 "ec2EIPAssociation" : {
-                    "Id" : formatEIPAssociationId( core.Id, zone.Id, "eth0", runId),
+                    "Id" : formatEIPAssociationId( core.Id, zone.Id, "eth0"),
                     "Type" : AWS_EIP_ASSOCIATION_RESOURCE_TYPE
                 },
                 "waitHandle" : {
