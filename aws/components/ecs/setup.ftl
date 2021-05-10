@@ -605,6 +605,7 @@
     [#local ecsClusterName = parentResources["cluster"].Name ]
     [#local ecsSecurityGroupId = parentResources["securityGroup"].Id ]
     [#local ecsASGCapacityProviderId = parentResources["ecsASGCapacityProvider"].Id]
+    [#local essASGCapacityProviderAssociationId = parentResources["ecsCapacityProvierAssociation"].Id ]
 
     [#if ! (getExistingReference(ecsId)?has_content) ]
         [@fatal
@@ -669,7 +670,8 @@
         [#local useCapacityProvider = true ]
 
         [#-- Provides warning for hosting updates this will still deploy but using fixed launch type --]
-        [#if ( engine == "ec2") && ( ! (getExistingReference(ecsASGCapacityProviderId)?has_content)) ]
+        [#-- Only use capacity providers when the assocation is in place --]
+        [#if ( engine == "ec2") && ( ! (getExistingReference(essASGCapacityProviderAssociationId)?has_content)) ]
             [#local useCapacityProvider = false ]
             [@warn
                 message="Could not find ECS Capacity provider for Ec2 - Update the solution ecs component"
