@@ -74,14 +74,6 @@
                         COMPUTE_TASK_AWS_LB_REGISTRATION
                     ]
                 },
-                "asgWaitHandle" : {
-                    "Id" : formatResourceId(AWS_CLOUDFORMATION_WAIT_HANDLE_RESOURCE_TYPE, core.Id, "asg" ),
-                    "Type" : AWS_CLOUDFORMATION_WAIT_HANDLE_RESOURCE_TYPE
-                },
-                "asgWaitCondition" : {
-                    "Id" : formatResourceId(AWS_CLOUDFORMATION_WAIT_CONDITION_RESOURCE_TYPE, core.Id, "asg" ),
-                    "Type" : AWS_CLOUDFORMATION_WAIT_CONDITION_RESOURCE_TYPE
-                },
                 "lg" : {
                     "Id" : formatLogGroupId(core.Id),
                     "Name" : core.FullAbsolutePath,
