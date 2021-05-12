@@ -329,3 +329,22 @@ itself.
             conditions)
     ]
 [/#function]
+
+
+[#function dynamodbStreamRead tables="*" stream="*" principals="" conditions={} ]
+    [#return
+        getDynamodbStatement(
+            [
+                "dynamodb:DescribeStream",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:ListStreams"
+            ],
+            tables,
+            stream,
+            [],
+            principals,
+            conditions
+        )
+    ]
+[/#function]

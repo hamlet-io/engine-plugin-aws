@@ -59,6 +59,26 @@
         [#local dynamoTableKeyAttributes += getDynamoDbTableAttribute(key, value)]
     [/#list]
 
+    [#-- setup stream for changes made to table --]
+    [#local streamViewType = ""]
+    [#switch solution.ChangeStream.ChangeView ]
+        [#case "KeysOnly" ]
+            [#local streamViewType="KEYS_ONLY"]
+            [#break]
+
+        [#case "NewItem" ]
+            [#local streamViewType="NEW_IMAGE"]
+            [#break]
+
+        [#case "OldItem"]
+            [#local streamViewType="OLD_IMAGE"]
+            [#break]
+
+        [#case "NewAndOldItem"]
+            [#local streamViewType="NEW_AND_OLD_IMAGES"]
+            [#break]
+    [/#switch]
+
     [#if deploymentSubsetRequired(GLOBALDB_COMPONENT_TYPE, true) ]
         [@createDynamoDbTable
             id=tableId
@@ -73,6 +93,8 @@
             kmsKeyId=kmsKeyId
             keys=dynamoTableKeys
             globalSecondaryIndexes=globalSecondaryIndexes
+            streamEnabled=solution.ChangeStream.Enabled
+            streamViewType=streamViewType
         /]
     [/#if]
 [/#macro]

@@ -35,11 +35,22 @@
             attributeIfContent(
                 "TABLE_SORT_KEY",
                 sortKey
+            ) +
+            attributeIfTrue(
+                "STREAM_ARN",
+                solution.ChangeStream.Enabled,
+                getExistingReference(id, EVENTSTREAM_ATTRIBUTE_TYPE)
             ),
             "Roles" : {
                 "Inbound" : {},
                 "Outbound" : {
                     "default" : "consume",
+                    "stream" : arrayIfTrue(
+                                    dynamodbStreamRead(
+                                        getReference(id, ARN_ATTRIBUTE_TYPE)
+                                    ),
+                                    solution.ChangeStream.Enabled
+                                ),
                     "consume" : dynamoDbViewerPermission(
                                     getReference(id, ARN_ATTRIBUTE_TYPE)
                                 ) +
@@ -49,6 +60,12 @@
                                         globalSecondaryIndexes
                                     ),
                                     globalSecondaryIndexes
+                                ) +
+                                arrayIfTrue(
+                                    dynamodbStreamRead(
+                                        getReference(id, ARN_ATTRIBUTE_TYPE)
+                                    ),
+                                    solution.ChangeStream.Enabled
                                 ),
                     "produce" : dynamodbProducePermission(
                                     getReference(id, ARN_ATTRIBUTE_TYPE)
@@ -71,6 +88,12 @@
                                         globalSecondaryIndexes
                                     ),
                                     globalSecondaryIndexes
+                                ) +
+                                arrayIfTrue(
+                                    dynamodbStreamRead(
+                                        getReference(id, ARN_ATTRIBUTE_TYPE)
+                                    ),
+                                    solution.ChangeStream.Enabled
                                 )
                }
             }
