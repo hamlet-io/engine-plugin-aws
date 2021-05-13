@@ -125,7 +125,7 @@
     ]
 [/#function]
 
-[#function getGlobalSecondaryIndex name keys keyTypes=[] writeCapacity=0 readCapacity=0 projectionType="all"]
+[#function getGlobalSecondaryIndex name billingMode keys keyTypes=[]  writeCapacity=0 readCapacity=0 projectionType="all"]
     [#local keySchema = [] ]
     [#list keys as key]
         [#-- type default is hash, then range --]
@@ -133,7 +133,11 @@
             getDynamoDbTableKey( key, keyTypes[key?index]!(valueIfTrue("hash",key?index == 0, "hash")) ) ]
     [/#list]
 
-    [#local provisionedThroughput = getProvisionedThroughput(writeCapacity, readCapacity) ]
+    [#local provisionedThroughput = {}]
+    [#if billingMode?lower_case == "provisioned" ]
+        [#local provisionedThroughput = getProvisionedThroughput(writeCapacity, readCapacity) ]
+    [/#if]
+
     [#return
         [
             {

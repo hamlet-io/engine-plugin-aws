@@ -15,6 +15,8 @@
     [#local tableKey = resources["table"].Key ]
     [#local tableSortKey = resources["table"].SortKey!"" ]
 
+    [#local billingMode = solution.Table.Billing ]
+
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
@@ -42,6 +44,7 @@
         [#local globalSecondaryIndexes +=
             getGlobalSecondaryIndex(
                 value.Name,
+                billingMode,
                 value.Keys,
                 value.KeyTypes,
                 value.Capacity.Write,
@@ -84,7 +87,7 @@
             id=tableId
             name=tableName
             backupEnabled=solution.Table.Backup.Enabled
-            billingMode=solution.Table.Billing
+            billingMode=billingMode
             writeCapacity=solution.Table.Capacity.Write
             readCapacity=solution.Table.Capacity.Read
             attributes=dynamoTableKeyAttributes
