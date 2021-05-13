@@ -310,7 +310,7 @@
 
                 [#local certificateAuthorityLinkAttribute = mutualTLSConfig.CertificateAuthority["Source:link"]["RootCACertAttribute"] ]
                 [#if certificateAuthorityLink?has_content ]
-                    [#local certificateAuthorityRootPublicCert = (linkTarget.State.Attributes[certificateAuthorityLinkAttribute])!"" ]
+                    [#local certificateAuthorityRootPublicCert = (certificateAuthorityLink.State.Attributes[certificateAuthorityLinkAttribute])!"" ]
 
                     [#if ! (certificateAuthorityRootPublicCert?has_content) ]
                         [@fatal
