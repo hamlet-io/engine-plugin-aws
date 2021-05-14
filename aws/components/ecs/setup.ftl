@@ -26,7 +26,7 @@
     [#local ecsInstanceLogGroupName = resources["lgInstanceLog"].Name]
     [#local ecsEIPs = (resources["eips"])!{} ]
 
-    [#local ecsCapacityProvierAssociationId = resources["ecsCapacityProvierAssociation"].Id ]
+    [#local ecsCapacityProvierAssociationId = resources["ecsCapacityProviderAssociation"].Id ]
     [#local ecsASGCapacityProviderId = resources["ecsASGCapacityProvider"].Id]
 
     [#local cliAutoScaleGroupId = formatId(ecsAutoScaleGroupId, "cli" ) ]
@@ -605,7 +605,7 @@
     [#local ecsClusterName = parentResources["cluster"].Name ]
     [#local ecsSecurityGroupId = parentResources["securityGroup"].Id ]
     [#local ecsASGCapacityProviderId = parentResources["ecsASGCapacityProvider"].Id]
-    [#local essASGCapacityProviderAssociationId = parentResources["ecsCapacityProvierAssociation"].Id ]
+    [#local essASGCapacityProviderAssociationId = parentResources["ecsCapacityProviderAssociation"].Id ]
 
     [#if ! (getExistingReference(ecsId)?has_content) ]
         [@fatal

@@ -179,7 +179,7 @@
                     "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
                     "IncludeInDeploymentState" : false
                 },
-                "ecsCapacityProvierAssociation" : {
+                "ecsCapacityProviderAssociation" : {
                     "Id" : formatResourceId(AWS_ECS_CAPACITY_PROVIDER_ASSOCIATION_RESOURCE_TYPE, core.Id),
                     "Type" : AWS_ECS_CAPACITY_PROVIDER_ASSOCIATION_RESOURCE_TYPE
                 },
