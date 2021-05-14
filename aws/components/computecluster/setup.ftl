@@ -270,7 +270,11 @@
                         [#local sourceSecurityGroupIds += [ linkTargetResources["sg"].Id ] ]
                         [#break]
                     [#case "network" ]
-                        [#local sourceIPAddressGroups = linkTargetConfiguration.IPAddressGroups + [ "_localnet" ] ]
+                        [#local sourceIPAddressGroups = combineEntities(
+                                                            sourceIPAddressGroups,
+                                                            linkTargetConfiguration.Solution.IPAddressGroups + [ "_localnet" ],
+                                                            UNIQUE_COMBINE_BEHAVIOUR
+                                                        )]
                         [#break]
                 [/#switch]
 

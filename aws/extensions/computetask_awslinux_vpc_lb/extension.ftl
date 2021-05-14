@@ -45,9 +45,8 @@
 
                     [#case "application"]
                     [#case "network"]
-                        [#local configSets += getInitConfigLBTargetRegistration(linkTargetCore.Id, linkTargetAttributes["TARGET_GROUP_ARN"])]
 
-                        [#local portid = linkTargetCore.Id ]
+                        [#local portId = linkTargetCore.Id ]
                         [#local targetGroupArn = linkTargetAttributes["TARGET_GROUP_ARN"]]
 
                         [#local scriptName = "register_targetgroup_${portId}" ]
@@ -62,8 +61,11 @@
                                             'exec > >(tee /var/log/hamlet_cfninit/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1',
                                             {
                                                 "Fn::Sub" : [
-                                                    r'aws --region "${AWS::Region}" elbv2 register-targets --target-group-arn "${TargeGroupArn}" --targets "Id=$(curl http://169.254.169.254/latest/meta-data/instance-id)"',
-                                                    { "TargeGroupArn": targetGroupArn }
+                                                    r'aws --region "${Region}" elbv2 register-targets --target-group-arn "${TargeGroupArn}" --targets "Id=$(curl http://169.254.169.254/latest/meta-data/instance-id)"',
+                                                    {
+                                                        "TargeGroupArn": targetGroupArn,
+                                                        "Region" : { "Ref" : "AWS::Region" }
+                                                    }
                                                 ]
                                             }
                                         ]
@@ -97,8 +99,11 @@
                                             'exec > >(tee /var/log/hamlet_cfninit/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1',
                                             {
                                                 "Fn::Sub" : [
-                                                    r'aws --region "${AWS::Region}" elb register-instances-with-load-balancer --load-balancer-name "${LoadBalancer}" --instances "$(curl http://169.254.169.254/latest/meta-data/instance-id)"',
-                                                    { "LoadBalancer": getReference(lbId) }
+                                                    r'aws --region "${Region}" elb register-instances-with-load-balancer --load-balancer-name "${LoadBalancer}" --instances "$(curl http://169.254.169.254/latest/meta-data/instance-id)"',
+                                                    {
+                                                        "LoadBalancer": getReference(lbId),
+                                                        "Region" : { "Ref" : "AWS::Region" }
+                                                    }
                                                 ]
                                             }
                                         ]
