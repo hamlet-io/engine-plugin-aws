@@ -57,7 +57,7 @@
             [/#if]
         [/#list]
 
-        [#local bootstrapDir = "/opt/hamlet/user/" + boostrapName ]
+        [#local bootstrapDir = "/opt/hamlet/user/" + bootstrapName ]
         [#local bootstrapFetchFile = bootstrapDir + "/fetch.sh" ]
         [#local bootstrapScriptsDir = bootstrapDir + "/scripts/" ]
         [#local bootstrapInitFile = bootstrapScriptsDir + bootstrap.InitScript!"init.sh" ]
