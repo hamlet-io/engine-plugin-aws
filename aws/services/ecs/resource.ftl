@@ -51,7 +51,7 @@
 
 [#assign ECS_CAPACITY_PROVIDER_ASSOCIATION_OUTPUT_MAPPINGS =
     {
-        "REFERENCE_ATTRIBUTE_TYPE" : {
+        REFERENCE_ATTRIBUTE_TYPE : {
             "UseRef" : true
         }
     }
