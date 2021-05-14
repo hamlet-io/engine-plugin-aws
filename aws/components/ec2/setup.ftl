@@ -168,11 +168,16 @@
                         [#local sourceSecurityGroupIds += [ linkTargetResources["sg"].Id ] ]
                         [#break]
                     [#case "network" ]
-                        [#local sourceIPAddressGroups = linkTargetConfiguration.IPAddressGroups + [ "_localnet" ] ]
+                        [#local sourceIPAddressGroups = combineEntities(
+                                                            sourceIPAddressGroups,
+                                                            linkTargetConfiguration.Solution.IPAddressGroups + [ "_localnet" ],
+                                                            UNIQUE_COMBINE_BEHAVIOUR
+                                                        )]
                         [#break]
                 [/#switch]
+            [#break]
 
-        [#case DATAVOLUME_COMPONENT_TYPE]
+            [#case DATAVOLUME_COMPONENT_TYPE]
                 [#local linkVolumeResources = {}]
                 [#list linkTargetResources["Zones"] as zoneId, linkZoneResources ]
                     [#local linkVolumeResources += {
