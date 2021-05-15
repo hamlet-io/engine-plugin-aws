@@ -59,6 +59,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "lb"
                             },
+                            "mobileapp" : {
+                                "Provider" : "awstest",
+                                "Name" : "mobileapp"
+                            },
                             "s3" : {
                                 "Provider" : "awstest",
                                 "Name" : "s3"
