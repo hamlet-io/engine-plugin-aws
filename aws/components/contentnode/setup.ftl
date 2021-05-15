@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_contentnode_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets="prologue" /]
+    [@addDefaultGenerationContract subsets=[ "pregeneration", "prologue" ] /]
 [/#macro]
 
 [#macro aws_contentnode_cf_deployment_application occurrence ]
@@ -13,12 +13,35 @@
     [#local contentNodeId = resources["contentnode"].Id ]
     [#local pathObject = getContextPath(occurrence) ]
 
-    [#if ! (solution.Links?has_content)]
-        [@precondition
-            function="contentnode"
-            context=occurrence
-            detail="No content hub link configured"
-        /]
+    [#local hubFound = false]
+
+    [#local buildReference = getOccurrenceBuildReference(occurrence)]
+    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
+
+    [#local imageSource = solution.Image.Source]
+
+    [#if imageSource == "url" ]
+        [#local buildUnit = occurrence.Core.Name ]
+    [/#if]
+
+    [#if deploymentSubsetRequired("pregeneration", false)]
+        [#if imageSource = "url" ]
+            [@addToDefaultBashScriptOutput
+                content=
+                    getImageFromUrlScript(
+                        regionId,
+                        productName,
+                        environmentName,
+                        segmentName,
+                        occurrence,
+                        solution.Image["Source:url"].Url,
+                        "contentnode",
+                        "contentnode.zip",
+                        solution.Image["Source:url"].ImageHash,
+                        true
+                    )
+            /]
+        [/#if]
     [/#if]
 
     [#list solution.Links?values as link]
@@ -38,13 +61,14 @@
             [#switch linkTargetCore.Type]
                 [#case "external"]
                 [#case "contenthub"]
+
+                    [#local hubFound = true]
+
                     [#if deploymentSubsetRequired("prologue", false)]
                         [@addToDefaultBashScriptOutput
                             content=
                             [
-                                "function get_contentnode_file() {",
-                                "  #",
-                                "  #",
+                                "function get_contentnode_file_${core.RawId}() {",
                                 "  # Fetch the spa zip file",
                                 "  copyFilesFromBucket" + " " +
                                     regionId + " " +
@@ -53,10 +77,10 @@
                                         getRegistryPrefix("contentnode", occurrence),
                                         getOccurrenceBuildProduct(occurrence, productName),
                                         getOccurrenceBuildScopeExtension(occurrence),
-                                        getOccurrenceBuildUnit(occurrence),
-                                        getOccurrenceBuildReference(occurrence)) + " " +
-                                    "   \"$\{tmpdir}\" || return $?",
-                                "  #",
+                                        buildUnit,
+                                        buildReference
+                                    ) +
+                                    r'  "${tmpdir}" || return $?',
                                 "  # Sync with the contentnode",
                                 "  copy_contentnode_file \"$\{tmpdir}/contentnode.zip\" " +
                                         "\"" + linkTargetAttributes.ENGINE + "\" " +
@@ -66,8 +90,7 @@
                                         "\"" +    linkTargetAttributes.BRANCH + "\" " +
                                         "\"replace\" || return $? ",
                                 "}",
-                                "#",
-                                "get_contentnode_file"
+                                "get_contentnode_file_${core.RawId} || exit $?"
                             ]
                         /]
                     [/#if]
@@ -75,4 +98,15 @@
             [/#switch]
         [/#if]
     [/#list]
+
+    [#if ! hubFound ]
+        [@fatal
+            message="Could not find contenthub for content node"
+            context={
+                "ContentNode" : core.RawName,
+                "Links" : solution.Links
+            }
+            detail="Check your links for contenthubs and make sure they are deployed"
+        /]
+    [/#if]
 [/#macro]
