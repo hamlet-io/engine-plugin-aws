@@ -1,6 +1,6 @@
 [#ftl]
 [#macro aws_mobileapp_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=["prologue", "config"] /]
+    [@addDefaultGenerationContract subsets=["pregeneration", "prologue", "config"] /]
 [/#macro]
 
 [#macro aws_mobileapp_cf_deployment_application occurrence ]
@@ -21,13 +21,43 @@
     [#local configFilePath = resources["mobileapp"].ConfigFilePath ]
     [#local configFileName = resources["mobileapp"].ConfigFileName ]
 
+    [#local buildReference = getOccurrenceBuildReference(occurrence)]
+    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
+
+    [#local imageSource = solution.Image.Source]
+
+    [#if imageSource == "url" ]
+        [#local buildUnit = occurrence.Core.Name ]
+    [/#if]
+
+    [#if deploymentSubsetRequired("pregeneration", false)]
+        [#if imageSource = "url" ]
+            [@addToDefaultBashScriptOutput
+                content=
+                    getImageFromUrlScript(
+                        regionId,
+                        productName,
+                        environmentName,
+                        segmentName,
+                        occurrence,
+                        solution.Image["Source:url"].Url,
+                        "scripts",
+                        "scripts.zip",
+                        solution.Image["Source:url"].ImageHash,
+                        true
+                    )
+            /]
+        [/#if]
+    [/#if]
+
     [#local codeSrcBucket = getRegistryEndPoint("scripts", occurrence)]
     [#local codeSrcPrefix = formatRelativePath(
-                                getRegistryPrefix("scripts", occurrence),
+                                    getRegistryPrefix("scripts", occurrence),
                                     getOccurrenceBuildProduct(occurrence, productName),
                                     getOccurrenceBuildScopeExtension(occurrence),
-                                    getOccurrenceBuildUnit(occurrence),
-                                    getOccurrenceBuildReference(occurrence))]
+                                    buildUnit,
+                                    buildReference
+                                )]
 
     [#local buildConfig =
         {
@@ -35,7 +65,7 @@
             "CODE_SRC_BUCKET"   : codeSrcBucket,
             "CODE_SRC_PREFIX"   : codeSrcPrefix,
             "APP_BUILD_FORMATS" : solution.BuildFormats?join(","),
-            "BUILD_REFERENCE"   : getOccurrenceBuildReference(occurrence)
+            "BUILD_REFERENCE"   : buildReference
         } +
         attributes +
         defaultEnvironment(occurrence, {}, baselineLinks)
