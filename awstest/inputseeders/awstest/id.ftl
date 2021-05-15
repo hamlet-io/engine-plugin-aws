@@ -31,6 +31,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "computecluster"
                             },
+                            "contentnode" : {
+                                "Provider" : "awstest",
+                                "Name" : "contentnode"
+                            },
                             "ec2" : {
                                 "Provider" : "awstest",
                                 "Name" : "ec2"
