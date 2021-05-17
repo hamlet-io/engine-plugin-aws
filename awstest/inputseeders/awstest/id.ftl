@@ -35,6 +35,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "contentnode"
                             },
+                            "datapipeline" : {
+                                "Provider" : "awstest",
+                                "Name" : "datapipeline"
+                            },
                             "ec2" : {
                                 "Provider" : "awstest",
                                 "Name" : "ec2"
