@@ -1408,7 +1408,8 @@
 
                     [#local ecsParameters = {
                         "TaskCount" : schedule.TaskCount,
-                        "TaskDefinitionArn" : getReference(taskId, ARN_ATTRIBUTE_TYPE)
+                        "TaskDefinitionArn" : getReference(taskId, ARN_ATTRIBUTE_TYPE),
+                        "LaunchType" : "EC2"
                      }]
 
                     [#if networkMode == "awsvpc" ]
@@ -1427,7 +1428,8 @@
 
                     [#if engine == "fargate" ]
                         [#local ecsParameters += {
-                            "PlatformVersion" : solution["aws:FargatePlatform"]
+                            "PlatformVersion" : solution["aws:FargatePlatform"],
+                            "LaunchType" : "FARGATE"
                         }]
                     [/#if]
 
