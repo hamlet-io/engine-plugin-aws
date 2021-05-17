@@ -1,8 +1,8 @@
-# [0.0.0](https://github.com/hamlet-io/engine-plugin-aws/compare/8.1.2...0.0.0) (2021-05-13)
+# [0.0.0](https://github.com/hamlet-io/engine-plugin-aws/compare/8.1.2...0.0.0) (2021-05-17)
 
 
 
-## [8.1.2](https://github.com/hamlet-io/engine-plugin-aws/compare/v8.0.1...8.1.2) (2021-05-13)
+## [8.1.2](https://github.com/hamlet-io/engine-plugin-aws/compare/v8.0.1...8.1.2) (2021-05-17)
 
 
 ### Bug Fixes
@@ -10,7 +10,13 @@
 * **adaptor:** handler image source build unit ([08ce16c](https://github.com/hamlet-io/engine-plugin-aws/commit/08ce16ca49762534c456e3cbfcc1c9df50d0e848))
 * **apigateway:** use correct link for CA lookup ([351b590](https://github.com/hamlet-io/engine-plugin-aws/commit/351b5902bb0d5af7d260ff51a8b10aeed2eb0f33))
 * **computecluster:** remove wait resources ([#302](https://github.com/hamlet-io/engine-plugin-aws/issues/302)) ([926432d](https://github.com/hamlet-io/engine-plugin-aws/commit/926432de7f8145944c0a9c77f468d851e992a550))
+* **ec2:** compute task lookup location ([#285](https://github.com/hamlet-io/engine-plugin-aws/issues/285)) ([378be01](https://github.com/hamlet-io/engine-plugin-aws/commit/378be015414514b710fa16190f424a2a9d425fca))
+* **ec2:** fix load balancer registration for ec2 ([#310](https://github.com/hamlet-io/engine-plugin-aws/issues/310)) ([1a87abe](https://github.com/hamlet-io/engine-plugin-aws/commit/1a87abe77304f01708fd4e4eda43e302591db940))
+* **ec2:** param options for compute tasks ([#287](https://github.com/hamlet-io/engine-plugin-aws/issues/287)) ([78ba39e](https://github.com/hamlet-io/engine-plugin-aws/commit/78ba39eaf8864744ad26b97b37bd861bae599e73))
+* **ecs:** capacity provider assocation output ([7f08481](https://github.com/hamlet-io/engine-plugin-aws/commit/7f08481cfc657182b02e431383e6b29349c9517b))
 * **ecs:** service capacity provider usage ([466907b](https://github.com/hamlet-io/engine-plugin-aws/commit/466907bba994e8a9abad9085602f964ad061fc7c))
+* **ecs:** set launch type on scheduled tasks ([2abd5dc](https://github.com/hamlet-io/engine-plugin-aws/commit/2abd5dce9d837f38c57a681fdf57ba88164a4b15))
+* **globaldb:** handle secondary indexs pay per use ([9f5d321](https://github.com/hamlet-io/engine-plugin-aws/commit/9f5d32104834617fa4384932ea61d6b127203f4b))
 *  typo in attribute set type ([98374b1](https://github.com/hamlet-io/engine-plugin-aws/commit/98374b1cec40fb4283730952ce6517438d0f6524))
 * alias and rename of macro for init ([22e2081](https://github.com/hamlet-io/engine-plugin-aws/commit/22e208115cc7f6d6d51add5b7f619ae9a2ad6c23))
 * dynamic cmdb loading ([#286](https://github.com/hamlet-io/engine-plugin-aws/issues/286)) ([e645735](https://github.com/hamlet-io/engine-plugin-aws/commit/e6457350f7fb3b48a4cce7574de4a9fd4b4296a8))
@@ -19,16 +25,14 @@
 * link processing in awslinux vpx lb extension ([#288](https://github.com/hamlet-io/engine-plugin-aws/issues/288)) ([7b1dac3](https://github.com/hamlet-io/engine-plugin-aws/commit/7b1dac3e3787522c2b0dc734e1b58dd39fd21712))
 * make env available to non-login sessions ([6604980](https://github.com/hamlet-io/engine-plugin-aws/commit/6604980a2406a73d4d2334529dc63292690505cc))
 * MTA component SES config detection ([#289](https://github.com/hamlet-io/engine-plugin-aws/issues/289)) ([cd9d066](https://github.com/hamlet-io/engine-plugin-aws/commit/cd9d06697c3b918be53a91cdc8059575768c273a))
-* pseudo stacks ([#268](https://github.com/hamlet-io/engine-plugin-aws/issues/268)) ([228eb07](https://github.com/hamlet-io/engine-plugin-aws/commit/228eb07c6589d025e7575f83c77560ec85a64475))
 * remove debug statement ([b288db2](https://github.com/hamlet-io/engine-plugin-aws/commit/b288db2e4c76d40cc49e5adc6b63d2d36902fab5))
-* set engine dir ([0496725](https://github.com/hamlet-io/engine-plugin-aws/commit/04967256734ce8adc5a87c1300f06f5e36254382))
+* source details for ami ([cf28a46](https://github.com/hamlet-io/engine-plugin-aws/commit/cf28a463cd79af77d9d1a7f29bcc42317b736280))
 * test outputs for capacity provider ([3b7d23a](https://github.com/hamlet-io/engine-plugin-aws/commit/3b7d23a06f54af295ab807179f5fae0d3cb15f4e))
 * testing alignment ([3ab8a63](https://github.com/hamlet-io/engine-plugin-aws/commit/3ab8a63cfb88f5de96d4be6ea6ed6014f2318046))
 * update ec2 support in cfn ([4dc4895](https://github.com/hamlet-io/engine-plugin-aws/commit/4dc4895e2d448b762ae034b68048e3cd7f0d31e9))
-* **ec2:** compute task lookup location ([#285](https://github.com/hamlet-io/engine-plugin-aws/issues/285)) ([378be01](https://github.com/hamlet-io/engine-plugin-aws/commit/378be015414514b710fa16190f424a2a9d425fca))
-* **ec2:** param options for compute tasks ([#287](https://github.com/hamlet-io/engine-plugin-aws/issues/287)) ([78ba39e](https://github.com/hamlet-io/engine-plugin-aws/commit/78ba39eaf8864744ad26b97b37bd861bae599e73))
 * **ssh:** append a new line after each public key ([#278](https://github.com/hamlet-io/engine-plugin-aws/issues/278)) ([cd626e8](https://github.com/hamlet-io/engine-plugin-aws/commit/cd626e8f6dd7a5a01672b9f768a2849ac36f0d79))
-* source details for ami ([cf28a46](https://github.com/hamlet-io/engine-plugin-aws/commit/cf28a463cd79af77d9d1a7f29bcc42317b736280))
+* pseudo stacks ([#268](https://github.com/hamlet-io/engine-plugin-aws/issues/268)) ([228eb07](https://github.com/hamlet-io/engine-plugin-aws/commit/228eb07c6589d025e7575f83c77560ec85a64475))
+* set engine dir ([0496725](https://github.com/hamlet-io/engine-plugin-aws/commit/04967256734ce8adc5a87c1300f06f5e36254382))
 * use autoscale group name for autoscale group ([62d0edc](https://github.com/hamlet-io/engine-plugin-aws/commit/62d0edc57102966c50f48d3c84f6b6dbc00935b4))
 * workaround for shared changes ([4905a11](https://github.com/hamlet-io/engine-plugin-aws/commit/4905a11bdf91f35398e546e07a8a7ad7e7d51f9e))
 * workaround os removal ([148f024](https://github.com/hamlet-io/engine-plugin-aws/commit/148f02460a82c2471afa26bfa1d63397c168f39c))
@@ -39,14 +43,17 @@
 
 ### Features
 
+* basic test for contentnode ([80cf90d](https://github.com/hamlet-io/engine-plugin-aws/commit/80cf90d428b452e5a138d57ee6d270ca5be73752))
+* **contentnode:** external image source support ([51851cd](https://github.com/hamlet-io/engine-plugin-aws/commit/51851cd99c548f52ebd96a599fcce0370e82475f))
+* add tests for mobile app ([c0405b6](https://github.com/hamlet-io/engine-plugin-aws/commit/c0405b68b43d2b7db114de21a84ae6c45c421760))
 * **adaptor:** support for adaptor attributes ([1f55942](https://github.com/hamlet-io/engine-plugin-aws/commit/1f55942c45314defbcb021d52c2014d19b3a9de7))
 * **apigateway:** mutualTLS support ([dc99916](https://github.com/hamlet-io/engine-plugin-aws/commit/dc9991665f4192ad3133426dba3690e12cb6efea))
 * **apigateway:** opeanpi fragment and vpclink ([27dd240](https://github.com/hamlet-io/engine-plugin-aws/commit/27dd240b09cec743635f65b0b5f0a3ce1496f323))
 * **computecluster:** add image source support ([b76005b](https://github.com/hamlet-io/engine-plugin-aws/commit/b76005b6a6cf43e567b4cf095b9ef36b16506047))
 * **ec2:** adds support for autoscale lifecycles ([84fd006](https://github.com/hamlet-io/engine-plugin-aws/commit/84fd00643e30a5dee4b966eedf5235caf230cb68))
 * **ec2:** handle post tasks for ec2 ([278166f](https://github.com/hamlet-io/engine-plugin-aws/commit/278166f641e2538c70447b34b806e57dd6764368))
-* **ecs:** align with latest aws features ([5ab6cb3](https://github.com/hamlet-io/engine-plugin-aws/commit/5ab6cb3e5b47ad6542455f25aac387281fc4d2da))
 * **globadb:** support for change streams ([d78b842](https://github.com/hamlet-io/engine-plugin-aws/commit/d78b842fb84e0513fd2faf9d02ef0313506265cb))
+* **mobileapp:** image source support ([c899d08](https://github.com/hamlet-io/engine-plugin-aws/commit/c899d085430674f020205092e590d4dd71ead15f))
 * add basic tests for computecluster ([945660b](https://github.com/hamlet-io/engine-plugin-aws/commit/945660bc7170fd6a9635fd120bcebfc500fdcfbb))
 * add ec2 image source support for aws ([70af0ac](https://github.com/hamlet-io/engine-plugin-aws/commit/70af0ac3836c11f81ccdae23d726eb577ad0a25b))
 * add support for API Gateway VPC link ([e1ab21d](https://github.com/hamlet-io/engine-plugin-aws/commit/e1ab21dff24ab303a4ad89823efaaa3eda390cde))
@@ -62,6 +69,7 @@
 * **apigateway:** Image sourcing ([#267](https://github.com/hamlet-io/engine-plugin-aws/issues/267)) ([91002a3](https://github.com/hamlet-io/engine-plugin-aws/commit/91002a3c6b84b92931a0d25a4c6b0b130a420ee0))
 * **baseline:** add invoke inbound policy for data ([#263](https://github.com/hamlet-io/engine-plugin-aws/issues/263)) ([e98bf3c](https://github.com/hamlet-io/engine-plugin-aws/commit/e98bf3c378f019527eb77860056a2510eb041d68))
 * **cd:** setup latest hamlet on each run ([2422627](https://github.com/hamlet-io/engine-plugin-aws/commit/242262718e7978c9d5fab4e732fb0f46bc551f8c))
+* **ecs:** align with latest aws features ([5ab6cb3](https://github.com/hamlet-io/engine-plugin-aws/commit/5ab6cb3e5b47ad6542455f25aac387281fc4d2da))
 * **sqs:** ordering configuration for queues ([67886c8](https://github.com/hamlet-io/engine-plugin-aws/commit/67886c88a36177e8f79875ab7218de7a21e0d7d8))
 
 
@@ -431,6 +439,3 @@ format
 
 
 ## 4.1.1 (2017-02-03)
-
-
-
