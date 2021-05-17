@@ -46,6 +46,35 @@
         [#return]
     [/#if]
 
+    [#local buildReference = getOccurrenceBuildReference(occurrence)]
+    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
+
+    [#local imageSource = solution.Image.Source]
+
+    [#if imageSource == "url" ]
+        [#local buildUnit = occurrence.Core.Name ]
+    [/#if]
+
+    [#if deploymentSubsetRequired("pregeneration", false)]
+        [#if imageSource = "url" ]
+            [@addToDefaultBashScriptOutput
+                content=
+                    getImageFromUrlScript(
+                        regionId,
+                        productName,
+                        environmentName,
+                        segmentName,
+                        occurrence,
+                        solution.Image["Source:url"].Url,
+                        "pipeline",
+                        "pipeline.zip",
+                        solution.Image["Source:url"].ImageHash,
+                        true
+                    )
+            /]
+        [/#if]
+    [/#if]
+
     [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
     [#local networkResources = networkLinkTarget.State.Resources ]
 
@@ -282,7 +311,8 @@
                     "pipeline",
                     productName,
                     occurrence,
-                    "pipeline.zip"
+                    "pipeline.zip",
+                    buildUnit
                 ) +
                 syncFilesToBucketScript(
                     "pipelineFiles",
@@ -295,37 +325,37 @@
                 ) +
                 getLocalFileScript(
                     "configFiles",
-                    "$\{CONFIG}",
+                    r'${CONFIG}',
                     "config.json"
                 ) +
                 [
-                    "case $\{STACK_OPERATION} in",
-                    "  create|update)",
-                    "       mkdir \"$\{tmpdir}/pipeline\" ",
-                    "       unzip \"$\{tmpdir}/pipeline.zip\" -d \"$\{tmpdir}/pipeline\" ",
-                    "       # Get cli config file",
-                    "       split_cli_file \"$\{CLI}\" \"$\{tmpdir}\" || return $?",
-                    "       # Create Data pipeline",
-                    "       info \"Applying cli level configurtion\""
-                    "       pipelineId=\"$(create_data_pipeline" +
-                    "       \"" + region + "\" " +
-                    "       \"$\{tmpdir}/cli-" +
-                                pipelineId + "-" + pipelineCreateCommand + ".json\")\"",
-                    "       # Add Pipeline Definition" ,
-                    "       info \"Updating pipeline definition\"",
-                    "       update_data_pipeline" +
-                    "       \"" + region + "\" " +
-                    "       \"$\{pipelineId}\" " +
-                    "       \"$\{tmpdir}/pipeline/pipeline-definition.json\" " +
-                    "       \"$\{tmpdir}/pipeline/pipeline-parameters.json\" " +
-                    "       \"$\{tmpdir}/config.json\" " +
-                    "       \"$\{STACK_NAME}\" " +
-                    "       \"" + securityGroupId + "\" || return $?"
+                    r'case "${STACK_OPERATION}" in',
+                    r'  create|update)',
+                    r'       mkdir "${tmpdir}/pipeline"',
+                    r'       unzip "${tmpdir}/pipeline.zip" -d "${tmpdir}/pipeline"',
+                    r'       # Get cli config file',
+                    r'       split_cli_file "${CLI}" "${tmpdir}" || return $?',
+                    r'       # Create Data pipeline',
+                    r'       info "Applying cli level configurtion"',
+                    r'       pipelineId="$(create_data_pipeline' +
+                    r'       "' + region + r'" ' +
+                    r'       "${tmpdir}/cli-' +
+                                pipelineId + r'-' + pipelineCreateCommand + r'.json")"',
+                    r'       # Add Pipeline Definition',
+                    r'       info "Updating pipeline definition"',
+                    r'       update_data_pipeline' +
+                    r'       "' + region + r'" ' +
+                    r'       "${pipelineId}" ' +
+                    r'       "${tmpdir}/pipeline/pipeline-definition.json" ' +
+                    r'       "${tmpdir}/pipeline/pipeline-parameters.json" ' +
+                    r'       "${tmpdir}/config.json" ' +
+                    r'       "${STACK_NAME}" ' +
+                    r'       "' + securityGroupId + r'" || return $?'
                 ] +
                 pseudoStackOutputScript(
                     "Data Pipeline",
                     {
-                        pipelineId : "$\{pipelineId}"
+                        pipelineId : r'${pipelineId}'
                     },
                     "creds-system"
                 ) +
