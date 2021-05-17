@@ -10,6 +10,13 @@
 
     [#local dataSetDeploymentUnit = getOccurrenceDeploymentUnit(occurrence)!"" ]
 
+    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
+
+    [#local imageSource = solution.Image.Source]
+    [#if imageSource == "url" ]
+        [#local buildUnit = occurrence.Core.Name ]
+    [/#if]
+
     [#local attributes = {
             "DATASET_ENGINE" : solution.Engine
     }]
@@ -26,18 +33,21 @@
                                                 getRegistryPrefix("dataset", occurrence),
                                                 getOccurrenceBuildProduct(occurrence, productName),
                                                 getOccurrenceBuildScopeExtension(occurrence),
-                                                getOccurrenceBuildUnit(occurrence))]
+                                                buildUnit
+                                        )]
             [#local datasetPrefix = formatRelativePath(solution.Prefix)]
 
             [#local attributes += {
                 "DATASET_PREFIX" : datasetPrefix,
                 "DATASET_REGISTRY" : "s3://" + registryBucket +
                                             formatAbsolutePath(
-                                                registryPrefix),
+                                                registryPrefix
+                                            ),
                 "DATASET_LOCATION" : "s3://" + registryBucket +
                                             formatAbsolutePath(
                                                 registryPrefix,
-                                                buildReference)
+                                                buildReference
+                                            )
                 }]
 
             [#local consumePolicy +=
