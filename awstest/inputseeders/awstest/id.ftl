@@ -39,6 +39,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "datapipeline"
                             },
+                            "dataset" : {
+                                "Provider" : "awstest",
+                                "Name" : "dataset"
+                            },
                             "ec2" : {
                                 "Provider" : "awstest",
                                 "Name" : "ec2"
