@@ -156,7 +156,7 @@
             conditions)]
 [/#function]
 
-[#function s3ListPermission bucket key="" object="" principals="" conditions={}]
+[#function s3ListPermission bucket key="" object="*" principals="" conditions={}]
     [#return
         getS3Statement(
             "s3:List*",
@@ -164,7 +164,8 @@
             key,
             object,
             principals,
-            conditions) +
+            conditions
+        ) +
         getS3BucketStatement(
             [
                 "s3:ListBucket",
