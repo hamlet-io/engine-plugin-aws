@@ -248,6 +248,23 @@
 
     [#local _context += finalEnvironment ]
 
+    [#-- AWS has a 4k limit on the size of the environment - check how close we are --]
+    [#local envSize = getJSON(finalEnvironment)?length]
+    [#local sizeRemedy = "One solution might be to limit the attributes included on links via the IncludeInContext attribute" ]
+    [#-- Not clear what AWS counts in the 4k limit but this should be close --]
+    [#if envSize > 4096]
+        [@fatal
+            message="Lambda environment size of " + envSize?c + " exceeds the AWS limit of 4096"
+            detail=sizeRemedy
+        /]
+    [#-- It is a bit arbitrary as to what defines close --]
+    [#elseif envSize > 3896]
+        [@warn
+            message="Lambda environment size of " + envSize?c + " is close to the AWS limit of 4096"
+            detail=sizeRemedy
+        /]
+    [/#if]
+
     [#local roleId = formatDependentRoleId(fnId)]
     [#local managedPolicies =
         (vpcAccess)?then(

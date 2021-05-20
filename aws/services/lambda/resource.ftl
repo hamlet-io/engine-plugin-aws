@@ -88,7 +88,7 @@
                 "Role" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
                 "Runtime" : settings.RunTime
             } +
-            attributeIfContent("Environment", settings.Environment!{}, {"Variables" : settings.Environment}) +
+            attributeIfContent("Environment", settings.Environment!{}) +
             attributeIfTrue("MemorySize", settings.MemorySize > 0, settings.MemorySize) +
             attributeIfTrue("Timeout", settings.Timeout > 0, settings.Timeout) +
             attributeIfTrue(
