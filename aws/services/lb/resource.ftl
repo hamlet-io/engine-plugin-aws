@@ -215,7 +215,7 @@
     [/#if]
 
     [#local certificateArn = getExistingReference(certificateId, ARN_ATTRIBUTE_TYPE, regionId)]
-    [#if certificateId?has_content && !(certificateArn?has_content)]
+    [#if certificateId?has_content && !(certificateArn?has_content) && ((port.Certificate)!false) ]
         [@fatal
             message="LB Certificate ARN could not be found. Check the certificate exists and is in the correct region."
             context=
