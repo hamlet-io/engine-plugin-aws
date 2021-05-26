@@ -58,7 +58,7 @@
             "DefaultEnvironmentVariables" : false,
             "DefaultLinkVariables" : false,
             "Policy" : [],
-            "OpenAPIDefinition" : (definitionsObject[core.Id])!{}
+            "OpenAPIDefinition" : internalEnsureAWSDefinitionCompatability((definitionsObject[core.Id])!{})
         }
     ]
     [#-- Add in extension specifics including override of defaults --]
@@ -1136,3 +1136,86 @@
         [/#if]
     [/#if]
 [/#macro]
+
+[#------------------------------
+-- Internal support functions --
+--------------------------------]
+
+[#-- Modify the definition file to meet AWS constraints --]
+[#function internalEnsureAWSDefinitionCompatability content mappings={} ]
+
+    [#local result = content ]
+
+    [#local modelMappings = mappings ]
+
+    [#if result?is_hash]
+        [#-- Model names can only be alphanumeric --]
+        [#local models = (content.components.schemas)!(content.definitions)!{} ]
+        [#if models?has_content]
+            [#-- See if any models need mapping --]
+            [#local newModels = {} ]
+            [#list models as key, value]
+                [#local newKey = replaceAlphaNumericOnly(key) ]
+                [#if newKey == key]
+                    [#local newModels += { key : value } ]
+                [#else]
+                    [#local newModels += { newKey : value } ]
+                    [#-- Remember the strings that have been modified --]
+                    [#local modelMappings += { key, newKey } ]
+                [/#if]
+            [/#list]
+
+            [#-- Update the models --]
+            [#if (result.components.schemas)??]
+                [#local result +=
+                    {
+                        "components" :
+                            result.components +
+                            {
+                                "schemas" : newModels
+                            }
+                    }
+                ]
+            [#else]
+                [#local result += { "definitions" : newModels} ]
+            [/#if]
+        [/#if]
+
+        [#-- Remove unsupported attributes --]
+        [#local newResult = {} ]
+        [#list result as key,value]
+            [#switch key]
+                [#case "discriminator"]
+                [#case "example"]
+                [#case "format"]
+                [#case "enum"]
+                [#case "readOnly"]
+                    [#break]
+                [#default]
+                    [#local newResult += { key : internalEnsureAWSDefinitionCompatability(value, modelMappings)}]
+            [/#switch]
+        [/#list]
+        [#local result = newResult ]
+    [#else]
+        [#if result?is_sequence]
+            [#local newResult = [] ]
+            [#list result as item]
+                [#local newResult += [internalEnsureAWSDefinitionCompatability(item, modelMappings)] ]
+            [/#list]
+            [#local result = newResult ]
+        [#else]
+            [#if result?is_string]
+                [#-- Replace any model names with their modified values --]
+                [#list modelMappings as key, value]
+                    [#if result?contains(key) ]
+                        [#local result = result?replace(key, value) ]
+                        [#break]
+                    [/#if]
+                [/#list]
+            [/#if]
+        [/#if]
+    [/#if]
+
+    [#return result]
+[/#function]
+
