@@ -52,7 +52,7 @@
 
         [#local certificateArn = ""]
         [#if certificatePresent ]
-            [#local certificateObject = getCertificateObject(solution.HostedUI.Certificate!"", segmentQualifiers)]
+            [#local certificateObject = getCertificateObject(solution.HostedUI.Certificate!"")]
             [#local certificateDomains = getCertificateDomains(certificateObject) ]
             [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
             [#local hostName = getHostName(certificateObject, occurrence) ]

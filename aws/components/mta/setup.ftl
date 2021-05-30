@@ -29,7 +29,7 @@
     [/#if]
 
     [#-- Get domain/host information --]
-    [#local certificateObject = getCertificateObject(solution.Certificate, segmentQualifiers)]
+    [#local certificateObject = getCertificateObject(solution.Certificate)]
     [#local certificateDomains = getCertificateDomains(certificateObject) ]
 
     [#-- Baseline component lookup to obtain the kms key --]

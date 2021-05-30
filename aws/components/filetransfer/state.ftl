@@ -7,7 +7,7 @@
     [#local fileServerId = formatResourceId(AWS_TRANSFER_SERVER_RESOURCE_TYPE, core.Id)]
 
     [#if isPresent(solution.Certificate) ]
-        [#local certificateObject = getCertificateObject(solution.Certificate, segmentQualifiers ) ]
+        [#local certificateObject = getCertificateObject(solution.Certificate ) ]
 
         [#local hostName = getHostName(certificateObject, occurrence) ]
         [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]

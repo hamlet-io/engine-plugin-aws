@@ -8,7 +8,7 @@
     [#local cfName = core.FullName]
 
     [#if isPresent(solution.Certificate) ]
-        [#local certificateObject = getCertificateObject(solution.Certificate!"", segmentQualifiers) ]
+        [#local certificateObject = getCertificateObject(solution.Certificate!"") ]
         [#local hostName = getHostName(certificateObject, occurrence) ]
         [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
         [#local fqdn = formatDomainName(hostName, primaryDomainObject)]
