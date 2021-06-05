@@ -31,6 +31,10 @@
             "command" : "chmod +x /usr/local/bin/docker-compose",
             "ignoreErrors" : false
         },
+        "03SymlinkBin" : {
+            "command" : "ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose",
+            "ignoreErrors" : false
+        },
         "04TestInstallation" : {
             "command" : "docker-compose --version",
             "ignoreErrors" : false
