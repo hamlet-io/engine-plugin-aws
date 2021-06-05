@@ -203,7 +203,7 @@
                 },
                 "Outbound" : {
                     "networkacl" : {
-                        "Ports" : [ "ssh" ],
+                        "Ports" : solution.ComputeInstance.ManagementPorts,
                         "SecurityGroups" : sgGroupId,
                         "Description" : core.FullName
                     }

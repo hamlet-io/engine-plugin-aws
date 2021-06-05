@@ -73,7 +73,7 @@
                 },
                 "Outbound" : {
                     "networkacl" : {
-                        "Ports": [ "ssh" ],
+                        "Ports": solution.ComputeInstance.ManagementPorts,
                         "SecurityGroups" : securityGroupToId,
                         "Description" : core.FullName
                     }

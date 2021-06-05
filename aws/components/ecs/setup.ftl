@@ -408,7 +408,7 @@
                 occurrence=occurrence
                 groupId=ecsSecurityGroupId
                 linkTarget=linkTarget
-                inboundPorts=[ "ssh" ]
+                inboundPorts=solution.ComputeInstance.ManagementPorts
                 networkProfile=networkProfile
             /]
 
@@ -425,7 +425,7 @@
             occurrence=occurrence
             groupId=ecsSecurityGroupId
             networkProfile=networkProfile
-            inboundPorts=[ "ssh" ]
+            inboundPorts=solution.ComputeInstance.ManagementPorts
         /]
 
         [#list resources.logMetrics!{} as logMetricName,logMetric ]
