@@ -254,7 +254,7 @@
                 occurrence=occurrence
                 groupId=computeClusterSecurityGroupId
                 linkTarget=linkTarget
-                inboundPorts=[ "ssh" ]
+                inboundPorts=solution.ComputeInstance.ManagementPorts
                 networkProfile=networkProfile
             /]
         [/#if]
@@ -508,7 +508,7 @@
             occurrence=occurrence
             groupId=computeClusterSecurityGroupId
             networkProfile=networkProfile
-            inboundPorts=[ "ssh" ]
+            inboundPorts=solution.ComputeInstance.ManagementPorts
         /]
 
         [#list ingressRules as ingressRule ]

@@ -8,7 +8,7 @@
 
     [#local securityGroupId = formatComponentSecurityGroupId(core.Tier, core.Component)]
 
-    [#local availablePorts = [ "ssh" ]]
+    [#local availablePorts = solution.ComputeInstance.ManagementPorts ]
     [#list solution.Ports as id,port ]
         [#local availablePorts += [ port.Name ]]
     [/#list]

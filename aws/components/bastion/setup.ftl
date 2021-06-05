@@ -139,7 +139,7 @@
                     occurrence=occurrence
                     groupId=bastionSecurityGroupToId
                     linkTarget=linkTarget
-                    inboundPorts=[ "ssh" ]
+                    inboundPorts=solution.ComputeInstance.ManagementPorts
                     networkProfile=networkProfile
                 /]
             [/#if]
@@ -201,11 +201,11 @@
                 occurrence=occurrence
                 groupId=bastionSecurityGroupToId
                 networkProfile=networkProfile
-                inboundPorts=[ "ssh" ]
+                inboundPorts=solution.ComputeInstance.ManagementPorts
             /]
 
             [#local bastionSSHNetworkRule = {
-                        "Ports" : [ "ssh" ],
+                        "Ports" : solution.ComputeInstance.ManagementPorts,
                         "IPAddressGroups" :
                             sshEnabled?then(
                                 combineEntities(
