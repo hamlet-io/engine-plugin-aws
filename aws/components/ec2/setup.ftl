@@ -344,6 +344,7 @@
                         conditionId=zoneWaitConditionId
                         handleId=zoneWaitHandleId
                         signalCount=1
+                        timeout=solution.StartupTimeout
                         waitDependencies=[ zoneEc2InstanceId ]
                     /]
 
@@ -384,7 +385,7 @@
                         creationPolicy={
                             "ResourceSignal" : {
                                 "Count" : 1,
-                                "Timeout" : "PT5M"
+                                "Timeout" : "PT${solution.StartupTimeout}S"
                             }
                         }
                     /]
