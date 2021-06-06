@@ -395,6 +395,66 @@
         }]]
     [/#if]
 
+    [#if placement.Strategy?seq_contains("daemon") && (placement.Strategy)?size > 1 ]
+        [@fatal
+            message="ECS daemon placement strategy can not be used with other strategies"
+            detail={
+                "ServiceId" : id,
+                "Placment" : placement
+            }
+        /]
+    [/#if]
+
+    [#local daemonMode = false ]
+    [#if placement.Strategy?seq_contains("daemon") ]
+        [#local daemonMode = true ]
+    [/#if]
+
+    [#local placementStrategies = []]
+    [#list placement.Strategy as strategy ]
+        [#switch strategy?lower_case ]
+            [#case "spread-multiaz" ]
+                [#local placementStrategies += [
+                    {
+                        "Field" : "attribute:ecs.availability-zone",
+                        "Type" : "spread"
+                    }
+                ]]
+                [#break]
+            [#case "spread-instance" ]
+                [#local placementStrategies += [
+                    {
+                        "Field" : "instanceId",
+                        "Type" : "spread"
+                    }
+                ]]
+                [#break]
+            [#case "binpack-cpu" ]
+                [#local placementStrategies += [
+                    {
+                        "Field" : "cpu",
+                        "Type" : "binpack"
+                    }
+                ]]
+                [#break]
+            [#case "binpack-memory" ]
+                [#local placementStrategies += [
+                    {
+                        "Field" : "memory",
+                        "Type" : "binpack"
+                    }
+                ]]
+                [#break]
+            [#case "random" ]
+                [#local placementStrategies += [
+                    {
+                        "Type" : "random"
+                    }
+                ]]
+                [#break]
+        [/#switch]
+    [/#list]
+
     [@cfResource
         id=id
         type="AWS::ECS::Service"
@@ -438,7 +498,7 @@
                 {
                     "SchedulingStrategy" : "DAEMON"
                 },
-                (placement.Strategy == "daemon" && engine == "ec2" ),
+                (daemonMode && engine == "ec2" ),
                 {
                     "DesiredCount" : desiredCount
                 }
@@ -456,6 +516,11 @@
                 "PlacementConstraints",
                 (engine != "fargate") && (placementConstraints?size > 0),
                 placementConstraints
+            ) +
+            attributeIfTrue(
+                "PlacementStrategies",
+                (engine != "fargate") && (placementStrategies?size > 0),
+                placementStrategies
             ) +
             attributeIfContent(
                 "CapacityProviderStrategy",
