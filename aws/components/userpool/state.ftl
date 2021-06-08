@@ -143,7 +143,8 @@
                 "UI_INTERNAL_FQDN" : attrUIInternalFQDN,
                 "UI_BASE_URL" : attrUIBaseURL,
                 "UI_FQDN" : attrUIFQDN,
-                "API_AUTHORIZATION_HEADER" : attrLbAuthHeader
+                "API_AUTHORIZATION_HEADER" : attrLbAuthHeader,
+                "OIDC_ISSUER" : "https://cognito-idp.${attrUserPoolRegion}.amazonaws.com/${attrUserPoolId}"
             } +
             attributeIfContent(
                 "CLIENT",
