@@ -195,6 +195,7 @@
                     "MultiAZ": true,
                     "network": {
                         "deployment:Unit": "vpc",
+                        "deployment:Priority": 40,
                         "RouteTables": {
                             "internal": {},
                             "external": {
@@ -1056,30 +1057,35 @@
             "ResourceSets": {
                 "iam": {
                     "deployment:Unit": "iam",
+                    "deployment:Priority": 20,
                     "ResourceLabels": [
                         "iam"
                     ]
                 },
                 "lg": {
                     "deployment:Unit": "lg",
+                    "deployment:Priority": 20,
                     "ResourceLabels": [
                         "lg"
                     ]
                 },
                 "eip": {
                     "deployment:Unit": "eip",
+                    "deployment:Priority": 45,
                     "ResourceLabels": [
                         "eip"
                     ]
                 },
                 "s3": {
                     "deployment:Unit": "s3",
+                    "deployment:Priority": 30,
                     "ResourceLabels": [
                         "s3"
                     ]
                 },
                 "cmk": {
                     "deployment:Unit": "cmk",
+                    "deployment:Priority": 10,
                     "ResourceLabels": [
                         "cmk"
                     ]
