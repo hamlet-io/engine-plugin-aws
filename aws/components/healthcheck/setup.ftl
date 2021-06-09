@@ -165,7 +165,7 @@
                 [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
                 [#local networkResources = networkLinkTarget.State.Resources ]
 
-                [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+                [#local networkProfile = getNetworkProfile(occurrence)]
 
                 [#local vpcId = networkResources["vpc"].Id ]
                 [#local vpc = getExistingReference(vpcId)]

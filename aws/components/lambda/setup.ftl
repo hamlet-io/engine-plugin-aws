@@ -53,7 +53,7 @@
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
 
-    [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
+    [#local loggingProfile = getLoggingProfile(occurrence)]
 
     [#local vpcAccess = solution.VPCAccess ]
     [#if vpcAccess ]
@@ -68,7 +68,7 @@
         [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
         [#local networkResources = networkLinkTarget.State.Resources ]
 
-        [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+        [#local networkProfile = getNetworkProfile(occurrence)]
 
         [#local vpcId = networkResources["vpc"].Id ]
         [#local vpc = getExistingReference(vpcId)]

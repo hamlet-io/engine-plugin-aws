@@ -44,13 +44,13 @@
 
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
 
-    [#local processorProfile = getProcessor(occurrence, "ECS")]
-    [#local storageProfile = getStorage(occurrence, "ECS")]
-    [#local logFileProfile = getLogFileProfile(occurrence, "ECS")]
-    [#local bootstrapProfile = getBootstrapProfile(occurrence, "ECS")]
-    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
-    [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
-    [#local computeProviderProfile = getComputeProviderProfile(solution.Profiles.ComputeProvider)]
+    [#local processorProfile        = getProcessor(occurrence, ECS_COMPONENT_TYPE)]
+    [#local storageProfile          = getStorage(occurrence, ECS_COMPONENT_TYPE)]
+    [#local logFileProfile          = getLogFileProfile(occurrence, ECS_COMPONENT_TYPE)]
+    [#local bootstrapProfile        = getBootstrapProfile(occurrence, ECS_COMPONENT_TYPE)]
+    [#local networkProfile          = getNetworkProfile(occurrence)]
+    [#local loggingProfile          = getLoggingProfile(occurrence)]
+    [#local computeProviderProfile  = getComputeProviderProfile(occurrence)]
 
     [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
 
@@ -379,7 +379,7 @@
 
                     [#local scheduleProcessor = getProcessor(
                                                     occurrence,
-                                                    "ECS",
+                                                    ECS_COMPONENT_TYPE,
                                                     scalingPolicy.Scheduled.ProcessorProfile)]
                     [#local scheduleProcessorCounts = getProcessorCounts(scheduleProcessor, multiAZ ) ]
                     [#if deploymentSubsetRequired("ecs", true)]
@@ -691,8 +691,8 @@
                 getSubnets(core.Tier, networkResources)[0..0]
             )]
 
-        [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
-        [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
+        [#local networkProfile = getNetworkProfile(occurrence)]
+        [#local loggingProfile = getLoggingProfile(occurrence)]
 
         [#if engine == "fargate" && networkMode != "awsvpc" ]
             [@fatal
@@ -990,7 +990,7 @@
                     [/#if]
                 [/#list]
 
-                [#local processorProfile = getProcessor(subOccurrence, "service" )]
+                [#local processorProfile = getProcessor(subOccurrence, ECS_SERVICE_COMPONENT_TYPE)]
                 [#local processorCounts = getProcessorCounts(processorProfile, multiAZ, solution.DesiredCount ) ]
 
                 [#local desiredCount = processorCounts.DesiredCount ]
@@ -1163,7 +1163,7 @@
 
                                 [#local scheduleProcessor = getProcessor(
                                                                 subOccurrence,
-                                                                "service",
+                                                                ECS_SERVICE_COMPONENT_TYPE,
                                                                 scalingPolicy.Scheduled.ProcessorProfile)]
                                 [#local scheduleProcessorCounts = getProcessorCounts(scheduleProcessor, multiAZ ) ]
                                 [#local scheduledActions += [

@@ -36,8 +36,8 @@
     [#local family = resources["cache"].Family ]
     [#local engineVersion = resources["cache"].EngineVersion ]
 
-    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
-    [#local processorProfile = getProcessor(occurrence, "cache")]
+    [#local networkProfile = getNetworkProfile(occurrence)]
+    [#local processorProfile = getProcessor(occurrence, CACHE_COMPONENT_TYPE)]
 
     [#if (ports[port].Port)?has_content]
         [#local portObject = ports[port] ]

@@ -15,7 +15,7 @@
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
 
-    [#local networkProfile = getNetworkProfile(gwSolution.Profiles.Network)]
+    [#local networkProfile = getNetworkProfile(occurrence)]
 
     [#local securityGroupEnabled = false]
 
@@ -362,7 +362,7 @@
             [#local destinationIPAddressGroups = solution.IPAddressGroups ]
             [#local cidrs = getGroupCIDRs(destinationIPAddressGroups, true, subOccurrence)]
 
-            [#local vpnSecurityProfile = getSecurityProfile(solution.Profiles.Security, "IPSecVPN")]
+            [#local vpnSecurityProfile = getSecurityProfile(subOccurrence, "IPSecVPN")]
 
             [#local routeTableIds = []]
             [#local privateGatewayDependencies = []]
@@ -484,7 +484,6 @@
                     [/#switch]
                 [/#if]
             [/#list]
-
 
 
             [#-- Second round of processing for routes as they depend on other links --]

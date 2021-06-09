@@ -24,9 +24,9 @@
     [#local securityGroupId = resources["securityGroup"].Id]
     [#local securityGroupName = resources["securityGroup"].Name]
 
-    [#local ec2ProcessorProfile = getProcessor(occurrence, "EC2")]
+    [#local ec2ProcessorProfile = getProcessor(occurrence, EC2_COMPONENT_TYPE)]
     [#local emrProcessorProfile = getProcessor(occurrence, "EMR")]
-    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+    [#local networkProfile = getNetworkProfile(occurrence)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]

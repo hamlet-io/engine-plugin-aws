@@ -24,7 +24,7 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]!"") ]
 
-    [#local securityProfile = getSecurityProfile(solution.Profiles.Security, CDN_COMPONENT_TYPE)]
+    [#local securityProfile = getSecurityProfile(occurrence, core.Type)]
 
     [#local certificateObject = getCertificateObject(solution.Certificate) ]
     [#local hostName = getHostName(certificateObject, occurrence) ]

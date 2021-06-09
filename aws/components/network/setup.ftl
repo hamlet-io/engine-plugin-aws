@@ -18,7 +18,7 @@
     [#local dnsSupport = (network.DNSSupport)!solution.DNS.UseProvider ]
     [#local dnsHostnames = (network.DNSHostnames)!solution.DNS.GenerateHostNames ]
 
-    [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
+    [#local loggingProfile = getLoggingProfile(occurrence)]
 
     [#-- Flag that the flowlog configuration needs to be updated if enabled via flags --]
     [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true) &&

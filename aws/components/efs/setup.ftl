@@ -37,7 +37,7 @@
                                             efsSecurityGroupId,
                                             efsPort)]
 
-    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+    [#local networkProfile = getNetworkProfile(occurrence)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption"] )]

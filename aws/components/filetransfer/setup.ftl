@@ -21,9 +21,9 @@
 
     [#local logRoleId = resources["logRole"].Id ]
 
-    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
-    [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
-    [#local securityProfile = getSecurityProfile(solution.Profiles.Security, FILETRANSFER_COMPONENT_TYPE)]
+    [#local networkProfile = getNetworkProfile(occurrence)]
+    [#local loggingProfile = getLoggingProfile(occurrence)]
+    [#local securityProfile = getSecurityProfile(occurrence, core.Type)]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]

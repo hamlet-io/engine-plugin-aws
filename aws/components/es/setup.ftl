@@ -38,7 +38,7 @@
         [#local sgName = resources["sg"].Name ]
         [#local ports = resources["sg"].Ports ]
 
-        [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+        [#local networkProfile = getNetworkProfile(occurrence)]
 
         [#local networkConfiguration = {
                     "SecurityGroupIds" : [ getReference(sgId) ],
@@ -57,8 +57,8 @@
         [/#if]
     [/#if]
 
-    [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
-    [#local processorProfile = getProcessor(occurrence, "es")]
+    [#local loggingProfile = getLoggingProfile(occurrence)]
+    [#local processorProfile = getProcessor(occurrence, ES_COMPONENT_TYPE)]
     [#local dataNodeCount = multiAZ?then(
                                     processorProfile.CountPerZone * zones?size,
                                     processorProfile.CountPerZone
