@@ -168,8 +168,8 @@
     [#local endpointType           = solution.EndpointType ]
     [#local isRegionalEndpointType = endpointType == "REGIONAL" ]
 
-    [#local securityProfile        = getSecurityProfile(solution.Profiles.Security, "apigateway")]
-    [#local loggingProfile         = getLoggingProfile(solution.Profiles.Logging)]
+    [#local securityProfile        = getSecurityProfile(occurrence, core.Type)]
+    [#local loggingProfile         = getLoggingProfile(occurrence)]
 
     [#local wafAclResources          = resources["wafacl"]!{} ]
     [#local wafLogStreamingResources = resources["wafLogStreaming"]!{}]
@@ -1218,4 +1218,3 @@
 
     [#return result]
 [/#function]
-

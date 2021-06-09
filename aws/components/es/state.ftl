@@ -40,7 +40,7 @@
         [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData" ], true, false )]
         [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
-        [#local securityProfile = getSecurityProfile(solution.Profiles.Security, "es")]
+        [#local securityProfile = getSecurityProfile(occurrence, core.Type)]
 
         [#local securityGroupId = formatSecurityGroupId(core.Id)]
         [#local availablePorts = []]

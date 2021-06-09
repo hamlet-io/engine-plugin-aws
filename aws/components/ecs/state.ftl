@@ -88,7 +88,7 @@
         [/#list]
     [/#if]
 
-    [#local processorProfile = getProcessor(occurrence, "ECS")]
+    [#local processorProfile = getProcessor(occurrence, ECS_COMPONENT_TYPE)]
     [#if processorProfile.MaxCount?has_content]
         [#local maxSize = processorProfile.MaxCount ]
     [#else]

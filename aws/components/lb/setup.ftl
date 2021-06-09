@@ -49,7 +49,7 @@
     [#local engine = solution.Engine]
     [#local idleTimeout = solution.IdleTimeout]
 
-    [#local securityProfile = getSecurityProfile(solution.Profiles.Security, LB_COMPONENT_TYPE, engine)]
+    [#local securityProfile = getSecurityProfile(occurrence, core.Type, engine)]
 
     [#local healthCheckPort = "" ]
     [#if engine == "classic" ]
@@ -168,7 +168,7 @@
         [#local solution = subOccurrence.Configuration.Solution ]
         [#local resources = subOccurrence.State.Resources ]
 
-        [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+        [#local networkProfile = getNetworkProfile(subOccurrence)]
 
         [#-- Determine if this is the first mapping for the source port --]
         [#-- The assumption is that all mappings for a given port share --]

@@ -30,12 +30,12 @@
     [#local ec2LogGroupId          = resources["lg"].Id]
     [#local ec2LogGroupName        = resources["lg"].Name]
 
-    [#local processorProfile       = getProcessor(occurrence, "EC2")]
-    [#local storageProfile         = getStorage(occurrence, "EC2")]
-    [#local logFileProfile         = getLogFileProfile(occurrence, "EC2")]
-    [#local bootstrapProfile       = getBootstrapProfile(occurrence, "EC2")]
-    [#local networkProfile         = getNetworkProfile(solution.Profiles.Network)]
-    [#local loggingProfile         = getLoggingProfile(solution.Profiles.Logging)]
+    [#local processorProfile       = getProcessor(occurrence, EC2_COMPONENT_TYPE)]
+    [#local storageProfile         = getStorage(occurrence, EC2_COMPONENT_TYPE)]
+    [#local logFileProfile         = getLogFileProfile(occurrence, EC2_COMPONENT_TYPE)]
+    [#local bootstrapProfile       = getBootstrapProfile(occurrence, EC2_COMPONENT_TYPE)]
+    [#local networkProfile         = getNetworkProfile(occurrence)]
+    [#local loggingProfile         = getLoggingProfile(occurrence)]
 
     [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
 

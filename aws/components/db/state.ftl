@@ -103,7 +103,7 @@
 
         [#local processor = getProcessor(
                                         occurrence,
-                                        "db",
+                                        DB_COMPONENT_TYPE,
                                         solution.ProcessorProfile)]
         [#if processor.DesiredPerZone?has_content ]
                 [#local instancesPerZone = processor.DesiredPerZone ]

@@ -31,7 +31,7 @@
         [#local successSampleRate = solution.SuccessSampleRate!successSampleRate ]
         [#local encryptionScheme = solution.EncryptionScheme!encryptionScheme]
 
-        [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
+        [#local loggingProfile = getLoggingProfile(occurrence)]
 
         [#local platformAppId = resources["platformapplication"].Id]
         [#local platformAppName = resources["platformapplication"].Name ]

@@ -38,7 +38,7 @@
     [#local engine = solution.Engine]
     [#local engineVersion = solution.EngineVersion ]
 
-    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
+    [#local networkProfile = getNetworkProfile(occurrence)]
 
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
 

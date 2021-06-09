@@ -21,12 +21,12 @@
     [#local computeClusterLogGroupId           = resources["lg"].Id]
     [#local computeClusterLogGroupName         = resources["lg"].Name]
 
-    [#local processorProfile = getProcessor(occurrence, "ComputeCluster")]
-    [#local storageProfile   = getStorage(occurrence, "ComputeCluster")]
-    [#local logFileProfile   = getLogFileProfile(occurrence, "ComputeCluster")]
-    [#local bootstrapProfile = getBootstrapProfile(occurrence, "ComputeCluster")]
-    [#local networkProfile   = getNetworkProfile(solution.Profiles.Network)]
-    [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
+    [#local processorProfile = getProcessor(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
+    [#local storageProfile   = getStorage(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
+    [#local logFileProfile   = getLogFileProfile(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
+    [#local bootstrapProfile = getBootstrapProfile(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
+    [#local networkProfile   = getNetworkProfile(occurrence)]
+    [#local loggingProfile   = getLoggingProfile(occurrence)]
 
     [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
 
@@ -483,7 +483,7 @@
 
                         [#local scheduleProcessor = getProcessor(
                                                         occurrence,
-                                                        "ComputeCluster",
+                                                        COMPUTECLUSTER_COMPONENT_TYPE,
                                                         scalingPolicy.Scheduled.ProcessorProfile)]
                         [#local scheduleProcessorCounts = getProcessorCounts(scheduleProcessor, multiAZ ) ]
                         [@createEc2AutoScalingSchedule

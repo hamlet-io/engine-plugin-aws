@@ -66,7 +66,7 @@
                 [#local vpnPublicIP = (solution.SiteToSite.PublicIP)!"" ]
 
                 [#local vpnOptionsCommand = "vpnOptions"]]
-                [#local vpnSecurityProfile = getSecurityProfile(solution.Profiles.Security, "IPSecVPN")]
+                [#local vpnSecurityProfile = getSecurityProfile(occurrence, core.Type, "IPSecVPN")]
 
                 [#if ! vpnPublicIP?has_content ]
                     [@fatal

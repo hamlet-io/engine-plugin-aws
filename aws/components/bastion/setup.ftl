@@ -55,13 +55,13 @@
         [#local publicRouteTable = routeTableConfiguration.Public ]
     [/#if]
 
-    [#local storageProfile = getStorage(occurrence, BASTION_COMPONENT_TYPE)]
-    [#local logFileProfile = getLogFileProfile(occurrence, BASTION_COMPONENT_TYPE)]
-    [#local bootstrapProfile = getBootstrapProfile(occurrence, BASTION_COMPONENT_TYPE)]
-    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
-    [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
+    [#local storageProfile      = getStorage(occurrence, BASTION_COMPONENT_TYPE)]
+    [#local logFileProfile      = getLogFileProfile(occurrence, BASTION_COMPONENT_TYPE)]
+    [#local bootstrapProfile    = getBootstrapProfile(occurrence, BASTION_COMPONENT_TYPE)]
+    [#local processorProfile    = getProcessor(occurrence, BASTION_COMPONENT_TYPE)]
+    [#local networkProfile      = getNetworkProfile(occurrence)]
+    [#local loggingProfile      = getLoggingProfile(occurrence)]
 
-    [#local processorProfile = getProcessor(occurrence, "bastion")]
 
     [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
 

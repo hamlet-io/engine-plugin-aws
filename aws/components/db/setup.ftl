@@ -188,10 +188,10 @@
         [/#if]
     [/#list]
 
-    [#local processorProfile = getProcessor(occurrence, "db" )]
-    [#local networkProfile = getNetworkProfile(solution.Profiles.Network)]
-    [#local securityProfile = getSecurityProfile(solution.Profiles.Security, "db" )]
-    [#local requiredRDSCA = securityProfile["SSLCertificateAuthority"]!"HamletFatal: SSLCertificateAuthority not found in security profile: " + solution.Profiles.Security ]
+    [#local processorProfile    = getProcessor(occurrence, core.Type )]
+    [#local networkProfile      = getNetworkProfile(occurrence)]
+    [#local securityProfile     = getSecurityProfile(occurrence, core.Type )]
+    [#local requiredRDSCA       = securityProfile["SSLCertificateAuthority"]!"HamletFatal: SSLCertificateAuthority not found in security profile: " + solution.Profiles.Security ]
 
     [#list solution.Links?values as link]
         [#if link?is_hash]
@@ -491,7 +491,7 @@
 
                     [#local processor = getProcessor(
                                             occurrence,
-                                            "db",
+                                            DB_COMPONENT_TYPE,
                                             solution.ProcessorProfile)]
                     [#local processorCounts = getProcessorCounts(processor, multiAZ ) ]
 
@@ -658,7 +658,7 @@
 
                                 [#local scheduleProcessor = getProcessor(
                                                                 occurrence,
-                                                                "db",
+                                                                DB_COMPONENT_TYPE,
                                                                 scalingPolicy.Scheduled.ProcessorProfile)]
                                 [#local scheduleProcessorCounts = getProcessorCounts(scheduleProcessor, multiAZ ) ]
                                 [#local scheduledActions += [

@@ -28,7 +28,7 @@
 
     [#local streamProcessors = []]
 
-    [#local loggingProfile = getLoggingProfile(solution.Profiles.Logging)]
+    [#local loggingProfile = getLoggingProfile(occurrence)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "AppData", "Encryption"] )]
