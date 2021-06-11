@@ -4,7 +4,7 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
 
-    [#local domainObject = getCertificateObject(solution.Namespace, segmentQualifiers)]
+    [#local domainObject = getCertificateObject(solution.Namespace)]
     [#local domainName = getCertificatePrimaryDomain(domainObject).Name ]
 
     [#assign componentState =
@@ -36,7 +36,7 @@
     [#local parentAttributes = parent.State.Attributes ]
 
     [#local serviceHostObject = mergeObjects(parentSolution.Namespace, solution.ServiceName) ]
-    [#local domainObject = getCertificateObject( serviceHostObject, segmentQualifiers)]
+    [#local domainObject = getCertificateObject( serviceHostObject )]
 
     [#local serviceHost = getHostName(domainObject, occurrence)  ]
     [#local hostName = formatDomainName(serviceHost, parentAttributes["DOMAIN_NAME"] ) ]

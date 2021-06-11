@@ -26,7 +26,7 @@
 
     [#local securityProfile = getSecurityProfile(solution.Profiles.Security, CDN_COMPONENT_TYPE)]
 
-    [#local certificateObject = getCertificateObject(solution.Certificate, segmentQualifiers) ]
+    [#local certificateObject = getCertificateObject(solution.Certificate) ]
     [#local hostName = getHostName(certificateObject, occurrence) ]
     [#local certificateId = formatDomainCertificateId(certificateObject, hostName) ]
     [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]

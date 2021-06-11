@@ -177,7 +177,7 @@ created in either case.
     [#local docsHostName = "" ]
 
     [#if certificatePresent ]
-        [#local certificateObject = getCertificateObject(solution.Certificate!"", segmentQualifiers)]
+        [#local certificateObject = getCertificateObject(solution.Certificate!"")]
         [#local certificateDomains = getCertificateDomains(certificateObject) ]
         [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
         [#local hostName = getHostName(certificateObject, occurrence) ]
