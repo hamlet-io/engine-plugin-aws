@@ -309,7 +309,7 @@
                     [#local ruleConfig = solution.Rules[id] ]
 
                     [#if (ruleConfig.Source.IPAddressGroups)?seq_contains("_localnet")
-                            && (ruleConfig.Source.IPAddressGroups)?size == 1 ]
+                            && (getUniqueArrayElements(ruleConfig.Source.IPAddressGroups))?size == 1 ]
 
                         [#local direction = "outbound" ]
                         [#local forwardIpAddresses = getGroupCIDRs(ruleConfig.Destination.IPAddressGroups, true, occurrence)]
@@ -318,7 +318,7 @@
                         [#local returnPort = ports[ruleConfig.Source.Port]]
 
                     [#elseif (ruleConfig.Destination.IPAddressGroups)?seq_contains("_localnet")
-                                && (ruleConfig.Source.IPAddressGroups)?size == 1 ]
+                                && (getUniqueArrayElements(ruleConfig.Source.IPAddressGroups))?size == 1 ]
 
                         [#local direction = "inbound" ]
                         [#local forwardIpAddresses = getGroupCIDRs(ruleConfig.Source.IPAddressGroups, true, occurrence)]
@@ -328,7 +328,7 @@
 
                     [#else]
                         [@fatal
-                            message="Invalid network ACL either source or destination must be configured as _local to define direction"
+                            message="Invalid network ACL either source or destination must be configured as _localnet to define direction"
                             context=port
                         /]
                     [/#if]
