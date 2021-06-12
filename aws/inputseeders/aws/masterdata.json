@@ -365,6 +365,19 @@
             }
         }
     },
+    "Ports": {
+      "rdp": {
+        "Port": 3389,
+        "Protocol": "TCP",
+        "IPProtocol": "tcp",
+        "HealthCheck": {
+          "HealthyThreshold": "3",
+          "UnhealthyThreshold": "5",
+          "Interval": "30",
+          "Timeout": "5"
+        }
+      }
+    },
     "Storage": {
         "default": {
             "EC2": {
@@ -413,6 +426,44 @@
                     "root" : {
                         "Device" : "/dev/xvda",
                         "Size" : 50
+                    }
+                }
+            }
+        },
+        "ecs_awswin" : {
+            "ECS" : {
+                "Volumes": {
+                    "root" : {
+                        "Device" : "/dev/sda1",
+                        "Size" : 50
+                    }
+                }
+            }
+        },
+        "ec2_awswin" : {
+            "EC2":{
+                "Volumes": {
+                    "root" : {
+                        "Device" : "/dev/sda1",
+                        "Size" : 50
+                    },
+                    "codeontap": {
+                        "Enabled" : true,
+                        "Device": "/dev/xvdf",
+                        "Size": "30",
+                        "MountPath" : "c:\\codeontap"
+                    },
+                    "cache" : {
+                        "Enabled" : true,
+                        "Device" : "/dev/xvdg",
+                        "Size" : "30",
+                        "MountPath" : "E"
+                    },
+                    "temp" : {
+                        "Enabled" : false,
+                        "Device" : "/dev/xvdh",
+                        "Size" : "30",
+                        "MountPath" : "c:\\temp"
                     }
                 }
             }
@@ -649,6 +700,22 @@
         "/var/log/ecs/audit.log": {
             "FilePath": "/var/log/ecs/audit.log",
             "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "/ec2/EC2Launch.log": {
+            "FilePath": "/ec2/EC2Launch.log",
+            "TimeFormat": "%Y/%m/%d %H:%M:%S%Z:"
+        },
+        "/ec2/UserdataExecution.log": {
+            "FilePath": "/ec2/UserdataExecution.log",
+            "TimeFormat": "%Y/%m/%d %H:%M:%S%Z:"
+        },
+        "/cwa/amazon-cloudwatch-agent.log": {
+            "FilePath": "/cwa/amazon-cloudwatch-agent.log",
+            "TimeFormat": "%H: %M: %S%y%b%-d"
+        },
+        "/ssm/amazon-ssm-agent.log": {
+            "FilePath": "/ssm/amazon-ssm-agent.log",
+            "TimeFormat": "%Y-%m-%d %H:%M:%S%"
         }
     },
     "LogFileGroups": {
@@ -667,6 +734,14 @@
                 "/var/log/cloud-init.log",
                 "/var/log/cloud-init-output.log",
                 "/var/log/amazon/ssm/amazon-ssm-agent.log"
+            ]
+        },
+        "win-system": {
+            "LogFiles": [
+                "/ec2/EC2Launch.log",
+                "/ec2/UserdataExecution.log",
+                "/cwa/amazon-cloudwatch-agent.log",
+                "/ssm/amazon-ssm-agent.log"
             ]
         }
     },
@@ -702,6 +777,32 @@
                     "system",
                     "aws-system",
                     "security"
+                ]
+            }
+        },
+        "awswinlog": {
+            "EC2": {
+                "LogFileGroups": [
+                    "win-system",
+                    "docker"
+                ]
+            },
+            "ComputeCluster": {
+                "LogFileGroups": [
+                    "win-system",
+                    "docker"
+                ]
+            },
+            "ECS": {
+                "LogFileGroups": [
+                    "win-system",
+                    "docker",
+                    "aws-ecs"
+                ]
+            },
+            "bastion": {
+                "LogFileGroups": [
+                    "win-system"
                 ]
             }
         }
@@ -948,6 +1049,156 @@
                                 "aws:Source:SSMParam" : {
                                     "Name" : "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "_awswin" : {
+            "Modes" : {
+                "*" : {
+                    "ecs" : {
+                        "Profiles" : {
+                            "Storage" : "ecs_awswin",
+                            "LogFile" : "awswinlog"
+                        },
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "windows",
+                                "Distribution" : "awswin",
+                                "MajorVersion" : "2019"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-ECS_Optimized"
+                                }
+                            },
+                            "OSPatching": {
+                                "Enabled":false
+                            },
+                            "ComputeTasks": {
+                                "Extensions" : [
+                                    "_computetask_awscli",
+                                    "_computetask_awswin_cfninit_wait",
+                                    "_computetask_awswin_cwlog",
+                                    "_computetask_awswin_ospatching",
+                                    "_computetask_awswin_userbootstrap",
+                                    "_computetask_awswin_hamletenv",
+                                    "_computetask_awswin_volumemount",
+                                    "_computetask_awswin_filedir",
+                                    "_computetask_awswin_vpc_lb",
+                                    "_computetask_awswin_notavailable"
+                                ]
+                            }
+                        }
+                    },
+                    "computecluster" : {
+                        "Profiles" : {
+                            "Storage" : "ec2_awswin",
+                            "LogFile" : "awswinlog"
+                        },
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "windows",
+                                "Distribution" : "awswin",
+                                "MajorVersion" : "2019"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Core-Base"
+                                }
+                            },
+                            "OSPatching": {
+                                "Enabled":false
+                            },
+                            "ComputeTasks": {
+                                "Extensions" : [
+                                    "_computetask_awscli",
+                                    "_computetask_awswin_cfninit_wait",
+                                    "_computetask_awswin_cwlog",
+                                    "_computetask_awswin_ospatching",
+                                    "_computetask_awswin_userbootstrap",
+                                    "_computetask_awswin_hamletenv",
+                                    "_computetask_awswin_volumemount",
+                                    "_computetask_awswin_filedir",
+                                    "_computetask_awswin_vpc_lb",
+                                    "_computetask_awswin_notavailable"
+                                ]
+                            }
+                        }
+                    },
+                    "bastion" : {
+                        "Profiles" : {
+                            "Storage" : "ec2_awswin",
+                            "LogFile" : "awswinlog" 
+                        },
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "windows",
+                                "Distribution" : "awswin",
+                                "MajorVersion" : "2019"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Core-Base"
+                                }
+                            },
+                            "OSPatching": {
+                                "Enabled":false
+                            },
+                            "ComputeTasks": {
+                                "Extensions" : [
+                                    "_computetask_awscli",
+                                    "_computetask_awswin_cfninit_wait",
+                                    "_computetask_awswin_cwlog",
+                                    "_computetask_awswin_ospatching",
+                                    "_computetask_awswin_userbootstrap",
+                                    "_computetask_awswin_hamletenv",
+                                    "_computetask_awswin_volumemount",
+                                    "_computetask_awswin_filedir",
+                                    "_computetask_awswin_vpc_lb",
+                                    "_computetask_awswin_notavailable"
+                                ]
+                            }
+                        }
+                    },
+                    "ec2" : {
+                        "Profiles" : {
+                            "Storage" : "ec2_awswin",
+                            "LogFile" : "awswinlog"
+                        },
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "windows",
+                                "Distribution" : "awswin",
+                                "MajorVersion" : "2019"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base"
+                                }
+                            },
+                            "OSPatching": {
+                                "Enabled":false
+                            },
+                            "ComputeTasks": {
+                                "Extensions" : [
+                                    "_computetask_awscli",
+                                    "_computetask_awswin_cfninit_wait",
+                                    "_computetask_awswin_cwlog",
+                                    "_computetask_awswin_ospatching",
+                                    "_computetask_awswin_userbootstrap",
+                                    "_computetask_awswin_hamletenv",
+                                    "_computetask_awswin_volumemount",
+                                    "_computetask_awswin_filedir",
+                                    "_computetask_awswin_vpc_lb",
+                                    "_computetask_awswin_notavailable"
+                                ]
                             }
                         }
                     }

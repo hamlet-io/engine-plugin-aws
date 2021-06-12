@@ -26,6 +26,9 @@
 
     [#local content = {}]
     [#switch operatingSystem.Family ]
+        [#case "windows" ]
+        [#break]
+
         [#case "linux" ]
             [#switch operatingSystem.Distribution ]
                 [#case "awslinux" ]
@@ -55,7 +58,7 @@
         [#break]
     [/#switch]
 
-    [#if ! (content?has_content) ]
+    [#if ! (content?has_content) && ! (operatingSystem.Family == "windows") ]
         [@fatal
             message="computetask_awscli could not find a way to install the aws cli for this os"
             detail="Check your operating system config or replace this extension with your own"
