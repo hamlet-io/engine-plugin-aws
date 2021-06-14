@@ -26,7 +26,7 @@
     [/#if]
 
     [#-- Get domain/host information --]
-    [#local certificateObject = getCertificateObject(solution.Certificate, segmentQualifiers)]
+    [#local certificateObject = getCertificateObject(solution.Certificate)]
     [#local certificateDomains = getCertificateDomains(certificateObject) ]
     [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
     [#local hostName = getHostName(certificateObject, occurrence) ]

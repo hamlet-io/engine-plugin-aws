@@ -26,7 +26,7 @@
 
     [#local securityProfile = getSecurityProfile(occurrence, core.Type)]
 
-    [#local certificateObject = getCertificateObject(solution.Certificate, segmentQualifiers) ]
+    [#local certificateObject = getCertificateObject(solution.Certificate) ]
     [#local hostName = getHostName(certificateObject, occurrence) ]
     [#local certificateId = formatDomainCertificateId(certificateObject, hostName) ]
     [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
