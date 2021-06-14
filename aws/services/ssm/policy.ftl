@@ -14,7 +14,7 @@
     [#local logGroupName = formatAccountSSMSessionManagerLogGroupName()]
 
     [#return
-        ec2SSMSessionManagerPermission() +
+        ec2SSMSessionManagerPermission(os) +
         ec2SSMAgentUpdatePermission(os, region) +
         getExistingReference(accountEncryptionKeyId)?has_content?then(
             cmkDecryptPermission(accountEncryptionKeyId) +

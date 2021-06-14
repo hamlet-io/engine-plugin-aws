@@ -20,6 +20,7 @@
     [#local computeClusterSecurityGroupName    = resources["securityGroup"].Name ]
     [#local computeClusterLogGroupId           = resources["lg"].Id]
     [#local computeClusterLogGroupName         = resources["lg"].Name]
+    [#local computeClusterOS                   = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
 
     [#local processorProfile = getProcessor(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
     [#local storageProfile   = getStorage(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
@@ -211,7 +212,7 @@
                         "basic"
                     ),
                     getPolicyDocument(
-                        ssmSessionManagerPermission(),
+                        ssmSessionManagerPermission(computeClusterOS),
                         "ssm"
                     )
                 ] +
