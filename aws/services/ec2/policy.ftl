@@ -87,7 +87,7 @@
     ]
 [/#function]
 
-[#function ec2SSMSessionManagerPermission ]
+[#function ec2SSMSessionManagerPermission os="linux" ]
     [#return
         [
             getPolicyStatement(
@@ -97,7 +97,11 @@
                     "ssmmessages:CreateDataChannel",
                     "ssmmessages:OpenControlChannel",
                     "ssmmessages:OpenDataChannel"
-                ]
+                ] +
+                ( os == "windows" )?then(
+                    [ "ec2messages:GetMessages" ],
+                    []
+                )
             )
         ]
     ]
@@ -109,7 +113,11 @@
             getPolicyStatement(
                 [
                     "s3:GetObject"
-                ],
+                ]  +
+                ( os == "windows" )?then(
+                    [ "ssm:ListAssociations" ],
+                    []
+                ),
                 [
                     {
                         "Fn::Join" : [

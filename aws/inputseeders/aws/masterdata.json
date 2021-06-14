@@ -445,25 +445,19 @@
                 "Volumes": {
                     "root" : {
                         "Device" : "/dev/sda1",
-                        "Size" : 50
+                        "Size" : 30
+                    },
+                    "data" : {
+                        "Enabled" : true,
+                        "Device" : "/dev/xvdf",
+                        "Size" : "50",
+                        "MountPath" : "D"
                     },
                     "codeontap": {
                         "Enabled" : true,
-                        "Device": "/dev/xvdf",
+                        "Device": "/dev/xvdg",
                         "Size": "30",
                         "MountPath" : "c:\\codeontap"
-                    },
-                    "cache" : {
-                        "Enabled" : true,
-                        "Device" : "/dev/xvdg",
-                        "Size" : "30",
-                        "MountPath" : "E"
-                    },
-                    "temp" : {
-                        "Enabled" : false,
-                        "Device" : "/dev/xvdh",
-                        "Size" : "30",
-                        "MountPath" : "c:\\temp"
                     }
                 }
             }

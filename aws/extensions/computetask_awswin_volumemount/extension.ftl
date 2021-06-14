@@ -96,16 +96,21 @@
             'create partition primary '
         ]]
         
+        [#local execScript = [
+            'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\${scriptName}.log ;',
+            'echo "Starting volume mount" ;'
+        ]]
+
         [#if osMount?length == 1 ]
             [#local script += [ 'assign letter="${osMount}" ' ]]
         [#else]
             [#local script += [ 'assign mount="${osMount}" ' ]]
+            [#local execScript += [
+                'mkdir ${osMount} ;'
+            ]]
         [/#if]
 
-        [#local execScript = [
-            'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\${scriptName}.log ;',
-            'echo "Starting volume mount" ;',
-            'mkdir ${osMount} ;',
+        [#local execScript += [
             'diskpart /s c:\\ProgramData\\Hamlet\\Scripts\\${scriptName}.txt ;',
             'Stop-Transcript | out-null'
         ]]
