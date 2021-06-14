@@ -78,7 +78,7 @@
         id
         name
         tags
-        kmsKeyId
+        kmsKeyId=""
         description=""
         generateSecret=true
         generateSecretPolicy={}
@@ -90,9 +90,13 @@
         type="AWS::SecretsManager::Secret"
         properties=
             {
-                "Name" : name,
-                "KmsKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                "Name" : name
             } +
+            attributeIfContent(
+                "KmsKeyId",
+                kmsKeyId,
+                getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+            ) +
             attributeIfContent(
                 "Description",
                 description
