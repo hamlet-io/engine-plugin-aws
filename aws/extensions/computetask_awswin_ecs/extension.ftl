@@ -37,7 +37,6 @@
     [#local userInit = {}]
     [#if dockerUsers?has_content ]
         [#list dockerUsers as userName,details ]
-
             [#local userInit = mergeObjects(
                                 userInit,
                                 {
@@ -56,9 +55,8 @@
 
             [#switch dockerVolumeDriver ]
                 [#case "ebs" ]
-
                     [#local dockerVolumeDriverScript += [
-                        { "Fn::Sub" : r'docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION="${AWS::Region}" --grant-all-permissions' }
+                        { "Fn::Sub" : r'docker.exe plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION="${AWS::Region}" --grant-all-permissions' }
                     ]]
                     [#break]
             [/#switch]
@@ -77,10 +75,10 @@
 
     [#if dockerVolumeDriverScript?has_content ]
         [#local dockerVolumeDriverScript = [
-            r'#!/bin/bash',
-            r'set -euo pipefail',
-            'exec > >(tee /var/log/hamlet_cfninit/${dockerVolumeDriverScriptName}.log | logger -t ${dockerVolumeDriverScriptName} -s 2>/dev/console) 2>&1'
-        ] + dockerVolumeDriverScript ]
+            'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\${dockerVolumeDriverScript}.log ;'
+        ] + dockerVolumeDriverScript + [
+            'Stop-Transcript | out-null'
+        ]]
     [/#if]
 
     [#local dockerLoggingDriverScriptName = "ecs_log_driver_config" ]
@@ -107,11 +105,11 @@
     [/#switch]
 
     [#if dockerLoggingDriverScript?has_content ]
-        [#local dockerVolumeDriverScript = [
-            r'#!/bin/bash',
-            r'set -euo pipefail',
-            'exec > >(tee /var/log/hamlet_cfninit/${dockerLoggingDriverScriptName}.log | logger -t ${dockerLoggingDriverScriptName} -s 2>/dev/console) 2>&1'
-        ] + dockerLoggingDriverScript ]
+        [#local dockerLoggingDriverScript = [
+            'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\${dockerLoggingDriverScript}.log ;'
+        ] + dockerLoggingDriverScript  + [
+            'Stop-Transcript | out-null'
+        ]]
     [/#if]
 
     [#local commands +=
@@ -125,17 +123,15 @@
         )]
 
     [#local services += {
-        "sysvinit" : {
-            "docker" : {
-                "enabled" : true,
-                "ensureRunning" : true,
-                "files" : [ ] +
-                valueIfContent(
-                    [ "c:\\ProgramData\\Hamlet\\Scripts\\${dockerLoggingDriverScriptName}.ps1" ],
-                    dockerLoggingDriverScript,
-                    []
-                )
-            }
+        "docker" : {
+            "enabled" : true,
+            "ensureRunning" : true,
+            "files" : [ ] +
+            valueIfContent(
+                [ "c:\\ProgramData\\Hamlet\\Scripts\\${dockerLoggingDriverScriptName}.ps1" ],
+                dockerLoggingDriverScript,
+                []
+            )
         }
     }]
 

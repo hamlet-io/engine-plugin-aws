@@ -367,8 +367,9 @@
                     "ignoreErrors" : false
                 },
                 "StartLogsAgent" : {
-                    "command" : 'powershell.exe -ExecutionPolicy Bypass -Command { "C:\\Program Files\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-agent-ctl.ps1" -a start -m ec2 -c file:"c:\\ProgramData\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-svc.json" -s } ',
-                    "ignoreErrors" : false
+                    "command" : 'powershell.exe -ExecutionPolicy Bypass -Command .\\amazon-cloudwatch-agent-ctl.ps1 -a start -m ec2 -c file:"c:\\ProgramData\\Amazon\\AmazonCloudWatchAgent\\amazon-cloudwatch-svc.json" -s ',
+                    "ignoreErrors" : false,
+                    "cwd" : "C:\\Program Files\\Amazon\\AmazonCloudWatchAgent"
                 }
             }
         }
