@@ -131,7 +131,8 @@
                 "OpsDataBucketName" : operationsBucket,
                 "AppDataBucketName" : dataBucket,
                 "AppDataBucketPrefix" : getAppDataFilePrefix(occurrence),
-                "KmsKeyArn" : kmsKeyArn
+                "KmsKeyArn" : kmsKeyArn,
+                "Parameters" : parameters
             } +
             solution.NetworkAccess?then(
                 {
@@ -144,9 +145,8 @@
 
         [#-- Add in extension specifics including override of defaults --]
         [#local _context = invokeExtensions( occurrence, _context )]
-
-        [#local _context += getFinalEnvironment(occurrence, _context ) ]
-        [#local parameters += _context.Environment ]
+        [#local parameters += (getFinalEnvironment(occurrence, _context )["Environment"])!{} ]
+        [#local parameters += _context.Parameters ]
 
         [#-- Map Template outputs into our standard attributes --]
         [#local outputs = {}]
