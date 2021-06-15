@@ -67,11 +67,11 @@
         [/#list]
     [/#if]
 
+    [#local diskId = 0]
     [#list volumes as id,volume ]
 
         [#local deviceId = ""]
         [#local osMount = ""]
-        [#local diskId = 0]
 
         [#if (volume.Enabled)!true
                 && ((volume.MountPath)!"")?has_content
@@ -90,15 +90,19 @@
 
         [#local script = [
             'select disk ${diskId} ',
-            'attributes disk clear readonly ',
-            'online disk ',
-            'convert mbr ',
+            'attributes disk clear readonly '
+        ]]
+
+        [#local script += [
             'create partition primary '
         ]]
         
         [#local execScript = [
             'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\${scriptName}.log ;',
-            'echo "Starting volume mount" ;'
+            'echo "Starting volume mount" ;',
+            'echo "diskId = ${diskId}"; ',
+            'echo "deviceId = ${deviceId}"; ',
+            'echo "osMount = ${osMount}"; '
         ]]
 
         [#if osMount?length == 1 ]
@@ -109,6 +113,8 @@
                 'mkdir ${osMount} ;'
             ]]
         [/#if]
+        [#local script += [ 'select volume ${diskId} ' ]]
+        [#local script += [ 'format FS=NTFS NOWAIT ' ]]
 
         [#local execScript += [
             'diskpart /s c:\\ProgramData\\Hamlet\\Scripts\\${scriptName}.txt ;',
