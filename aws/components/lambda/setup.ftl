@@ -53,7 +53,7 @@
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
 
-    [#local loggingProfile = getLoggingProfile(occurrence)]
+    [#local loggingProfile = getLoggingProfile(fn)]
 
     [#local vpcAccess = solution.VPCAccess ]
     [#if vpcAccess ]
@@ -68,7 +68,7 @@
         [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
         [#local networkResources = networkLinkTarget.State.Resources ]
 
-        [#local networkProfile = getNetworkProfile(occurrence)]
+        [#local networkProfile = getNetworkProfile(fn)]
 
         [#local vpcId = networkResources["vpc"].Id ]
         [#local vpc = getExistingReference(vpcId)]
@@ -592,7 +592,7 @@
                     "# Release ENIs",
                     "info \"Releasing ENIs ... \"",
                     "release_enis" +
-                    " \"" + region + "\" " +
+                    " \"" + regionId + "\" " +
                     " \"" + fnName + "\" || return $?"
 
                 ] +
