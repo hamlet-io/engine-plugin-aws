@@ -1,0 +1,41 @@
+name: test
+
+on:
+  push:
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: javasetup
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+
+      - name: Installs
+        run: |
+          pip install --pre hamlet-cli
+
+          sudo apt-get update
+          sudo apt-get install -y jq dos2unix
+
+      - name: Tests
+        env:
+          - GENERATION_PLUGIN_DIRS={{ env.GITHUB_WORKSPACE }}
+          - TEST_OUTPUT_DIR='{{ env.GITHUB_WORKSPACE }}/hamlet_tests'
+        run: |
+          hamlet set-engine unicycle
+          hamlet -i mock -p aws -p awstest -f cf deploy test-deployments -p '--junitxml=junit.xml' -o "${TEST_OUTPUT_DIR}"
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: 'hamlet_tests/junit.xml'
+          fail_on_failure: true
+          require_tests: true
