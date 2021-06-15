@@ -445,18 +445,18 @@
                 "Volumes": {
                     "root" : {
                         "Device" : "/dev/sda1",
-                        "Size" : 30
+                        "Size" : 40
                     },
                     "data" : {
                         "Enabled" : true,
-                        "Device" : "/dev/xvdf",
+                        "Device" : "xvdd",
                         "Size" : "50",
                         "MountPath" : "D"
                     },
                     "codeontap": {
                         "Enabled" : true,
-                        "Device": "/dev/xvdg",
-                        "Size": "30",
+                        "Device": "xvde",
+                        "Size": "10",
                         "MountPath" : "c:\\codeontap"
                     }
                 }
@@ -707,8 +707,8 @@
             "FilePath": "/cwa/amazon-cloudwatch-agent.log",
             "TimeFormat": "%H: %M: %S%y%b%-d"
         },
-        "/ssm/amazon-ssm-agent.log": {
-            "FilePath": "/ssm/amazon-ssm-agent.log",
+        "/awsssm/amazon-ssm-agent.log": {
+            "FilePath": "/awsssm/amazon-ssm-agent.log",
             "TimeFormat": "%Y-%m-%d %H:%M:%S%"
         }
     },
@@ -735,7 +735,7 @@
                 "/ec2/EC2Launch.log",
                 "/ec2/UserdataExecution.log",
                 "/cwa/amazon-cloudwatch-agent.log",
-                "/ssm/amazon-ssm-agent.log"
+                "/awsssm/amazon-ssm-agent.log"
             ]
         }
     },

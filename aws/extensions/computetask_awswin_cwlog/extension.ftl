@@ -20,7 +20,7 @@
 /]
 
 [#function windows_path_converter nix_path ]
-    [#local retval = nix_path?replace("/ssm/", r"c:\ProgramData\Amazon\SSM\Logs\")]
+    [#local retval = nix_path?replace("/awsssm/", r"c:\ProgramData\Amazon\SSM\Logs\")]
     [#local retval = retval?replace("/ec2/", r"c:\ProgramData\Amazon\EC2-Windows\Launch\Log\")]
     [#local retval = retval?replace("/cwa/", r"c:\ProgramData\Amazon\AmazonCloudWatchAgent\Logs\")]
 
@@ -96,10 +96,13 @@
                                 r'   $tempFile = "c:\Temp\$($fileName | Split-Path -Leaf)"',
                                 r'   (Get-Content -Path $fileName) -replace "{instance_id}", $instance_id -replace "{ecs_container_instance_id}", $ecs_container_instance_id -replace "{ecs_cluster}", $ecs_cluster -replace "{vpc_id}", $vpc_id | Add-Content -Path $tempFile',
                                 r'   Remove-Item -Path $fileName',
-                                r'   Move-Item -Path $tempFile -Destination $fileName',
+                                r'   Copy-Item -Path $tempFile -Destination $fileName',
+                                r'   echo "SED lastexitcode = $lastexitcode"',
+                                r'   echo "SED errorcode = $?"',
                                 r'}',
                                 r'',
-                                r'sed "c:\ProgramData\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-agent.json"',
+                                r'sed "c:\ProgramData\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-svc.json" ;',
+                                r'sed "c:\ProgramData\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-agent.json" ;',
                                 r'Stop-Transcript | out-null'
                             ]
                         ]
@@ -159,6 +162,19 @@
                                 r'                    "CultureName": "en-US", ',
                                 r'                    "TimeZoneKind": "UTC", ',
                                 r'                    "LineCount": "3" ',
+                                r'                } ',
+                                r'            }, ',
+                                r'            { ',
+                                r'                "Id": "SSMLogs", ',
+                                r'                "FullName": "AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch", ',
+                                r'                "Parameters": { ',
+                                r'                    "LogDirectoryPath": "C:\ProgramData\Amazon\SSM\Logs\", ',
+                                r'                    "TimestampFormat": "yyyy-MM-dd HH:mm:ss", ',
+                                r'                    "Encoding": "UTF-8", ',
+                                r'                    "Filter": "", ',
+                                r'                    "CultureName": "en-US", ',
+                                r'                    "TimeZoneKind": "Local", ',
+                                r'                    "LogStream": "{instance_id}/ssm" ',
                                 r'                } ',
                                 r'            }, ',
                                 r'            { ',
@@ -248,12 +264,6 @@
                                 r'         ] ',
                                 r'      }, ',
                                 r'      "TCPv4": { ',
-                                r'         "measurement": [ ',
-                                r'            "Connections Established" ',
-                                r'         ], ',
-                                r'         "metrics_collection_interval": 60 ',
-                                r'      }, ',
-                                r'      "TCPv6": { ',
                                 r'         "measurement": [ ',
                                 r'            "Connections Established" ',
                                 r'         ], ',
