@@ -107,7 +107,7 @@
     [/#switch]
 
     [#if dockerLoggingDriverScript?has_content ]
-        [#local dockerVolumeDriverScript = [
+        [#local dockerLoggingDriverScript = [
             r'#!/bin/bash',
             r'set -euo pipefail',
             'exec > >(tee /var/log/hamlet_cfninit/${dockerLoggingDriverScriptName}.log | logger -t ${dockerLoggingDriverScriptName} -s 2>/dev/console) 2>&1'
