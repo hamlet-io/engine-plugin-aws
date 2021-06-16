@@ -449,13 +449,13 @@
                     },
                     "data" : {
                         "Enabled" : true,
-                        "Device" : "xvdd",
+                        "Device" : "xvdf",
                         "Size" : "50",
                         "MountPath" : "D"
                     },
                     "codeontap": {
                         "Enabled" : true,
-                        "Device": "xvde",
+                        "Device": "xvdg",
                         "Size": "10",
                         "MountPath" : "c:\\codeontap"
                     }
