@@ -72,6 +72,8 @@
                             "Fn::Join" : [
                                 "\n",
                                 [
+                                    "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\setdirs.log ;",
+                                    r'echo "Directory and File Creation" ;'
                                     r"mkdir c:\ProgramData\Hamlet\Logs\codeontap"
                                 ]
                             ]
