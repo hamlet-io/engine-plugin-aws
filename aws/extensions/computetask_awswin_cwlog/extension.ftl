@@ -43,13 +43,15 @@
         [#local logGroup = logFileGroups[logFileGroup] ]
         [#list logGroup.LogFiles as logFile ]
             [#local logFileDetails = logFiles[logFile] ]
+            [#local timeFormat = logFileDetails.TimeFormat]
+            [#local timeFormat = timeFormat!'%Y/%m/%d %H:%M:%S%Z']
             [#local logContent +=
                 [
                     r'{',
                     r'    "file_path": "' + windows_path_converter(logFileDetails.FilePath) + '",',
-                    r'    "log_group_name": "' + logGroupName + '"',
+                    r'    "log_group_name": "' + logGroupName + '",',
                     r'    "log_stream_name": "{instance_id}' + logFileDetails.FilePath + '",',
-                    r'    "timestamp_format": "' + (logFileDetails.TimeFormat)!"%Y/%m/%d %H:%M:%S%Z" + '"',
+                    r'    "timestamp_format": "' + timeFormat + '" ',
                     r'},'
                 ]
             ]
@@ -256,11 +258,6 @@
                                 r'                        "file_path": "c:\\ProgramData\\Hamlet\\Logs", ',
                                 r'                        "log_group_name": "' + logGroupName + '", ',
                                 r'                        "log_stream_name": "{instance_id}/hamletlogs" ',
-                                r'                    }, ',
-                                r'                    { ',
-                                r'                        "file_path": "c:\\ProgramData\\Amazon\\SSM\\Logs\\amazon-ssm-agent.log", ',
-                                r'                        "log_group_name": "' + logGroupName + '", ',
-                                r'                        "log_stream_name": "{instance_id}/awsssm" ',
                                 r'                    } ',
                                 r'                ] ',
                                 r'            }, ',
@@ -350,7 +347,7 @@
                     "ignoreErrors" : false
                 },
                 "StartLogsAgent" : {
-                    "command" : 'powershell.exe -ExecutionPolicy Bypass -Command .\\amazon-cloudwatch-agent-ctl.ps1 -a start -m ec2 -s ',
+                    "command" : 'powershell.exe -ExecutionPolicy Bypass -Command .\\amazon-cloudwatch-agent-ctl.ps1 -a fetch-config -m ec2 -c file:"config.json" -s ',
                     "ignoreErrors" : false,
                     "cwd" : "C:\\Program Files\\Amazon\\AmazonCloudWatchAgent"
                 }

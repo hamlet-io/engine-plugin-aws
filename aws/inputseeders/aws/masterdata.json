@@ -709,7 +709,7 @@
         },
         "/awsssm/amazon-ssm-agent.log": {
             "FilePath": "/awsssm/amazon-ssm-agent.log",
-            "TimeFormat": "%Y-%m-%d %H:%M:%S%"
+            "TimeFormat": "%Y-%m-%d %H:%M:%S"
         }
     },
     "LogFileGroups": {
