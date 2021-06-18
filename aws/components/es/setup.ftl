@@ -81,8 +81,8 @@
 
     [#local esPolicyStatements = [] ]
 
-    [#local storageProfile = getStorage(occurrence, "ElasticSearch")]
-    [#local volume = (storageProfile.Volumes["codeontap"])!{}]
+    [#local storageProfile = getStorage(occurrence, ES_COMPONENT_TYPE)]
+    [#local volume = (storageProfile.Volumes["data"])!{}]
     [#local esCIDRs = getGroupCIDRs(solution.IPAddressGroups, true, occurrence) ]
 
     [#if !esCIDRs?has_content && !(esAuthentication == "SIG4ORIP") ]
