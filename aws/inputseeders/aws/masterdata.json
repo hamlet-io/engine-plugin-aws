@@ -727,16 +727,16 @@
     "BootstrapProfiles": {
         "default": {
             "EC2": {
-                "BootStraps": []
+                "Bootstraps": []
             },
             "ECS": {
-                "BootStraps": []
+                "Bootstraps": []
             },
             "ComputeCluster": {
-                "BootStraps": []
+                "Bootstraps": []
             },
             "bastion": {
-                "BootStraps": []
+                "Bootstraps": []
             }
         }
     },
