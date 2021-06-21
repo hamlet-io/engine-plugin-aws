@@ -82,3 +82,29 @@ To update cd into the repo where you cloned the plugin and run `git pull` ( haml
 This is a plugin for the hamlet engine and won't work by itself. Usage of this provider requires the other parts of hamlet deploy
 
 See https://docs.hamlet.io for more information
+
+### Contributing
+
+When contributing to hamlet we recommend installing this plugin using the **Local Clone** method above using a fork of the repository
+
+#### Testing
+
+The plugin includes a test suite which generates a collection of deployments and checks that their content aligns with what is expected
+
+To run the test suite locally install the hamlet cli and use the provider testing included
+
+```bash
+
+# install cli
+pip install hamlet-cli
+
+# run the tests
+hamlet -p aws -p awstest -f cf deploy run-deployments
+```
+
+This will run all of the tests and provide you the results. We also run this on all Pull requests made to the repository
+
+##### Submitting Changes
+
+Changes to the plugin are made through pull requests to this repo and all commits should use the [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) format
+This allows us to generate changelogs automatically and to understand what changes have been made
