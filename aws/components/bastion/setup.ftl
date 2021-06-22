@@ -255,7 +255,7 @@
             [@createEC2LaunchConfig
                 id=bastionLaunchConfigId
                 processorProfile=processorProfile
-                storageProfile=storageProfile
+                storageProfile=_context.StorageProfile
                 securityGroupId=bastionSecurityGroupToId
                 instanceProfileId=bastionInstanceProfileId
                 resourceId=bastionAutoScaleGroupId
