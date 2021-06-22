@@ -445,19 +445,19 @@
                 "Volumes": {
                     "root" : {
                         "Device" : "/dev/sda1",
-                        "Size" : 40
+                        "Size" : 30
                     },
-                    "data" : {
+                    "userdata" : {
                         "Enabled" : true,
                         "Device" : "xvdd",
                         "Size" : "50",
                         "MountPath" : "D"
                     },
-                    "codeontap": {
+                    "data": {
                         "Enabled" : false,
                         "Device": "xvdz",
                         "Size": "10",
-                        "MountPath" : "c:\\codeontap"
+                        "MountPath" : "c:\\esdata"
                     }
                 }
             }
@@ -1066,7 +1066,7 @@
                             "Image" : {
                                 "Source" : "aws:SSMParam",
                                 "aws:Source:SSMParam" : {
-                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-ECS_Optimized"
+                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-ContainersLatest"
                                 }
                             },
                             "OSPatching": {
@@ -1075,15 +1075,16 @@
                             "ComputeTasks": {
                                 "Extensions" : [
                                     "_computetask_awscli",
-                                    "_computetask_awswin_cfninit_wait",
+                                    "_computetask_awswin_cfninit_asg",
                                     "_computetask_awswin_cwlog",
                                     "_computetask_awswin_ospatching",
                                     "_computetask_awswin_userbootstrap",
                                     "_computetask_awswin_hamletenv",
                                     "_computetask_awswin_volumemount",
                                     "_computetask_awswin_filedir",
-                                    "_computetask_awswin_vpc_lb",
-                                    "_computetask_awswin_notavailable"
+                                    "_computetask_awswin_ecs",
+                                    "_computetask_awswin_eip",
+                                    "_computetask_awswin_notavailable"    
                                 ]
                             }
                         }
@@ -1111,13 +1112,14 @@
                             "ComputeTasks": {
                                 "Extensions" : [
                                     "_computetask_awscli",
-                                    "_computetask_awswin_cfninit_wait",
+                                    "_computetask_awswin_cfninit_asg",
                                     "_computetask_awswin_cwlog",
                                     "_computetask_awswin_ospatching",
                                     "_computetask_awswin_userbootstrap",
                                     "_computetask_awswin_hamletenv",
                                     "_computetask_awswin_volumemount",
                                     "_computetask_awswin_filedir",
+                                    "_computetask_awswin_scriptsdeployment",
                                     "_computetask_awswin_vpc_lb",
                                     "_computetask_awswin_notavailable"
                                 ]
@@ -1147,14 +1149,14 @@
                             "ComputeTasks": {
                                 "Extensions" : [
                                     "_computetask_awscli",
-                                    "_computetask_awswin_cfninit_wait",
+                                    "_computetask_awswin_cfninit_asg",
                                     "_computetask_awswin_cwlog",
                                     "_computetask_awswin_ospatching",
                                     "_computetask_awswin_userbootstrap",
                                     "_computetask_awswin_hamletenv",
                                     "_computetask_awswin_volumemount",
                                     "_computetask_awswin_filedir",
-                                    "_computetask_awswin_vpc_lb",
+                                    "_computetask_awswin_eip",
                                     "_computetask_awswin_notavailable"
                                 ]
                             }

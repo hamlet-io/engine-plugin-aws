@@ -91,13 +91,15 @@
         [#case "fluentd" ]
             [#local dockerLoggingDriverScript += [
                 r'function update_log_driver {',
-                r'  local ecs_log_driver="$1"; shift',
-                r'  . /etc/sysconfig/docker',
-                r'  if [[ -n "${OPTIONS}" ]]; then',
-                r'     sed -i "s,^\(OPTIONS=\).*,\1\"${OPTIONS} --log-driver=${ecs_log_driver}\",g" /etc/sysconfig/docker',
-                r'  else',
-                r'     echo "OPTIONS=\"--log-driver=${ecs_log_driver}\"" >> /etc/sysconfig/docker',
-                r'    fi'
+                r'  $ecs_log_driver=$args[0] ',
+                r'  if (Test-Path $fileToCheck -PathType leaf) ',
+                r'  { ',
+                r'    $dockerjson = (Get-Content -Raw -Path C:\ProgramData\Docker\config\daemon.json | ConvertFrom-Json) ',
+                r'    $dockerjson.log-driver = ${ecs_log_driver} ',
+                r'    $dockerjson | ConvertTo-Json -depth 100 | Out-File "C:\ProgramData\Docker\config\daemon.json" ',
+                r'  } else {',
+                r'    echo "{ \"log-driver\":\"${ecs_log_driver}\" }" > C:\ProgramData\Docker\config\daemon.json ',
+                r'  }'
                 r'}',
                 'update_log_driver "${defaultLogDriver}"'
             ]]
