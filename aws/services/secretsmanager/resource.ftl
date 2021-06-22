@@ -105,9 +105,10 @@
                 {
                     "GenerateSecretString" : generateSecretPolicy
                 },
-                {
-                    "SecretString" : secretString
-                }
+                attributeIfContent(
+                    "SecretString",
+                    secretString
+                )
             )
         tags=tags
     /]
