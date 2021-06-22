@@ -7,7 +7,7 @@
     [/#if]
 
     [@addDefaultGenerationContract
-        subsets=["pregeneration", "config", "prologue", "epilogue" ]
+        subsets=["pregeneration", "config", "template", "prologue", "epilogue" ]
         converters=converters
     /]
 [/#macro]
@@ -22,6 +22,8 @@
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
 
     [#local buildReference = getOccurrenceBuildReference(occurrence)]
     [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
@@ -116,7 +118,13 @@
                     []
                 ) +
                 asFiles?has_content?then(
-                     findAsFilesScript("settingsFiles", asFiles),
+                     findAsFilesScript("filesToSync", asFiles) +
+                        syncFilesToBucketScript(
+                            "filesToSync",
+                            regionId,
+                            operationsBucket,
+                            getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX")
+                        ),
                      []
                 ) +
                 getLocalFileScript(
