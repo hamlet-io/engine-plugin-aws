@@ -73,11 +73,11 @@
         [#local deviceId = ""]
         [#local osMount = ""]
 
+        [#local diskId = diskId + 1]
         [#if (volume.Enabled)!true
                 && ((volume.MountPath)!"")?has_content
                 && ((volume.Device)!"")?has_content ]
 
-            [#local diskId = diskId + 1]
             [#local deviceId = volume.Device]
             [#local osMount = volume.MountPath]
             [#local dataVolume = (volume.DataVolume)!false]

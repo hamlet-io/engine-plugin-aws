@@ -27,6 +27,17 @@
     [#local content = {}]
     [#switch operatingSystem.Family ]
         [#case "windows" ]
+            [#switch operatingSystem.Distribution ]
+                [#case "awswin" ]
+                    [#local content = {
+                        "packages" : {
+                            "msi" : {
+                                "awscli" : "https://awscli.amazonaws.com/AWSCLIV2.msi"
+                            }
+                        }
+                    }]
+                    [#break]
+            [/#switch]
         [#break]
 
         [#case "linux" ]
@@ -58,7 +69,7 @@
         [#break]
     [/#switch]
 
-    [#if ! (content?has_content) && ! (operatingSystem.Family == "windows") ]
+    [#if ! (content?has_content) ]
         [@fatal
             message="computetask_awscli could not find a way to install the aws cli for this os"
             detail="Check your operating system config or replace this extension with your own"

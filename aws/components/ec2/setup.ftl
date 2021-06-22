@@ -256,18 +256,7 @@
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +
-                        cwLogsProducePermission(ec2LogGroupName) +
-                        (ec2OS = "windows")?then(
-                            [
-                                getPolicyStatement(
-                                    [
-                                        "cloudwatch:PutMetricData",
-                                        "ec2:DescribeTags"
-                                    ],
-                                    "*")
-                            ],
-                            []
-                        ) +
+                        cwLogsProducePermission(ec2LogGroupName, ec2OS) +
                         ec2EBSVolumeReadPermission(),
                         "basic"
                     ),

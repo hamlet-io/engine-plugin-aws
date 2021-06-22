@@ -66,11 +66,6 @@
         priority=2
         engine=AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE
         content={
-                "packages" : {
-                    "msi" : {
-                        "awscli": "https://awscli.amazonaws.com/AWSCLIV2.msi"
-                    }
-                },
                 "files" : {
                     "c:\\ProgramData\\Hamlet\\Scripts\\set_dirs.ps1" : {
                         "content" : {
