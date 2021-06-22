@@ -79,7 +79,7 @@
                 && ((volume.Device)!"")?has_content ]
 
             [#local deviceId = volume.Device]
-            [#local osMount = volume.MountPath]
+            [#local osMount = (volume.MountPath)!""]
             [#local dataVolume = (volume.DataVolume)!false]
 
         [#else]

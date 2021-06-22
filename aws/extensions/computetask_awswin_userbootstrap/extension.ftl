@@ -29,7 +29,7 @@
 
     [#local bootstrapProfile = _context.BootstrapProfile ]
 
-    [#list bootstrapProfile.BootStraps as bootstrapName ]
+    [#list bootstrapProfile.Bootstraps as bootstrapName ]
         [#local bootstrap = bootstraps[bootstrapName]]
 
         [#local scriptStore = scriptStores[bootstrap.ScriptStore ]]
