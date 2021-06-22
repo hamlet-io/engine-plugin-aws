@@ -450,13 +450,13 @@
                     "userdata" : {
                         "Enabled" : true,
                         "Device" : "xvdd",
-                        "Size" : "50",
+                        "Size" : 50,
                         "MountPath" : "D"
                     },
                     "data": {
                         "Enabled" : false,
                         "Device": "xvdz",
-                        "Size": "10",
+                        "Size": 10,
                         "MountPath" : "c:\\esdata"
                     }
                 }
