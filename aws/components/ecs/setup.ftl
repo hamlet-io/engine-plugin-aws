@@ -560,7 +560,7 @@
         [@createEC2LaunchConfig
             id=ecsLaunchConfigId
             processorProfile=processorProfile
-            storageProfile=storageProfile
+            storageProfile=_context.StorageProfile
             instanceProfileId=ecsInstanceProfileId
             securityGroupId=ecsSecurityGroupId
             resourceId=ecsAutoScaleGroupId

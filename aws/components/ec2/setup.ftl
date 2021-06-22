@@ -353,7 +353,7 @@
                         type="AWS::EC2::Instance"
                         metadata=getCFNInitFromComputeTasks(computeTaskConfig)
                         properties=
-                            getBlockDevices(storageProfile) +
+                            getBlockDevices(_context.StorageProfile) +
                             {
                                 "DisableApiTermination" : false,
                                 "EbsOptimized" : false,

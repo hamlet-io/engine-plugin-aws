@@ -366,19 +366,19 @@
                     "codeontap": {
                         "Enabled" : true,
                         "Device": "/dev/sdp",
-                        "Size": "30",
+                        "Size": 30,
                         "MountPath" : "/codeontap"
                     },
                     "cache" : {
                         "Enabled" : false,
                         "Device" : "/dev/xvdc",
-                        "Size" : "30",
+                        "Size" : 30,
                         "MountPath" : "/cache"
                     },
                     "temp" : {
                         "Enabled" : false,
                         "Device" : "/dev/xvdt",
-                        "Size" : "30",
+                        "Size" : 30,
                         "MountPath" : "/temp"
                     }
                 }
@@ -392,7 +392,7 @@
                     "dockerVolume" : {
                         "Enabled" : false,
                         "Device" : "/dev/xvdv",
-                        "Size" : "50",
+                        "Size" : 50,
                         "MountPath" : "/var/lib/docker/volumes"
                     }
                 }

@@ -111,7 +111,7 @@
         [#if (storageProfile.Volumes)?has_content]
             [#local ebsVolumes = [] ]
             [#list storageProfile.Volumes?values as volume]
-                [#if volume?is_hash]
+                [#if volume?is_hash && volume.Enabled ]
                     [#local ebsVolumes +=
                         [
                             {
@@ -120,8 +120,16 @@
                                     "DeleteOnTermination" : true,
                                     "Encrypted" : false,
                                     "VolumeSize" : (volume.Size)?number,
-                                    "VolumeType" : "gp2"
-                                }
+                                    "VolumeType" : volume.Type
+                                } +
+                                attributeIfTrue(
+                                    "Iops",
+                                    (
+                                        ["gp3", "io1", "io2" ]?seq_contains(volume.Type) &&
+                                        volume.Iops??
+                                    ),
+                                    (volume.Iops)!"HamletFatal: Iops not defined for provisioned iops storage"
+                                )
                             }
                         ]
                     ]

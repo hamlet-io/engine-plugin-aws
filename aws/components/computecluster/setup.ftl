@@ -547,7 +547,7 @@
         [@createEC2LaunchConfig
             id=computeClusterLaunchConfigId
             processorProfile=processorProfile
-            storageProfile=storageProfile
+            storageProfile=_context.StorageProfile
             securityGroupId=computeClusterSecurityGroupId
             instanceProfileId=computeClusterInstanceProfileId
             resourceId=computeClusterAutoScaleGroupId
