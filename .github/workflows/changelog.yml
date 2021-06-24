@@ -28,12 +28,16 @@ jobs:
             --diff-url "https://github.com/${REPO}/compare/{previous}...{current}" \
             --issue-url "https://github.com/${REPO}/issues/{id}"
 
-      - name: Create Pull Request
+      - name: change log PR
         uses: peter-evans/create-pull-request@v3
         with:
-          commit-message: "chore: changelog bump [skip actions]"
+          commit-message: "chore: changelog bump"
           delete-branch: true
           title: 'chore: update changelog'
-          body: 'Updates the changelog with the latest updates'
+          body: |
+            Updates the changelog with the latest updates
+            This is raised as a draft and should be merged before before tagging a release
           labels: 'chore'
           base: 'master'
+          branch: create-pull-request/changelog_bump
+          draft: true
