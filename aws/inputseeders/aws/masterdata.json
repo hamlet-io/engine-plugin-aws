@@ -120,6 +120,11 @@
                                     "EncryptionSource": "LocalService"
                                 },
                                 "Lifecycles": {
+                                    "flowlogs": {
+                                        "Prefix": "VPCFlowLogs",
+                                        "Expiration": "_flowlogs",
+                                        "Offline": "_flowlogs"
+                                    },
                                     "awslogs": {
                                         "Prefix": "AWSLogs",
                                         "Expiration": "_operations",
