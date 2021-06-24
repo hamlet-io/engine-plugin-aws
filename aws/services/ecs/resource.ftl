@@ -522,13 +522,14 @@
                 (engine != "fargate") && (placementStrategies?size > 0),
                 placementStrategies
             ) +
-            attributeIfContent(
+            attributeIfTrue(
                 "CapacityProviderStrategy",
+                (capacityProviderStrategy?has_content && ! daemonMode)
                 capacityProviderStrategy
             ) +
             attributeIfTrue(
                 "LaunchType",
-                ! (capacityProviderStrategy?has_content),
+                ! (capacityProviderStrategy?has_content) || daemonMode,
                 engine?upper_case
             )
         dependencies=dependencies
