@@ -1,14 +1,24 @@
 name: package
 
 on:
-  push:
+
+  # Workflow run will run after another job has completed
+  # so we wait for the workflow to complete then get going
+  workflow_run:
+    workflows:
+      - 'testing'
+
     branches:
-      - master
+      - 'master'
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
 
+    types:
+      - completed
+
 jobs:
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
 
