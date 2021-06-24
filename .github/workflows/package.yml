@@ -1,14 +1,24 @@
 name: package
 
 on:
-  push:
+
+  # Workflow run will run after another job has completed
+  # so we wait for the workflow to complete then get going
+  workflow_run:
+    workflows:
+      - 'testing'
+
     branches:
-      - master
+      - 'master'
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
 
+    types:
+      - completed
+
 jobs:
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
 
@@ -54,5 +64,4 @@ jobs:
           context: .
           tags: "ghcr.io/${{github.repository}}:${{ steps.get_tag_name.outputs.TAG_NAME }}"
           push: ${{ startsWith(steps.get_tag_name.outputs.PUSH_IMAGE, 'true') }}
-          push: true
           target: base_package
