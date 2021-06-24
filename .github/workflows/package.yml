@@ -25,23 +25,31 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push latest
-        if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v2
-        with:
-          tags: "ghcr.io/${{ github.repository}}:latest"
-          push: true
-          target: base_package
+      - name: add build details
+        run: |
+          pip install --pre hamlet-cli
+          hamlet engine add-engine-source-build
 
-      - name: Get the tag name
-        if: startsWith(github.ref, 'refs/tags/')
-        id: get_tag_name
-        run: echo ::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}
+      - id: get_tag_name
+        name: image tag prefix
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo ::set-output name=TAG_NAME::latest
+            exit 0
+          fi
 
-      - name: Push Release
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo ::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}
+            exit 0
+          fi
+
+          echo ::set-output name=TAG_NAME::test
+
+      - name: build and push container
         if: startsWith(github.ref, 'refs/tags/' )
         uses: docker/build-push-action@v2
         with:
+          context: .
           tags: "ghcr.io/${{github.repository}}:${{ steps.get_tag_name.outputs.TAG_NAME }}"
           push: true
           target: base_package
