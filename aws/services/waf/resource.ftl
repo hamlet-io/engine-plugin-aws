@@ -371,7 +371,7 @@
                     r' case ${STACK_OPERATION} in',
                     r'   create|update)',
                     r'       manage_waf_logging ' +
-                    r'          "' + region + r'"' +
+                    r'          "' + regionId + r'"' +
                     r'          "' + wafaclId + r'"' +
                     r'          "' + wafType + r'"' +
                     r'          "enable"' +
@@ -380,7 +380,7 @@
                     r'       ;;',
                     r'    delete)',
                     r'       manage_waf_logging ' +
-                    r'          "' + region + r'"' +
+                    r'          "' + regionId + r'"' +
                     r'          "' + wafaclId + r'"' +
                     r'          "' + wafType + r'"' +
                     r'          "disable"' +
@@ -396,7 +396,7 @@
                     r' case ${STACK_OPERATION} in',
                     r'    create|update|delete)',
                     r'       manage_waf_logging ' +
-                    r'          "' + region + r'"' +
+                    r'          "' + regionId + r'"' +
                     r'          "' + wafaclId + r'"' +
                     r'          "' + wafType + r'"' +
                     r'          "disable"' +

@@ -147,13 +147,13 @@
                                                 r'       # Create Data pipeline',
                                                 r'       info "Applying cli level configurtion"',
                                                 r'       update_vpn_options ' +
-                                                r'       "' + region + r'" ' +
+                                                r'       "' + regionId + r'" ' +
                                                 r'       "${STACK_NAME}"' +
                                                 r'       "' + vpnConnectionId + r'" ' +
                                                 r'       "${tmpdir}/cli-' +
                                                             vpnConnectionId + "-" + vpnOptionsCommand + r'.json" || return $?'
                                                 r'      tunnel_ips=$(get_vpn_connection_tunnel_ips ' +
-                                                r'       "' + region + r'" ' +
+                                                r'       "' + regionId + r'" ' +
                                                 r'       "${STACK_NAME}"' +
                                                 r'       "' + vpnConnectionId + r'" )',
                                                 r'      tunnel_ip_1="${tunnel_ips[0]}"',
@@ -240,7 +240,7 @@
                                     [@addToDefaultBashScriptOutput
                                         content=[
                                             r'transitGatewayAttachment="$(get_transitgateway_vpn_attachment' +
-                                            r' "' + region + r'" ' +
+                                            r' "' + regionId + r'" ' +
                                             r' "${STACK_NAME}"' +
                                             r' "' + vpnConnectionId + r'" )"'
                                         ] +

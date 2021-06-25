@@ -86,7 +86,7 @@
                 "case $\{STACK_OPERATION} in",
                 "  delete)",
                 "   manage_iam_userpassword" +
-                "   \"" + region + "\" " +
+                "   \"" + regionId + "\" " +
                 "   \"delete\" " +
                 "   \"" + userName + "\" || return $?",
                 "   ;;",
@@ -270,16 +270,16 @@
                     "function generate_iam_accesskey() {",
                     "info \"Generating IAM AccessKey... \"",
                     "access_key=\"$(create_iam_accesskey" +
-                    " \"" + region + "\" " +
+                    " \"" + regionId + "\" " +
                     " \"" + userName + "\" || return $?)\"",
                     "access_key_array=($access_key)",
                     "encrypted_secret_key=\"$(encrypt_kms_string" +
-                    " \"" + region + "\" " +
+                    " \"" + regionId + "\" " +
                     " \"$\{access_key_array[1]}\" " +
                     " \"" + cmkKeyArn + "\" || return $?)\"",
                     "smtp_password=\"$(get_iam_smtp_password \"$\{access_key_array[1]}\" )\"",
                     "encrypted_smtp_password=\"$(encrypt_kms_string" +
-                    " \"" + region + "\" " +
+                    " \"" + regionId + "\" " +
                     " \"$\{smtp_password}\" " +
                     " \"" + cmkKeyArn + "\" || return $?)\""
                 ] +
@@ -305,12 +305,12 @@
                     "user_password=\"$(generateComplexString" +
                     " \"" + userPasswordLength + "\" )\"",
                     "encrypted_user_password=\"$(encrypt_kms_string" +
-                    " \"" + region + "\" " +
+                    " \"" + regionId + "\" " +
                     " \"$\{user_password}\" " +
                     " \"" + cmkKeyArn + "\" || return $?)\"",
                     "info \"Setting User Password... \"",
                     "manage_iam_userpassword" +
-                    " \"" + region + "\" " +
+                    " \"" + regionId + "\" " +
                     " \"manage\" " +
                     " \"" + userName + "\" " +
                     " \"$\{user_password}\" || return $?"

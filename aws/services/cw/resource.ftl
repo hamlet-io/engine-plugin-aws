@@ -303,7 +303,7 @@
                 [#local widgetProperties =
                     {
                         "metrics" : widgetMetrics,
-                        "region" : region,
+                        "region" : regionId,
                         "stat" : "Sum",
                         "period": 300,
                         "view" : widget.asGraph?has_content?then(

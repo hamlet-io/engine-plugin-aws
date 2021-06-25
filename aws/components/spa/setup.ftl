@@ -158,7 +158,7 @@
                 "       # Invalidate distribution",
                 "       info \"Invalidating cloudfront distribution " + distributionId + " " + pathPattern + "\"",
                 "       invalidate_distribution" +
-                "       \"" + region + "\" " +
+                "       \"" + regionId + "\" " +
                 "       \"" + distributionId + "\" " +
                 "       \"" + pathPattern + "\" || return $?"
             ]]

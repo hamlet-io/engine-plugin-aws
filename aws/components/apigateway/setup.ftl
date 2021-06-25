@@ -972,7 +972,7 @@
                                 "\"" + core.Name + "\"" + " " +
                                 "\"" + accountId + "\"" + " " +
                                 "\"" + accountObject.ProviderId + "\"" + " " +
-                                "\"" + region + "\"" + " || return $?",
+                                "\"" + regionId + "\"" + " || return $?",
                         "#"
 
                     ]
@@ -997,7 +997,7 @@
                 [#local openapiContext =
                     {
                         "Account" : accountObject.ProviderId,
-                        "Region" : region,
+                        "Region" : regionId,
                         "CognitoPools" : cognitoPools,
                         "LambdaAuthorizers" : lambdaAuthorizers,
                         "PrivateHTTPEndpoints" : privateHTTPEndpoints,
@@ -1110,7 +1110,7 @@
                         "DEFINITION_FILE=$( get_openapi_definition_filename " +
                                 "\"" + core.Name + "\"" + " " +
                                 "\"" + accountId + "\"" + " " +
-                                "\"" + region + "\"" + " )",
+                                "\"" + regionId + "\"" + " )",
                         "#"
                     ] +
                     getLocalFileScript(
