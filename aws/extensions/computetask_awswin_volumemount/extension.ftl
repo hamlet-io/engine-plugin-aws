@@ -30,6 +30,8 @@
     [#-- Support for data volumes as linked components to single instances --]
     [#if occurrence.Core.Type == EC2_COMPONENT_TYPE ]
 
+        [#-- These volumes are provided through DataVolumes which are an indepdent component --]
+        [#-- These are attached to instances through links and VolumeMount macro which applies the extra configuration required --]
         [#local zoneResources = occurrence.State.Resources.Zones]
         [#list zones as zone]
             [#if multiAZ || (zones[0].Id = zone.Id)]
@@ -54,6 +56,7 @@
 
                             [#local volumes += {
                                 mountId : {
+                                    "Enabled" : true,
                                     "MountPath" : volumeMount.MountPath,
                                     "Device" : volumeMount.DeviceId,
                                     "DataVolume" : true
@@ -74,14 +77,10 @@
         [#local osMount = ""]
 
         [#local diskId = diskId + 1]
-        [#if (volume.Enabled)!true
-                && ((volume.MountPath)!"")?has_content
-                && ((volume.Device)!"")?has_content ]
-
+        [#if volume.Enabled && volume.MountPath?? && volume.Device?? ]
             [#local deviceId = volume.Device]
-            [#local osMount = (volume.MountPath)!""]
+            [#local osMount = volume.MountPath]
             [#local dataVolume = (volume.DataVolume)!false]
-
         [#else]
             [#continue]
         [/#if]
