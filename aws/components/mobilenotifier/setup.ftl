@@ -214,7 +214,7 @@
                             "       split_cli_file \"$\{CLI}\" \"$\{tmpdir}\" || return $?",
                             "       info \"Deploying SNS PlatformApp: " + core.SubComponent.Name + "\"",
                             "       platform_app_arn=\"$(deploy_sns_platformapp" +
-                            "       \"" + region + "\" " +
+                            "       \"" + regionId + "\" " +
                             "       \"" + platformAppName + "\" " +
                             "       \"" + platformArn + "\" " +
                             "       \"" + encryptionScheme + "\" " +
@@ -237,7 +237,7 @@
                             "       # Delete SNS Platform Application",
                             "       info \"Deleting SNS Platform App " + core.SubComponent.Name + "\" ",
                             "       delete_sns_platformapp" +
-                            "       \"" + region + "\" " +
+                            "       \"" + regionId + "\" " +
                             "       \"" + platformArn + "\" "
                             "   ;;",
                             "   esac"
@@ -257,7 +257,7 @@
                         "  create|update)",
                         "       info \"Cleaning up platforms that have been removed from config\"",
                         "       cleanup_sns_platformapps " +
-                        "       \"" + region + "\" " +
+                        "       \"" + regionId + "\" " +
                         "       \"" + platformAppName + "\" " +
                         "       '" + getJSON(deployedPlatformAppArns, false) + "' || return $?",
                         "       ;;",

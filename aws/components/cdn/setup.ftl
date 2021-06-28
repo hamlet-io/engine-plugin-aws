@@ -533,7 +533,7 @@
                     "       # Invalidate distribution",
                     "       info \"Invalidating cloudfront distribution ... \"",
                     "       invalidate_distribution" +
-                    "       \"" + region + "\" " +
+                    "       \"" + regionId + "\" " +
                     "       \"" + getExistingReference(cfId) + "\" " +
                     "       \"" + invalidationPaths?join(" ") + "\" || return $?"
                     " ;;",

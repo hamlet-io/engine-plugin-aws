@@ -170,7 +170,7 @@
                                         cmkKeyId,
                                         dataBucket,
                                         dataBucketPrefix,
-                                        region
+                                        regionId
                                 ),
                                 []
                             ) +

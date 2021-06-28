@@ -338,13 +338,13 @@
                     r'       # Create Data pipeline',
                     r'       info "Applying cli level configurtion"',
                     r'       pipelineId="$(create_data_pipeline' +
-                    r'       "' + region + r'" ' +
+                    r'       "' + regionId + r'" ' +
                     r'       "${tmpdir}/cli-' +
                                 pipelineId + r'-' + pipelineCreateCommand + r'.json")"',
                     r'       # Add Pipeline Definition',
                     r'       info "Updating pipeline definition"',
                     r'       update_data_pipeline' +
-                    r'       "' + region + r'" ' +
+                    r'       "' + regionId + r'" ' +
                     r'       "${pipelineId}" ' +
                     r'       "${tmpdir}/pipeline/pipeline-definition.json" ' +
                     r'       "${tmpdir}/pipeline/pipeline-parameters.json" ' +
