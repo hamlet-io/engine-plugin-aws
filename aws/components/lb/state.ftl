@@ -20,7 +20,7 @@
         [#local networkResources = networkLinkTarget.State.Resources ]
         [#local vpcId = networkResources["vpc"].Id ]
         [#local routeTableLinkTarget = getLinkTarget(occurrence, networkLink + { "RouteTable" : occurrenceNetwork.RouteTable })]
-        [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
+        [#local routeTableConfiguration = (routeTableLinkTarget.Configuration.Solution)!{} ]
     [/#if]
 
     [#local publicFacing = (routeTableConfiguration.Public)!false ]
