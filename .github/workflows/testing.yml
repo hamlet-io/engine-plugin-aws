@@ -28,10 +28,9 @@ jobs:
       - name: Run Tests
         env:
           GENERATION_PLUGIN_DIRS: ${{ github.workspace }}
-          TEST_OUTPUT_DIR: ${{ github.workspace }}/hamlet_tests
         run: |
           hamlet engine set-engine unicycle
-          hamlet -i mock -p aws -p awstest -f cf deploy test-deployments -p '--junitxml=junit.xml' -o "${TEST_OUTPUT_DIR}"
+          hamlet -i mock -p aws -p awstest -f cf deploy test-deployments -p '--junitxml=junit.xml' -o 'hamlet_tests/'
 
       - name: Test Results
         uses: mikepenz/action-junit-report@v2
