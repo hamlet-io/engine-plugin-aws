@@ -56,7 +56,7 @@
             [#switch dockerVolumeDriver ]
                 [#case "ebs" ]
                     [#local dockerVolumeDriverScript += [
-                        { "Fn::Sub" : r'docker.exe plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION="${AWS::Region}" --grant-all-permissions' }
+                        { "Fn::Sub" : r'docker.exe plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION="${AWS::Region}" --grant-all-permissions 2>&1 | Write-Output ' }
                     ]]
                     [#break]
             [/#switch]
@@ -144,8 +144,8 @@
                 [#case "awswin" ]
                     [#local commands += {
                         "9_RestartECSAgent" : {
-                            "command" : "exit 3010",
-                            "ignoreErrors" : false
+                            "command" : "<powershell>Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\docker_restart.log ; Restart-Service -Name docker ; Stop-Transcript | out-null</powershell>",
+                            "ignoreErrors" : true
                          }
                      }]
             [/#switch]

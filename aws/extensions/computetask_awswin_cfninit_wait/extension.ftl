@@ -44,8 +44,7 @@
         content=[
             r"<powershell>",
             "# 'Create logging dir for cfninit scripts' ;",
-            "mkdir c:\\ProgramData\\Hamlet\\Logs\\hamlet_cfninit ;",
-            "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\hamlet_cfninit\\user-data.log -Append ;",
+            "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-data.log -Append ;",
             "echo 'Create staging dirs for cfninit scripts' ;",
             "mkdir c:\\ProgramData\\Hamlet\\Scripts ;",
             "mkdir c:\\Temp ;",
@@ -53,7 +52,7 @@
             "echo 'Remainder of configuration via metadata' ;",
             {
                 "Fn::Sub" : [
-                    r'cfn-init.exe -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${ConfigSet}',
+                    r'cfn-init.exe -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${ConfigSet} 2>&1 | Write-Output ',
                     {
                         "StackName" : { "Ref" : "AWS::StackName" },
                         "Region" : { "Ref" : "AWS::Region" },
@@ -65,7 +64,7 @@
             ";",
             {
                 "Fn::Sub" : [
-                    r'cfn-signal.exe -e $lastexitcode --stack ${StackName} --resource ${Resource} --region ${Region}',
+                    r'cfn-signal.exe -e $lastexitcode --stack ${StackName} --resource ${Resource} --region ${Region} 2>&1 | Write-Output ',
                     {
                         "StackName" : { "Ref" : "AWS::StackName" },
                         "Region" : { "Ref" : "AWS::Region" },
@@ -76,7 +75,7 @@
             ";",
             {
                 "Fn::Sub" : [
-                    r'cfn-init.exe -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${WaitConfigSet}',
+                    r'cfn-init.exe -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${WaitConfigSet} 2>&1 | Write-Output ',
                     {
                         "StackName" : { "Ref" : "AWS::StackName" },
                         "Region" : { "Ref" : "AWS::Region" },
@@ -88,7 +87,7 @@
             ";",
             {
                 "Fn::Sub" : [
-                    r"cfn-signal.exe -e $lastexitcode '${WaitHandleUrl}'",
+                    r"cfn-signal.exe -e $lastexitcode '${WaitHandleUrl}'  2>&1 | Write-Output",
                     {
                         "WaitHandleUrl" : getReference(waitHandleId)
                     }

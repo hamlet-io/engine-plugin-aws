@@ -58,9 +58,10 @@
                                         "\n",
                                         [
                                             "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\${scriptName}.log",
+                                            r'Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ',
                                             {
                                                 "Fn::Sub" : [
-                                                    r'aws --region "${AWS::Region}" elbv2 register-targets --target-group-arn "${TargeGroupArn}" --targets "Id=$(Invoke-WebRequest -Uri http://169.254.169.254/latest/meta-data/instance-id)"',
+                                                    r'.\aws --region "${AWS::Region}" elbv2 register-targets --target-group-arn "${TargeGroupArn}" --targets "Id=$(Invoke-WebRequest -UseBasicParsing -Uri http://169.254.169.254/latest/meta-data/instance-id)" 2>&1 | Write-Output ',
                                                     { "TargeGroupArn": targetGroupArn }
                                                 ]
                                             },
@@ -92,9 +93,10 @@
                                         "\n",
                                         [
                                             "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\${scriptName}.log",
+                                            r'Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ',
                                             {
                                                 "Fn::Sub" : [
-                                                    r'aws --region "${AWS::Region}" elb register-instances-with-load-balancer --load-balancer-name "${LoadBalancer}" --instances "$(Invoke-WebRequest -Uri http://169.254.169.254/latest/meta-data/instance-id)"',
+                                                    r'.\aws --region "${AWS::Region}" elb register-instances-with-load-balancer --load-balancer-name "${LoadBalancer}" --instances "$(Invoke-WebRequest -UseBasicParsing -Uri http://169.254.169.254/latest/meta-data/instance-id)" 2>&1 | Write-Output ',
                                                     { "LoadBalancer": getReference(lbId) }
                                                 ]
                                             }

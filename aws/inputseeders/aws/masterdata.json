@@ -444,7 +444,7 @@
                 "Volumes": {
                     "root" : {
                         "Device" : "/dev/sda1",
-                        "Size" : 30
+                        "Size" : 40
                     },
                     "userdata" : {
                         "Enabled" : true,
@@ -708,7 +708,8 @@
         },
         "/awsssm/amazon-ssm-agent.log": {
             "FilePath": "/awsssm/amazon-ssm-agent.log",
-            "TimeFormat": "%Y-%m-%d %H:%M:%S"
+            "TimeFormat": "%Y-%m-%d %H:%M:%S",
+            "MultiLinePattern": "^INFO"
         }
     },
     "LogFileGroups": {
@@ -1056,7 +1057,13 @@
                             "Storage" : "ecs_awswin",
                             "LogFile" : "awswinlog"
                         },
+                        "AutoScaling": {
+                            "StartupTimeout": "20M"
+                        },
                         "ComputeInstance" : {
+                            "ManagementPorts": [
+                                "rdp"
+                            ],
                             "OperatingSystem" : {
                                 "Family" : "windows",
                                 "Distribution" : "awswin",
@@ -1065,7 +1072,7 @@
                             "Image" : {
                                 "Source" : "aws:SSMParam",
                                 "aws:Source:SSMParam" : {
-                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-ContainersLatest"
+                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-ECS_Optimized/image_id"
                                 }
                             },
                             "OSPatching": {
@@ -1093,7 +1100,11 @@
                             "Storage" : "ec2_awswin",
                             "LogFile" : "awswinlog"
                         },
+                        "StartupTimeout": 900,
                         "ComputeInstance" : {
+                            "ManagementPorts": [
+                                "rdp"
+                            ],
                             "OperatingSystem" : {
                                 "Family" : "windows",
                                 "Distribution" : "awswin",
@@ -1102,7 +1113,7 @@
                             "Image" : {
                                 "Source" : "aws:SSMParam",
                                 "aws:Source:SSMParam" : {
-                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Core-Base"
+                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base"
                                 }
                             },
                             "OSPatching": {
@@ -1130,7 +1141,11 @@
                             "Storage" : "ec2_awswin",
                             "LogFile" : "awswinlog" 
                         },
+                        "StartupTimeout": 900,
                         "ComputeInstance" : {
+                            "ManagementPorts": [
+                                "rdp"
+                            ],
                             "OperatingSystem" : {
                                 "Family" : "windows",
                                 "Distribution" : "awswin",
@@ -1139,7 +1154,7 @@
                             "Image" : {
                                 "Source" : "aws:SSMParam",
                                 "aws:Source:SSMParam" : {
-                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Core-Base"
+                                    "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base"
                                 }
                             },
                             "OSPatching": {
@@ -1166,7 +1181,11 @@
                             "Storage" : "ec2_awswin",
                             "LogFile" : "awswinlog"
                         },
+                        "StartupTimeout": 900,
                         "ComputeInstance" : {
+                            "ManagementPorts": [
+                                "rdp"
+                            ],
                             "OperatingSystem" : {
                                 "Family" : "windows",
                                 "Distribution" : "awswin",

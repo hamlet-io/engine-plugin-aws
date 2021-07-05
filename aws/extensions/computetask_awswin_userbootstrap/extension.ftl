@@ -78,9 +78,10 @@
                                     }
                                 ]
                             },
+                            r'Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ',
                             {
                                 "Fn::Sub" : [
-                                    r'aws --region "${Region}" s3 sync "s3://${CodeBucket}/${ScriptStorePrefix}" "${!BOOTSTRAP_SCRIPTS_DIR}"',
+                                    r'.\aws --region "${Region}" s3 sync "s3://${CodeBucket}/${ScriptStorePrefix}" "${!BOOTSTRAP_SCRIPTS_DIR}" 2>&1 | Write-Output ',
                                     {
                                         "Region" : { "Ref" : "AWS::Region" },
                                         "CodeBucket" : codeBucket,
