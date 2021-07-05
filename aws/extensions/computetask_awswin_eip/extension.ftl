@@ -30,7 +30,7 @@
         [#local script = [
             'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\eip.log ;',
             'echo "Starting volume mount" ;',
-            r'$instance_id="$(Invoke-WebRequest -Uri http://169.254.169.254/latest/meta-data/instance-id)" ;',
+            r'$instance_id="$(Invoke-WebRequest -UseBasicParsing -Uri http://169.254.169.254/latest/meta-data/instance-id)" ;',
             { "Fn::Sub" : r'export AWS_DEFAULT_REGION="${AWS::Region}"' },
             {
                 "Fn::Sub" : [
@@ -39,7 +39,8 @@
                 ]
             },
             r'if ( ("$available_eip" -eq "") -and ("$available_eip" -ne "None" )) {',
-            r'  aws ec2 associate-address --instance-id $instance_id --allocation-id $available_eip --no-allow-reassociation',
+            r'  Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ;'
+            r'  .\aws ec2 associate-address --instance-id $instance_id --allocation-id $available_eip --no-allow-reassociation 2>&1 | Write-Output ',
             r'} else {',
             r'  echo "No elastic IP available to allocate"',
             r'  exit 255',

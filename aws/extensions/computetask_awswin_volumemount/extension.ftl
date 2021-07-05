@@ -70,7 +70,7 @@
         [/#list]
     [/#if]
 
-    [#local diskId = 0]
+    [#local diskId = -1]
     [#list volumes as id,volume ]
 
         [#local deviceId = ""]
@@ -116,7 +116,7 @@
         [#local script += [ 'format FS=NTFS NOWAIT ' ]]
 
         [#local execScript += [
-            'diskpart /s c:\\ProgramData\\Hamlet\\Scripts\\${scriptName}.txt ;',
+            'diskpart /s c:\\ProgramData\\Hamlet\\Scripts\\${scriptName}.txt 2>&1 | Write-Output ;',
             'Stop-Transcript | out-null'
         ]]
 

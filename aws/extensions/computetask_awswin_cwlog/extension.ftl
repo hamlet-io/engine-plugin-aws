@@ -22,6 +22,7 @@
 [#function windows_path_converter nix_path ]
     [#local retval = nix_path?replace("/awsssm/", r"c:\ProgramData\Amazon\SSM\Logs\")]
     [#local retval = retval?replace("/ec2/", r"c:\ProgramData\Amazon\EC2-Windows\Launch\Log\")]
+    [#local retval = retval?replace("/var/log/ecs/", r"c:\ProgramData\Amazon\ECS\log\")]
     [#local retval = retval?replace("/cwa/", r"c:\ProgramData\Amazon\AmazonCloudWatchAgent\Logs\")]
 
     [#local retval = retval?replace("/var/log/", r"C:\ProgramData\Hamlet\Logs\")]
@@ -81,12 +82,12 @@
                                 r'Start-Transcript -Path c:\ProgramData\Hamlet\Logs\awslogs.log ;',
                                 r'echo "Metadata log details" ;',
                                 r'try {',
-                                r'   $ecs_cluster=(Invoke-WebRequest "http://localhost:51678/v1/metadata" | Select-Object -Property Content | ConvertFrom-Json | Select-Object -Property Cluster )',
+                                r'   $ecs_cluster=(Invoke-WebRequest -UseBasicParsing "http://localhost:51678/v1/metadata" | Select-Object -Property Content | ConvertFrom-Json | Select-Object -Property Cluster )',
                                 r'} catch {',
                                 r'   $ecs_cluster=""',
                                 r'}'
                                 r'try {',
-                                r'   $ecs_container_instance_id=(Invoke-WebRequest "http://localhost:51678/v1/metadata" | Select-Object -Property Content  | ConvertFrom-Json | Select-Object -Property ContainerInstanceArn) ;',
+                                r'   $ecs_container_instance_id=(Invoke-WebRequest -UseBasicParsing "http://localhost:51678/v1/metadata" | Select-Object -Property Content  | ConvertFrom-Json | Select-Object -Property ContainerInstanceArn) ;',
                                 r'} catch {',
                                 r'   $ecs_container_instance_id=""',
                                 r'}'
@@ -124,9 +125,9 @@
                             logContent +
                             [
                                 r'                    { ',
-                                r'                        "file_path": "c:\\ProgramData\\Hamlet\\Logs", ',
+                                r'                        "file_path": "c:\\ProgramData\\Hamlet\\Logs\\user-data.log", ',
                                 r'                        "log_group_name": "' + logGroupName + '", ',
-                                r'                        "log_stream_name": "{instance_id}/hamletlogs" ',
+                                r'                        "log_stream_name": "{instance_id}/user-data" ',
                                 r'                    } ',
                                 r'                ] ',
                                 r'            }, ',

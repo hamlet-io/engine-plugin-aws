@@ -34,8 +34,7 @@
         content=[
             r"<powershell>",
             "# 'Create logging dir for cfninit scripts' ;",
-            "mkdir c:\\ProgramData\\Hamlet\\Logs\\hamlet_cfninit ;",
-            "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\hamlet_cfninit\\user-data.log -Append ;",
+            "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-data.log -Append ;",
             "echo 'Create staging dirs for cfninit scripts' ;",
             "mkdir c:\\ProgramData\\Hamlet\\Scripts ;",
             "mkdir c:\\Temp ;",
@@ -43,7 +42,7 @@
             "echo 'Remainder of configuration via metadata' ;",
             {
                 "Fn::Sub" : [
-                    r'cfn-init.exe -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${ConfigSet}',
+                    r'cfn-init.exe -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${ConfigSet} 2>&1 | Write-Output ',
                     {
                         "StackName" : { "Ref" : "AWS::StackName" },
                         "Region" : { "Ref" : "AWS::Region" },
@@ -52,13 +51,35 @@
                     }
                 ]
             },
-            r'$init_status=$lastexitcode ;',
+            ";",
+            r'$init_status="$lastexitcode" ;',
             r'echo "Signal the status from cfn-init $init_status" ;',
-            r'Start-Sleep 600 ;',
+            r'$instance_id="$(Invoke-WebRequest -UseBasicParsing -Uri http://169.254.169.254/latest/meta-data/instance-id)" ;',
+            r'echo "Instance_id $instance_id" ;',
+            r'Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ;'
+            {
+                "Fn::Sub" : [
+                    r'.\aws --region ${Region} autoscaling describe-auto-scaling-instances --instance-ids $instance_id --query AutoScalingInstances[0].AutoScalingGroupName --output text 2>&1 | Write-Output ',
+                    {
+                        "Region" : { "Ref" : "AWS::Region" }
+                    }
+                ]
+            },
             ";",
             {
                 "Fn::Sub" : [
-                    r'cfn-signal.exe -e $init_status --stack ${StackName} --resource ${Resource} --region ${Region}',
+                    r'.\aws --region ${Region} autoscaling describe-auto-scaling-instances --instance-ids $instance_id --query AutoScalingInstances[0].AutoScalingGroupName --output text | Tee-Object -Variable asg_name ',
+                    {
+                        "Region" : { "Ref" : "AWS::Region" }
+                    }
+                ]
+            },
+            ";",
+            r'echo "Asg_name $asg_name" ;',
+            r'Start-Sleep 1 ;',
+            {
+                "Fn::Sub" : [
+                    r'cfn-signal.exe -e $init_status --stack ${StackName} --resource ${Resource} --region ${Region} 2>&1 | Write-Output ',
                     {
                         "StackName" : { "Ref" : "AWS::StackName" },
                         "Region" : { "Ref" : "AWS::Region" },
@@ -66,16 +87,8 @@
                     }
                 ]
             },
+            ";",
             r'echo "Signal the status to the ASG" ;',
-            r'$instance_id="$(Invoke-WebRequest -Uri http://169.254.169.254/latest/meta-data/instance-id)" ;',
-            {
-                "Fn::Sub" : [
-                    r'$asg_name="$(aws --region ${Region} autoscaling describe-auto-scaling-instances --instance-ids "$instance_id" --query "AutoScalingInstances[0].AutoScalingGroupName" --output text)"',
-                    {
-                        "Region" : { "Ref" : "AWS::Region" }
-                    }
-                ]
-            },
             r'if ( "$init_status" -eq "0" )',
             r'{ ',
             r'   echo "init process successful"',
@@ -84,15 +97,19 @@
             r'   echo "init process failed"',
             r'   $asg_result="ABANDON"',
             r'}',
+            r'echo "Call params", $instance_id, $asg_name, $asg_result ;',
             {
                 "Fn::Sub" : [
-                    r'aws --region ${Region} autoscaling complete-lifecycle-action  --lifecycle-hook-name ${HookName} --auto-scaling-group-name $asg_name --instance-id $instance_id --lifecycle-action-result $asg_result ',
+                    r'.\aws --region ${Region} autoscaling complete-lifecycle-action  --lifecycle-hook-name ${HookName} --auto-scaling-group-name $asg_name --instance-id $instance_id --lifecycle-action-result $asg_result 2>&1 | Write-Output ',
                     {
                         "Region" : { "Ref" : "AWS::Region" },
                         "HookName" : computeResourceId
                     }
                 ]
             }
+            ";",
+            r'echo "exitcode from complete-lifecycle-action $lastexitcode" ;',
+            r"</powershell>"
         ]
     /]
 

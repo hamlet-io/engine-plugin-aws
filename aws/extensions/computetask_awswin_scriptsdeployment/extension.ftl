@@ -35,10 +35,11 @@
                             "Fn::Join" : [
                                 "\n",
                                 [
-                                    r'mkdir c:\ProgramData\Hamlet\Scripts',
+                                    r'mkdir c:\ProgramData\Hamlet\Scripts ;',
+                                    r'Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ;',
                                     {
                                         "Fn::Sub" : [
-                                            r'aws --region "${Region}" s3 cp --quiet "s3://${ScriptsFile}" c:\ProgramData\Hamlet\Scripts',
+                                            r'.\aws --region "${Region}" s3 cp --quiet "s3://${ScriptsFile}" c:\ProgramData\Hamlet\Scripts 2>&1 | Write-Output',
                                             {
                                                 "Region" : {
                                                     "Ref" : "AWS::Region"
@@ -47,6 +48,7 @@
                                             }
                                         ]
                                     },
+                                    ";",
                                     r' if ( Test-Path "c:\ProgramData\Hamlet\Scripts\scripts.zip" -PathType leaf ) {',
                                     r'   Expand-Archive -Path "c:\ProgramData\Hamlet\Scripts\scripts.zip" -DestinationPath "c:\ProgramData\Hamlet\Scripts" ',
                                     r'} else {',
