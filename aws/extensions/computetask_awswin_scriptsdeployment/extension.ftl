@@ -75,11 +75,11 @@
                 },
                 "commands" : {
                     "01RunInitScript" : {
-                        "command" : "c:\\ProgramData\\Hamlet\\Scripts\\fetch_scripts.sh",
+                        "command" : "powershell.exe -ExecutionPolicy Bypass -Command c:\\ProgramData\\Hamlet\\Scripts\\fetch_scripts.ps1",
                         "ignoreErrors" : false
                     },
                     "02RunInitScript" : {
-                        "command" : "c:\\ProgramData\\Hamlet\\Scripts\\run_scripts.sh",
+                        "command" : "powershell.exe -ExecutionPolicy Bypass -Command c:\\ProgramData\\Hamlet\\Scripts\\run_scripts.ps1",
                         "cwd" : "c:\\ProgramData\\Hamlet\\Scripts\\",
                         "ignoreErrors" : false
                     }
