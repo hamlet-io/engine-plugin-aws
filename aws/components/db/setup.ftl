@@ -61,6 +61,12 @@
             [#local auroraCluster = true ]
             [#break]
 
+        [#case "sqlserver-ee"]
+        [#case "sqlserver-se"]
+        [#case "sqlserver-ex"]
+        [#case "sqlserver-web"]
+            [#break]
+
         [#default]
             [@precondition
                 function="solution_rds"
@@ -101,7 +107,9 @@
     [#local rdsSecurityGroupId = resources["securityGroup"].Id ]
     [#local rdsSecurityGroupName = resources["securityGroup"].Name ]
 
-    [#local rdsDatabaseName = solution.DatabaseName!productName]
+    [#local rdsDatabaseName = (engine?starts_with("sqlserver-"))?then(
+            "",
+            solution.DatabaseName!productName)]
     [#local passwordEncryptionScheme = (solution.GenerateCredentials.EncryptionScheme?has_content)?then(
             solution.GenerateCredentials.EncryptionScheme?ensure_ends_with(":"),
             "" )]
