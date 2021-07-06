@@ -30,21 +30,23 @@
         [#local script = [
             'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\eip.log ;',
             'echo "Starting volume mount" ;',
+            r'Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ;'
             r'$instance_id="$(Invoke-WebRequest -UseBasicParsing -Uri http://169.254.169.254/latest/meta-data/instance-id)" ;',
-            { "Fn::Sub" : r'export AWS_DEFAULT_REGION="${AWS::Region}"' },
+            { "Fn::Sub" : r'[System.Environment]::SetEnvironmentVariable("AWS_DEFAULT_REGION","${AWS::Region}") ;' },
             {
                 "Fn::Sub" : [
-                    r'$available_eip="$(aws ec2 describe-addresses --filter "Name=allocation-id,Values=${AllocationIds}" --query ' + r"'Addresses[?AssociationId==`null`].AllocationId | [0]' " + '--output text )"',
+                    r'$available_eip="$(.\aws ec2 describe-addresses --filter "Name=allocation-id,Values=${AllocationIds}" --query ' + r"'Addresses[?AssociationId==`null`].AllocationId | [0]' " + '--output text )"',
                     { "AllocationIds": { "Fn::Join" : [ ",", allocationIds ] }}
                 ]
             },
-            r'if ( ("$available_eip" -eq "") -and ("$available_eip" -ne "None" )) {',
-            r'  Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ;'
+            r'echo "Params", $instance_id, $available_eip',
+            r'if ( ("$available_eip" -ne "") -and ("$available_eip" -ne "None" )) {',
             r'  .\aws ec2 associate-address --instance-id $instance_id --allocation-id $available_eip --no-allow-reassociation 2>&1 | Write-Output ',
             r'} else {',
             r'  echo "No elastic IP available to allocate"',
             r'  exit 255',
-            r'}'
+            r'}',
+            r'Stop-Transcript | out-null'
         ]]
 
         [#local content = {
@@ -61,7 +63,7 @@
             },
             "commands" : {
                 "01AssignEIP" : {
-                    "command" : "c:\\ProgramData\\Hamlet\\Scripts\\eip_allocation.ps1",
+                    "command" : "powershell.exe -ExecutionPolicy Bypass -Command c:\\ProgramData\\Hamlet\\Scripts\\eip_allocation.ps1",
                     "ignoreErrors" : false
                 }
             }
