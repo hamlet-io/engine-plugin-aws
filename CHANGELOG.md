@@ -1,9 +1,11 @@
 # Changelog
 
-## Unreleased (2021-06-21)
+## Unreleased (2021-07-07)
 
 #### New Features
 
+* draft changelog pr
+* s3 flowlog expiration ([#343](https://github.com/hamlet-io/engine-plugin-aws/issues/343))
 * move testing to Github Actions
 * (secretsmanager): make kms optional
 * (template): parameter macro support
@@ -15,27 +17,48 @@
 * (dataset): basic tests for dataset component
 * (dataset): add support for external s3 sets
 * add support for docker packaging
-* (lambda): check env size ([#320](https://github.com/roleyfoley/engine-plugin-aws/issues/320))
+* (lambda): check env size ([#320](https://github.com/hamlet-io/engine-plugin-aws/issues/320))
 * (datapieline): base testing module
 * (datapipeline): adds support for url image
 #### Fixes
 
+* change priority on default vpcendpoints
+* (ci): default docker tagging handling
+* dockerignore for git
+* minor updates and fix changelog version
+* (lb): missing route table link
+* trigger package after testing
+* (ci): control push based on ref
+* use latest for unreleased updates
+* (ecs): handle daemon launch mode for ec2 hosts
+* (adaptor): asfile settings handling
+* (secretsmanager): make secret string optional
+* changelog generation
+* bootstrap casing fixes
 * (ci): add pull request trigger
 * add pr build support
-* update get profile calls ([#334](https://github.com/roleyfoley/engine-plugin-aws/issues/334))
-* API Gateway Schema naming constraint ([#323](https://github.com/roleyfoley/engine-plugin-aws/issues/323))
+* update get profile calls ([#334](https://github.com/hamlet-io/engine-plugin-aws/issues/334))
+* API Gateway Schema naming constraint ([#323](https://github.com/hamlet-io/engine-plugin-aws/issues/323))
 * (lb): only validate cert when required
 * (lambda): revert environment variable refactor
 * (s3): list permissions for s3 buckets
 * add pregeneration subset
 #### Refactorings
 
+* use array for ssh keys
+* (ci): install stable cli and update tags
+* (ci): ignore the git dir in docker
+* remove direct references to region ([#349](https://github.com/hamlet-io/engine-plugin-aws/issues/349))
+* volume handling on ec2 instances
 * (es): rename storage profile config
 * standarise the profile lookup process
-* remove use of segmentQualifier ([#325](https://github.com/roleyfoley/engine-plugin-aws/issues/325))
+* remove use of segmentQualifier ([#325](https://github.com/hamlet-io/engine-plugin-aws/issues/325))
 * update segment unit priorties
+#### Others
 
-Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-plugin-aws/compare/8.1.2...abf8af5)
+* include build details in container image
+
+Full set of changes: [`8.1.2...2540ff0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.1.2...2540ff0)
 
 ## 8.1.2 (2021-05-17)
 
@@ -45,7 +68,7 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * (contentnode): external image source support
 * add tests for mobile app
 * (mobileapp): image source support
-* add docker and docker compose compute tasks  ([#292](https://github.com/roleyfoley/engine-plugin-aws/issues/292))
+* add docker and docker compose compute tasks  ([#292](https://github.com/hamlet-io/engine-plugin-aws/issues/292))
 * (adaptor): support for adaptor attributes
 * (globadb): support for change streams
 * (ec2): handle post tasks for ec2
@@ -60,73 +83,73 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * (ecs): align with latest aws features
 * adds support for healthchecks
 * (ec2): adds support for autoscale lifecycles
-* awslinux2 support for ec2 instances ([#276](https://github.com/roleyfoley/engine-plugin-aws/issues/276))
+* awslinux2 support for ec2 instances ([#276](https://github.com/hamlet-io/engine-plugin-aws/issues/276))
 * AWS image source attribute sets
 * add ec2 image source support for aws
 * aws compute task implementations
-* private bastion ([#166](https://github.com/roleyfoley/engine-plugin-aws/issues/166))
-* (apigateway): Image sourcing ([#267](https://github.com/roleyfoley/engine-plugin-aws/issues/267))
+* private bastion ([#166](https://github.com/hamlet-io/engine-plugin-aws/issues/166))
+* (apigateway): Image sourcing ([#267](https://github.com/hamlet-io/engine-plugin-aws/issues/267))
 * (cd): setup latest hamlet on each run
-* (baseline): add invoke inbound policy for data ([#263](https://github.com/roleyfoley/engine-plugin-aws/issues/263))
-* Cloudformation parameter support ([#262](https://github.com/roleyfoley/engine-plugin-aws/issues/262))
+* (baseline): add invoke inbound policy for data ([#263](https://github.com/hamlet-io/engine-plugin-aws/issues/263))
+* Cloudformation parameter support ([#262](https://github.com/hamlet-io/engine-plugin-aws/issues/262))
 * (sqs): ordering configuration for queues
-* (userpool): adds constraints for schema ([#245](https://github.com/roleyfoley/engine-plugin-aws/issues/245))
+* (userpool): adds constraints for schema ([#245](https://github.com/hamlet-io/engine-plugin-aws/issues/245))
 * (gateway): vpn gateway dpd action
-* input seeders ([#236](https://github.com/roleyfoley/engine-plugin-aws/issues/236))
+* input seeders ([#236](https://github.com/hamlet-io/engine-plugin-aws/issues/236))
 * (modules): add no_master modules
-* whatif input provider ([#233](https://github.com/roleyfoley/engine-plugin-aws/issues/233))
-* (s3): adds bucket policy for inventory ([#230](https://github.com/roleyfoley/engine-plugin-aws/issues/230))
+* whatif input provider ([#233](https://github.com/hamlet-io/engine-plugin-aws/issues/233))
+* (s3): adds bucket policy for inventory ([#230](https://github.com/hamlet-io/engine-plugin-aws/issues/230))
 * (ec2): rename an additional authorized_keys file
 * (ec2): refactor getInitConfigSSHPublicKeys method
 * (ec2): SSH Key Import to ec2 instances
-* baselinekey extensions and policy migration ([#229](https://github.com/roleyfoley/engine-plugin-aws/issues/229))
+* baselinekey extensions and policy migration ([#229](https://github.com/hamlet-io/engine-plugin-aws/issues/229))
 * (s3): inventory report support
-* (federatedrole): support for env in assignemnts ([#217](https://github.com/roleyfoley/engine-plugin-aws/issues/217))
-* (spa): image source via url ([#216](https://github.com/roleyfoley/engine-plugin-aws/issues/216))
-* (userpool): extension support for providers ([#215](https://github.com/roleyfoley/engine-plugin-aws/issues/215))
-* (template): url image source ([#211](https://github.com/roleyfoley/engine-plugin-aws/issues/211))
-* (s3): extension support for bucket policy [#203](https://github.com/roleyfoley/engine-plugin-aws/issues/203)
-* add changelog generation ([#210](https://github.com/roleyfoley/engine-plugin-aws/issues/210))
+* (federatedrole): support for env in assignemnts ([#217](https://github.com/hamlet-io/engine-plugin-aws/issues/217))
+* (spa): image source via url ([#216](https://github.com/hamlet-io/engine-plugin-aws/issues/216))
+* (userpool): extension support for providers ([#215](https://github.com/hamlet-io/engine-plugin-aws/issues/215))
+* (template): url image source ([#211](https://github.com/hamlet-io/engine-plugin-aws/issues/211))
+* (s3): extension support for bucket policy [#203](https://github.com/hamlet-io/engine-plugin-aws/issues/203)
+* add changelog generation ([#210](https://github.com/hamlet-io/engine-plugin-aws/issues/210))
 * (output): add replace function for outputs
 * (queuehost): encrypted url and secret support
 * (queuehost): initial testing
 * (queuehost): aws deployment support
 * (cdn): add support for external service origins
 * (ecs): external image sourcing
-* globaldb secondary indexes ([#204](https://github.com/roleyfoley/engine-plugin-aws/issues/204))
+* globaldb secondary indexes ([#204](https://github.com/hamlet-io/engine-plugin-aws/issues/204))
 * (kms): region based arn lookup
 * (account): s3 account bucket naming
 * (lambda): extension version control
 * Message Transfer Agent components
-* fragment to extension migration ([#194](https://github.com/roleyfoley/engine-plugin-aws/issues/194))
-* (alerts): get metric dimensions from blueprint ([#193](https://github.com/roleyfoley/engine-plugin-aws/issues/193))
-* (secretstore): secrets manager support ([#189](https://github.com/roleyfoley/engine-plugin-aws/issues/189))
+* fragment to extension migration ([#194](https://github.com/hamlet-io/engine-plugin-aws/issues/194))
+* (alerts): get metric dimensions from blueprint ([#193](https://github.com/hamlet-io/engine-plugin-aws/issues/193))
+* (secretstore): secrets manager support ([#189](https://github.com/hamlet-io/engine-plugin-aws/issues/189))
 * (consolidatelogs): support deployment prefixes in datafeed prefix
 * (datafeed): support adding deployment prefixes to datafeeds
 * (logging): add deploy prefixes to log collectors
 * (consolidatelogs): enable network flow log
 * (baseline): s3 attrs on baseline data
 * (network): user defined network flow logs
-* (s3): bucket replication to ext services ([#183](https://github.com/roleyfoley/engine-plugin-aws/issues/183))
+* (s3): bucket replication to ext services ([#183](https://github.com/hamlet-io/engine-plugin-aws/issues/183))
 * autoscale replacement updates
 * patching via init script
 * enable replication from baselinedata buckets to s3
 * (amazonmq): add support for amazonmq as a service
-* WAF logs lifecycle rule ([#164](https://github.com/roleyfoley/engine-plugin-aws/issues/164))
-* add compute provider support to ecs host ([#150](https://github.com/roleyfoley/engine-plugin-aws/issues/150))
+* WAF logs lifecycle rule ([#164](https://github.com/hamlet-io/engine-plugin-aws/issues/164))
+* add compute provider support to ecs host ([#150](https://github.com/hamlet-io/engine-plugin-aws/issues/150))
 * (awsdiagrams): adds diagram mappings for aws resources
 * resource to service mappings
 * (ecs): adds support for ulimits on tasks
 * authorizer lambda permissions
-* copy openapi definition file to authorizers ([#137](https://github.com/roleyfoley/engine-plugin-aws/issues/137))
+* copy openapi definition file to authorizers ([#137](https://github.com/hamlet-io/engine-plugin-aws/issues/137))
 * sync authorizer openapi spec with api
-* "account" and fixed build scope ([#129](https://github.com/roleyfoley/engine-plugin-aws/issues/129))
+* "account" and fixed build scope ([#129](https://github.com/hamlet-io/engine-plugin-aws/issues/129))
 * (ecs): placement constraints
 * (ecs): add hostname for a task container
 * slack message on pipeline fail
 * (apigateway): add quota throttling
 * (apigateway): allow for throttling apigatway at api, stage and method levels
-* (ecs): use deployment group filters on ecs subcomponents ([#120](https://github.com/roleyfoley/engine-plugin-aws/issues/120))
+* (ecs): use deployment group filters on ecs subcomponents ([#120](https://github.com/hamlet-io/engine-plugin-aws/issues/120))
 * (ecs): docker based health check support
 * (userpool): disable oauth on clients
 * (ecs): add support for efs volume mounts to tasks
@@ -142,7 +165,7 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * (cdn): support links to load balancers
 * resource labels
 * (lb): add LB target group monitoring dimensions
-* (lb): add networkacl support for network engine ([#97](https://github.com/roleyfoley/engine-plugin-aws/issues/97))
+* (lb): add networkacl support for network engine ([#97](https://github.com/hamlet-io/engine-plugin-aws/issues/97))
 * (ssm): supports the use of a dedicated CMK for console access
 * ingress/egress security group control
 * add bastion to default network profile
@@ -154,12 +177,12 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * (ec2): volume encryption
 * (console): enable SSM session support for all ec2 components
 * (console): service policies for ssm session manager
-* (gateway): add support for destination port configuration ([#62](https://github.com/roleyfoley/engine-plugin-aws/issues/62))
+* (gateway): add support for destination port configuration ([#62](https://github.com/hamlet-io/engine-plugin-aws/issues/62))
 * (lb): static targets
 * (gateway): private dns configuration
 * (lb): Support for Network load balancer TLS offload
 * (router): support for static routes
-* (privateservice): initial implementation ([#50](https://github.com/roleyfoley/engine-plugin-aws/issues/50))
+* (privateservice): initial implementation ([#50](https://github.com/hamlet-io/engine-plugin-aws/issues/50))
 * (router): always set BGP ASN
 * (externalnetwork): vpn router supportf
 * (gateway): vpn connections to gateways
@@ -170,11 +193,11 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * (gateway): gateway support for the router component
 * (router): initial support for router component in aws
 * (service): add support for transitgateway resources
-* (ecs): support udp based port mappings ([#46](https://github.com/roleyfoley/engine-plugin-aws/issues/46))
-* (globaldb): initial support for the globalDb component ([#45](https://github.com/roleyfoley/engine-plugin-aws/issues/45))
-* (ecs): fargate run task state support ([#44](https://github.com/roleyfoley/engine-plugin-aws/issues/44))
+* (ecs): support udp based port mappings ([#46](https://github.com/hamlet-io/engine-plugin-aws/issues/46))
+* (globaldb): initial support for the globalDb component ([#45](https://github.com/hamlet-io/engine-plugin-aws/issues/45))
+* (ecs): fargate run task state support ([#44](https://github.com/hamlet-io/engine-plugin-aws/issues/44))
 * (apigatewa): add TLS configuration for domain names
-* Enhanced checks on userpool auth provider names ([#34](https://github.com/roleyfoley/engine-plugin-aws/issues/34))
+* Enhanced checks on userpool auth provider names ([#34](https://github.com/hamlet-io/engine-plugin-aws/issues/34))
 * (s3): cdn list support for s3
 * (mobileapp): OTA CDN on Routes
 * (gateway): link based gateway support
@@ -184,42 +207,42 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * (ecs): set launch type on scheduled tasks
 * (ecs): capacity provider assocation output
 * (globaldb): handle secondary indexs pay per use
-* (ec2): fix load balancer registration for ec2 ([#310](https://github.com/roleyfoley/engine-plugin-aws/issues/310))
+* (ec2): fix load balancer registration for ec2 ([#310](https://github.com/hamlet-io/engine-plugin-aws/issues/310))
 * (apigateway): use correct link for CA lookup
-* (computecluster): remove wait resources ([#302](https://github.com/roleyfoley/engine-plugin-aws/issues/302))
+* (computecluster): remove wait resources ([#302](https://github.com/hamlet-io/engine-plugin-aws/issues/302))
 * (ecs): service capacity provider usage
 * update ec2 support in cfn
 * alias and rename of macro for init
 * (adaptor): handler image source build unit
 * make env available to non-login sessions
-* MTA component SES config detection ([#289](https://github.com/roleyfoley/engine-plugin-aws/issues/289))
-* link processing in awslinux vpx lb extension ([#288](https://github.com/roleyfoley/engine-plugin-aws/issues/288))
+* MTA component SES config detection ([#289](https://github.com/hamlet-io/engine-plugin-aws/issues/289))
+* link processing in awslinux vpx lb extension ([#288](https://github.com/hamlet-io/engine-plugin-aws/issues/288))
 * test outputs for capacity provider
 * testing alignment
-* (ec2): param options for compute tasks ([#287](https://github.com/roleyfoley/engine-plugin-aws/issues/287))
-* dynamic cmdb loading ([#286](https://github.com/roleyfoley/engine-plugin-aws/issues/286))
-* (ec2): compute task lookup location ([#285](https://github.com/roleyfoley/engine-plugin-aws/issues/285))
-* (ssh): append a new line after each public key ([#278](https://github.com/roleyfoley/engine-plugin-aws/issues/278))
+* (ec2): param options for compute tasks ([#287](https://github.com/hamlet-io/engine-plugin-aws/issues/287))
+* dynamic cmdb loading ([#286](https://github.com/hamlet-io/engine-plugin-aws/issues/286))
+* (ec2): compute task lookup location ([#285](https://github.com/hamlet-io/engine-plugin-aws/issues/285))
+* (ssh): append a new line after each public key ([#278](https://github.com/hamlet-io/engine-plugin-aws/issues/278))
 * use autoscale group name for autoscale group
 *  typo in attribute set type
 * source details for ami
 * workaround removed properties
 * workaround for shared changes
 * workaround os removal
-* (ec2): typo in mount point check ([#270](https://github.com/roleyfoley/engine-plugin-aws/issues/270))
-* pseudo stacks ([#268](https://github.com/roleyfoley/engine-plugin-aws/issues/268))
+* (ec2): typo in mount point check ([#270](https://github.com/hamlet-io/engine-plugin-aws/issues/270))
+* pseudo stacks ([#268](https://github.com/hamlet-io/engine-plugin-aws/issues/268))
 * set engine dir
 * (template): change to virtual hosted s3 path
 * remove debug statement
 * handle naming changes for alerts
 * enable fifo on dlq
-* invalid config handling for db ([#249](https://github.com/roleyfoley/engine-plugin-aws/issues/249))
-* test args for hamlet cmds ([#248](https://github.com/roleyfoley/engine-plugin-aws/issues/248))
+* invalid config handling for db ([#249](https://github.com/hamlet-io/engine-plugin-aws/issues/249))
+* test args for hamlet cmds ([#248](https://github.com/hamlet-io/engine-plugin-aws/issues/248))
 * (apigateway): throttle handling for apigw
 * correct a number of reference attributes
 * masterdata object validation errors
-* (bastion): support active config on component ([#234](https://github.com/roleyfoley/engine-plugin-aws/issues/234))
-* (baselinekey): update permissions for SES ([#231](https://github.com/roleyfoley/engine-plugin-aws/issues/231))
+* (bastion): support active config on component ([#234](https://github.com/hamlet-io/engine-plugin-aws/issues/234))
+* (baselinekey): update permissions for SES ([#231](https://github.com/hamlet-io/engine-plugin-aws/issues/231))
 * remove unnecessary sudo
 * (s3): do not validate replica sequence on delete
 * flowlog tidyup
@@ -232,34 +255,34 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * enable testing and check for link
 * typo in log messaage
 * (userpool): set userpool region for multi region deployments
-* add lambda attributes to context ([#202](https://github.com/roleyfoley/engine-plugin-aws/issues/202))
-* (dynamodb): query scan permissions for read access ([#201](https://github.com/roleyfoley/engine-plugin-aws/issues/201))
+* add lambda attributes to context ([#202](https://github.com/hamlet-io/engine-plugin-aws/issues/202))
+* (dynamodb): query scan permissions for read access ([#201](https://github.com/hamlet-io/engine-plugin-aws/issues/201))
 * s3 encryption replication role
-* prodiver id migration cleanup ([#196](https://github.com/roleyfoley/engine-plugin-aws/issues/196))
-* (ecs): require replacement for capacity provider scaling ([#192](https://github.com/roleyfoley/engine-plugin-aws/issues/192))
+* prodiver id migration cleanup ([#196](https://github.com/hamlet-io/engine-plugin-aws/issues/196))
+* (ecs): require replacement for capacity provider scaling ([#192](https://github.com/hamlet-io/engine-plugin-aws/issues/192))
 * (datafeed): use error prefix for errors
-* (datafeed): clean prefixes for s3 destinations ([#188](https://github.com/roleyfoley/engine-plugin-aws/issues/188))
+* (datafeed): clean prefixes for s3 destinations ([#188](https://github.com/hamlet-io/engine-plugin-aws/issues/188))
 * set nat gateway priority for mgmt contract
 * (baseline): disable encryption at rest by default
 * (baseline): use s3 encryption for opsdata
 * (ecs): handle scale in protection during updates
 * bastion eip subset
-* (datafeed): encryption logic and disable backup ([#175](https://github.com/roleyfoley/engine-plugin-aws/issues/175))
-* s3 event notification lookup ([#176](https://github.com/roleyfoley/engine-plugin-aws/issues/176))
-* (consolidatelogs): disable log fwd for datafeed ([#174](https://github.com/roleyfoley/engine-plugin-aws/issues/174))
+* (datafeed): encryption logic and disable backup ([#175](https://github.com/hamlet-io/engine-plugin-aws/issues/175))
+* s3 event notification lookup ([#176](https://github.com/hamlet-io/engine-plugin-aws/issues/176))
+* (consolidatelogs): disable log fwd for datafeed ([#174](https://github.com/hamlet-io/engine-plugin-aws/issues/174))
 * add description for API Gateway service role
 * remove check for unique regions between replicating buckets
-* (apigateway): waf depedency on stage ([#163](https://github.com/roleyfoley/engine-plugin-aws/issues/163))
+* (apigateway): waf depedency on stage ([#163](https://github.com/hamlet-io/engine-plugin-aws/issues/163))
 * (apigateway): fix new deployments without stage
-* (lb): fix logging setup process ([#159](https://github.com/roleyfoley/engine-plugin-aws/issues/159))
+* (lb): fix logging setup process ([#159](https://github.com/hamlet-io/engine-plugin-aws/issues/159))
 * (logstreaming): fixes to logstreaming setup
 * add descriptions to service linked roles
-* inbounPorts for containers ([#151](https://github.com/roleyfoley/engine-plugin-aws/issues/151))
-* align testcases with scenerios config ([#149](https://github.com/roleyfoley/engine-plugin-aws/issues/149))
-* diagram mapping for ecs ([#145](https://github.com/roleyfoley/engine-plugin-aws/issues/145))
+* inbounPorts for containers ([#151](https://github.com/hamlet-io/engine-plugin-aws/issues/151))
+* align testcases with scenerios config ([#149](https://github.com/hamlet-io/engine-plugin-aws/issues/149))
+* diagram mapping for ecs ([#145](https://github.com/hamlet-io/engine-plugin-aws/issues/145))
 * (networkacl): use the id instead of existing ref for lookups
 * formatting of definition file
-* spa state handles no baseline ([#136](https://github.com/roleyfoley/engine-plugin-aws/issues/136))
+* spa state handles no baseline ([#136](https://github.com/hamlet-io/engine-plugin-aws/issues/136))
 * don't delete authorizer openapi.json file
 * fail testing fast
 * globaldb sortKey logic
@@ -267,12 +290,12 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * (ecs): volume driver configuration properties
 * disable cfn nag on template testing
 * Default throttling checks
-* Allow for no patterns in apigw.json ([#124](https://github.com/roleyfoley/engine-plugin-aws/issues/124))
+* Allow for no patterns in apigw.json ([#124](https://github.com/hamlet-io/engine-plugin-aws/issues/124))
 * only check patterns for method settings if throttling set
 * check pattern verb
 * remove unnecessary check around methodSettings
 * integration patterns into explicit method path throttles
-* enable segment iam resource set ([#122](https://github.com/roleyfoley/engine-plugin-aws/issues/122))
+* enable segment iam resource set ([#122](https://github.com/hamlet-io/engine-plugin-aws/issues/122))
 * (ecs): link id for efs setup
 * (filetransfer): add support for security group updates using links
 * (transfer): security policy name property
@@ -327,7 +350,7 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * (router): align macro with setup
 * (gateway): spelling typo
 * (cdn): add behaviour for mobile ota
-* (cdn): dont use s3 website endpoint in s3 backed origins ([#35](https://github.com/roleyfoley/engine-plugin-aws/issues/35))
+* (cdn): dont use s3 website endpoint in s3 backed origins ([#35](https://github.com/hamlet-io/engine-plugin-aws/issues/35))
 * Gateway endpoint es role
 * Auth provider configuration defaulting logic
 * hamlet test generate command
@@ -345,15 +368,15 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * update extensions for images
 * move to using compute instance
 * rename env vars to hamlet
-* composite template inclusion ([#266](https://github.com/roleyfoley/engine-plugin-aws/issues/266))
-* bastion ipaddressgroups on component def ([#246](https://github.com/roleyfoley/engine-plugin-aws/issues/246))
-* state processing ([#261](https://github.com/roleyfoley/engine-plugin-aws/issues/261))
+* composite template inclusion ([#266](https://github.com/hamlet-io/engine-plugin-aws/issues/266))
+* bastion ipaddressgroups on component def ([#246](https://github.com/hamlet-io/engine-plugin-aws/issues/246))
+* state processing ([#261](https://github.com/hamlet-io/engine-plugin-aws/issues/261))
 * align with CLO update
-* output hanlding in engine ([#256](https://github.com/roleyfoley/engine-plugin-aws/issues/256))
-* command line and masterdata access ([#255](https://github.com/roleyfoley/engine-plugin-aws/issues/255))
-* aws cloudwatch metrics ([#253](https://github.com/roleyfoley/engine-plugin-aws/issues/253))
-* use org templates as default ([#242](https://github.com/roleyfoley/engine-plugin-aws/issues/242))
-* migrate to context paths ([#232](https://github.com/roleyfoley/engine-plugin-aws/issues/232))
+* output hanlding in engine ([#256](https://github.com/hamlet-io/engine-plugin-aws/issues/256))
+* command line and masterdata access ([#255](https://github.com/hamlet-io/engine-plugin-aws/issues/255))
+* aws cloudwatch metrics ([#253](https://github.com/hamlet-io/engine-plugin-aws/issues/253))
+* use org templates as default ([#242](https://github.com/hamlet-io/engine-plugin-aws/issues/242))
+* migrate to context paths ([#232](https://github.com/hamlet-io/engine-plugin-aws/issues/232))
 * limit check of deprecated config
 * define links as attributesets
 * composite object types instead of type
@@ -362,9 +385,9 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * (network): update flow log to match on action
 * (consolidatelogs): remove logwatcher support
 * (datafeed): update aws-specific attr desc. to explain purpos
-* align setup macros with layer data changes ([#153](https://github.com/roleyfoley/engine-plugin-aws/issues/153))
+* align setup macros with layer data changes ([#153](https://github.com/hamlet-io/engine-plugin-aws/issues/153))
 * align testing scenarios with new format
-* switch COT to Hamlet ([#134](https://github.com/roleyfoley/engine-plugin-aws/issues/134))
+* switch COT to Hamlet ([#134](https://github.com/hamlet-io/engine-plugin-aws/issues/134))
 * replace model flows with flows
 * align testing with entrances
 * update output to align with flow support
@@ -377,16 +400,16 @@ Full set of changes: [`8.1.2...abf8af5`](https://github.com/roleyfoley/engine-pl
 * API version optional for facbook IdP
 #### Docs
 
-* Provider Modules ([#240](https://github.com/roleyfoley/engine-plugin-aws/issues/240))
+* Provider Modules ([#240](https://github.com/hamlet-io/engine-plugin-aws/issues/240))
 #### Others
 
-* update changelog ([#308](https://github.com/roleyfoley/engine-plugin-aws/issues/308))
-* (deps): bump lodash from 4.17.20 to 4.17.21 ([#303](https://github.com/roleyfoley/engine-plugin-aws/issues/303))
-* (deps): bump handlebars from 4.7.6 to 4.7.7 ([#297](https://github.com/roleyfoley/engine-plugin-aws/issues/297))
-* (deps): bump hosted-git-info from 2.8.8 to 2.8.9 ([#298](https://github.com/roleyfoley/engine-plugin-aws/issues/298))
-* testing for ec2 based components ([#275](https://github.com/roleyfoley/engine-plugin-aws/issues/275))
+* update changelog ([#308](https://github.com/hamlet-io/engine-plugin-aws/issues/308))
+* (deps): bump lodash from 4.17.20 to 4.17.21 ([#303](https://github.com/hamlet-io/engine-plugin-aws/issues/303))
+* (deps): bump handlebars from 4.7.6 to 4.7.7 ([#297](https://github.com/hamlet-io/engine-plugin-aws/issues/297))
+* (deps): bump hosted-git-info from 2.8.8 to 2.8.9 ([#298](https://github.com/hamlet-io/engine-plugin-aws/issues/298))
+* testing for ec2 based components ([#275](https://github.com/hamlet-io/engine-plugin-aws/issues/275))
 * release notes
-* review the plugin readme ([#243](https://github.com/roleyfoley/engine-plugin-aws/issues/243))
+* review the plugin readme ([#243](https://github.com/hamlet-io/engine-plugin-aws/issues/243))
 * changelog
 * changelog
 * (s3): add testing for s3 notifications
