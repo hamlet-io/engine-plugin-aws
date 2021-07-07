@@ -291,6 +291,7 @@
                 "vpcendpoint": {
                     "gateway": {
                         "deployment:Unit": "vpcendpoint",
+                        "deployment:Priority" : 110,
                         "Engine": "privateservice",
                         "DestinationPorts": [
                             "http",
