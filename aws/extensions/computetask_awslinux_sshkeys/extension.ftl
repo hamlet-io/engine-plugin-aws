@@ -21,7 +21,7 @@
 
 [#macro shared_extension_computetask_linux_sshkeys_deployment_computetask occurrence ]
 
-    [#local SSHPublicKeysContent = "" ]
+    [#local SSHPublicKeysContent = [] ]
 
     [#list _context.Links as linkId,linkTarget]
         [#local linkTargetCore = linkTarget.Core ]
@@ -36,7 +36,7 @@
                 [#local linkEnvironment = linkTargetConfiguration.Environment.General ]
                 [#list SSHPublicKeys as id,publicKey ]
                     [#if (linkEnvironment[publicKey.SettingName])?has_content ]
-                        [#local SSHPublicKeysContent += linkEnvironment[publicKey.SettingName] + " " + id + "\n"]
+                        [#local SSHPublicKeysContent += [ "${linkEnvironment[publicKey.SettingName]} ${id}" ]]
                     [/#if]
                 [/#list]
                 [#break]
@@ -50,10 +50,8 @@
                 "/home/ec2-user/.ssh/authorized_keys_hamlet" : {
                     "content" : {
                         "Fn::Join" : [
-                            "",
-                            [
-                                SSHPublicKeysContent
-                            ]
+                            "\n",
+                            SSHPublicKeysContent
                         ]
                     },
                     "mode" : "000600",
