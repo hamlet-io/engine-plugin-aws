@@ -691,8 +691,8 @@
                 getSubnets(core.Tier, networkResources)[0..0]
             )]
 
-        [#local networkProfile = getNetworkProfile(occurrence)]
-        [#local loggingProfile = getLoggingProfile(occurrence)]
+        [#local networkProfile = getNetworkProfile(subOccurrence)]
+        [#local loggingProfile = getLoggingProfile(subOccurrence)]
 
         [#if engine == "fargate" && networkMode != "awsvpc" ]
             [@fatal
