@@ -65,7 +65,7 @@
                                 "\n",
                                 [
                                     r' if ( Test-Path "c:\ProgramData\Hamlet\Scripts\init.ps1" -PathType leaf ) {',
-                                    r'    c:\ProgramData\Hamlet\Scripts\init.ps1',
+                                    r'    & "c:\ProgramData\Hamlet\Scripts\init.ps1" ',
                                     r' }'
                                 ]
                             ]
