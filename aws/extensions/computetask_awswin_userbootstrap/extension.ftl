@@ -69,7 +69,8 @@
                     "Fn::Join" : [
                         "\n",
                         [
-                            "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\fetch.log",
+                            "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-step.log -Append",
+                            r'echo "Starting userbootstrap" '
                             {
                                 "Fn::Sub" : [
                                     r'BOOTSTRAP_SCRIPTS_DIR="${BootstrapScriptsDir}"',
