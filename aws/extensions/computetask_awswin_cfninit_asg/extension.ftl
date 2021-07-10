@@ -76,7 +76,6 @@
             },
             ";",
             r'echo "Asg_name $asg_name" ;',
-            r'Start-Sleep 1 ;',
             {
                 "Fn::Sub" : [
                     r'cfn-signal.exe -e $init_status --stack ${StackName} --resource ${Resource} --region ${Region} 2>&1 | Write-Output ',

@@ -28,8 +28,8 @@
         [#local allocationIds = eips?map( eip -> getReference(eip, ALLOCATION_ATTRIBUTE_TYPE))]
 
         [#local script = [
-            'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\eip.log ;',
-            'echo "Starting volume mount" ;',
+            'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-step.log -Append ;',
+            'echo "Starting EIP" ;',
             r'Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ;'
             r'$instance_id="$(Invoke-WebRequest -UseBasicParsing -Uri http://169.254.169.254/latest/meta-data/instance-id)" ;',
             { "Fn::Sub" : r'[System.Environment]::SetEnvironmentVariable("AWS_DEFAULT_REGION","${AWS::Region}") ;' },

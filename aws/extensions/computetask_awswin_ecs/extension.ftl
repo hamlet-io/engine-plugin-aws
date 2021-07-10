@@ -144,7 +144,7 @@
                 [#case "awswin" ]
                     [#local commands += {
                         "9_RestartECSAgent" : {
-                            "command" : "<powershell>Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\docker_restart.log ; Restart-Service -Name docker ; Stop-Transcript | out-null</powershell>",
+                            "command" : "<powershell>Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-step.log -Append ; Restart-Service -Name docker ; Stop-Transcript | out-null</powershell>",
                             "ignoreErrors" : true
                          }
                      }]

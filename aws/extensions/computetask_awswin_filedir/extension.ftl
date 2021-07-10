@@ -96,7 +96,7 @@
     [/#list]
 
     [#local initDirFile = [
-        "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\dirsfiles.log -Append ;",
+        "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-step.log -Append ;",
         r'echo "Directory and File Creation" ;'
     ]]
 
