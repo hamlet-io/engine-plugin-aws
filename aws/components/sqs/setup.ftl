@@ -82,7 +82,7 @@
             maximumSize=solution.MaximumMessageSize
             retention=solution.MessageRetentionPeriod
             receiveWait=solution.ReceiveMessageWaitTimeSeconds
-            visibilityTimout=solution.VisibilityTimeout
+            visibilityTimeout=solution.VisibilityTimeout
             dlq=valueIfTrue(dlqId!"", dlqRequired, "")
             dlqReceives=
                 valueIfTrue(

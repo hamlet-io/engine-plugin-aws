@@ -37,17 +37,17 @@
     }
 /]
 
-[#macro createSQSQueue id name delay="" maximumSize="" retention="" receiveWait="" visibilityTimout="" dlq="" dlqReceives=1 fifoQueue=false dependencies=""]
+[#macro createSQSQueue id name delay="" maximumSize="" retention=1209600 receiveWait="" visibilityTimeout="" dlq="" dlqReceives=1 fifoQueue=false dependencies=""]
     [@cfResource
         id=id
         type="AWS::SQS::Queue"
         properties=
             {
-                "QueueName" : name
+                "QueueName" : name,
+                "MessageRetentionPeriod" : retention
             } +
             attributeIfContent("DelaySeconds", delay) +
             attributeIfContent("MaximumMessageSize", maximumSize) +
-            attributeIfContent("MessageRetentionPeriod", retention) +
             attributeIfContent("ReceiveMessageWaitTimeSeconds", receiveWait) +
             attributeIfContent(
                 "RedrivePolicy",
@@ -56,7 +56,7 @@
                   "deadLetterTargetArn" : getReference(dlq, ARN_ATTRIBUTE_TYPE),
                   "maxReceiveCount" : dlqReceives
                 }) +
-            attributeIfContent("VisibilityTimeout", visibilityTimout) +
+            attributeIfContent("VisibilityTimeout", visibilityTimeout) +
             attributeIfTrue(
                 "FifoQueue",
                 fifoQueue,
