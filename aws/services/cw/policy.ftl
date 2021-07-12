@@ -18,17 +18,14 @@
                 ],
                 logGroupArn)
         ] +
-        (osFamily = "windows")?then(
-            [
-                getPolicyStatement(
-                    [
-                        "cloudwatch:PutMetricData",
-                        "ec2:DescribeTags"
-                    ],
-                    "*")
-            ],
-            []
-        )
+        [
+            getPolicyStatement(
+                [
+                    "cloudwatch:PutMetricData",
+                    "ec2:DescribeTags"
+                ],
+                "*")
+        ]
     ]
 [/#function]
 
