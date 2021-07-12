@@ -152,19 +152,38 @@
         [#local outputs = {}]
 
         [#list solution.Attributes as id,attribute ]
-            [#local outputs = mergeObjects(
-                outputs,
-                {
-                    attribute.AttributeType : {
-                        "Value": {
-                            "Fn::GetAtt" : [
-                                templateId,
-                                concatenate( [ "Outputs", attribute.TemplateOutputKey ], ".")
-                            ]
-                        }
-                    }
 
-                })]
+            [#if attribute.IdSuffix?has_content ]
+                [#local attributeId = formatAttributeId(formatId(templateId, attribute.IdSuffix), attribute.AttributeType)]
+
+                [@cfOutput
+                    id=attributeId
+                    value={
+                        "Fn::GetAtt" : [
+                            templateId,
+                            concatenate( [ "Outputs", attribute.TemplateOutputKey ], ".")
+                        ]
+                    }
+                /]
+
+            [#else]
+                [#local outputs = mergeObjects(
+                    outputs,
+                    {
+                        attribute.AttributeType : {
+                            "Value": {
+                                "Fn::GetAtt" : [
+                                    templateId,
+                                    concatenate( [ "Outputs", attribute.TemplateOutputKey ], ".")
+                                ]
+                            }
+                        }
+
+                    }
+                )]
+            [/#if]
+
+
         [/#list]
 
         [@createCFNNestedStack
