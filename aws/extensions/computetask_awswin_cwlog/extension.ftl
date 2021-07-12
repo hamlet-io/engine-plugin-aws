@@ -33,6 +33,16 @@
     [#return retval ]
 [/#function]
 
+[#function nix_path_converter win_path ]
+    [#local seqWin = win_path?split(r"\")]
+    [#if (seqWin[0])?matches('[c-zC-Z]:')]
+        [#local seqWin = [(seqWin[0])?keep_before(":")] + seqWin[1..]]
+    [/#if]
+    [#local retval = seqWin?join("/")?replace(" ","")]
+
+    [#return retval ]
+[/#function]
+
 [#macro shared_extension_computetask_awswin_cwlog_deployment_computetask occurrence ]
 
     [#local solution = occurrence.Configuration.Solution ]
@@ -51,9 +61,9 @@
             [#local logContent +=
                 [
                     r'{',
-                    r'    "file_path": "' + windows_path_converter(logFileDetails.FilePath) + '",',
+                    r'    "file_path": "' + (logFileDetails.FilePath)?replace(r"\",r"\\") + '",',
                     r'    "log_group_name": "' + logGroupName + '",',
-                    r'    "log_stream_name": "{instance_id}' + logFileDetails.FilePath + '",',
+                    r'    "log_stream_name": "{instance_id}' + nix_path_converter(logFileDetails.FilePath) + '",',
                     r'    "timestamp_format": "' + timeFormat + '" ',
                     r'},'
                 ]
