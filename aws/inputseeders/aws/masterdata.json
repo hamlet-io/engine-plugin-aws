@@ -696,35 +696,35 @@
             "TimeFormat": "%b %d %H:%M:%S"
         },
         "c/ProgramData/Amazon/ECS/log/ecs-init.log": {
-            "FilePath": "c/ProgramData/Amazon/ECS/log/ecs-init.log",
+            "FilePath": "c:\\ProgramData\\Amazon\\ECS\\log\\ecs-init.log",
             "TimeFormat": "%b %d %H:%M:%S"
         },
         "c/ProgramData/Amazon/ECS/log/ecs-agent.log": {
-            "FilePath": "c/ProgramData/Amazon/ECS/log/ecs-agent.log",
+            "FilePath": "c:\\ProgramData\\Amazon\\ECS\\log\\ecs-agent.log",
             "TimeFormat": "%b %d %H:%M:%S"
         },
         "c/ProgramData/Amazon/ECS/log/audit.log": {
-            "FilePath": "c/ProgramData/Amazon/ECS/log/audit.log",
+            "FilePath": "c:\\ProgramData\\Amazon\\ECS\\log\\audit.log",
             "TimeFormat": "%b %d %H:%M:%S"
         },
         "c/ProgramData/docker/panic.log": {
-          "FilePath": "c/ProgramData/docker/panic.log",
+          "FilePath": "c:\\ProgramData\\docker\\panic.log",
           "TimeFormat": "%b %d %H:%M:%S"
         },
         "c/ProgramData/Amazon/EC2-Windows/Launch/Log/EC2Launch.log": {
-            "FilePath": "c/ProgramData/Amazon/EC2-Windows/Launch/Log/EC2Launch.log",
+            "FilePath": "c:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Log\\EC2Launch.log",
             "TimeFormat": "%Y/%m/%d %H:%M:%S%Z:"
         },
         "c/ProgramData/Amazon/EC2-Windows/Launch/Log/UserdataExecution.log": {
-            "FilePath": "c/ProgramData/Amazon/EC2-Windows/Launch/Log/UserdataExecution.log",
+            "FilePath": "c:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Log\\UserdataExecution.log",
             "TimeFormat": "%Y/%m/%d %H:%M:%S%Z:"
         },
         "c/ProgramData/Amazon/AmazonCloudWatchAgent/Logs/amazon-cloudwatch-agent.log": {
-            "FilePath": "c/ProgramData/Amazon/AmazonCloudWatchAgent/Logs/amazon-cloudwatch-agent.log",
+            "FilePath": "c:\\ProgramData\\Amazon\\AmazonCloudWatchAgent\\Logs\\amazon-cloudwatch-agent.log",
             "TimeFormat": "%H: %M: %S%y%b%-d"
         },
         "c/ProgramData/Amazon/SSM/Logs/amazon-ssm-agent.log": {
-            "FilePath": "c/ProgramData/Amazon/SSM/Logs/amazon-ssm-agent.log",
+            "FilePath": "c:\\ProgramData\\Amazon\\SSM\\Logs\\amazon-ssm-agent.log",
             "TimeFormat": "%Y-%m-%d %H:%M:%S",
             "MultiLinePattern": "^INFO"
         }
