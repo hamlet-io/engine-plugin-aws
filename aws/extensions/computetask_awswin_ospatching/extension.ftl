@@ -27,6 +27,10 @@
 
 <!-- Windows instances are patched by new AMIs - normally test OSPatching.Enabled in if below -->
     [#local content = {}]
+
+    [#if OSPatching.Enabled ]
+        [@warning "Non-AMI based patching is not supported on Windows Server. A custom extension will be required" /]
+    [/#if]
  
     [@computeTaskConfigSection
         computeTaskTypes=[ COMPUTE_TASK_OS_SECURITY_PATCHING ]
