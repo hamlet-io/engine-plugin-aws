@@ -25,37 +25,9 @@
     [#local schedule = OSPatching.Schedule ]
     [#local securityOnly = OSPatching.SecurityOnly ]
 
-    [#local updateCommand = "<script>rem Windows no update command - yum clean all && yum -y update</script>"]
-
 <!-- Windows instances are patched by new AMIs - normally test OSPatching.Enabled in if below -->
-    [#if false ]
-        [#local content = {
-                "commands": {
-                    "InitialUpdate" : {
-                        "command" : updateCommand,
-                        "ignoreErrors" : false
-                    }
-                } +
-                securityOnly?then(
-                    {
-                        "DailySecurity" : {
-                            "command" : '<script>echo \"${schedule} ${updateCommand} --security >> c:\\ProgramData\\Hamlet\\Logs\\update.log\" >crontab.txt && crontab crontab.txt</script>',
-                            "ignoreErrors" : false
-                        }
-                    },
-                    {
-                        "DailyUpdates" : {
-                            "command" : '<script>echo \"${schedule} ${updateCommand} >> c:\\ProgramData\\Hamlet\\Logs\\update.log\" >crontab.txt && crontab crontab.txt</script>',
-                            "ignoreErrors" : false
-                        }
-                    }
-                )
-            }]
-    [#else]
-        [#local content = {
-        }]
-    [/#if]
-
+    [#local content = {}]
+ 
     [@computeTaskConfigSection
         computeTaskTypes=[ COMPUTE_TASK_OS_SECURITY_PATCHING ]
         id="OSPatching"
