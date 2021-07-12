@@ -1,6 +1,6 @@
 [#ftl]
 
-[#function cwLogsProducePermission logGroupName="" osFamily="linux"]
+[#function cwLogsProducePermission logGroupName=""]
     [#local logGroupArn = logGroupName?has_content?then(
                     formatRegionalArn(
                             "logs",
