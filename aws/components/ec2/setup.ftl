@@ -256,7 +256,7 @@
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +
-                        cwLogsProducePermission(ec2LogGroupName, ec2OS) +
+                        cwLogsProducePermission(ec2LogGroupName) +
                         ec2EBSVolumeReadPermission(),
                         "basic"
                     ),

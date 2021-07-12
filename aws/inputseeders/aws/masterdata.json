@@ -695,20 +695,36 @@
             "FilePath": "/var/log/ecs/audit.log",
             "TimeFormat": "%b %d %H:%M:%S"
         },
-        "/ec2/EC2Launch.log": {
-            "FilePath": "/ec2/EC2Launch.log",
+        "c/ProgramData/Amazon/ECS/log/ecs-init.log": {
+            "FilePath": "c/ProgramData/Amazon/ECS/log/ecs-init.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "c/ProgramData/Amazon/ECS/log/ecs-agent.log": {
+            "FilePath": "c/ProgramData/Amazon/ECS/log/ecs-agent.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "c/ProgramData/Amazon/ECS/log/audit.log": {
+            "FilePath": "c/ProgramData/Amazon/ECS/log/audit.log",
+            "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "c/ProgramData/docker/panic.log": {
+          "FilePath": "c/ProgramData/docker/panic.log",
+          "TimeFormat": "%b %d %H:%M:%S"
+        },
+        "c/ProgramData/Amazon/EC2-Windows/Launch/Log/EC2Launch.log": {
+            "FilePath": "c/ProgramData/Amazon/EC2-Windows/Launch/Log/EC2Launch.log",
             "TimeFormat": "%Y/%m/%d %H:%M:%S%Z:"
         },
-        "/ec2/UserdataExecution.log": {
-            "FilePath": "/ec2/UserdataExecution.log",
+        "c/ProgramData/Amazon/EC2-Windows/Launch/Log/UserdataExecution.log": {
+            "FilePath": "c/ProgramData/Amazon/EC2-Windows/Launch/Log/UserdataExecution.log",
             "TimeFormat": "%Y/%m/%d %H:%M:%S%Z:"
         },
-        "/cwa/amazon-cloudwatch-agent.log": {
-            "FilePath": "/cwa/amazon-cloudwatch-agent.log",
+        "c/ProgramData/Amazon/AmazonCloudWatchAgent/Logs/amazon-cloudwatch-agent.log": {
+            "FilePath": "c/ProgramData/Amazon/AmazonCloudWatchAgent/Logs/amazon-cloudwatch-agent.log",
             "TimeFormat": "%H: %M: %S%y%b%-d"
         },
-        "/awsssm/amazon-ssm-agent.log": {
-            "FilePath": "/awsssm/amazon-ssm-agent.log",
+        "c/ProgramData/Amazon/SSM/Logs/amazon-ssm-agent.log": {
+            "FilePath": "c/ProgramData/Amazon/SSM/Logs/amazon-ssm-agent.log",
             "TimeFormat": "%Y-%m-%d %H:%M:%S",
             "MultiLinePattern": "^INFO"
         }
@@ -731,12 +747,24 @@
                 "/var/log/amazon/ssm/amazon-ssm-agent.log"
             ]
         },
+        "win-ecs": {
+            "LogFiles": [
+                "c/ProgramData/Amazon/ECS/log/ecs-init.log",
+                "c/ProgramData/Amazon/ECS/log/ecs-agent.log",
+                "c/ProgramData/Amazon/ECS/log/audit.log"
+            ]
+        },
+        "win-docker": {
+          "LogFiles": [
+            "c/ProgramData/docker/panic.log"
+          ]
+        },
         "win-system": {
             "LogFiles": [
-                "/ec2/EC2Launch.log",
-                "/ec2/UserdataExecution.log",
-                "/cwa/amazon-cloudwatch-agent.log",
-                "/awsssm/amazon-ssm-agent.log"
+                "c/ProgramData/Amazon/EC2-Windows/Launch/Log/EC2Launch.log",
+                "c/ProgramData/Amazon/EC2-Windows/Launch/Log/UserdataExecution.log",
+                "c/ProgramData/Amazon/AmazonCloudWatchAgent/Logs/amazon-cloudwatch-agent.log",
+                "c/ProgramData/Amazon/SSM/Logs/amazon-ssm-agent.log"
             ]
         }
     },
@@ -779,20 +807,20 @@
             "EC2": {
                 "LogFileGroups": [
                     "win-system",
-                    "docker"
+                    "win-docker"
                 ]
             },
             "ComputeCluster": {
                 "LogFileGroups": [
                     "win-system",
-                    "docker"
+                    "win-docker"
                 ]
             },
             "ECS": {
                 "LogFileGroups": [
                     "win-system",
-                    "docker",
-                    "aws-ecs"
+                    "win-docker",
+                    "win-ecs"
                 ]
             },
             "bastion": {
