@@ -70,14 +70,14 @@
         [/#list]
     [/#if]
 
-    [#local diskId = -1]
+    [#local diskId = 0]
     [#list volumes as id,volume ]
 
         [#local deviceId = ""]
         [#local osMount = ""]
 
-        [#local diskId = diskId + 1]
         [#if volume.Enabled && volume.MountPath?? && volume.Device?? ]
+            [#local diskId = diskId + 1]
             [#local deviceId = volume.Device]
             [#local osMount = volume.MountPath]
             [#local dataVolume = (volume.DataVolume)!false]
