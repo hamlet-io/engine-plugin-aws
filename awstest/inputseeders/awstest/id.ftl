@@ -79,6 +79,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "s3"
                             },
+                            "service" : {
+                                "Provider" : "awstest",
+                                "Name" : "service"
+                            },
                             "queuehost" : {
                                 "Provider" : "awstest",
                                 "Name" : "queuehost"
