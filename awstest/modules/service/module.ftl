@@ -42,6 +42,11 @@
                     "Components" : {
                         "serviceecsbase" : {
                             "ecs" : {
+                                "Instances" : {
+                                    "default" : {
+                                        "deployment:Unit" : "aws-service-base-ecs"
+                                    }
+                                },
                                 "Services" : {
                                     "servicebase" : {
                                         "Instances" : {
