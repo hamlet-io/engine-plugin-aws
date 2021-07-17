@@ -1043,18 +1043,65 @@
         "account": {
             "Level": "",
             "Priority": 10,
+            "District" : "account",
             "ResourceSets": {
+                "cmk" : {
+                    "deployment:Unit" : "cmk",
+                    "deployment:Priority" : 20
+                },
                 "iam": {
                     "deployment:Unit": "iam",
+                    "deployment:Priority" : 30,
                     "ResourceLabels": [
                         "iam"
                     ]
                 },
                 "lg": {
                     "deployment:Unit": "lg",
+                    "deployment:Priority" : 30,
                     "ResourceLabels": [
                         "lg"
                     ]
+                },
+                "audit" : {
+                    "deployment:Unit" : "audit",
+                    "deployment:Priority" : 40,
+                    "GroupDeploymentUnit" : false
+                },
+                "s3" : {
+                    "deployment:Unit" : "s3",
+                    "deployment:Priority" : 50,
+                    "GroupDeploymentUnit" : false
+                },
+                "apigateway" : {
+                    "deployment:Unit" : "apigateway",
+                    "deployment:Priority" : 100,
+                    "GroupDeploymentUnit" : false
+                },
+                "console" : {
+                    "deployment:Unit" : "console",
+                    "deployment:Priority" : 100,
+                    "GroupDeploymentUnit" : false
+                },
+                "ecs" : {
+                    "deployment:Unit" : "ecs",
+                    "deployment:Priority" : 100,
+                    "GroupDeploymentUnit" : false
+                },
+                "ses" : {
+                    "deployment:Unit" : "ses",
+                    "deployment:Priority" : 100,
+                    "GroupDeploymentUnit" : false
+                },
+                "sms" : {
+                    "deployment:Unit" : "sms",
+                    "deployment:Priority" : 100,
+                    "GroupDeploymentUnit" : false
+                },
+                "volumeencrypt" : {
+                    "deployment:Unit" : "volumeencrypt",
+                    "deployment:Priority" : 100,
+                    "GroupDeploymentUnit" : false
                 }
             },
             "CompositeTemplate": "accountTemplate"
