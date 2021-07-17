@@ -25,6 +25,7 @@
     [#local ecsInstanceLogGroupId = resources["lgInstanceLog"].Id]
     [#local ecsInstanceLogGroupName = resources["lgInstanceLog"].Name]
     [#local ecsEIPs = (resources["eips"])!{} ]
+    [#local ecsOS = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
 
     [#local ecsCapacityProvierAssociationId = resources["ecsCapacityProviderAssociation"].Id ]
     [#local ecsASGCapacityProviderId = resources["ecsASGCapacityProvider"].Id]
@@ -167,7 +168,7 @@
                         "docker"
                     ),
                     getPolicyDocument(
-                        ssmSessionManagerPermission(),
+                        ssmSessionManagerPermission(ecsOS),
                         "ssm"
                     )
                 ] +

@@ -29,6 +29,7 @@
     [#local ec2InstanceProfileId   = resources["instanceProfile"].Id]
     [#local ec2LogGroupId          = resources["lg"].Id]
     [#local ec2LogGroupName        = resources["lg"].Name]
+    [#local ec2OS                  = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
 
     [#local processorProfile       = getProcessor(occurrence, EC2_COMPONENT_TYPE)]
     [#local storageProfile         = getStorage(occurrence, EC2_COMPONENT_TYPE)]
@@ -260,7 +261,7 @@
                         "basic"
                     ),
                     getPolicyDocument(
-                        ssmSessionManagerPermission(),
+                        ssmSessionManagerPermission(ec2OS),
                         "ssm"
                     )
                 ] + targetGroupPermission?then(

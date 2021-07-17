@@ -26,6 +26,20 @@
 
     [#local content = {}]
     [#switch operatingSystem.Family ]
+        [#case "windows" ]
+            [#switch operatingSystem.Distribution ]
+                [#case "awswin" ]
+                    [#local content = {
+                        "packages" : {
+                            "msi" : {
+                                "awscli" : "https://awscli.amazonaws.com/AWSCLIV2.msi"
+                            }
+                        }
+                    }]
+                    [#break]
+            [/#switch]
+        [#break]
+
         [#case "linux" ]
             [#switch operatingSystem.Distribution ]
                 [#case "awslinux" ]

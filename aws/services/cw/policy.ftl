@@ -1,6 +1,6 @@
 [#ftl]
 
-[#function cwLogsProducePermission logGroupName="" ]
+[#function cwLogsProducePermission logGroupName=""]
     [#local logGroupArn = logGroupName?has_content?then(
                     formatRegionalArn(
                             "logs",
@@ -17,6 +17,14 @@
                     "logs:DescribeLogStreams"
                 ],
                 logGroupArn)
+        ] +
+        [
+            getPolicyStatement(
+                [
+                    "cloudwatch:PutMetricData",
+                    "ec2:DescribeTags"
+                ],
+                "*")
         ]
     ]
 [/#function]

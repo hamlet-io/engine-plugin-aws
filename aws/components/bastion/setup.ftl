@@ -22,6 +22,7 @@
     [#local bastionLaunchConfigId = resources["launchConfig"].Id]
     [#local bastionLgId = resources["lg"].Id]
     [#local bastionLgName = resources["lg"].Name]
+    [#local bastionOS = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
 
     [#local bastionType = occurrence.Core.Type]
     [#local configSetName = bastionType]
