@@ -1,6 +1,33 @@
 # Changelog
 
-## Unreleased (2021-07-07)
+## Unreleased (2021-07-19)
+
+#### New Features
+
+* add all account units
+* (tests): add basic testing for service
+* support output suffixes on template setup
+* set larger default value for SQS MessageRetentionPeriod
+#### Fixes
+
+* missing deployment unit
+* (ecs): fix profile lookup for subcomponents ([#357](https://github.com/hamlet-io/engine-plugin-aws/issues/357))
+
+Full set of changes: [`8.2.1...5d3560e`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.2.1...5d3560e)
+
+## 8.2.1 (2021-07-09)
+
+#### Fixes
+
+* syntax typo
+* (ci): tag push tigger
+#### Refactorings
+
+* release process tag support
+
+Full set of changes: [`8.2.0...8.2.1`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.2.0...8.2.1)
+
+## 8.2.0 (2021-07-09)
 
 #### New Features
 
@@ -57,8 +84,9 @@
 #### Others
 
 * include build details in container image
+* changelog bump ([#347](https://github.com/hamlet-io/engine-plugin-aws/issues/347))
 
-Full set of changes: [`8.1.2...2540ff0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.1.2...2540ff0)
+Full set of changes: [`8.1.2...8.2.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.1.2...8.2.0)
 
 ## 8.1.2 (2021-05-17)
 
