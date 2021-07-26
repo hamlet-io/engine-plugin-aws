@@ -1611,20 +1611,20 @@
                 [/#list]
             [/#list]
 
-            [#if containers?size > 0 ]
-                [@createECSTask
-                    id=taskId
-                    name=taskName
-                    engine=engine
-                    containers=containers
-                    role=roleId
-                    executionRole=executionRoleId
-                    networkMode=networkMode
-                    dependencies=dependencies
-                    fixedName=solution.FixedName
-                /]
-            [#else]
-                [@fatal message="No container to deploy services or tasks into" /]
+            [@createECSTask
+                id=taskId
+                name=taskName
+                engine=engine
+                containers=containers
+                role=roleId
+                executionRole=executionRoleId
+                networkMode=networkMode
+                dependencies=dependencies
+                fixedName=solution.FixedName
+            /]
+            
+            [#if containers?size < 1 ]
+                [@fatal message="No container available" context=resources["task"] /]
             [/#if]
 
         [/#if]
