@@ -73,6 +73,7 @@
 
     [#local solution = occurrence.Configuration.Solution ]
     [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
+    [#local namespace = "CWAgent"+occurrence.Core.FullAbsoluteRawPath?keep_before_last("/")?keep_before_last("/")]
 
     [@computeTaskConfigSection
         computeTaskTypes=[ COMPUTE_TASK_SYSTEM_LOG_FORWARDING ]
@@ -192,9 +193,9 @@
                                 r'        } ',
                                 r'    }, ',
                                 r'    "metrics": { ',
+                                r'        "namespace": "'+namespace+'", ',
                                 r'        "append_dimensions": { ',
                                 r'            "AutoScalingGroupName": "${aws:AutoScalingGroupName}", ',
-                                r'            "ImageId": "${aws:ImageId}", ',
                                 r'            "InstanceId": "${aws:InstanceId}", ',
                                 r'            "InstanceType": "${aws:InstanceType}" ',
                                 r'        }, ',
@@ -213,11 +214,6 @@
                                 r'                    "% Committed Bytes In Use" ',
                                 r'                ], ',
                                 r'                "metrics_collection_interval": 60 ',
-                                r'            }, ',
-                                r'            "statsd": { ',
-                                r'                "metrics_aggregation_interval": 60, ',
-                                r'                "metrics_collection_interval": 10, ',
-                                r'                "service_address": ":8125" ',
                                 r'            } ',
                                 r'        } ',
                                 r'    } ',
