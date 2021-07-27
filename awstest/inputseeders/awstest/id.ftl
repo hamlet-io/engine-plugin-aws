@@ -86,6 +86,10 @@
                             "queuehost" : {
                                 "Provider" : "awstest",
                                 "Name" : "queuehost"
+                            },
+                            "sqs" : {
+                                "Provider" : "awstest",
+                                "Name" : "sqs"
                             }
                         }
                     },

@@ -74,7 +74,7 @@
                 tags=
                     getOccurrenceCoreTags(
                         occurrence,
-                        formatComponentFullName(core.Tier, core.Component, dlqName))
+                        dlqName)
                 fifoQueue=fifoQueue
             /]
         [/#if]
@@ -96,7 +96,7 @@
             tags=
                 getOccurrenceCoreTags(
                     occurrence,
-                    formatComponentFullName(core.Tier, core.Component, sqsName))
+                    sqsName)
             fifoQueue=fifoQueue
         /]
 
