@@ -47,6 +47,11 @@
                                         "deployment:Unit" : "aws-userpool-base"
                                     }
                                 },
+                                {
+                                    "Profiles" : {
+                                        "Testing" : [ "userpoolbase" ]
+                                    }
+                                }
                                 "DefaultClient" : false,
                                 "Schema" : {
                                     "email" : {
