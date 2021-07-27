@@ -71,6 +71,10 @@
                 name=dlqName
                 retention=1209600
                 receiveWait=20
+                tags=
+                    getOccurrenceCoreTags(
+                        occurrence,
+                        formatComponentFullName(core.Tier, core.Component, dlqName))
                 fifoQueue=fifoQueue
             /]
         [/#if]
@@ -89,6 +93,10 @@
                 solution.DeadLetterQueue.MaxReceives,
                 solution.DeadLetterQueue.MaxReceives > 0,
                 (environmentObject.Operations.DeadLetterQueue.MaxReceives)!3)
+            tags=
+                getOccurrenceCoreTags(
+                    occurrence,
+                    formatComponentFullName(core.Tier, core.Component, sqsName))
             fifoQueue=fifoQueue
         /]
 
