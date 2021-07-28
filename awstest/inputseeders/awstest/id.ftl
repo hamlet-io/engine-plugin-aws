@@ -83,6 +83,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "service"
                             },
+                            "userpool" : {
+                                "Provider" : "awstest",
+                                "Name" : "userpool"
+                            },
                             "queuehost" : {
                                 "Provider" : "awstest",
                                 "Name" : "queuehost"
