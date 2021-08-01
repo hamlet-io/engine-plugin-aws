@@ -23,8 +23,7 @@
                                 "deployment:Unit" : "aws-sqs-base",
                                 "Instances" : {
                                     "default" : {}
-                                },
-                                "Ordering" : "FirstInFirstOut"
+                                }
                             }
                         }
                     }
@@ -54,7 +53,7 @@
                             "Match" : {
                                 "TagName" : {
                                     "Path"  : "Resources.sqsXappXsqsbase.Properties.Tags[10].Value",
-                                    "Value" : "mockedup-integration-application-sqsbase.fifo"
+                                    "Value" : "mockedup-integration-application-sqsbase"
                                 }
                             }
                         }
