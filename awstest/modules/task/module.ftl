@@ -1,14 +1,14 @@
 [#ftl]
 
 [@addModule
-    name="service"
-    description="Testing module for the aws ecs service component"
+    name="task"
+    description="Testing module for the aws ecs task component"
     provider=AWSTEST_PROVIDER
     properties=[]
 /]
 
 
-[#macro awstest_module_service ]
+[#macro awstest_module_task ]
 
     [#-- Base setup --]
     [@loadModule
@@ -28,7 +28,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-service-base",
+                "Namespace" : "mockedup-integration-aws-task-base",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["docker"]
@@ -40,25 +40,25 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "serviceecsbase" : {
+                        "taskecsbase" : {
                             "ecs" : {
                                 "Instances" : {
                                     "default" : {
-                                        "deployment:Unit" : "aws-service-base-ecs"
+                                        "deployment:Unit" : "aws-task-base-ecs"
                                     }
                                 },
                                 "Profiles" : {
                                     "Testing" : [ "baseecs" ]
                                 },
                                 "Services" : {
-                                    "servicebase" : {
+                                    "taskbase" : {
                                         "Instances" : {
                                             "default" : {
-                                                "deployment:Unit" : "aws-service-base"
+                                                "deployment:Unit" : "aws-task-base"
                                             }
                                         },
                                         "Profiles" : {
-                                            "Testing" : [ "servicebase" ]
+                                            "Testing" : [ "taskbase" ]
                                         },
                                         "Containers" : {
                                             "containerbase" : {
@@ -79,7 +79,7 @@
                        "CFNLint" : true
                     }
                 },
-                "servicebase" : {
+                "taskbase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
                        "CFNLint" : true
@@ -87,22 +87,22 @@
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
-                                "service" : {
-                                    "Name" : "ecsServiceXappXserviceecsbaseXservicebase",
-                                    "Type" : "AWS::ECS::Service"
+                                "task" : {
+                                    "Name" : "ecsTaskXappXtaskecsbaseXtaskbase",
+                                    "Type" : "AWS::ECS::TaskDefinition"
                                 }
                             },
                             "Output" : [
-                                "ecsServiceXappXserviceecsbaseXservicebaseXname",
-                                "ecsServiceXappXserviceecsbaseXservicebase",
-                                "ecsTaskXappXserviceecsbaseXservicebaseXarn"
+                                "ecsServiceXappXtaskecsbaseXtaskbaseXname",
+                                "ecsServiceXappXtaskecsbaseXtaskbase",
+                                "ecsTaskXappXtaskecsbaseXtaskbaseXarn"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "TagName" : {
-                                    "Path"  : "Resources.ecsServiceXappXserviceecsbaseXservicebase.Properties.Tags[10].Value",
-                                    "Value" : "mockedup-integration-application-serviceecsbase-servicebase"
+                                    "Path"  : "Resources.ecsTaskXappXtaskecsbaseXtaskbase.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-application-taskecsbase-taskbase"
                                 }
                             }
                         }
@@ -115,9 +115,9 @@
                         "TestCases" : [ "baseecs" ]
                     }
                 },
-                "servicebase" : {
+                "taskbase" : {
                     "service" : {
-                        "TestCases" : [ "servicebase" ]
+                        "TestCases" : [ "taskbase" ]
                     }
                 }
             }

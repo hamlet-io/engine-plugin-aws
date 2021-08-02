@@ -83,6 +83,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "service"
                             },
+                            "task" : {
+                                "Provider" : "awstest",
+                                "Name" : "task"
+                            },
                             "userpool" : {
                                 "Provider" : "awstest",
                                 "Name" : "userpool"

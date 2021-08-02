@@ -761,6 +761,7 @@
         [#if core.Type == ECS_SERVICE_COMPONENT_TYPE]
 
             [#local serviceId = resources["service"].Id  ]
+            [#local serviceName = resources["service"].Name  ]
             [#local serviceDependencies = []]
 
             [#if deploymentSubsetRequired("ecs", true)]
@@ -1297,6 +1298,7 @@
                     capacityProviderStrategy=capacityProviderStrategy
                     dependencies=dependencies
                     circuitBreaker=useCircuitBreaker
+                    tags=getOccurrenceCoreTags(occurrence, serviceName )
                 /]
             [/#if]
         [/#if]
@@ -1621,6 +1623,7 @@
                 networkMode=networkMode
                 dependencies=dependencies
                 fixedName=solution.FixedName
+                tags=getOccurrenceCoreTags(occurrence, taskName )
             /]
 
         [/#if]
