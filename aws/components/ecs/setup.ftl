@@ -1624,7 +1624,8 @@
             /]
             
             [#if containers?size < 1 ]
-                [@fatal message="No container available" context=resources["task"] /]
+                [@fatal message="No container available. Add one or more containers to the following service/task" 
+                    context=resources["task"] /]
             [/#if]
 
         [/#if]
