@@ -111,7 +111,7 @@
             },
             "TestProfiles" : {
                 "baseecs" : {
-                    "service" : {
+                    "serviceecs" : {
                         "TestCases" : [ "baseecs" ]
                     }
                 },

@@ -50,7 +50,7 @@
                                 "Profiles" : {
                                     "Testing" : [ "baseecs" ]
                                 },
-                                "Services" : {
+                                "Tasks" : {
                                     "taskbase" : {
                                         "Instances" : {
                                             "default" : {
@@ -111,12 +111,12 @@
             },
             "TestProfiles" : {
                 "baseecs" : {
-                    "service" : {
+                    "taskecs" : {
                         "TestCases" : [ "baseecs" ]
                     }
                 },
                 "taskbase" : {
-                    "service" : {
+                    "task" : {
                         "TestCases" : [ "taskbase" ]
                     }
                 }
