@@ -44,11 +44,8 @@
                             "ecs" : {
                                 "Instances" : {
                                     "default" : {
-                                        "deployment:Unit" : "aws-task-base-ecs"
+                                        "deployment:Unit" : "aws-task-ecs"
                                     }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "baseecs" ]
                                 },
                                 "Services" : {
                                     "taskbase" : {
@@ -73,12 +70,6 @@
                 }
             },
             "TestCases" : {
-                "baseecs" : {
-                    "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "CFNLint" : true
-                    }
-                },
                 "taskbase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
@@ -110,11 +101,6 @@
                 }
             },
             "TestProfiles" : {
-                "baseecs" : {
-                    "service" : {
-                        "TestCases" : [ "baseecs" ]
-                    }
-                },
                 "taskbase" : {
                     "service" : {
                         "TestCases" : [ "taskbase" ]
