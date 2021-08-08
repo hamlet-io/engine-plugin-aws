@@ -44,11 +44,8 @@
                             "ecs" : {
                                 "Instances" : {
                                     "default" : {
-                                        "deployment:Unit" : "aws-task-base-ecs"
+                                        "deployment:Unit" : "aws-task-ecs"
                                     }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "baseecs" ]
                                 },
                                 "Tasks" : {
                                     "taskbase" : {
@@ -73,12 +70,6 @@
                 }
             },
             "TestCases" : {
-                "baseecs" : {
-                    "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "CFNLint" : true
-                    }
-                },
                 "taskbase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
@@ -93,8 +84,7 @@
                                 }
                             },
                             "Output" : [
-                                "ecsServiceXappXtaskecsbaseXtaskbaseXname",
-                                "ecsServiceXappXtaskecsbaseXtaskbase",
+                                "ecsTaskXappXtaskecsbaseXtaskbase",
                                 "ecsTaskXappXtaskecsbaseXtaskbaseXarn"
                             ]
                         },
@@ -110,11 +100,6 @@
                 }
             },
             "TestProfiles" : {
-                "baseecs" : {
-                    "taskecs" : {
-                        "TestCases" : [ "baseecs" ]
-                    }
-                },
                 "taskbase" : {
                     "task" : {
                         "TestCases" : [ "taskbase" ]
