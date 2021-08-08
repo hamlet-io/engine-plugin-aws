@@ -73,7 +73,7 @@
                 "DesiredCount" : sshActive?then(1,0)
     }]
 
-    [#if publicRouteTable ]
+    [#if sshEnabled && publicRouteTable ]
         [#if deploymentSubsetRequired("eip", true) &&
                 isPartOfCurrentDeploymentUnit(bastionEIPId)]
             [@createEIP
