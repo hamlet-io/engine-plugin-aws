@@ -140,6 +140,7 @@
                 [
                     getPolicyDocument(
                             ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
+                            ec2ReadTagsPermission() +
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(credentialsBucket, accountId + "/alm/docker") +
                             s3AccountEncryptionReadPermission(
@@ -160,6 +161,7 @@
                             s3ListPermission(operationsBucket) +
                             s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
                             s3WritePermission(operationsBucket, "DOCKERLogs") +
+                            cwMetricsProducePermission("CWAgent") +
                             cwLogsProducePermission(ecsLogGroupName) +
                             (solution.VolumeDrivers?seq_contains("ebs"))?then(
                                 ec2EBSVolumeUpdatePermission(),

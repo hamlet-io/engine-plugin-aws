@@ -187,6 +187,7 @@
                         ec2AutoScaleGroupLifecyclePermission(
                             computeClusterAutoScaleGroupName
                         ) +
+                        ec2ReadTagsPermission() +
                         s3ReadPermission(
                             formatRelativePath(
                                 getRegistryEndPoint("scripts", occurrence),
@@ -208,6 +209,7 @@
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +
+                        cwMetricsProducePermission("CWAgent") +
                         cwLogsProducePermission(computeClusterLogGroupName),
                         "basic"
                     ),

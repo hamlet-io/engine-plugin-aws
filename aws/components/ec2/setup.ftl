@@ -246,6 +246,7 @@
             policies=
                 [
                     getPolicyDocument(
+                        ec2ReadTagsPermission() +
                         s3ListPermission(codeBucket) +
                         s3ReadPermission(codeBucket) +
                         s3AccountEncryptionReadPermission(
@@ -256,6 +257,7 @@
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +
+                        cwMetricsProducePermission("CWAgent") +
                         cwLogsProducePermission(ec2LogGroupName) +
                         ec2EBSVolumeReadPermission(),
                         "basic"

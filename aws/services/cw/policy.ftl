@@ -17,7 +17,12 @@
                     "logs:DescribeLogStreams"
                 ],
                 logGroupArn)
-        ] +
+        ]
+    ]
+[/#function]
+
+[#function cwMetricsProducePermission namespace="*"]
+    [#return
         [
             getPolicyStatement(
                 [
@@ -25,23 +30,15 @@
                 ],
                 "*",
                 "",
-                logGroupName?has_content?then(
+                (namespace != "*" )?then(
                     {
-                        "StringEquals": {
-                            "cloudwatch:namespace": 
-                                "CWAgent"+logGroupName?keep_before_last("/")?keep_before_last("/")
+                        "StringEquals" : {
+                            "cloudwatch:namespace" : namespace
                         }
                     },
-                    ""
+                    {}
                 )
             )
-        ] +
-        [
-            getPolicyStatement(
-                [
-                    "ec2:DescribeTags"
-                ],
-                "*")
         ]
     ]
 [/#function]

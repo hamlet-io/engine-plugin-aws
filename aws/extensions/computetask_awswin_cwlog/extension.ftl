@@ -30,7 +30,6 @@
 
     [#local solution = occurrence.Configuration.Solution ]
     [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
-    [#local namespace = "CWAgent"+occurrence.Core.FullAbsoluteRawPath?keep_before_last("/")?keep_before_last("/")]
 
     [#-- Configure the user defined log file collection and forwarding to CloudWatch --]
     [#local logFileConfigs = [
@@ -123,12 +122,15 @@
     [#-- OS Level Metric Collection for Memory and Disk Space --]
     [#local agentConfig += {
         "metrics" : {
-            "namespace" : namespace,
+            "namespace" : "CWAgent",
             "append_dimensions" : {
                 "AutoScalingGroupName" : r'${aws:AutoScalingGroupName}',
                 "InstanceId" : r'${aws:InstanceId}"',
                 "InstanceType" : r'${aws:InstanceType}'
             },
+            "aggregation_dimensions" : [
+                [ "AutoScalingGroupName", "InstanceId" ]
+            ],
             "metrics_collected" : {
                 "LogicalDisk" : {
                     "measurement" : [

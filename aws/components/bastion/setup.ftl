@@ -155,6 +155,7 @@
                         getPolicyDocument(
                             ec2AutoScaleGroupLifecyclePermission(bastionAutoScaleGroupName) +
                             ec2IPAddressUpdatePermission() +
+                            ec2ReadTagsPermission() +
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(codeBucket) +
                             s3AccountEncryptionReadPermission(
@@ -162,6 +163,7 @@
                                 "*",
                                 codeBucketRegion
                             ) +
+                            cwMetricsProducePermission("CWAgent") +
                             cwLogsProducePermission(bastionLgName),
                             "basic"
                         ),
