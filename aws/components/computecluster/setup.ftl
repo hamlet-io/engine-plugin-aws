@@ -29,7 +29,7 @@
     [#local networkProfile   = getNetworkProfile(occurrence)]
     [#local loggingProfile   = getLoggingProfile(occurrence)]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
     [#local autoScalingConfig = solution.AutoScaling ]
 

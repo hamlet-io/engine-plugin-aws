@@ -53,7 +53,7 @@
     [#local loggingProfile          = getLoggingProfile(occurrence)]
     [#local computeProviderProfile  = getComputeProviderProfile(occurrence)]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -1626,9 +1626,9 @@
                 fixedName=solution.FixedName
                 tags=getOccurrenceCoreTags(occurrence, taskName )
             /]
-            
+
             [#if containers?size < 1 ]
-                [@fatal message="No container available. Add one or more containers to the following service/task" 
+                [@fatal message="No container available. Add one or more containers to the following service/task"
                     context=resources["task"] /]
             [/#if]
 
