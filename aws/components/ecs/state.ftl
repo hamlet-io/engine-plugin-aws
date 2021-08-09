@@ -228,8 +228,7 @@
     [#local serviceId = formatResourceId(AWS_ECS_SERVICE_RESOURCE_TYPE, core.Id)]
     [#local serviceName = core.FullName]
     [#local taskId = formatResourceId(AWS_ECS_TASK_RESOURCE_TYPE, core.Id) ]
-    [#local taskName = core.FullName]
-    [#-- taskName changed from core.Name --]
+    [#local taskName = core.Name]
 
     [#local lgId = formatDependentLogGroupId(taskId) ]
     [#local lgName = core.FullAbsolutePath ]
@@ -369,8 +368,7 @@
     [#local ecsId = parentResources["cluster"].Id ]
 
     [#local taskId = formatResourceId(AWS_ECS_TASK_RESOURCE_TYPE, core.Id) ]
-    [#local taskName = core.FullName]
-    [#-- taskName changed from core.Name --]
+    [#local taskName = core.Name]
     [#local taskRoleId = formatDependentRoleId(taskId)]
 
     [#local executionRoleId = formatDependentRoleId(taskId, "execution")]
