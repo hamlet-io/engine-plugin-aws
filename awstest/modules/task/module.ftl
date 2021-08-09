@@ -92,7 +92,7 @@
                             "Match" : {
                                 "TagName" : {
                                     "Path"  : "Resources.ecsTaskXappXtaskecsbaseXtaskbase.Properties.Tags[10].Value",
-                                    "Value" : "mockedup-integration-application-taskecsbase-taskbase"
+                                    "Value" : "application-taskecsbase-taskbase"
                                 }
                             }
                         }
