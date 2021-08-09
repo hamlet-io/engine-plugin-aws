@@ -19,38 +19,32 @@
     ]
 /]
 
-[#function windows_path_converter nix_path ]
-    [#local seqNix = nix_path?split("/")]
-    [#if (seqNix[0])?matches('[c-zC-Z]')]
-        [#local seqNix = [seqNix[0] + ":"] + seqNix[1..]]
-    [/#if]
-    [#if (seqNix[1])?matches('ProgramFiles.*')]
-        [#local seqNix = [seqNix[0] + ":"] + [(seqNix[1])?replace("ProgramFiles","Program Files")] + seqNix[2..]]
-    [/#if]
-    [#local retval = seqNix?join(r"\")]
-
-    [#local retval = retval?replace(r"\", r"\\")]
-    [#return retval ]
-[/#function]
-
-[#function nix_path_converter win_path ]
-    [#local seqWin = win_path?split(r"\")]
-    [#if (seqWin[0])?matches('[c-zC-Z]:')]
-        [#local seqWin = [(seqWin[0])?keep_before(":")] + seqWin[1..]]
-    [/#if]
-    [#local retval = seqWin?join("/")?replace(" ","")]
-
-    [#return retval ]
-[/#function]
-
 [#macro shared_extension_computetask_awswin_cwlog_deployment_computetask occurrence ]
 
     [#local solution = occurrence.Configuration.Solution ]
 
+    [#local agentConfig = {}]
+
     [#local logFileProfile = _context.LogFileProfile ]
     [#local logGroupName = _context.InstanceLogGroup ]
 
-    [#local logContent = []]
+    [#local solution = occurrence.Configuration.Solution ]
+    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
+    [#local namespace = "CWAgent"+occurrence.Core.FullAbsoluteRawPath?keep_before_last("/")?keep_before_last("/")]
+
+    [#-- Configure the user defined log file collection and forwarding to CloudWatch --]
+    [#local logFileConfigs = [
+        {
+            "file_path" : r'C:\ProgramData\Hamlet\Logs\user-data.log',
+            "log_group_name" : logGroupName,
+            "log_stream_name" : "{instance_id}/user-data"
+        },
+        {
+            "file_path" : r'C:\ProgramData\Hamlet\Logs\user-step.log',
+            "log_group_name" : logGroupName,
+            "log_stream_name" : "{instance_id}/user-step"
+        }
+    ]]
 
     [#list logFileProfile.LogFileGroups as logFileGroup ]
         [#local logGroup = logFileGroups[logFileGroup] ]
@@ -58,22 +52,100 @@
             [#local logFileDetails = logFiles[logFile] ]
             [#local timeFormat = logFileDetails.TimeFormat]
             [#local timeFormat = timeFormat!'%Y/%m/%d %H:%M:%S%Z']
-            [#local logContent +=
-                [
-                    r'{',
-                    r'    "file_path": "' + (logFileDetails.FilePath)?replace(r"\",r"\\") + '",',
-                    r'    "log_group_name": "' + logGroupName + '",',
-                    r'    "log_stream_name": "{instance_id}' + nix_path_converter(logFileDetails.FilePath) + '",',
-                    r'    "timestamp_format": "' + timeFormat + '" ',
-                    r'},'
-                ]
-            ]
+
+            [#local logStreamName = logFileDetails.FilePath?replace(":", "")?replace(r'\', '/')?replace(r'\p{Space}', '', 'r') ]
+
+            [#local logFileConfigs += [ {
+                "file_path" : logFileDetails.FilePath,
+                "log_group_name" : logGroupName,
+                "log_stream_name" : "{instance_id}/${logStreamName}",
+                "timestamp_format" : timeFormat
+            }]]
+
         [/#list]
     [/#list]
 
-    [#local solution = occurrence.Configuration.Solution ]
-    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
-    [#local namespace = "CWAgent"+occurrence.Core.FullAbsoluteRawPath?keep_before_last("/")?keep_before_last("/")]
+    [#-- Collect Windows Event Logs and forward them to CW Logs --]
+    [#-- Currently just collect the standard event logs --]
+    [#local windowsEventLogs = [
+        {
+            "event_format" : "xml",
+            "event_levels" : [
+                "INFORMATION",
+                "WARNING",
+                "ERROR",
+                "CRITICAL"
+            ],
+            "event_name" : "System",
+            "log_group_name" : logGroupName,
+            "log_stream_name" : "{instance_id}/System"
+        },
+        {
+            "event_format" : "xml",
+            "event_levels" : [
+                "INFORMATION",
+                "WARNING",
+                "ERROR",
+                "CRITICAL"
+            ],
+            "event_name" : "Application",
+            "log_group_name" : logGroupName,
+            "log_stream_name" : "{instance_id}/Application"
+        },
+        {
+            "event_format" : "xml",
+            "event_levels" : [
+                "INFORMATION",
+                "WARNING",
+                "ERROR",
+                "CRITICAL"
+            ],
+            "event_name" : "Security",
+            "log_group_name" : logGroupName,
+            "log_stream_name" : "{instance_id}/Security"
+        }
+    ]]
+
+
+    [#local agentConfig += {
+        "logs" : {
+            "logs_collected" : {
+                "files" : {
+                    "collect_list" : logFileConfigs
+                }
+            },
+            "windows_events" : {
+                "collect_list" : windowsEventLogs
+            }
+        }
+    }]
+
+    [#-- OS Level Metric Collection for Memory and Disk Space --]
+    [#local agentConfig += {
+        "metrics" : {
+            "namespace" : namespace,
+            "append_dimensions" : {
+                "AutoScalingGroupName" : r'${aws:AutoScalingGroupName}',
+                "InstanceId" : r'${aws:InstanceId}"',
+                "InstanceType" : r'${aws:InstanceType}'
+            },
+            "metrics_collected" : {
+                "LogicalDisk" : {
+                    "measurement" : [
+                        "% Free Space"
+                    ],
+                    "metrics_collection_interval" : 60,
+                    "resources" : [ "*" ]
+                },
+                "Memory" : {
+                    "measurement" : [
+                        "% Committed Bytes In Use"
+                    ],
+                    "metrics_collection_interval" : 60
+                }
+            }
+        }
+    }]
 
     [@computeTaskConfigSection
         computeTaskTypes=[ COMPUTE_TASK_SYSTEM_LOG_FORWARDING ]
@@ -128,97 +200,7 @@
                     "content": {
                         "Fn::Join" : [
                             "\n",
-                            [
-                                r'{ ',
-                                r'    "logs": { ',
-                                r'        "logs_collected": { ',
-                                r'            "files": { ',
-                                r'                "collect_list": [ '
-                            ] +
-                            logContent +
-                            [
-                                r'                    { ',
-                                r'                        "file_path": "c:\\ProgramData\\Hamlet\\Logs\\user-data.log", ',
-                                r'                        "log_group_name": "' + logGroupName + '", ',
-                                r'                        "log_stream_name": "{instance_id}/user-data" ',
-                                r'                    }, ',
-                                r'                    { ',
-                                r'                        "file_path": "c:\\ProgramData\\Hamlet\\Logs\\user-step.log", ',
-                                r'                        "log_group_name": "' + logGroupName + '", ',
-                                r'                        "log_stream_name": "{instance_id}/user-step" ',
-                                r'                    } ',
-                                r'                ] ',
-                                r'            }, ',
-                                r'            "windows_events": { ',
-                                r'                "collect_list": [ ',
-                                r'                    { ',
-                                r'                        "event_format": "xml", ',
-                                r'                        "event_levels": [ ',
-                                r'                            "VERBOSE", ',
-                                r'                            "INFORMATION", ',
-                                r'                            "WARNING", ',
-                                r'                            "ERROR", ',
-                                r'                            "CRITICAL" ',
-                                r'                        ], ',
-                                r'                        "event_name": "System", ',
-                                r'                        "log_group_name": "' + logGroupName + '", ',
-                                r'                        "log_stream_name": "{instance_id}/system" ',
-                                r'                    }, ',
-                                r'                    { ',
-                                r'                        "event_format": "xml", ',
-                                r'                        "event_levels": [ ',
-                                r'                            "WARNING", ',
-                                r'                            "ERROR", ',
-                                r'                            "CRITICAL" ',
-                                r'                        ], ',
-                                r'                        "event_name": "Application", ',
-                                r'                        "log_group_name": "' + logGroupName + '", ',
-                                r'                        "log_stream_name": "{instance_id}/application" ',
-                                r'                    }, ',
-                                r'                    { ',
-                                r'                        "event_format": "xml", ',
-                                r'                        "event_levels": [ ',
-                                r'                            "VERBOSE", ',
-                                r'                            "INFORMATION", ',
-                                r'                            "WARNING", ',
-                                r'                            "ERROR", ',
-                                r'                            "CRITICAL" ',
-                                r'                        ], ',
-                                r'                        "event_name": "Security", ',
-                                r'                        "log_group_name": "' + logGroupName + '", ',
-                                r'                        "log_stream_name": "{instance_id}/security" ',
-                                r'                    } ',
-                                r'                ] ',
-                                r'            } ',
-                                r'        } ',
-                                r'    }, ',
-                                r'    "metrics": { ',
-                                r'        "namespace": "'+namespace+'", ',
-                                r'        "append_dimensions": { ',
-                                r'            "AutoScalingGroupName": "${aws:AutoScalingGroupName}", ',
-                                r'            "InstanceId": "${aws:InstanceId}", ',
-                                r'            "InstanceType": "${aws:InstanceType}" ',
-                                r'        }, ',
-                                r'        "metrics_collected": { ',
-                                r'            "LogicalDisk": { ',
-                                r'                "measurement": [ ',
-                                r'                    "% Free Space" ',
-                                r'                ], ',
-                                r'                "metrics_collection_interval": 60, ',
-                                r'                "resources": [ ',
-                                r'                    "*" ',
-                                r'                ] ',
-                                r'            }, ',
-                                r'            "Memory": { ',
-                                r'                "measurement": [ ',
-                                r'                    "% Committed Bytes In Use" ',
-                                r'                ], ',
-                                r'                "metrics_collection_interval": 60 ',
-                                r'            } ',
-                                r'        } ',
-                                r'    } ',
-                                r'} '
-                            ]
+                            getJSON(agentConfig, false, true)?split('\n')
                         ]
                     },
                     "mode": "000644"
