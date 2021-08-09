@@ -134,7 +134,8 @@
     networkMode=""
     fixedName=false
     role=""
-    dependencies=""]
+    dependencies=""
+    tags={}]
 
     [#local definitions = [] ]
     [#local volumes = []]
@@ -367,6 +368,7 @@
         properties=taskProperties
         dependencies=dependencies
         outputs=ECS_TASK_OUTPUT_MAPPINGS
+        tags=tags
     /]
 [/#macro]
 
@@ -384,6 +386,7 @@
             networkConfiguration={}
             placement={}
             dependencies=""
+            tags={}
     ]
 
     [#-- define an array of constraints --]
@@ -534,6 +537,7 @@
             )
         dependencies=dependencies
         outputs=ECS_SERVICE_OUTPUT_MAPPINGS
+        tags=tags
     /]
 [/#macro]
 
