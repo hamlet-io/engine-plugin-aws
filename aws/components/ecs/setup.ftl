@@ -53,7 +53,7 @@
     [#local loggingProfile          = getLoggingProfile(occurrence)]
     [#local computeProviderProfile  = getComputeProviderProfile(occurrence)]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -140,6 +140,7 @@
                 [
                     getPolicyDocument(
                             ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
+                            ec2ReadTagsPermission() +
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(credentialsBucket, accountId + "/alm/docker") +
                             s3AccountEncryptionReadPermission(
@@ -160,6 +161,7 @@
                             s3ListPermission(operationsBucket) +
                             s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
                             s3WritePermission(operationsBucket, "DOCKERLogs") +
+                            cwMetricsProducePermission("CWAgent") +
                             cwLogsProducePermission(ecsLogGroupName) +
                             (solution.VolumeDrivers?seq_contains("ebs"))?then(
                                 ec2EBSVolumeUpdatePermission(),
@@ -762,6 +764,7 @@
         [#if core.Type == ECS_SERVICE_COMPONENT_TYPE]
 
             [#local serviceId = resources["service"].Id  ]
+            [#local serviceName = resources["service"].Name  ]
             [#local serviceDependencies = []]
 
             [#if deploymentSubsetRequired("ecs", true)]
@@ -1298,6 +1301,7 @@
                     capacityProviderStrategy=capacityProviderStrategy
                     dependencies=dependencies
                     circuitBreaker=useCircuitBreaker
+                    tags=getOccurrenceCoreTags(occurrence, serviceName )
                 /]
             [/#if]
         [/#if]
@@ -1622,7 +1626,13 @@
                 networkMode=networkMode
                 dependencies=dependencies
                 fixedName=solution.FixedName
+                tags=getOccurrenceCoreTags(occurrence, taskName )
             /]
+
+            [#if containers?size < 1 ]
+                [@fatal message="No container available. Add one or more containers to the following service/task"
+                    context=resources["task"] /]
+            [/#if]
 
         [/#if]
 

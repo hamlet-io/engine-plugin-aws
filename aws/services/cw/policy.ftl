@@ -46,6 +46,28 @@
     ]
 [/#function]
 
+[#function cwMetricsProducePermission namespace="*"]
+    [#return
+        [
+            getPolicyStatement(
+                [
+                    "cloudwatch:PutMetricData"
+                ],
+                "*",
+                "",
+                (namespace != "*" )?then(
+                    {
+                        "StringEquals" : {
+                            "cloudwatch:namespace" : namespace
+                        }
+                    },
+                    {}
+                )
+            )
+        ]
+    ]
+[/#function]
+
 [#function cwLogsConfigurePermission ]
     [#return
         [

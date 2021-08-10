@@ -87,6 +87,19 @@
     ]
 [/#function]
 
+[#function ec2ReadTagsPermission ]
+    [#return
+        [
+            getPolicyStatement(
+                [
+                    "ec2:DescribeTags"
+                ],
+                "*"
+            )
+        ]
+    ]
+[/#function]
+
 [#function ec2SSMSessionManagerPermission os="linux" ]
     [#return
         [
@@ -174,7 +187,7 @@
         ( os == "windows" )?then(
             [
                 getPolicyStatement(
-                    [ 
+                    [
                         "ssm:ListAssociations"
                     ],
                     [
@@ -193,7 +206,7 @@
                     ]
                 )
                 getPolicyStatement(
-                    [ 
+                    [
                         "ssm:ListInstanceAssociations"
                     ],
                     [

@@ -70,6 +70,10 @@
                         },
                         "JSON" : {
                             "Match" : {
+                                "TagName" : {
+                                    "Path"  : "Resources.ecsXappXecsbase.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-application-ecsbase"
+                                },
                                 "ASGWaitForCFNSignals" : {
                                     "Path"  : "Resources.asgXappXecsbase.UpdatePolicy.AutoScalingRollingUpdate.WaitOnResourceSignals",
                                     "Value" : true

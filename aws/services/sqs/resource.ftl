@@ -37,7 +37,7 @@
     }
 /]
 
-[#macro createSQSQueue id name delay="" maximumSize="" retention=1209600 receiveWait="" visibilityTimeout="" dlq="" dlqReceives=1 fifoQueue=false dependencies=""]
+[#macro createSQSQueue id name delay="" maximumSize="" retention=1209600 receiveWait="" visibilityTimeout="" dlq="" dlqReceives=1 fifoQueue=false tags="" dependencies=""]
     [@cfResource
         id=id
         type="AWS::SQS::Queue"
@@ -62,6 +62,7 @@
                 fifoQueue,
                 fifoQueue
             )
+        tags=tags
         outputs=SQS_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]

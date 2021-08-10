@@ -63,8 +63,7 @@
     [#local networkProfile      = getNetworkProfile(occurrence)]
     [#local loggingProfile      = getLoggingProfile(occurrence)]
 
-
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
     [#local sshActive = sshActive || solution.Active ]
 
@@ -74,7 +73,7 @@
                 "DesiredCount" : sshActive?then(1,0)
     }]
 
-    [#if publicRouteTable ]
+    [#if sshEnabled && publicRouteTable ]
         [#if deploymentSubsetRequired("eip", true) &&
                 isPartOfCurrentDeploymentUnit(bastionEIPId)]
             [@createEIP
@@ -156,6 +155,7 @@
                         getPolicyDocument(
                             ec2AutoScaleGroupLifecyclePermission(bastionAutoScaleGroupName) +
                             ec2IPAddressUpdatePermission() +
+                            ec2ReadTagsPermission() +
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(codeBucket) +
                             s3AccountEncryptionReadPermission(
@@ -163,6 +163,7 @@
                                 "*",
                                 codeBucketRegion
                             ) +
+                            cwMetricsProducePermission("CWAgent") +
                             cwLogsProducePermission(bastionLgName),
                             "basic"
                         ),

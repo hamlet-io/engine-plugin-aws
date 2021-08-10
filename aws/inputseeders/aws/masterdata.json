@@ -1341,7 +1341,8 @@
             "ResourceSets": {
                 "cmk" : {
                     "deployment:Unit" : "cmk",
-                    "deployment:Priority" : 20
+                    "deployment:Priority" : 20,
+                    "GroupDeploymentUnit" : false
                 },
                 "iam": {
                     "deployment:Unit": "iam",
