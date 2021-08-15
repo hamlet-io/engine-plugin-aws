@@ -187,11 +187,16 @@
     [/#switch]
 
     [#local domainRedirectRules = {} ]
-    [#if (sourcePort.Certificate)!false ]
-        [#local certificateObject = getCertificateObject( solution.Certificate ) ]
 
+    [#local certificateId = ""]
+    [#local certificateRequired = (sourcePort.Certificate)!false ]
+
+    [#if certificateRequired ]
+
+        [#local certificateObject = getCertificateObject( solution.Certificate ) ]
         [#local hostName = getHostName(certificateObject, occurrence) ]
         [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
+        [#local certificateId = formatDomainCertificateId(certificateObject, hostName) ]
 
         [#local fqdn = formatDomainName(hostName, primaryDomainObject) ]
         [#local scheme = "https" ]
@@ -249,6 +254,7 @@
                 "listenerRule" : {
                     "Id" : formatResourceId(AWS_ALB_LISTENER_RULE_RESOURCE_TYPE, parentCore.Id, sourcePortId, solution.Priority),
                     "Priority" : solution.Priority,
+                    "FQDN" : fqdn,
                     "Type" : AWS_ALB_LISTENER_RULE_RESOURCE_TYPE
                 },
                 "targetgroup" : {
@@ -276,6 +282,14 @@
             attributeIfContent(
                 "apiGatewayLink",
                 (parentState.Resources["apiGatewayLink"])!{}
+            ) +
+            attributeIfTrue(
+                "certificate",
+                certificateRequired,
+                {
+                    "Id" : certificateId,
+                    "Type" : AWS_CERTIFICATE_RESOURCE_TYPE
+                }
             ),
             "Attributes" : {
                 "LB" : lbId,

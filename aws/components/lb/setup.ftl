@@ -178,6 +178,11 @@
         [#local defaultTargetGroupId = resources["defaulttg"].Id]
         [#local defaultTargetGroupName = resources["defaulttg"].Name]
 
+        [#local certificateId = ""]
+        [#if ((resources["certificate"])!{})?has_content ]
+            [#local certificateId = resources["certificate"].Id ]
+        [/#if]
+
         [#local ruleCleanupScript = []]
         [#local cliCleanUpRequired = getExistingReference(listenerId, "cleanup")?has_content ]
 
@@ -242,6 +247,8 @@
         [#local listenerRuleId = resources["listenerRule"].Id ]
         [#local listenerRulePriority = resources["listenerRule"].Priority ]
 
+        [#local fqdn = resources["listenerRule"].FQDN ]
+
         [#local listenerForwardRule = true]
 
         [#local listenerRuleActions = [] ]
@@ -266,19 +273,11 @@
                 [#local path = "" ]
                 [#break]
         [/#switch]
-        [#local listenerRuleConditions = getListenerRulePathCondition(path) ]
-
-        [#-- Certificate details if required --]
-        [#local certificateObject = getCertificateObject(solution.Certificate) ]
-        [#local hostName = getHostName(certificateObject, subOccurrence) ]
-        [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
-        [#local certificateId = formatDomainCertificateId(certificateObject, hostName) ]
+        [#local listenerRuleConditions = getListenerRulePathCondition(path) ]]
 
         [#if engine == "application" ]
             [#-- FQDN processing --]
             [#if solution.HostFilter ]
-                [#local fqdn = formatDomainName(hostName, primaryDomainObject)]
-
                 [#list resources["domainRedirectRules"]!{} as key, rule]
 
                     [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
