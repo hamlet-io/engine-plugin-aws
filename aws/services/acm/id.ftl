@@ -31,13 +31,17 @@
 
 [#function formatDomainCertificateId certificateObject, hostName=""]
     [#local primaryDomain = getCertificatePrimaryDomain(certificateObject) ]
-    [#return
-        formatResourceId(
-            AWS_CERTIFICATE_RESOURCE_TYPE,
-            certificateObject.Wildcard?then(
-                "star",
-                hostName
-            ),
-            splitDomainName(primaryDomain.Name)
-        ) ]
+    [#if primaryDomain.Name?has_content ]
+        [#return
+            formatResourceId(
+                AWS_CERTIFICATE_RESOURCE_TYPE,
+                certificateObject.Wildcard?then(
+                    "star",
+                    hostName
+                ),
+                splitDomainName(primaryDomain.Name)
+            ) ]
+    [/#if]
+
+    [#return ""]
 [/#function]
