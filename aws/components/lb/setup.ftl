@@ -273,7 +273,7 @@
                 [#local path = "" ]
                 [#break]
         [/#switch]
-        [#local listenerRuleConditions = getListenerRulePathCondition(path) ]]
+        [#local listenerRuleConditions = getListenerRulePathCondition(path) ]
 
         [#if engine == "application" ]
             [#-- FQDN processing --]
