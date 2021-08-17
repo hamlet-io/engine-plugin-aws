@@ -17,31 +17,6 @@
                     "logs:DescribeLogStreams"
                 ],
                 logGroupArn)
-        ] +
-        [
-            getPolicyStatement(
-                [
-                    "cloudwatch:PutMetricData"
-                ],
-                "*",
-                "",
-                logGroupName?has_content?then(
-                    {
-                        "StringEquals": {
-                            "cloudwatch:namespace": 
-                                "CWAgent"+logGroupName?keep_before_last("/")?keep_before_last("/")
-                        }
-                    },
-                    ""
-                )
-            )
-        ] +
-        [
-            getPolicyStatement(
-                [
-                    "ec2:DescribeTags"
-                ],
-                "*")
         ]
     ]
 [/#function]

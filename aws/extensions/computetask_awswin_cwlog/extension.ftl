@@ -111,10 +111,10 @@
             "logs_collected" : {
                 "files" : {
                     "collect_list" : logFileConfigs
+                },
+                "windows_events" : {
+                    "collect_list" : windowsEventLogs
                 }
-            },
-            "windows_events" : {
-                "collect_list" : windowsEventLogs
             }
         }
     }]
@@ -125,7 +125,7 @@
             "namespace" : "CWAgent",
             "append_dimensions" : {
                 "AutoScalingGroupName" : r'${aws:AutoScalingGroupName}',
-                "InstanceId" : r'${aws:InstanceId}"',
+                "InstanceId" : r'${aws:InstanceId}',
                 "InstanceType" : r'${aws:InstanceType}'
             },
             "aggregation_dimensions" : [
@@ -148,6 +148,12 @@
             }
         }
     }]
+
+    [#-- compensate for getJSON escaping on leading / in string value --]
+    [#local agentConfigArray = []]
+    [#list getJSON(agentConfig, false, true)?split('\n') as acLine]
+        [#local agentConfigArray += [ acLine?replace(r'"\/','"/') ] ]
+    [/#list]
 
     [@computeTaskConfigSection
         computeTaskTypes=[ COMPUTE_TASK_SYSTEM_LOG_FORWARDING ]
@@ -202,7 +208,7 @@
                     "content": {
                         "Fn::Join" : [
                             "\n",
-                            getJSON(agentConfig, false, true)?split('\n')
+                            agentConfigArray
                         ]
                     },
                     "mode": "000644"
