@@ -27,6 +27,15 @@
     }
 ]
 
+[#function getAmazonCacheMaintenanceWindow dayofWeek timeofDay timeZone="UTC" ]
+    [#local startTime = convertDayOfWeek2DateTime(dayofWeek, timeofDay, timeZone) ]
+
+    [#local endTime = addDateTime(startTime, "mm", 60) ]
+    [#local retval = (showDateTime(startTime, "EEE:HH:mm", "UTC")+"-"+showDateTime(endTime, "EEE:HH:mm", "UTC"))?lower_case ]
+
+    [#return retval ]
+[/#function]
+
 [@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_CACHE_RESOURCE_TYPE

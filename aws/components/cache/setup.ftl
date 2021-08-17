@@ -135,6 +135,11 @@
 
         [#if !hibernate]
 
+            [#if ! testMaintenanceWindow(solution.MaintenanceWindow)]
+                [@fatal message="Maintenance window incorrectly configured" context=solution /]
+                [#return]
+            [/#if]
+
             [#list solution.Alerts?values as alert ]
 
                 [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
@@ -181,6 +186,18 @@
                         "CacheSubnetGroupName": getReference(cacheSubnetGroupId),
                         "VpcSecurityGroupIds":[getReference(cacheSecurityGroupId)]
                     } +
+                    attributeIfContent(
+                        "PreferredMaintenanceWindow",
+                        solution.MaintenanceWindow.Configured?then(
+                                getAmazonCacheMaintenanceWindow(
+                                    solution.MaintenanceWindow.DayOfTheWeek,
+                                    solution.MaintenanceWindow.TimeOfDay,
+                                    solution.MaintenanceWindow.TimeZone
+                                ),
+                                ""
+                            )
+
+                    ) +
                     multiAZ?then(
                         {
                             "AZMode": "cross-az",
