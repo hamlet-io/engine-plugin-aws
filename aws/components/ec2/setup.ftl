@@ -29,6 +29,7 @@
     [#local ec2InstanceProfileId   = resources["instanceProfile"].Id]
     [#local ec2LogGroupId          = resources["lg"].Id]
     [#local ec2LogGroupName        = resources["lg"].Name]
+    [#local ec2OS                  = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
 
     [#local processorProfile       = getProcessor(occurrence, EC2_COMPONENT_TYPE)]
     [#local storageProfile         = getStorage(occurrence, EC2_COMPONENT_TYPE)]
@@ -37,7 +38,7 @@
     [#local networkProfile         = getNetworkProfile(occurrence)]
     [#local loggingProfile         = getLoggingProfile(occurrence)]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -245,6 +246,7 @@
             policies=
                 [
                     getPolicyDocument(
+                        ec2ReadTagsPermission() +
                         s3ListPermission(codeBucket) +
                         s3ReadPermission(codeBucket) +
                         s3AccountEncryptionReadPermission(
@@ -255,12 +257,13 @@
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +
+                        cwMetricsProducePermission("CWAgent") +
                         cwLogsProducePermission(ec2LogGroupName) +
                         ec2EBSVolumeReadPermission(),
                         "basic"
                     ),
                     getPolicyDocument(
-                        ssmSessionManagerPermission(),
+                        ssmSessionManagerPermission(ec2OS),
                         "ssm"
                     )
                 ] + targetGroupPermission?then(

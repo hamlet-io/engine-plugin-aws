@@ -20,6 +20,7 @@
     [#local computeClusterSecurityGroupName    = resources["securityGroup"].Name ]
     [#local computeClusterLogGroupId           = resources["lg"].Id]
     [#local computeClusterLogGroupName         = resources["lg"].Name]
+    [#local computeClusterOS                   = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
 
     [#local processorProfile = getProcessor(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
     [#local storageProfile   = getStorage(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
@@ -28,7 +29,7 @@
     [#local networkProfile   = getNetworkProfile(occurrence)]
     [#local loggingProfile   = getLoggingProfile(occurrence)]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
     [#local autoScalingConfig = solution.AutoScaling ]
 
@@ -186,6 +187,7 @@
                         ec2AutoScaleGroupLifecyclePermission(
                             computeClusterAutoScaleGroupName
                         ) +
+                        ec2ReadTagsPermission() +
                         s3ReadPermission(
                             formatRelativePath(
                                 getRegistryEndPoint("scripts", occurrence),
@@ -207,11 +209,12 @@
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +
+                        cwMetricsProducePermission("CWAgent") +
                         cwLogsProducePermission(computeClusterLogGroupName),
                         "basic"
                     ),
                     getPolicyDocument(
-                        ssmSessionManagerPermission(),
+                        ssmSessionManagerPermission(computeClusterOS),
                         "ssm"
                     )
                 ] +

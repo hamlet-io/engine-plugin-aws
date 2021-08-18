@@ -25,6 +25,7 @@
     [#local ecsInstanceLogGroupId = resources["lgInstanceLog"].Id]
     [#local ecsInstanceLogGroupName = resources["lgInstanceLog"].Name]
     [#local ecsEIPs = (resources["eips"])!{} ]
+    [#local ecsOS = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
 
     [#local ecsCapacityProvierAssociationId = resources["ecsCapacityProviderAssociation"].Id ]
     [#local ecsASGCapacityProviderId = resources["ecsASGCapacityProvider"].Id]
@@ -52,7 +53,7 @@
     [#local loggingProfile          = getLoggingProfile(occurrence)]
     [#local computeProviderProfile  = getComputeProviderProfile(occurrence)]
 
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -139,6 +140,7 @@
                 [
                     getPolicyDocument(
                             ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
+                            ec2ReadTagsPermission() +
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(credentialsBucket, accountId + "/alm/docker") +
                             s3AccountEncryptionReadPermission(
@@ -159,6 +161,7 @@
                             s3ListPermission(operationsBucket) +
                             s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
                             s3WritePermission(operationsBucket, "DOCKERLogs") +
+                            cwMetricsProducePermission("CWAgent") +
                             cwLogsProducePermission(ecsLogGroupName) +
                             (solution.VolumeDrivers?seq_contains("ebs"))?then(
                                 ec2EBSVolumeUpdatePermission(),
@@ -167,7 +170,7 @@
                         "docker"
                     ),
                     getPolicyDocument(
-                        ssmSessionManagerPermission(),
+                        ssmSessionManagerPermission(ecsOS),
                         "ssm"
                     )
                 ] +
@@ -1625,9 +1628,9 @@
                 fixedName=solution.FixedName
                 tags=getOccurrenceCoreTags(occurrence, taskName )
             /]
-            
+
             [#if containers?size < 1 ]
-                [@fatal message="No container available. Add one or more containers to the following service/task" 
+                [@fatal message="No container available. Add one or more containers to the following service/task"
                     context=resources["task"] /]
             [/#if]
 

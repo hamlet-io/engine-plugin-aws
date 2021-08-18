@@ -1,12 +1,12 @@
 [#ftl]
 
 [@addExtension
-    id="computetask_awslinux_ecs"
+    id="computetask_awswin_ecs"
     aliases=[
-        "_computetask_awslinux_ecs"
+        "_computetask_awswin_ecs"
     ]
     description=[
-        "Setup the ecs agent and docker config for aws linux instances"
+        "Setup the ecs agent and docker config for aws win instances"
     ]
     supportedTypes=[
         ECS_COMPONENT_TYPE
@@ -16,7 +16,7 @@
     ]
 /]
 
-[#macro shared_extension_computetask_awslinux_ecs_deployment_computetask occurrence ]
+[#macro shared_extension_computetask_awswin_ecs_deployment_computetask occurrence ]
 
     [#local solution = occurrence.Configuration.Solution]
     [#local resources = occurrence.State.Resources]
@@ -37,7 +37,6 @@
     [#local userInit = {}]
     [#if dockerUsers?has_content ]
         [#list dockerUsers as userName,details ]
-
             [#local userInit = mergeObjects(
                                 userInit,
                                 {
@@ -56,9 +55,8 @@
 
             [#switch dockerVolumeDriver ]
                 [#case "ebs" ]
-
                     [#local dockerVolumeDriverScript += [
-                        { "Fn::Sub" : r'docker plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION="${AWS::Region}" --grant-all-permissions' }
+                        { "Fn::Sub" : r'docker.exe plugin install rexray/ebs REXRAY_PREEMPT=true EBS_REGION="${AWS::Region}" --grant-all-permissions 2>&1 | Write-Output ' }
                     ]]
                     [#break]
             [/#switch]
@@ -70,17 +68,17 @@
             "1_InstallVolumeDrivers",
             dockerVolumeDriverScript,
             {
-                "command" : "/opt/hamlet_cfninit/${dockerVolumeDriverScriptName}.sh",
+                "command" : "powershell.exe -ExecutionPolicy Bypass -Command c:\\ProgramData\\Hamlet\\Scripts\\${dockerVolumeDriverScriptName}.ps1",
                 "ignoreErrors" : false
             }
         )]
 
     [#if dockerVolumeDriverScript?has_content ]
         [#local dockerVolumeDriverScript = [
-            r'#!/bin/bash',
-            r'set -euo pipefail',
-            'exec > >(tee /var/log/hamlet_cfninit/${dockerVolumeDriverScriptName}.log | logger -t ${dockerVolumeDriverScriptName} -s 2>/dev/console) 2>&1'
-        ] + dockerVolumeDriverScript ]
+            'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\${dockerVolumeDriverScript}.log ;'
+        ] + dockerVolumeDriverScript + [
+            'Stop-Transcript | out-null'
+        ]]
     [/#if]
 
     [#local dockerLoggingDriverScriptName = "ecs_log_driver_config" ]
@@ -93,13 +91,15 @@
         [#case "fluentd" ]
             [#local dockerLoggingDriverScript += [
                 r'function update_log_driver {',
-                r'  local ecs_log_driver="$1"; shift',
-                r'  . /etc/sysconfig/docker',
-                r'  if [[ -n "${OPTIONS}" ]]; then',
-                r'     sed -i "s,^\(OPTIONS=\).*,\1\"${OPTIONS} --log-driver=${ecs_log_driver}\",g" /etc/sysconfig/docker',
-                r'  else',
-                r'     echo "OPTIONS=\"--log-driver=${ecs_log_driver}\"" >> /etc/sysconfig/docker',
-                r'    fi'
+                r'  $ecs_log_driver=$args[0] ',
+                r'  if (Test-Path $fileToCheck -PathType leaf) ',
+                r'  { ',
+                r'    $dockerjson = (Get-Content -Raw -Path C:\ProgramData\Docker\config\daemon.json | ConvertFrom-Json) ',
+                r'    $dockerjson.log-driver = ${ecs_log_driver} ',
+                r'    $dockerjson | ConvertTo-Json -depth 100 | Out-File "C:\ProgramData\Docker\config\daemon.json" ',
+                r'  } else {',
+                r'    echo "{ \"log-driver\":\"${ecs_log_driver}\" }" > C:\ProgramData\Docker\config\daemon.json ',
+                r'  }'
                 r'}',
                 'update_log_driver "${defaultLogDriver}"'
             ]]
@@ -108,10 +108,10 @@
 
     [#if dockerLoggingDriverScript?has_content ]
         [#local dockerLoggingDriverScript = [
-            r'#!/bin/bash',
-            r'set -euo pipefail',
-            'exec > >(tee /var/log/hamlet_cfninit/${dockerLoggingDriverScriptName}.log | logger -t ${dockerLoggingDriverScriptName} -s 2>/dev/console) 2>&1'
-        ] + dockerLoggingDriverScript ]
+            'Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\${dockerLoggingDriverScript}.log ;'
+        ] + dockerLoggingDriverScript  + [
+            'Stop-Transcript | out-null'
+        ]]
     [/#if]
 
     [#local commands +=
@@ -119,51 +119,35 @@
             "2_ConfigureDefaultLogDriver",
             dockerLoggingDriverScript,
             {
-                "command" : "/opt/hamlet_cfninit/${dockerLoggingDriverScriptName}.sh",
+                "command" : "powershell.exe -ExecutionPolicy Bypass -Command c:\\ProgramData\\Hamlet\\Scripts\\${dockerLoggingDriverScriptName}.ps1",
                 "ignoreErrors" : false
             }
         )]
 
     [#local services += {
-        "sysvinit" : {
-            "docker" : {
-                "enabled" : true,
-                "ensureRunning" : true,
-                "files" : [ ] +
-                valueIfContent(
-                    [ "/opt/hamlet_cfninit/${dockerLoggingDriverScriptName}.sh" ],
-                    dockerLoggingDriverScript,
-                    []
-                )
-            }
+        "docker" : {
+            "enabled" : true,
+            "ensureRunning" : true,
+            "files" : [ ] +
+            valueIfContent(
+                [ "c:\\ProgramData\\Hamlet\\Scripts\\${dockerLoggingDriverScriptName}.ps1" ],
+                dockerLoggingDriverScript,
+                []
+            )
         }
     }]
 
     [#-- Handle restart to get everything happy --]
     [#switch operatingSystem.Family ]
-        [#case "linux" ]
+        [#case "windows" ]
             [#switch operatingSystem.Distribution ]
-                [#case "awslinux" ]
-                    [#switch operatingSystem.MajorVersion ]
-                        [#case "2"]
-                            [#local commands += {
-                                "9_RestartECSAgent" : {
-                                    "command" : "systemctl enable --now --no-block ecs.service",
-                                    "ignoreErrors" : false
-                                }
-                            }]
-                            [#break]
-                        [#case "1" ]
-
-                            [#local commands += {
-                                "9_RestartECSAgent" : {
-                                    "command" : "stop ecs; start ecs",
-                                    "ignoreErrors" : false
-                                }
-                            }]
-                            [#break]
-                    [/#switch]
-                    [#break]
+                [#case "awswin" ]
+                    [#local commands += {
+                        "9_RestartECSAgent" : {
+                            "command" : "<powershell>Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-step.log -Append ; Restart-Service -Name docker ; Stop-Transcript | out-null</powershell>",
+                            "ignoreErrors" : true
+                         }
+                     }]
             [/#switch]
             [#break]
         [#break]
@@ -179,7 +163,7 @@
         engine=AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE
         content={
                 "files" : {
-                    "/etc/ecs/ecs.config" : {
+                    "c:\\ProgramData\\Amazon\\ECS\\ecs.config" : {
                         "content" : {
                             "Fn::Join" : [
                                 "\n",
@@ -200,7 +184,7 @@
                     }
                 } +
                 attributeIfContent(
-                    "/opt/hamlet_cfninit/${dockerVolumeDriverScriptName}.sh",
+                    "c:\\ProgramData\\Hamlet\\Scripts\\${dockerVolumeDriverScriptName}.ps1",
                     dockerVolumeDriverScript,
                     {
                         "content" : {
@@ -213,7 +197,7 @@
                     }
                 ) +
                 attributeIfContent(
-                    "/opt/hamlet_cfninit/${dockerLoggingDriverScriptName}.sh",
+                    "c:\\ProgramData\\Hamlet\\Scripts\\${dockerLoggingDriverScriptName}.ps1",
                     dockerLoggingDriverScript,
                     {
                         "content" : {

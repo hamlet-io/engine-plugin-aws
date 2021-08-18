@@ -22,6 +22,7 @@
     [#local bastionLaunchConfigId = resources["launchConfig"].Id]
     [#local bastionLgId = resources["lg"].Id]
     [#local bastionLgName = resources["lg"].Name]
+    [#local bastionOS = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
 
     [#local bastionType = occurrence.Core.Type]
     [#local configSetName = bastionType]
@@ -62,8 +63,7 @@
     [#local networkProfile      = getNetworkProfile(occurrence)]
     [#local loggingProfile      = getLoggingProfile(occurrence)]
 
-
-    [#local osPatching = mergeObjects(solution.ComputeInstance.OSPatching, environmentObject.OSPatching )]
+    [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
     [#local sshActive = sshActive || solution.Active ]
 
@@ -155,6 +155,7 @@
                         getPolicyDocument(
                             ec2AutoScaleGroupLifecyclePermission(bastionAutoScaleGroupName) +
                             ec2IPAddressUpdatePermission() +
+                            ec2ReadTagsPermission() +
                             s3ListPermission(codeBucket) +
                             s3ReadPermission(codeBucket) +
                             s3AccountEncryptionReadPermission(
@@ -162,6 +163,7 @@
                                 "*",
                                 codeBucketRegion
                             ) +
+                            cwMetricsProducePermission("CWAgent") +
                             cwLogsProducePermission(bastionLgName),
                             "basic"
                         ),

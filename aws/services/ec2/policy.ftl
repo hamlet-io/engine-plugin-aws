@@ -87,7 +87,20 @@
     ]
 [/#function]
 
-[#function ec2SSMSessionManagerPermission ]
+[#function ec2ReadTagsPermission ]
+    [#return
+        [
+            getPolicyStatement(
+                [
+                    "ec2:DescribeTags"
+                ],
+                "*"
+            )
+        ]
+    ]
+[/#function]
+
+[#function ec2SSMSessionManagerPermission os="linux" ]
     [#return
         [
             getPolicyStatement(
@@ -97,7 +110,11 @@
                     "ssmmessages:CreateDataChannel",
                     "ssmmessages:OpenControlChannel",
                     "ssmmessages:OpenDataChannel"
-                ]
+                ] +
+                ( os == "windows" )?then(
+                    [ "ec2messages:GetMessages" ],
+                    []
+                )
             )
         ]
     ]
@@ -166,7 +183,50 @@
                     )
                 ]
             )
-        ]
+        ] +
+        ( os == "windows" )?then(
+            [
+                getPolicyStatement(
+                    [
+                        "ssm:ListAssociations"
+                    ],
+                    [
+                        {
+                            "Fn::Join" : [
+                                "",
+                                [
+                                    "arn:aws:ssm:",
+                                    region,
+                                    ":",
+                                    { "Ref" : "AWS::AccountId" },
+                                    ":*"
+                                ]
+                            ]
+                        }
+                    ]
+                )
+                getPolicyStatement(
+                    [
+                        "ssm:ListInstanceAssociations"
+                    ],
+                    [
+                        {
+                            "Fn::Join" : [
+                                "",
+                                [
+                                    "arn:aws:ec2:",
+                                    region,
+                                    ":",
+                                    { "Ref" : "AWS::AccountId" },
+                                    ":instance/*"
+                                ]
+                            ]
+                        }
+                    ]
+                )
+            ],
+            []
+        )
     ]
 [/#function]
 
