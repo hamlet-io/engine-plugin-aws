@@ -1,5 +1,5 @@
 [#ftl]
-[#macro aws_queuehost_cf_state occurrence parent={} ]
+[#macro aws_secretstore_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution ]
 
