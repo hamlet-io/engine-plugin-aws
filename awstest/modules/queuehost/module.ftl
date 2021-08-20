@@ -25,7 +25,7 @@
                                 "Engine" : "rabbitmq",
                                 "EngineVersion" : "1.0.0",
                                 "Processor" : {
-                                    "Type" : "queue.m3.micro"
+                                    "Type" : "mq.t3.micro"
                                 },
                                 "Profiles" : {
                                     "Testing" : [ "queuehostbase" ]
@@ -56,6 +56,9 @@
             "TestCases" : {
                 "queuehostbase" : {
                     "OutputSuffix" : "template.json",
+                    "Tools" : {
+                       "CFNLint" : true
+                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -112,7 +115,7 @@
                                 "Engine" : "rabbitmq",
                                 "EngineVersion" : "1.0.0",
                                 "Processor" : {
-                                    "Type" : "queue.m3.micro"
+                                    "Type" : "mq.t3.micro"
                                 },
                                 "Profiles" : {
                                     "Testing" : [ "queuehostmaintenance" ]
@@ -143,6 +146,9 @@
             "TestCases" : {
                 "queuehostmaintenance" : {
                     "OutputSuffix" : "template.json",
+                    "Tools" : {
+                       "CFNLint" : true
+                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -150,12 +156,7 @@
                                     "Name" : "mqBrokerXappXqueuehostmaintenance",
                                     "Type" : "AWS::AmazonMQ::Broker"
                                 }
-                            },
-                            "Output" : [
-                                "mqBrokerXappXqueuehostbaseXdns",
-                                "securityGroupXmqBrokerXappXqueuehostbase",
-                                "secretXappXqueuehostbaseXroot"
-                            ]
+                            }
                         },
                         "JSON" : {
                             "Match" : {
@@ -165,7 +166,7 @@
                                 },
                                 "MaintenanceWindowTime" : {
                                     "Path"  : "Resources.mqBrokerXappXqueuehostmaintenance.Properties.MaintenanceWindowStartTime.TimeOfDay",
-                                    "Value" : "17:00"
+                                    "Value" : "15:00"
                                 },
                                 "MaintenanceWindowTZ" : {
                                     "Path"  : "Resources.mqBrokerXappXqueuehostmaintenance.Properties.MaintenanceWindowStartTime.TimeZone",
