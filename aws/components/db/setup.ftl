@@ -491,6 +491,12 @@
         [/#switch]
 
         [#if !hibernate]
+
+            [#if ! testMaintenanceWindow(solution.MaintenanceWindow)]
+                [@fatal message="Maintenance window incorrectly configured" context=solution /]
+                [#return]
+            [/#if]
+            
             [#if auroraCluster ]
 
                 [#if solution.Cluster.ScalingPolicies?has_content ]
@@ -715,6 +721,15 @@
                     tags=rdsTags
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
+                    maintenanceWindow=
+                        solution.MaintenanceWindow.Configured?then(
+                            getAmazonRdsMaintenanceWindow(
+                                solution.MaintenanceWindow.DayOfTheWeek,
+                                solution.MaintenanceWindow.TimeOfDay,
+                                solution.MaintenanceWindow.TimeZone
+                                ),
+                            ""
+                        )
                 /]
 
                 [#list resources["dbInstances"]?values as dbInstance ]
@@ -744,6 +759,16 @@
                         enhancedMonitoringRoleId=monitoringRoleId!""
                         performanceInsights=solution.Monitoring.QueryPerformance.Enabled
                         performanceInsightsRetention=solution.Monitoring.QueryPerformance.RetentionPeriod
+                        maintenanceWindow=
+                            solution.MaintenanceWindow.Configured?then(
+                                getAmazonRdsMaintenanceWindow(
+                                    solution.MaintenanceWindow.DayOfTheWeek,
+                                    solution.MaintenanceWindow.TimeOfDay,
+                                    solution.MaintenanceWindow.TimeZone,
+                                    dbInstance?counter
+                                ),
+                                ""
+                            )
                     /]
                 [/#list]
 
@@ -781,6 +806,15 @@
                         enhancedMonitoringRoleId=monitoringRoleId!""
                         performanceInsights=solution.Monitoring.QueryPerformance.Enabled
                         performanceInsightsRetention=solution.Monitoring.QueryPerformance.RetentionPeriod
+                        maintenanceWindow=
+                            solution.MaintenanceWindow.Configured?then(
+                                getAmazonRdsMaintenanceWindow(
+                                    solution.MaintenanceWindow.DayOfTheWeek,
+                                    solution.MaintenanceWindow.TimeOfDay,
+                                    solution.MaintenanceWindow.TimeZone
+                                ),
+                                ""
+                            )
                     /]
             [/#if]
         [/#if]

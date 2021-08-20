@@ -148,6 +148,30 @@
                                 "rdsXdbXpostgresdbgeneratedXdns",
                                 "rdsXdbXpostgresdbgeneratedXport"
                             ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "SecurityGroupTagName" : {
+                                    "Path"  : "Resources.securityGroupXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-database-postgresdbgenerated"
+                                },
+                                "SubnetGroupTagName" : {
+                                    "Path"  : "Resources.rdsSubnetGroupXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-database-postgresdbgenerated"
+                                },
+                                "DbTagName" : {
+                                    "Path"  : "Resources.rdsXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-database-postgresdbgenerated"
+                                },
+                                "OptionGroupTagName" : {
+                                    "Path"  : "Resources.rdsOptionGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-database-postgresdbgenerated"
+                                },
+                                "ParameterGroupTagName" : {
+                                    "Path"  : "Resources.rdsParameterGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-database-postgresdbgenerated"
+                                }
+                            }
                         }
                     }
                 }
@@ -156,6 +180,75 @@
                 "postgresdbgenerated" : {
                     "db" : {
                         "TestCases" : [ "postgresdbgenerated" ]
+                    }
+                }
+            }
+        }
+    /]
+
+    [#-- Maintenance Windows --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "db" : {
+                    "Components" : {
+                        "postgresdbmaintenance" : {
+                            "db" : {
+                                "Instances" : {
+                                    "default" : {
+                                        "DeploymentUnits" : ["aws-db-postgres-maintenance"]
+                                    }
+                                },
+                                "MaintenanceWindow": {
+                                    "DayOfTheWeek": "Saturday",
+                                    "TimeOfDay": "01:00",
+                                    "TimeZone": "AEST"
+                                },
+                                "Engine" : "postgres",
+                                "EngineVersion" : "11",
+                                "Profiles" : {
+                                    "Testing" : [ "postgresdbmaintenance" ]
+                                },
+                                "GenerateCredentials" : {
+                                    "Enabled" : true,
+                                    "EncryptionScheme" : "kms"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "postgresdbmaintenance" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "rdsInstance" : {
+                                    "Name" : "rdsXdbXpostgresdbmaintenance",
+                                    "Type" : "AWS::RDS::DBInstance"
+                                }
+                            },
+                            "Output" : [
+                                "rdsXdbXpostgresdbmaintenanceXdns",
+                                "rdsXdbXpostgresdbmaintenanceXport"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "MaintenanceWindow" : {
+                                    "Path"  : "Resources.rdsXdbXpostgresdbmaintenance.Properties.PreferredMaintenanceWindow",
+                                    "Value" : "Fri:15:00-Fri:15:30"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "postgresdbmaintenance" : {
+                    "db" : {
+                        "TestCases" : [ "postgresdbmaintenance" ]
                     }
                 }
             }

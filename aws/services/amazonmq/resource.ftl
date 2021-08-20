@@ -32,11 +32,14 @@
 
 
 [#function getAmazonMqMaintenanceWindow dayofWeek timeofDay timeZone="UTC" ]
+    [#local workDate = convertDayOfWeek2DateTime(dayofWeek, timeofDay, timeZone) ]
+    [#local dow = showDateTime(workDate, "EEEE", "UTC") ]
+    [#local time = showDateTime(workDate, "HH:mm", "UTC") ]
     [#return
         {
-            "DayOfWeek" : dayofWeek,
-            "TimeOfDay" : timeofDay,
-            "TimeZone" : timeZone
+            "DayOfWeek" : dow,
+            "TimeOfDay" : time,
+            "TimeZone" : "UTC"
         }
     ]
 [/#function]
@@ -98,9 +101,12 @@
                                 "SINGLE_INSTANCE"
             ),
             "HostInstanceType" : instanceType,
-            "MaintenanceWindowStartTime" : maintenanceWindow,
             "PubliclyAccessible" : false
         } +
+        attributeIfContent(
+            "MaintenanceWindowStartTime",
+            maintenanceWindow
+        ) +
         attributeIfTrue(
             "EncryptionOptions",
             encrypted,

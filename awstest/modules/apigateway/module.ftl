@@ -85,6 +85,7 @@
                                         "DeploymentUnits" : ["aws-apigateway-base"]
                                     }
                                 },
+                                "Certificate": {},
                                 "Image" : {
                                     "Source" : "none"
                                 },

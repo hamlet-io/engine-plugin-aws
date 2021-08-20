@@ -69,6 +69,16 @@
     }
 /]
 
+[#function getAmazonRdsMaintenanceWindow dayofWeek timeofDay timeZone="UTC" offsetHrs=0 ]
+    [#local startTime = convertDayOfWeek2DateTime(dayofWeek, timeofDay, timeZone) ]
+
+    [#local startTime = addDateTime(startTime, "hh", offsetHrs) ]
+    [#local endTime = addDateTime(startTime, "mm", 30) ]
+    [#local retval = showDateTime(startTime, "EEE:HH:mm", "UTC")+"-"+showDateTime(endTime, "EEE:HH:mm", "UTC") ]
+
+    [#return retval ]
+[/#function]
+
 [#macro createRDSInstance id name
     engine
     processor
@@ -105,6 +115,7 @@
     enhancedMonitoringRoleId=""
     deletionPolicy="Snapshot"
     updateReplacePolicy="Snapshot"
+    maintenanceWindow=""
 ]
     [@cfResource
     id=id
@@ -123,6 +134,10 @@
             "OptionGroupName": getReference(optionGroupId),
             "CACertificateIdentifier" : caCertificate
         } +
+        attributeIfContent(
+            "PreferredMaintenanceWindow",
+            maintenanceWindow
+        ) +
         valueIfTrue(
             {
                 "AllocatedStorage": size?is_string?then(
@@ -228,6 +243,7 @@
     outputId=""
     deletionPolicy="Snapshot"
     updateReplacePolicy="Snapshot"
+    maintenanceWindow=""
 ]
     [#local availabilityZones = []]
     [#list zones as zone ]
@@ -251,6 +267,10 @@
                 "EngineVersion" : engineVersion,
                 "BackupRetentionPeriod" : retentionPeriod
             } +
+            attributeIfContent(
+                "PreferredMaintenanceWindow",
+                maintenanceWindow
+            ) +
             (!(snapshotArn?has_content) && encrypted)?then(
                 {
                     "StorageEncrypted" : true,

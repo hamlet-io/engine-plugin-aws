@@ -130,6 +130,11 @@
 
         [#if !hibernate]
 
+            [#if ! testMaintenanceWindow(solution.MaintenanceWindow)]
+                [@fatal message="Maintenance window incorrectly configured" context=solution /]
+                [#return]
+            [/#if]
+
             [#-- Monitoring and Alerts --]
             [#list solution.Alerts?values as alert ]
 
@@ -186,10 +191,13 @@
                 autoMinorVersionUpdate=solution.AutoMinorUpgrade
                 logging=true
                 maintenanceWindow=
-                    getAmazonMqMaintenanceWindow(
-                        solution.MaintenanceWindow.DayOfTheWeek,
-                        solution.MaintenanceWindow.TimeOfDay,
-                        solution.MaintenanceWindow.TimeZone
+                    solution.MaintenanceWindow.Configured?then(
+                        getAmazonMqMaintenanceWindow(
+                            solution.MaintenanceWindow.DayOfTheWeek,
+                            solution.MaintenanceWindow.TimeOfDay,
+                            solution.MaintenanceWindow.TimeZone
+                        ),
+                        {}
                     )
             /]
 
