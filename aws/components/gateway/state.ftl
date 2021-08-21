@@ -16,6 +16,12 @@
         [#local resourceZones = [ zones[0] ]]
     [/#if]
 
+    [#local occurrenceNetwork = getOccurrenceNetwork(occurrence)]
+
+    [#local legacyVpc = legacyVpc
+                && occurrenceNetwork.Link.Tier == "mgmt" && occurrenceNetwork.Link.Component == "vpc"
+                && occurrenceNetwork.Link.Instance == "" && occurrenceNetwork.Link.Version == "" ]
+
     [#-- elastic IP address Allocation --]
     [#switch engine ]
         [#case "natgw" ]

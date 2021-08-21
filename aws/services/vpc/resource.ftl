@@ -652,7 +652,7 @@
         [#case "all"]
             [#local properties =
                 {
-                    "Protocol" : "-1",
+                    "Protocol" : -1,
                     "PortRange" : {
                         "From" : fromPort,
                         "To" : toPort
@@ -663,7 +663,7 @@
         [#case "icmp"]
             [#local properties =
                 {
-                    "Protocol" : "1",
+                    "Protocol" : 1,
                     "Icmp" : {
                         "Code" : (port.ICMP.Code)!-1,
                         "Type" : (port.ICMP.Type)!-1
@@ -674,7 +674,7 @@
         [#case "udp"]
             [#local properties =
                 {
-                    "Protocol" : "17",
+                    "Protocol" : 17,
                     "PortRange" : {
                         "From" : fromPort,
                         "To" : toPort
@@ -685,7 +685,7 @@
         [#case "tcp"]
             [#local properties =
                 {
-                    "Protocol" : "6",
+                    "Protocol" : 6,
                     "PortRange" : {
                         "From" : fromPort,
                         "To" : toPort
@@ -735,7 +735,7 @@
         properties=
             {
                 "VpcId" : getReference(vpcId),
-                "AvailabilityZone" : zone.AWSZone,
+                "AvailabilityZone" : getCFAWSAzReference(zone.Id),
                 "CidrBlock" : cidr
             }
         tags=

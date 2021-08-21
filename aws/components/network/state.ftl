@@ -1,10 +1,13 @@
 [#ftl]
 
-[#-- Resources --]
-
 [#macro aws_network_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
+
+    [#-- Only apply legacy controls to the default master data vpc --]
+    [#local legacyVpc = legacyVpc
+                            && core.Tier.Id == "mgmt" && core.Component.RawId == "vpc"
+                            && core.Instance.Id == "" && core.Version.Id = ""]
 
     [#if legacyVpc ]
         [#local vpcId = formatVPCTemplateId() ]
@@ -161,6 +164,8 @@
     [#local routeTableId = formatResourceId(AWS_VPC_ROUTE_TABLE_RESOURCE_TYPE, core.Id)]
     [#local routeTableName = core.FullName ]
 
+    [#local legacyVpc = parent.State.Resources["vpc"].Legacy]
+
     [#if legacyVpc ]
         [#-- Support for IGW defined as part of VPC tempalte instead of Gateway --]
         [#local legacyIGWRouteId = formatRouteId(routeTableId, "gateway") ]
@@ -215,6 +220,8 @@
 [#macro aws_networkacl_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
+
+    [#local legacyVpc = parent.State.Resources["vpc"].Legacy]
 
     [#if legacyVpc ]
         [#local networkACLId = formatNetworkACLId(core.SubComponent.Id) ]
