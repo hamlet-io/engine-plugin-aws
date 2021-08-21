@@ -205,6 +205,7 @@
     [/#if]
 
     [#local legacyIGWId = "" ]
+    [#local legacyIGWResourceId = ""]
     [#if (resources["legacyIGW"]!{})?has_content]
         [#local legacyIGWId = resources["legacyIGW"].Id ]
         [#local legacyIGWResourceId = resources["legacyIGW"].ResourceId]
