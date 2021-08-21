@@ -77,7 +77,7 @@
 [@addService provider=AWS_PROVIDER service=AWS_ROUTE53_SERVICE /]
 
 [#assign AWS_ROUTE53RESOLVER_SERVICE = "route53resolver"]
-[@addService provider=AWS_PROVIDER service=AWS_PROVIDER /]
+[@addService provider=AWS_PROVIDER service=AWS_ROUTE53RESOLVER_SERVICE /]
 
 [#assign AWS_SECRETS_MANAGER_SERVICE = "secretsmanager" ]
 [@addService provider=AWS_PROVIDER service=AWS_SECRETS_MANAGER_SERVICE /]
