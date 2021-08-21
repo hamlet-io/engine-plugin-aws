@@ -201,12 +201,12 @@
                     multiAZ?then(
                         {
                             "AZMode": "cross-az",
-                            "PreferredAvailabilityZones" : awsZones,
+                            "PreferredAvailabilityZones" : getCFAWSAzReferences(awsZones),
                             "NumCacheNodes" : processorProfile.CountPerZone * zones?size
                         },
                         {
                             "AZMode": "single-az",
-                            "PreferredAvailabilityZone" : awsZones[0],
+                            "PreferredAvailabilityZone" : getCFAWSAzReference(awsZones[0]),
                             "NumCacheNodes" : processorProfile.CountPerZone
                         }
                     ) +
