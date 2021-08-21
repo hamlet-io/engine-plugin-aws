@@ -120,6 +120,79 @@
         [/#if]
     [/#list]
 
+    [#list resources["dnsQueryLoggers"]!{} as  id, dnsQueryLogger ]
+        [#local dnsQueryLoggerId = dnsQueryLogger["dnsQueryLogger"].Id ]
+        [#local dnsQueryLoggerName = dnsQueryLogger["dnsQueryLogger"].Name ]
+
+        [#local dnsQueryLoggerAssocId = dnsQueryLogger["dnsQueryLoggerAssoc"].Id ]
+
+        [#local dnsQueryLogGroupId = (dnsQueryLogger["dnsQueryLg"].Id)!"" ]
+        [#local dnsQueryLogGroupName = (dnsQueryLogger["dnsQueryLg"].Name)!"" ]
+
+        [#local dnsQueryLoggerSolution = solution.Logging.DNSQuery[id] ]
+        [#local dnsQueryLoggerDestinationType = dnsQueryLoggerSolution.DestinationType ]
+
+        [#local destinationArn = "" ]
+
+        [#if dnsQueryLoggerDestinationType == "log" ]
+            [@setupLogGroup
+                occurrence=occurrence
+                logGroupId=dnsQueryLogGroupId
+                logGroupName=dnsQueryLogGroupName
+                loggingProfile=loggingProfile
+            /]
+
+            [#local destinationArn = dnsQueryLogGroupId ]
+        [/#if]
+
+        [#if dnsQueryLoggerDestinationType == "s3" || dnsQueryLoggerDestinationType == "datafeed" ]
+
+            [#switch dnsQueryLoggerDestinationType ]
+                [#case "s3" ]
+                    [#local linkSolution = flowLogSolution.s3.Link]
+                    [#break]
+
+                [#case "datafeed"]
+                    [#local linkSolution = flowLogSolution.datafeed.Link]
+                    [#break]
+            [/#switch]
+
+            [#local destinationLink = getLinkTarget(occurrence, linkSolution) ]
+            [#if destinationLink?has_content ]
+                [#switch destinationLink.Core.Type ]
+                    [#case S3_COMPONENT_TYPE]
+                    [#case BASELINE_DATA_COMPONENT_TYPE]
+                    [#case DATAFEED_COMPONENT_TYPE]
+                        [#local destinationArn = (destinationLink.State.Attributes["ARN"])!"" ]
+                        [#break]
+
+                    [#default]
+                        [@fatal
+                            message="Invalid DNS Query log destination component type"
+                            context={
+                                "Id" : flowLogsId,
+                                "Link" : linkSolution
+                            }
+                        /]
+                [/#switch]
+            [/#if]
+        [/#if]
+
+        [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
+            [@createRoute53ResolverLogging
+                id=dnsQueryLoggerId
+                name=dnsQueryLoggerName
+                destinationId=destinationArn
+            /]
+
+            [@createRoute53ResolverLoggingAssociation
+                id=dnsQueryLoggerAssocId
+                resolverLoggingId=dnsQueryLoggerId
+                vpcId=vpcId
+            /]
+        [/#if]
+    [/#list]
+
     [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
         [@createVPC
             id=vpcId

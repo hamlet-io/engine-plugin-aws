@@ -8,7 +8,8 @@
         [
             AWS_CLOUDWATCH_SERVICE,
             AWS_IDENTITY_SERVICE,
-            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE,
+            AWS_ROUTE53RESOLVER_SERVICE
         ]
 /]
 
