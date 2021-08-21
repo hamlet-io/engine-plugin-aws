@@ -1,5 +1,41 @@
 [#ftl]
 
+[#-- Availability Zone Params --]
+[#-- Uses parameters to define AZ's inline with cfnlint best practice --]
+[#assign AWS_AZ_PARAMETER_TYPE = "AvailabilityZoneParam"]
+
+[#macro addCFTemplateAzParams zoneIds ]
+    [#list asArray(zoneIds) as zoneId ]
+        [#list zones as zone ]
+            [#if zoneId == zone.Id ]
+                [@cfParameter
+                    id=formatAWSAzParameterId(zoneId)
+                    type="AWS::EC2::AvailabilityZone::Name"
+                    default=zone.AWSZone
+                /]
+            [/#if]
+        [/#list]
+    [/#list]
+[/#macro]
+
+[#function formatAWSAzParameterId zoneId ]
+    [#return formatResourceId(AWS_AZ_PARAMETER_TYPE, zoneId)]
+[/#function]
+
+[#function getCFAWSAzReference zoneId ]
+    [@addCFTemplateAzParams zoneIds=[zoneId] /]
+    [#return { "Ref" : formatAWSAzParameterId(zoneId) }]
+[/#function]
+
+[#function getCFAWSAzReferences zoneIds]
+    [#local result = []]
+    [#list zoneIds as zoneId]
+        [#local result += getCFAWSAzReference(zoneId)]
+    [/#list]
+    [#return result]
+[/#function]
+
+[#-- Template outputs --]
 [#function getCFTemplateCoreOutputs region={ "Ref" : "AWS::Region" } account={ "Ref" : "AWS::AccountId" } deploymentUnit=getCLODeploymentUnit() deploymentMode=getCLODeploymentMode() ]
     [#return {
         "Account" :{ "Value" : account },
@@ -17,6 +53,16 @@
         },
         "DeploymentMode" : { "Value" : deploymentMode }
     }]
+[/#function]
+
+[#function getCfTemplateDefaultOutputs]
+    [#return
+        {
+            REFERENCE_ATTRIBUTE_TYPE : {
+                "UseRef" : true
+            }
+        }
+    ]
 [/#function]
 
 [#function getCfTemplateCoreTags name="" tier="" component="" zone="" propagate=false flatten=false maxTagCount=-1]
@@ -114,16 +160,7 @@
     [#return result]
 [/#function]
 
-[#function getCfTemplateDefaultOutputs]
-    [#return
-        {
-            REFERENCE_ATTRIBUTE_TYPE : {
-                "UseRef" : true
-            }
-        }
-    ]
-[/#function]
-
+[#-- Template Components --]
 [#macro cfOutput id value export=false ]
     [@mergeWithJsonOutput
         name="outputs"
@@ -301,6 +338,7 @@
     /]
 [/#macro]
 
+
 [#function cf_output_resource level="" include=""]
 
     [@setOutputProperties
@@ -350,7 +388,6 @@
     [/#if]
     [#return {}]
 [/#function]
-
 
 [#-- Initialise the possible outputs to make sure they are available to all steps --]
 [@initialiseJsonOutput name="parameters" /]

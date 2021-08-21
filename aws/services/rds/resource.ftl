@@ -164,7 +164,7 @@
             },
             ( multiAZ && !clusterMember ),
             {
-                "AvailabilityZone" : availabilityZone
+                "AvailabilityZone" : getCFAWSAzReference(availabilityZone)
             }
         ) +
         valueIfTrue(
@@ -262,7 +262,7 @@
                 "DBSubnetGroupName" : subnetGroupId,
                 "Port" : port,
                 "VpcSecurityGroupIds" : asArray(securityGroupId),
-                "AvailabilityZones" : availabilityZones,
+                "AvailabilityZones" : getCFAWSAzReferences(availabilityZones),
                 "Engine" : engine,
                 "EngineVersion" : engineVersion,
                 "BackupRetentionPeriod" : retentionPeriod
