@@ -111,11 +111,42 @@
         }]
     [/#list]
 
+    [#local dnsQueryLoggers = {}]
+    [#list solution.Logging.DNSQuery as id, dnsQueryLog ]
+        [#local dnsQueryLoggerId = formatResourceId(AWS_ROUTE53RESOLVER_RESOLVER_LOGGING_RESOURCE, core.Id, id)]
+        [#local dnsQueryLoggerAssocId = formatResourceId(AWS_ROUTE53RESOLVER_RESOLVER_LOGGING_ASSOCIATION_RESOURCE, core.Id, id)]
+
+        [#local dnsQueryLoggers += {
+            id : {
+                "dnsQueryLogger" : {
+                    "Id" : dnsQueryLoggerId,
+                    "Name" : formatName(core.FullName, id),
+                    "Type" : AWS_ROUTE53RESOLVER_RESOLVER_LOGGING_RESOURCE
+                },
+                "dnsQueryLoggerAssoc" : {
+                    "Id" : dnsQueryLoggerAssocId,
+                    "Type" : AWS_ROUTE53RESOLVER_RESOLVER_LOGGING_ASSOCIATION_RESOURCE
+                }
+            } +
+            attributeIfTrue(
+                "dnsQueryLg",
+                dnsQueryLog.DestinationType == "log",
+                {
+                    "Id" : formatDependentLogGroupId(dnsQueryLoggerId),
+                    "Name" : formatAbsolutePath(core.FullAbsolutePath, "dnsquery", id),
+                    "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
+                    "IncludeInDeploymentState" : false
+                }
+            )
+        }]
+    [/#list]
+
     [#assign componentState =
         {
             "Resources" : {
                 "vpc" : {
                     "Id" : legacyVpc?then(formatVPCId(), vpcId),
+                    "Legacy" : legacyVpc,
                     "ResourceId" : vpcId,
                     "Name" : vpcName,
                     "Address": networkCIDR,
@@ -141,6 +172,10 @@
             attributeIfContent(
                 "flowLogs",
                 flowLogs
+            ) +
+            attributeIfContent(
+                "dnsQueryLoggers",
+                dnsQueryLoggers
             ),
             "Attributes" : {
             },
