@@ -17,6 +17,48 @@
                 state,
                 BLUEPRINT_CONFIG_INPUT_CLASS,
                 {
+                    [#-- Adding network teir for subnet allocation testing --]
+                    "Segment": {
+                        "Network": {
+                            "Tiers": {
+                                "Order": [
+                                    "web",
+                                    "msg",
+                                    "app",
+                                    "db",
+                                    "dir",
+                                    "ana",
+                                    "api",
+                                    "spare",
+                                    "elb",
+                                    "ilb",
+                                    "spare",
+                                    "spare",
+                                    "spare",
+                                    "spare",
+                                    "network",
+                                    "mgmt"
+                                ]
+                            }
+                        },
+                        "Tiers": {
+                            "Order": [
+                                "elb",
+                                "api",
+                                "web",
+                                "msg",
+                                "dir",
+                                "ilb",
+                                "app",
+                                "db",
+                                "ana",
+                                "mgmt",
+                                "docs",
+                                "gbl",
+                                "network"
+                            ]
+                        }
+                    },
                     "Solution" : {
                         "Modules" : {
                             "apigateway" : {
@@ -78,6 +120,10 @@
                             "mobileapp" : {
                                 "Provider" : "awstest",
                                 "Name" : "mobileapp"
+                            },
+                            "network" : {
+                                "Provider" : "awstest",
+                                "Name" : "network"
                             },
                             "s3" : {
                                 "Provider" : "awstest",
