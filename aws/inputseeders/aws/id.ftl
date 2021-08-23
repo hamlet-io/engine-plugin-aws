@@ -158,6 +158,23 @@
             [#local value = formatId( "##MockOutput", id, "##") ]
     [/#switch]
 
+    [#-- Resource specific values to align with linting --]
+    [@includeServicesConfiguration
+        provider=AWS_PROVIDER
+        services=[
+            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+        ]
+        deploymentFramework=CLOUD_FORMATION_DEPLOYMENT_FRAMEWORK
+    /]
+
+    [#switch id?split("X")?first ]
+        [#case AWS_VPC_RESOURCE_TYPE ]
+            [#-- this will return the value for all attribute lookups --]
+            [#-- VPC only has ref so that is ok --]
+            [#local value = "vpc-123456789abcdef12" ]
+            [#break]
+    [/#switch]
+
     [#return
         mergeObjects(
             state,
