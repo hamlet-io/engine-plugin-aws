@@ -80,7 +80,7 @@
                                 },
                                 "SGVPCFound" : {
                                     "Path" : "Resources.securityGroupXappXecsbase.Properties.VpcId",
-                                    "Value" : "##MockOutputXvpcXsegmentXvpcX##"
+                                    "Value" : "vpc-123456789abcdef12"
                                 },
                                 "ECSCapacityProviders" : {
                                     "Path" : "Resources.ecsCapacityProviderAssocXappXecsbase.Properties.CapacityProviders",

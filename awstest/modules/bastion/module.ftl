@@ -70,7 +70,7 @@
                                 },
                                 "SGVPCFound" : {
                                     "Path" : "Resources.securityGroupXmgmtXbastionbase.Properties.VpcId",
-                                    "Value" : "##MockOutputXvpcXsegmentXvpcX##"
+                                    "Value" : "vpc-123456789abcdef12"
                                 }
                             },
                             "NotEmpty" : [
