@@ -75,6 +75,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "filetransfer"
                             },
+                            "firewall" : {
+                                "Provider" : "awstest",
+                                "Name" : "firewall"
+                            },
                             "healthcheck" : {
                                 "Provider" : "awstest",
                                 "Name" : "healthcheck"
