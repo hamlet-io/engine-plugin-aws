@@ -297,7 +297,9 @@
 
                 [/#list]
 
-                [#local listenerRuleConditions += getListenerRuleHostCondition(fqdn) ]
+                [#if fqdn?has_content]
+                    [#local listenerRuleConditions += getListenerRuleHostCondition(fqdn) ]
+                [/#if]
             [/#if]
 
             [#-- Redirect rule processing --]
