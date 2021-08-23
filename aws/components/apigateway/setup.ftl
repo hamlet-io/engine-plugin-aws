@@ -630,6 +630,7 @@
                 origins=origin
                 restrictions=restrictions
                 wafAclId=(wafAclResources.acl.Id)!""
+                tags=getOccurrenceCoreTags(occurrence,cfResources["distribution"].Name)
             /]
 
             [@createAPIUsagePlan

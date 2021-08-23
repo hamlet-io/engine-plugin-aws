@@ -81,6 +81,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "cache"
                             },
+                            "cdn" : {
+                                "Provider" : "awstest",
+                                "Name" : "cdn"
+                            },
                             "computecluster" : {
                                 "Provider" : "awstest",
                                 "Name" : "computecluster"
