@@ -67,6 +67,9 @@
 [#assign AWS_LAMBDA_SERVICE = "lambda"]
 [@addService provider=AWS_PROVIDER service=AWS_LAMBDA_SERVICE /]
 
+[#assign AWS_NETWORK_FIREWALL_SERVICE = "networkfirewall"]
+[@addService provider=AWS_PROVIDER  service=AWS_NETWORK_FIREWALL_SERVICE /]
+
 [#assign AWS_RELATIONAL_DATABASE_SERVICE = "rds"]
 [@addService provider=AWS_PROVIDER service=AWS_RELATIONAL_DATABASE_SERVICE /]
 
