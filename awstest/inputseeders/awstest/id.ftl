@@ -23,6 +23,14 @@
                                 "Provider" : "awstest",
                                 "Name" : "apigateway"
                             },
+                            "apiusageplan" : {
+                                "Provider" : "awstest",
+                                "Name" : "apiusageplan"
+                            },
+                            "apiuser" : {
+                                "Provider" : "awstest",
+                                "Name" : "apiuser"
+                            },
                             "bastion" : {
                                 "Provider" : "awstest",
                                 "Name" : "bastion"

@@ -26,6 +26,7 @@
 
     [#-- Use runId to ensure deploy happens every time --]
     [#local deployId   = resources["apideploy"].Id]
+    [#local deployName = resources["apideploy"].Name]
     [#local stageId    = resources["apistage"].Id]
     [#local stageName  = resources["apistage"].Name]
     [#local stageDependencies = [deployId]]
@@ -464,6 +465,10 @@
                     true
                 )
             outputs=APIGATEWAY_OUTPUT_MAPPINGS
+            tags=
+                getOccurrenceCoreTags(
+                    occurrence,
+                    apiName)
         /]
 
         [@cfResource
@@ -476,6 +481,10 @@
                 }
             outputs={}
             dependencies=apiId
+            tags=
+                getOccurrenceCoreTags(
+                    occurrence,
+                    deployName)
         /]
 
         [#-- Throttling Configuration --]
@@ -545,6 +554,10 @@
                     true)
             outputs={}
             dependencies=stageDependencies
+            tags=
+                getOccurrenceCoreTags(
+                    occurrence,
+                    stageName)
         /]
 
         [#-- Create a CloudFront distribution if required --]
@@ -672,6 +685,10 @@
                     )
                 outputs={}
                 dependencies=apiId
+                tags=
+                    getOccurrenceCoreTags(
+                        occurrence,
+                        value["domain"].Name)
             /]
             [@cfResource
                 id=value["basepathmapping"].Id

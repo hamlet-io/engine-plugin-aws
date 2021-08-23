@@ -365,6 +365,7 @@ created in either case.
                 },
                 "apideploy" : {
                     "Id" : formatResourceId(AWS_APIGATEWAY_DEPLOY_RESOURCE_TYPE, core.Id, getCLORunId()),
+                    "Name": apiName,
                     "Type" : AWS_APIGATEWAY_DEPLOY_RESOURCE_TYPE
                 },
                 "apistage" : {

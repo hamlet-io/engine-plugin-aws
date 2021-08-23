@@ -94,6 +94,7 @@
             attributeIfContent("Description", description)
         outputs=APIGATEWAY_APIKEY_OUTPUT_MAPPINGS
         dependencies=dependencies
+        tags=getCfTemplateCoreTags(name)
     /]
 [/#macro]
 
@@ -123,6 +124,7 @@
             attributeIfContent("Quota", quotaSettings)
         outputs=APIGATEWAY_USAGEPLAN_OUTPUT_MAPPINGS
         dependencies=dependencies
+        tags=getCfTemplateCoreTags(name)
     /]
 [/#macro]
 
