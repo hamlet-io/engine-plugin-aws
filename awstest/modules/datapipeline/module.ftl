@@ -79,7 +79,7 @@
                             "Match" : {
                                 "vpcId" : {
                                     "Path"  : "values.my_VPC_ID",
-                                    "Value" : "##MockOutputXvpcXsegmentXvpcX##"
+                                    "Value" : "vpc-123456789abcdef12"
                                 },
                                 "PipelineName" : {
                                     "Path" : "values.my_ROLE_PIPELINE_NAME",
