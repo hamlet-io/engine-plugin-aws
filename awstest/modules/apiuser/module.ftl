@@ -183,6 +183,10 @@
                                 "ApiUserName" : {
                                     "Path"  : "Resources.apiKeyXuserXappXapiuserbase.Properties.Tags[8].Value",
                                     "Value" : "mockedup-integration-application-apiuserbase"
+                                },
+                                "UserTags": {
+                                    "Path"  : "Resources.userXappXapiuserbase.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-int-app-apiuserbase"
                                 }
                             }
                         }
