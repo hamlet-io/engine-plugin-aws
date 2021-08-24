@@ -299,6 +299,8 @@
 
                 [#if fqdn?has_content]
                     [#local listenerRuleConditions += getListenerRuleHostCondition(fqdn) ]
+                [#else]
+                    [@fatal message="Missing FQDN" context=solution /]
                 [/#if]
             [/#if]
 
