@@ -94,7 +94,8 @@
             name=""
             managedArns=[]
             policies=[]
-            dependencies=[] ]
+            dependencies=[] 
+            ]
 
     [#local trustedAccountArns = [] ]
     [#list asArray(trustedAccounts) as trustedAccount]
@@ -104,6 +105,17 @@
             ]
         ]
     [/#list]
+
+    [#if ! name?has_content]
+        [#local constructedName=name]
+    [#else]
+        [#if trustedServices?size > 0]
+            [#local constructedName=trustedServices?sort?join(" ")]
+        [#else]
+            [#local constructedName=federatedServices?sort?join(" ")]
+        [/#if]
+    [/#if]
+    [#local tags=getOccurrenceCoreTags(occurrence, constructedName) ]
 
     [@cfResource
         id=id
@@ -137,6 +149,7 @@
             attributeIfContent("Policies", asArray(policies))
         outputs=ROLE_OUTPUT_MAPPINGS
         dependencies=dependencies
+        tags=tags
     /]
 [/#macro]
 
