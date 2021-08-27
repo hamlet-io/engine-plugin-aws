@@ -118,6 +118,7 @@
         {
             "Resources" : {
                 "vpc" : {
+                    "Legacy" : legacyVpc,
                     "Id" : legacyVpc?then(formatVPCId(), vpcId),
                     "ResourceId" : vpcId,
                     "Name" : vpcName,
