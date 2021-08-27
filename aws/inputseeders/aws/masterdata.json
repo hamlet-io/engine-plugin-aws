@@ -511,6 +511,31 @@
                 "MinPerZone": 1,
                 "MaxPerZone": 1
             }
+        },
+        "_awswin": {
+            "bastion": {
+                "Processor": "t3a.medium"
+            },
+            "EC2": {
+                "Processor": "t3a.medium"
+            },
+            "EMR": {
+                "Processor": "m5a.large",
+                "DesiredCorePerZone": 1,
+                "DesiredTaskPerZone": 1
+            },
+            "ComputeCluster": {
+                "Processor": "t3a.medium",
+                "MinPerZone": 1,
+                "MaxPerZone": 1,
+                "DesiredPerZone": 1
+            },
+            "ECS": {
+                "Processor": "t3a.medium",
+                "MinPerZone": 1,
+                "MaxPerZone": 1,
+                "DesiredPerZone": 1
+            }
         }
     },
     "ComputeProviders": {
@@ -1084,7 +1109,8 @@
                     "ecs" : {
                         "Profiles" : {
                             "Storage" : "ecs_awswin",
-                            "LogFile" : "awswinlog"
+                            "LogFile" : "awswinlog",
+                            "Processor" : "_awswin"
                         },
                         "AutoScaling": {
                             "StartupTimeout": "20M"
@@ -1119,7 +1145,7 @@
                                     "_computetask_awswin_filedir",
                                     "_computetask_awswin_ecs",
                                     "_computetask_awswin_eip",
-                                    "_computetask_awswin_notavailable"    
+                                    "_computetask_awswin_notavailable"
                                 ]
                             }
                         }
@@ -1127,7 +1153,8 @@
                     "computecluster" : {
                         "Profiles" : {
                             "Storage" : "ec2_awswin",
-                            "LogFile" : "awswinlog"
+                            "LogFile" : "awswinlog",
+                            "Processor" : "_awswin"
                         },
                         "StartupTimeout": 900,
                         "ComputeInstance" : {
@@ -1168,7 +1195,8 @@
                     "bastion" : {
                         "Profiles" : {
                             "Storage" : "ec2_awswin",
-                            "LogFile" : "awswinlog" 
+                            "LogFile" : "awswinlog",
+                            "Processor" : "_awswin"
                         },
                         "StartupTimeout": 900,
                         "ComputeInstance" : {
@@ -1208,7 +1236,8 @@
                     "ec2" : {
                         "Profiles" : {
                             "Storage" : "ec2_awswin",
-                            "LogFile" : "awswinlog"
+                            "LogFile" : "awswinlog",
+                            "Processor" : "_awswin"
                         },
                         "StartupTimeout": 900,
                         "ComputeInstance" : {
