@@ -295,11 +295,11 @@
                                 },
                                 "FlowLogVPC" : {
                                     "Path" : "Resources.vpcflowlogsXmgmtXnetworkloggingXlogall.Properties.ResourceId",
-                                    "Value" : "##MockOutputXvpcXmgmtXnetworkloggingX##"
+                                    "Value" : "vpc-123456789abcdef12"
                                 },
                                 "DNSQueryAssocVPC" : {
                                     "Path" : "Resources.resolverQueryLoggingAsccociationXmgmtXnetworkloggingXlog.Properties.ResourceId",
-                                    "Value" : "##MockOutputXvpcXmgmtXnetworkloggingX##"
+                                    "Value" : "vpc-123456789abcdef12"
                                 }
                             }
                         }
