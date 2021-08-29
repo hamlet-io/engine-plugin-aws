@@ -106,6 +106,7 @@
         ]
     [/#list]
 
+    [#local constructedName=""]
     [#if ! name?has_content]
         [#local constructedName=name]
     [#else]
