@@ -416,6 +416,14 @@
                                 "apiXappXapigatewaycfdistroXroot",
                                 "apiXappXapigatewaycfdistroXregion"
                             ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "CFTags" : {
+                                    "Path"  : "Resources.cfXapiXappXapigatewaycfdistro.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-application-apigatewaycfdistro"
+                                }
+                            }
                         }
                     }
                 }
