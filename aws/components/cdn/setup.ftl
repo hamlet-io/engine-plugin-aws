@@ -292,9 +292,6 @@
                 [#local routeBehaviours += configCacheBehaviour ]
                 [#break]
 
-
-
-
             [#case LB_COMPONENT_TYPE ]
             [#case LB_PORT_COMPONENT_TYPE ]
 
@@ -302,11 +299,15 @@
                     [#case LB_COMPONENT_TYPE ]
                         [#local originHostName = originLinkTargetAttributes["INTERNAL_FQDN"] ]
                         [#local originPath = formatAbsolutePath( "", subSolution.Origin.BasePath ) ]
+                        [#local originProtocol = "HTTPS" ]
+                        [#local originPort = 443 ]
                         [#break]
 
                     [#case LB_PORT_COMPONENT_TYPE ]
                         [#local originHostName = originLinkTargetAttributes["FQDN"] ]
                         [#local originPath = formatAbsolutePath( originLinkTargetAttributes["PATH"], subSolution.Origin.BasePath ) ]
+                        [#local originProtocol = originLinkTargetAttributes["PROTOCOL"]]
+                        [#local originPort = originLinkTargetAttributes["PORT"]]
                         [#break]
                 [/#switch]
 
@@ -315,7 +316,9 @@
                                 originId,
                                 originHostName,
                                 _context.CustomOriginHeaders,
-                                originPath
+                                originPath,
+                                originProtocol,
+                                originPort
                             )]
                 [#local origins += origin ]
 
@@ -357,13 +360,17 @@
 
                 [#local path = originLinkTargetAttributes["PATH"]!"HamletFatal: Could not find PATH Attribute on external service" ]
                 [#local originPath = formatAbsolutePath( path, subSolution.Origin.BasePath ) ]
+                [#local protocol = (originLinkTargetAttributes["PROTOCOL"])!"https" ]
+                [#local port = (originLinkTargetAttributes["PROTOCOL"])!443 ]
 
                 [#local origin =
                             getCFHTTPOrigin(
                                 originId,
                                 originHostName,
                                 _context.CustomOriginHeaders,
-                                originPath
+                                originPath,
+                                protocol,
+                                port
                             )]
                 [#local origins += origin ]
 

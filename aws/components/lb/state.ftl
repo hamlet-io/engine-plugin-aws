@@ -299,6 +299,7 @@
                 "INTERNAL_FQDN" : internalFqdn,
                 "INTERNAL_URL" : internalUrl + path,
                 "PATH" : path,
+                "PROTOCOL" : sourcePort.Protocol,
                 "PORT" : sourcePort.Port,
                 "SOURCE_PORT" : sourcePort.Port,
                 "DESTINATION_PORT" : destinationPort.Port,
