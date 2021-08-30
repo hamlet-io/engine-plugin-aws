@@ -79,17 +79,30 @@
 [#function getCFHTTPOrigin id domain
         headers=[]
         path=""
-        httpConfig=
-            {
-                "OriginProtocolPolicy" : "https-only",
-                "OriginSSLProtocols" : ["TLSv1.2"]
-            }]
+        protocol="HTTPS"
+        port=443
+        tlsProtocols=["TLSv1.2"]]
     [#return
         [
             {
                 "DomainName" : domain,
                 "Id" : id,
-                "CustomOriginConfig" : httpConfig
+                "CustomOriginConfig" : {} +
+                    (protocol?lower_case == "https")?then(
+                        {
+                            "OriginProtocolPolicy" : "https-only",
+                            "HTTPSPort" : port?number,
+                            "OriginSSLProtocols" : asArray(tlsProtocols)
+                        },
+                        {}
+                    ) +
+                    (protocol?lower_case == "http" )?then(
+                        {
+                            "OriginProtocolPolicy" : "http-only",
+                            "HTTPPort" : port?number
+                        },
+                        {}
+                    )
             } +
             attributeIfContent("OriginCustomHeaders", asArray(headers)) +
             attributeIfContent("OriginPath", getCFOriginPath(path))
