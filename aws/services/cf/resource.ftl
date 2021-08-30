@@ -356,6 +356,7 @@
     priceClass=""
     restrictions={}
     wafAclId=""
+    tags=[]
 ]
     [@cfResource
        id=id
@@ -382,6 +383,7 @@
             }
         outputs=CF_OUTPUT_MAPPINGS
         dependencies=dependencies
+        tags=tags
     /]
 [/#macro]
 

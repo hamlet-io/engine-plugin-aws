@@ -297,4 +297,142 @@
             }
         }
     /]
+
+    [#-- CF distro apigateway setup - No solution parameters --]
+    [@loadModule
+        definitions={
+            "appXapigatewaycfdistro" : {
+                "swagger": "2.0",
+                "info": {
+                    "version": "v1.0.0",
+                    "title": "Proxy",
+                    "description": "Pass all requests through to the implementation."
+                },
+                "paths": {
+                    "/{proxy+}": {
+                        "x-amazon-apigateway-any-method": {
+                        }
+                    }
+                },
+                "definitions": {
+                    "Empty": {
+                        "type": "object",
+                        "title": "Empty Schema"
+                    }
+                }
+            }
+        }
+        settingSets=[
+            {
+                "Type" : "Settings",
+                "Scope" : "Accounts",
+                "Namespace" : "mockacct-shared",
+                "Settings" : {
+                    "Registries": {
+                        "openapi": {
+                            "EndPoint": "account-registry-abc123",
+                            "Prefix": "openapi/"
+                        }
+                    }
+                }
+            },
+            {
+                "Type" : "Builds",
+                "Scope" : "Products",
+                "Namespace" : "mockedup-integration-aws-apigateway-cfdistro",
+                "Settings" : {
+                    "COMMIT" : "123456789#MockCommit#",
+                    "FORMATS" : ["openapi"]
+                }
+            },
+            {
+                "Type" : "Settings",
+                "Scope" : "Products",
+                "Namespace" : "mockedup-integration-aws-apigateway-cfdistro",
+                "Settings" : {
+                    "API_ACCESSKEY": "1234567890#MockAPIKey",
+                    "apigw": {
+                        "Internal": true,
+                        "Value": {
+                            "Type": "lambda",
+                            "Proxy": false,
+                            "BinaryTypes": ["*/*"],
+                            "ContentHandling": "CONVERT_TO_TEXT",
+                            "Variable": "LAMBDA_API_LAMBDA"
+                        }
+                    }
+                }
+            }
+        ]
+        blueprint={
+            "Tiers" : {
+                "app" : {
+                    "Components" : {
+                        "apigatewaycfdistro" : {
+                            "apigateway" : {
+                                "Instances" : {
+                                    "default" : {
+                                        "DeploymentUnits" : ["aws-apigateway-cfdistro"]
+                                    }
+                                },
+                                "Certificate": {},
+                                "CloudFront": {},
+                                "Image" : {
+                                    "Source" : "none"
+                                },
+                                "IPAddressGroups" : [ "_global" ],
+                                "Profiles" : {
+                                    "Testing" : [ "apigatewaycfdistro" ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "apigatewaycfdistro" : {
+                    "apigateway" : {
+                        "TestCases" : [ "apigatewaycfdistro" ]
+                    }
+                }
+            },
+            "TestCases" : {
+                "apigatewaycfdistro" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "RestApi" : {
+                                    "Name" : "apiXappXapigatewaycfdistro",
+                                    "Type" : "AWS::ApiGateway::RestApi"
+                                },
+                                "Deployment" : {
+                                    "Name" : "apiDeployXappXapigatewaycfdistroXrunId098",
+                                    "Type" : "AWS::ApiGateway::Deployment"
+                                },
+                                "CFDeployment" : {
+                                    "Name" : "cfXapiXappXapigatewaycfdistro",
+                                    "Type" : "AWS::CloudFront::Distribution"
+                                }
+                            },
+                            "Output" : [
+                                "apiXappXapigatewaycfdistro",
+                                "apiXappXapigatewaycfdistroXroot",
+                                "apiXappXapigatewaycfdistroXregion"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "CFTags" : {
+                                    "Path"  : "Resources.cfXapiXappXapigatewaycfdistro.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-application-apigatewaycfdistro"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    /]
+
 [/#macro]

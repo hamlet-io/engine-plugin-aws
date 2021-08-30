@@ -493,6 +493,7 @@
                 restrictions,
                 restrictions)
             wafAclId=valueIfTrue(wafAclId, wafPresent)
+            tags=getOccurrenceCoreTags(occurrence,cfName)
         /]
 
     [/#if]
