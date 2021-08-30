@@ -409,6 +409,10 @@
                                 "Deployment" : {
                                     "Name" : "apiDeployXappXapigatewaycfdistroXrunId098",
                                     "Type" : "AWS::ApiGateway::Deployment"
+                                },
+                                "CFDeployment" : {
+                                    "Name" : "cfXapiXappXapigatewaycfdistro",
+                                    "Type" : "AWS::CloudFront::Distribution"
                                 }
                             },
                             "Output" : [
