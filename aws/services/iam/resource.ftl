@@ -106,11 +106,7 @@
         ]
     [/#list]
 
-    [#local constructedName=""]
-    [#if ! name?has_content]
-        [#local constructedName=name]
-    [/#if]
-    [#local tags=getOccurrenceCoreTags(occurrence, constructedName) ]
+    [#local tags=getOccurrenceCoreTags(occurrence, name) ]
 
     [@cfResource
         id=id
