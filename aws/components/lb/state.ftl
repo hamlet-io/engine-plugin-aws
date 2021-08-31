@@ -191,7 +191,9 @@
     [#local certificateId = ""]
     [#local certificateRequired = (sourcePort.Certificate)!false ]
 
-    [#if certificateRequired ]
+    [#local scheme = (sourcePort.Protocol)?lower_case ]
+
+    [#if isPresent(solution.Certificate) ]
 
         [#local certificateObject = getCertificateObject( solution.Certificate ) ]
         [#local hostName = getHostName(certificateObject, occurrence) ]
@@ -199,7 +201,6 @@
         [#local certificateId = formatDomainCertificateId(certificateObject, hostName) ]
 
         [#local fqdn = formatDomainName(hostName, primaryDomainObject) ]
-        [#local scheme = "https" ]
 
         [#-- Redirect any secondary domains --]
         [#list getCertificateSecondaryDomains(certificateObject) as secondaryDomainObject ]
@@ -216,7 +217,6 @@
         [/#list]
     [#else]
         [#local fqdn = internalFqdn ]
-        [#local scheme ="http" ]
     [/#if]
 
     [#local path = ""]
