@@ -193,7 +193,7 @@
 
     [#local scheme = (sourcePort.Protocol)?lower_case ]
 
-    [#if isPresent(solution.Certificate) ]
+    [#if isPresent(solution.Certificate) || certificateRequired ]
 
         [#local certificateObject = getCertificateObject( solution.Certificate ) ]
         [#local hostName = getHostName(certificateObject, occurrence) ]
