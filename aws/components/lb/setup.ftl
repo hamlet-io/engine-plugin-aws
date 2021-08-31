@@ -297,10 +297,9 @@
 
                 [/#list]
 
-                [#if fqdn?has_content]
-                    [#local listenerRuleConditions += getListenerRuleHostCondition(fqdn) ]
-                [#else]
-                    [@fatal message="Missing FQDN" context=solution /]
+                [#local listenerRuleConditions += getListenerRuleHostCondition(fqdn) ]
+                [#if ! fqdn?has_content]
+                    [@fatal message="HostName/Certificate property is required when HostFilter:true " context=solution /]
                 [/#if]
             [/#if]
 
