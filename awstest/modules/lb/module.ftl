@@ -48,6 +48,20 @@
                                     },
                                     "httpredirect" : {
                                         "IPAddressGroups" : ["_global"],
+                                        "Certificate" : {
+                                            "IncludeInHost" : {
+                                                "Product" : false,
+                                                "Environment" : true,
+                                                "Segment" : false,
+                                                "Tier" : false,
+                                                "Component" : false,
+                                                "Instance" : true,
+                                                "Version" : false,
+                                                "Host" : true
+                                            },
+                                            "Host" : "test"
+                                        },
+                                        "HostFilter" : true,
                                         "Redirect" : {}
                                     }
                                 }
@@ -87,6 +101,15 @@
                                     "Path"  : "Resources.albXelbXhttpslb.Properties.Name",
                                     "Value" : "mockedup-int-elb-httpslb"
                                 },
+                                "HTTPCondition" : {
+                                    "Path" : "Resources.listenerRuleXelbXhttpslbXhttpX100.Properties.Conditions[1]",
+                                    "Value" : {
+                                        "Field": "host-header",
+                                        "Values": [
+                                            "test-integration.mock.local"
+                                        ]
+                                    }
+                                },
                                 "HTTPAction" : {
                                     "Path" : "Resources.listenerRuleXelbXhttpslbXhttpX100.Properties.Actions[0]",
                                     "Value" : {
@@ -99,6 +122,15 @@
                                             "Query": "#\{query}",
                                             "StatusCode": "HTTP_301"
                                         }
+                                    }
+                                },
+                                "HTTPCondition" : {
+                                    "Path" : "Resources.listenerRuleXelbXhttpslbXhttpsX500.Properties.Conditions[1]",
+                                    "Value" : {
+                                        "Field": "host-header",
+                                        "Values": [
+                                            "test-integration.mock.local"
+                                        ]
                                     }
                                 },
                                 "HTTPSAction" : {
