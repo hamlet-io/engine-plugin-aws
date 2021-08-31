@@ -64,6 +64,7 @@
                                 cwLogsProducePermission(flowLogLogGroupName),
                                 "flow-logs-cloudwatch")
                         ]
+                    tags=getOccurrenceCoreTags(occurrence)
                 /]
             [/#if]
 

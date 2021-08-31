@@ -241,6 +241,7 @@
                 managedArns=[
                     "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
                 ]
+                tags=getOccurrenceCoreTags(occurrence)
             /]
         [/#if]
     [/#if]

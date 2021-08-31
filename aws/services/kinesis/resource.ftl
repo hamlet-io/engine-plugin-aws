@@ -261,6 +261,7 @@
                 id=resourceDetails["role"].Id
                 trustedServices=["firehose.amazonaws.com"]
                 policies=rolePolicies
+                tags=getOccurrenceCoreTags(occurrence)
             /]
         [/#if]
 

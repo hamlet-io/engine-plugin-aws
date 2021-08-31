@@ -1036,6 +1036,7 @@
                             id=openapiRoleId
                             trustedServices="apigateway.amazonaws.com"
                             policies=policies
+                            tags=getOccurrenceCoreTags(occurrence)
                         /]
                     [/#if]
                     [#local openapiContext +=

@@ -95,6 +95,7 @@
             managedArns=[]
             policies=[]
             dependencies=[] 
+            tags=[]
             ]
 
     [#local trustedAccountArns = [] ]
@@ -106,7 +107,10 @@
         ]
     [/#list]
 
-    [#local tags=getOccurrenceCoreTags(occurrence, name) ]
+    [#-- Handle legacy account --]
+    [#if tags?size = 0]
+        [#local tags=getCfTemplateCoreTags(name) ]
+    [/#if]
 
     [@cfResource
         id=id

@@ -164,7 +164,7 @@
                     arrayIfContent(
                         [getPolicyDocument(transferLinkPolicies, "links")],
                         transferLinkPolicies)
-
+                tags=getOccurrenceCoreTags(occurrence)
             /]
         [/#if]
     [/#if]

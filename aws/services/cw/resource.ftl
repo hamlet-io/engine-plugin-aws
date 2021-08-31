@@ -158,6 +158,7 @@
                         id=forwardingRoleId
                         trustedServices=[  "logs." + regionId + ".amazonaws.com" ]
                         policies=[]
+                        tags=getCfTemplateCoreTags()
                     /]
 
                     [@createPolicy

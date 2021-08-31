@@ -286,6 +286,7 @@
                     id=esServiceRoleId
                     trustedServices=["es.amazonaws.com"]
                     managedArns=["arn:aws:iam::aws:policy/AmazonESCognitoAccess"]
+                    tags=getOccurrenceCoreTags(occurrence)
                 /]
         [/#if]
 
@@ -327,6 +328,7 @@
                         "ESSnapshot"
                     )
                 ]
+            tags=getOccurrenceCoreTags(occurrence)
         /]
     [/#if]
 

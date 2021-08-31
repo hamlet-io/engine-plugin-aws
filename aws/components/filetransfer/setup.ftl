@@ -97,6 +97,7 @@
                     "logging"
                 )
             ]
+            tags=getOccurrenceCoreTags(occurrence)
         /]
     [/#if]
 

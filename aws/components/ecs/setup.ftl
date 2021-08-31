@@ -180,6 +180,7 @@
                 arrayIfContent(
                     [getPolicyDocument(linkPolicies, "links")],
                     linkPolicies)
+            tags=getOccurrenceCoreTags(occurrence)
         /]
 
     [/#if]
@@ -1347,6 +1348,7 @@
                     id=roleId
                     trustedServices=["ecs-tasks.amazonaws.com"]
                     managedArns=managedPolicy
+                    tags=getOccurrenceCoreTags(occurrence)
                 /]
             [/#if]
         [/#if]
@@ -1361,6 +1363,7 @@
                         "ecs-tasks.amazonaws.com"
                     ]
                     managedArns=["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+                    tags=getOccurrenceCoreTags(occurrence)
                 /]
             [/#if]
         [/#if]
@@ -1395,6 +1398,7 @@
                                 "schedule"
                             )
                         ]
+                        tags=getOccurrenceCoreTags(occurrence)
                     /]
                 [/#if]
 

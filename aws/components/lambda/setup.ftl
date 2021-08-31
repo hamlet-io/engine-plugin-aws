@@ -299,7 +299,7 @@
                 []
             )
             managedArns=managedPolicies
-
+            tags=getOccurrenceCoreTags(fn)
         /]
 
         [#if _context.Policy?has_content]

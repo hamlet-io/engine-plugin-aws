@@ -272,6 +272,7 @@
                         "lambda.amazonaws.com"
                     ]
                     managedArns=managedPolicies
+                    tags=getOccurrenceCoreTags(occurrence)
                 /]
 
                 [@createPolicy

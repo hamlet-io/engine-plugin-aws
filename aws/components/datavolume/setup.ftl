@@ -148,6 +148,7 @@
                         "ssm.amazonaws.com"
                     ]
                     managedArns=["arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"]
+                    tags=getOccurrenceCoreTags(occurrence)
                 /]
 
                 [#local policyId = formatDependentPolicyId(maintenanceServiceRoleId, "passRole")]
@@ -177,6 +178,7 @@
                                 ec2EBSVolumeSnapshotAllPermission(),
                                 "snapshot")
                         ]
+                    tags=getOccurrenceCoreTags(occurrence)
                 /]
             [/#if]
         [/#if]

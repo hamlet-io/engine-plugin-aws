@@ -174,6 +174,7 @@
                     "datapipeline.amazonaws.com"
                 ]
                 managedArns=["arn:aws:iam::aws:policy/service-role/AWSDataPipelineRole"]
+                tags=getOccurrenceCoreTags(occurrence, pipelineRoleName)
             /]
         [/#if]
 
@@ -185,6 +186,7 @@
                     "ec2.amazonaws.com"
                 ]
                 managedArns=["arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforDataPipelineRole"]
+                tags=getOccurrenceCoreTags(occurrence, resourceRoleName)
             /]
 
             [#if _context.Policy?has_content]
