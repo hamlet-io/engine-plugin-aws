@@ -218,7 +218,7 @@ created in either case.
 
     [#-- Determine the list of hostname alternatives --]
     [#local fqdns = [] ]
-    [#list hostDomains as domain]
+    [#list hostDomains?filter( x -> x?has_content ) as domain]
         [#local fqdns += [ formatDomainName(hostName, domain.Name) ] ]
     [/#list]
 
