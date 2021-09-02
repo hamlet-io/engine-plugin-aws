@@ -179,6 +179,7 @@
                         [getPolicyDocument(linkPolicies, "links")],
                         linkPolicies)
                 managedArns=_context.ManagedPolicy
+                tags=getOccurrenceCoreTags(occurrence)
             /]
         [/#if]
 

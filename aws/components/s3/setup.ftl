@@ -378,6 +378,7 @@
                 id=roleId
                 trustedServices=["s3.amazonaws.com"]
                 policies=rolePolicies
+                tags=getOccurrenceCoreTags(occurrence)
             /]
         [/#if]
     [/#if]

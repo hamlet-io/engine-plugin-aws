@@ -164,7 +164,7 @@
                     arrayIfContent(
                         [getPolicyDocument(transferLinkPolicies, "links")],
                         transferLinkPolicies)
-
+                tags=getOccurrenceCoreTags(occurrence)
             /]
         [/#if]
     [/#if]
@@ -182,6 +182,7 @@
                     managedPolicyArns
                 )
             outputs=USER_OUTPUT_MAPPINGS
+            tags=getOccurrenceCoreTags(occurrence, userName)
         /]
 
         [#-- Manage API keys for the user if linked to usage plans --]

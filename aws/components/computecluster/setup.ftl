@@ -231,6 +231,7 @@
                     _context.Policy)
             managedArns=
                 _context.ManagedPolicy
+            tags=getOccurrenceCoreTags(occurrence)
         /]
 
     [/#if]

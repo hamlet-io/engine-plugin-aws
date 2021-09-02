@@ -291,6 +291,7 @@
                                 id=replicationRoleId
                                 trustedServices=["s3.amazonaws.com"]
                                 policies=replicationRolePolicies
+                                tags=getOccurrenceCoreTags(occurrence)
                             /]
                         [/#if]
 

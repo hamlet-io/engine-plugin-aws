@@ -346,6 +346,7 @@
                                 "smsVerification"
                             )
                         ]
+                    tags=getOccurrenceCoreTags(occurrence)
                 /]
         [/#if]
     [/#if]

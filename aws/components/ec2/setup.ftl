@@ -280,6 +280,7 @@
                 arrayIfContent(
                     [getPolicyDocument(_context.Policy, "extension")],
                     _context.Policy)
+            tags=getOccurrenceCoreTags(occurrence)
         /]
     [/#if]
 

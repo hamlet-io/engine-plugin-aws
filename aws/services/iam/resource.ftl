@@ -94,7 +94,9 @@
             name=""
             managedArns=[]
             policies=[]
-            dependencies=[] ]
+            dependencies=[] 
+            tags=[]
+            ]
 
     [#local trustedAccountArns = [] ]
     [#list asArray(trustedAccounts) as trustedAccount]
@@ -104,6 +106,11 @@
             ]
         ]
     [/#list]
+
+    [#-- Handle legacy account --]
+    [#if tags?size = 0]
+        [#local tags=getCfTemplateCoreTags(name) ]
+    [/#if]
 
     [@cfResource
         id=id
@@ -137,6 +144,7 @@
             attributeIfContent("Policies", asArray(policies))
         outputs=ROLE_OUTPUT_MAPPINGS
         dependencies=dependencies
+        tags=tags
     /]
 [/#macro]
 
