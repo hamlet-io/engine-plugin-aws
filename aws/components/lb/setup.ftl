@@ -298,6 +298,9 @@
                 [/#list]
 
                 [#local listenerRuleConditions += getListenerRuleHostCondition(fqdn) ]
+                [#if ! fqdn?has_content]
+                    [@fatal message="HostName/Certificate property is required when HostFilter:true " context=solution /]
+                [/#if]
             [/#if]
 
             [#-- Redirect rule processing --]
