@@ -115,10 +115,16 @@
 
             [#case "igw"]
 
+                [#local IGWRouteTableAssoc = false]
                 [#if !legacyIGW ]
                     [#local IGWId = gwResources["internetGateway"].Id ]
                     [#local IGWName = gwResources["internetGateway"].Name ]
                     [#local IGWAttachmentId = gwResources["internetGatewayAttachment"].Id ]
+
+                    [#local IGWRouteTableId = gwResources["internetGatewayRouteTable"].Id ]
+                    [#local IGWRouteTableName = gwResources["internetGatewayRouteTable"].Name ]
+
+                    [#local IGWRouteTableAssocId = gwResources["internetGatewayRouteTableAssoc"].Id ]
 
                     [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                         [@createIGW
@@ -129,6 +135,20 @@
                             id=IGWAttachmentId
                             vpcId=vpcId
                             igwId=IGWId
+                        /]
+
+                        [@createRouteTable
+                            id=IGWRouteTableId
+                            name=IGWName
+                            vpcId=vpcId
+                            tags=getOccurrenceCoreTags(occurrence, IGWName)
+                        /]
+
+                        [@createRouteTableGatewayAssociation
+                            id=IGWRouteTableAssocId
+                            gatewayId=IGWId
+                            routeTableId=IGWRouteTableId
+                            dependencies=[IGWAttachmentId]
                         /]
                     [/#if]
                 [/#if]
@@ -630,6 +650,61 @@
                                 [/#list]
                             [#break]
 
+                        [#case FIREWALL_COMPONENT_TYPE]
+
+                            [#if gwSolution.Engine == "igw"]
+                                [#local firewallVPCEndpoints = getExistingReference(linkTargetResources["firewall"].Id, INTERFACE_ATTRIBUTE_TYPE)?split(',') ]
+                                [#local firewallZones = firewallVPCEndpoints?map( x -> x?split(":")[0] )]
+
+                                [#local zoneGroups = {}]
+                                [#list solution.IPAddressGroups as IPAddressGroup ]
+                                    [#if IPAddressGroup?starts_with("_tier") ]
+                                        [#list zones as zone ]
+                                            [#local zoneGroups += {
+                                                zone.AWSZone : combineEntities((zoneGroups[zone.AWSZone])![], getIPAddressGroup("${IPAddressGroup}:${zone.Id}", subOccurrence))
+                                            }]
+                                        [/#list]
+                                    [#else]
+                                        [#local zoneGroups += {
+                                            "global" : combineEntities((zoneGroups["global"])![], getIPAddressGroup(IPAddressGroup, subOccurrence ) )
+                                        }]
+                                    [/#if]
+                                [/#list]
+
+                                [#list zoneGroups as zone,groups ]
+
+                                    [#local defaultFirewallEndpoint = firewallVPCEndpoints[0]?split(":")[1] ]
+
+                                    [#if zone != "group" ]
+                                        [#local zoneEndpoint = defaultFirewallEndpoint]
+                                    [#else]
+                                        [#local zoneEndpoint = ((firewallVPCEndpoints?filter(x -> x?starts_with("${zone}:"))[0])?split(":")[1])!defaultFirewallEndpoint ]
+                                    [/#if]
+
+                                    [#list groups as group]
+                                        [#if ! (group.IsLocal)!false ]
+                                            [@fatal
+                                                message="Internet Gateway can only route to local networks when using a firewall"
+                                                context={
+                                                    "IPAddressGroups" : solution.IPAddressGroups,
+                                                    "Links" : solution.Links
+                                                }
+                                            /]
+                                        [/#if]
+
+                                        [#list getGroupCIDRs([group.Id], true, occurrence) as cidr]
+                                            [@createRoute
+                                                id=resources["routes"][replaceAlphaNumericOnly(cidr)].Id
+                                                routeTableId=IGWRouteTableId
+                                                destinationType="vpcendpoint"
+                                                destinationAttribute=zoneEndpoint
+                                                destinationCidr=cidr
+                                            /]
+                                        [/#list]
+                                    [/#list]
+                                [/#list]
+                            [/#if]
+                            [#break]
                     [/#switch]
                 [/#if]
             [/#list]
