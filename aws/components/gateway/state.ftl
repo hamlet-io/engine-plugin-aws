@@ -77,6 +77,15 @@
                     "internetGatewayAttachment" : {
                         "Id" : formatId(AWS_VPC_IGW_ATTACHMENT_TYPE, core.Id),
                         "Type" : AWS_VPC_IGW_ATTACHMENT_TYPE
+                    },
+                    "internetGatewayRouteTable" : {
+                        "Id" : formatResourceId(AWS_VPC_ROUTE_TABLE_RESOURCE_TYPE, core.Id),
+                        "Name" : core.FullName,
+                        "Type" : AWS_VPC_ROUTE_TABLE_RESOURCE_TYPE
+                    },
+                    "internetGatewayRouteTableAssoc" : {
+                        "Id" : formatResourceId(AWS_VPC_NETWORK_ROUTE_TABLE_GATEWAY_ASSOCIATION_TYPE, core.Id),
+                        "Type" : AWS_VPC_NETWORK_ROUTE_TABLE_GATEWAY_ASSOCIATION_TYPE
                     }
                 }]
             [/#if]
@@ -316,10 +325,26 @@
 
     [#switch engine ]
         [#case "natgw"]
-        [#case "igw"]
         [#case "endpoint" ]
         [#case "router" ]
         [#case "private"]
+            [#break]
+
+        [#case "igw"]
+            [#list getGroupCIDRs(solution.IPAddressGroups, true, occurrence) as cidr ]
+                [#local cidrId = replaceAlphaNumericOnly(cidr)]
+                [#local resources = mergeObjects(
+                    resources,
+                    {
+                        "routes" : {
+                            cidrId : {
+                                "Id" : formatResourceId(AWS_VPC_ROUTE_RESOURCE_TYPE, core.Id, cidrId ),
+                                "Type" : AWS_VPC_ROUTE_RESOURCE_TYPE
+                            }
+                        }
+                    }
+                )]
+            [/#list]
             [#break]
 
         [#case "vpcendpoint"]

@@ -521,10 +521,12 @@
 [/#macro]
 
 [#macro createRouteTable
-            id,
-            name,
-            vpcId,
-            zone=""]
+            id
+            vpcId
+            name=""
+            zone=""
+            tags=[]
+            dependencies=[]]
     [@cfResource
         id=id
         type="AWS::EC2::RouteTable"
@@ -532,16 +534,20 @@
             {
                 "VpcId" : getReference(vpcId)
             }
-        tags=getCfTemplateCoreTags(name,"","",zone)
+        tags=tags?has_content?then(
+            tags,
+            getCfTemplateCoreTags(name,"","",zone)
+        )
+        dependencies=dependencies
     /]
 [/#macro]
 
 [#macro createRoute
-            id,
-            routeTableId,
-            destinationType,
-            destinationAttribute,
-            destinationCidr,
+            id
+            routeTableId
+            destinationType
+            destinationAttribute
+            destinationCidr
             dependencies=""]
 
     [#local properties =
@@ -563,6 +569,14 @@
             [#local properties +=
                 {
                     "InstanceId" : destinationAttribute
+                }
+            ]
+            [#break]
+
+        [#case "vpcendpoint"]
+            [#local properties +=
+                {
+                    "VpcEndpointId" : destinationAttribute
                 }
             ]
             [#break]
@@ -758,6 +772,23 @@
                 "RouteTableId" : getReference(routeTableId)
             }
         outputs={}
+    /]
+[/#macro]
+
+[#macro createRouteTableGatewayAssociation
+            id
+            gatewayId
+            routeTableId
+            dependencies=[]]
+    [@cfResource
+        id=id
+        type="AWS::EC2::GatewayRouteTableAssociation"
+        properties={
+            "GatewayId" : getReference(gatewayId),
+            "RouteTableId" : getReference(routeTableId)
+        }
+        outputs={}
+        dependencies=dependencies
     /]
 [/#macro]
 
