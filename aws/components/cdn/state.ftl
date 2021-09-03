@@ -7,6 +7,8 @@
     [#local cfId  = formatResourceId(AWS_CLOUDFRONT_DISTRIBUTION_RESOURCE_TYPE, core.Id)]
     [#local cfName = core.FullName]
 
+    [#local internalFqdn = getExistingReference(cfId,DNS_ATTRIBUTE_TYPE)]
+
     [#if isPresent(solution.Certificate) ]
         [#local certificateObject = getCertificateObject(solution.Certificate!"") ]
         [#local hostName = getHostName(certificateObject, occurrence) ]
@@ -14,7 +16,7 @@
         [#local fqdn = formatDomainName(hostName, primaryDomainObject)]
 
     [#else]
-            [#local fqdn = getExistingReference(cfId,DNS_ATTRIBUTE_TYPE)]
+            [#local fqdn = internalFqdn ]
     [/#if]
 
     [#local wafPresent = isPresent(solution.WAF)]
@@ -49,6 +51,7 @@
             attributeIfContent("wafLogStreaming", wafLogStreamResources),
             "Attributes" : {
                 "FQDN" : fqdn,
+                "INTERNAL_FQDN" : internalFqdn,
                 "URL" : "https://" + fqdn,
                 "DISTRIBUTION_ID" : getExistingReference(cfId)
             },
