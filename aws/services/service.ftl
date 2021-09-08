@@ -70,6 +70,9 @@
 [#assign AWS_NETWORK_FIREWALL_SERVICE = "networkfirewall"]
 [@addService provider=AWS_PROVIDER  service=AWS_NETWORK_FIREWALL_SERVICE /]
 
+[#assign AWS_PINPOINT_SERVICE = "pinpoint"]
+[@addService provider=AWS_PROVIDER  service=AWS_PINPOINT_SERVICE /]
+
 [#assign AWS_RELATIONAL_DATABASE_SERVICE = "rds"]
 [@addService provider=AWS_PROVIDER service=AWS_RELATIONAL_DATABASE_SERVICE /]
 
