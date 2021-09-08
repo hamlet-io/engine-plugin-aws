@@ -49,13 +49,6 @@
         tags=getOccurrenceCoreTags(occurrence, core.FullName)
     /]
 
-                            {
-                                "Fn::Join": [
-                                    ",",
-                                    tierSubnetIdRefs
-                                ]
-                            },
-
     [@cfOutput
         formatId(firewallId, INTERFACE_ATTRIBUTE_TYPE),
         {
