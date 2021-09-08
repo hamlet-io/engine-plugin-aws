@@ -93,6 +93,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "contentnode"
                             },
+                            "correspondent" : {
+                                "Provider" : "awstest",
+                                "Name" : "correspondent"
+                            },
                             "datapipeline" : {
                                 "Provider" : "awstest",
                                 "Name" : "datapipeline"
