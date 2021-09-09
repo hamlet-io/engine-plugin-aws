@@ -206,7 +206,7 @@
     /]
 [/#macro]
 
-[#macro createALBListener id port albId defaultTargetGroupId certificateId="" sslPolicy="" ]
+[#macro createALBListener id port albId defaultActions certificateId="" sslPolicy="" ]
 
     [#if port.Protocol == "SSL" ]
         [#local protocol = "TLS" ]
@@ -231,12 +231,7 @@
         type="AWS::ElasticLoadBalancingV2::Listener"
         properties=
             {
-                "DefaultActions" : [
-                    {
-                      "TargetGroupArn" : getReference(defaultTargetGroupId),
-                      "Type" : "forward"
-                    }
-                ],
+                "DefaultActions" : asArray(defaultActions),
                 "LoadBalancerArn" : getReference(albId),
                 "Port" : port.Port,
                 "Protocol" : protocol
@@ -390,7 +385,10 @@
                 "FixedResponseConfig": {
                     "MessageBody": message,
                     "ContentType": contentType,
-                    "StatusCode": statusCode
+                    "StatusCode": statusCode?is_number?then(
+                        statusCode?c,
+                        statusCode
+                    )
                 }
             } +
             attributeIfContent("Order", order)
