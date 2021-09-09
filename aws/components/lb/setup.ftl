@@ -74,6 +74,9 @@
 
     [#local cleanupStates = {}]
 
+    [#local lbListeners = []]
+    [#local defaultActions = {}]
+
     [#local classicHTTPSPolicyName = "ELBSecurityPolicy"]
     [#if engine == "classic" ]
         [#local classicPolicies += [
@@ -186,22 +189,6 @@
         [#local ruleCleanupScript = []]
         [#local cliCleanUpRequired = getExistingReference(listenerId, "cleanup")?has_content ]
 
-        [#local firstMappingForPort = !listenerPortsSeen?seq_contains(listenerId) ]
-        [#switch engine ]
-            [#case "application"]
-                [#if solution.Path != "default" ]
-                    [#-- Only create the listener for default mappings      --]
-                    [#-- The ordering of ports changes with their naming    --]
-                    [#-- so it isn't sufficient to use the first occurrence --]
-                    [#-- of a listener                                      --]
-                    [#local firstMappingForPort = false ]
-                [/#if]
-                [#break]
-        [/#switch]
-        [#if firstMappingForPort]
-            [#local listenerPortsSeen += [listenerId] ]
-        [/#if]
-
         [#-- Determine the IP whitelisting required --]
         [#local portIpAddressGroups = solution.IPAddressGroups ]
         [#local cidrs = getGroupCIDRs(portIpAddressGroups, true, subOccurrence)]
@@ -228,6 +215,32 @@
         [#local destination = (portMappings[mapping].Destination)!"" ]
         [#local sourcePort = (ports[source])!{} ]
         [#local destinationPort = (ports[destination])!{} ]
+
+        [#local firstMappingForPort = !listenerPortsSeen?seq_contains(listenerId) ]
+        [#switch engine ]
+            [#case "application"]
+                [#if solution.Path != "default" ]
+                    [#-- Only create the listener for default mappings      --]
+                    [#-- The ordering of ports changes with their naming    --]
+                    [#-- so it isn't sufficient to use the first occurrence --]
+                    [#-- of a listener                                      --]
+                    [#local firstMappingForPort = false ]
+                [/#if]
+                [#break]
+        [/#switch]
+        [#if firstMappingForPort]
+            [#local listenerPortsSeen += [listenerId] ]
+
+            [#local lbListeners += [
+                {
+                    "Id" : listenerId,
+                    "Source" : source,
+                    "SourcePort" : sourcePort,
+                    "DefaultTargetGroupId" : defaultTargetGroupId,
+                    "CertificateId" : (certificateId)!""
+                }
+            ]]
+        [/#if]
 
         [#if !(sourcePort?has_content && destinationPort?has_content)]
             [#continue ]
@@ -309,19 +322,41 @@
                 [#local listenerForwardRule = false ]
 
                 [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-                    [@createListenerRule
-                        id=listenerRuleId
-                        listenerId=listenerId
-                        actions=getListenerRuleRedirectAction(
+
+                    [#local redirectAction = getListenerRuleRedirectAction(
                                         solution.Redirect.Protocol,
                                         solution.Redirect.Port,
                                         solution.Redirect.Host,
                                         solution.Redirect.Path,
                                         solution.Redirect.Query,
-                                        solution.Redirect.Permanent)
-                        conditions=listenerRuleConditions
-                        priority=listenerRulePriority
-                    /]
+                                        solution.Redirect.Permanent)]
+
+                    [#if listenerRulePriority?is_string &&
+                            listenerRulePriority == "default" ]
+                        [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
+                            [#local defaultActions += {
+                                source : redirectAction
+                            }]
+
+                        [#else]
+                            [@fatal
+                                message="Default action for source {source} port already in use"
+                                context={
+                                    "Source" : source,
+                                    "CurrentRule" : defaultActions[source],
+                                    "NewRule" : solution
+                                }
+                            /]
+                        [/#if]
+                    [#else]
+                        [@createListenerRule
+                            id=listenerRuleId
+                            listenerId=listenerId
+                            actions=redirectAction
+                            conditions=listenerRuleConditions
+                            priority=listenerRulePriority
+                        /]
+                    [/#if]
                 [/#if]
             [/#if]
 
@@ -332,23 +367,45 @@
                 [#local fixedMessage = getOccurrenceSettingValue(subOccurrence, ["Fixed", "Message"], true) ]
                 [#local fixedContentType = getOccurrenceSettingValue(subOccurrence, ["Fixed", "ContentType"], true) ]
                 [#local fixedStatusCode = getOccurrenceSettingValue(subOccurrence, ["Fixed", "StatusCode"], true) ]
-                    [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+                [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+
+                    [#local fixedRule = getListenerRuleFixedAction(
+                                            contentIfContent(
+                                                fixedMessage,
+                                                solution.Fixed.Message),
+                                            contentIfContent(
+                                                fixedContentType,
+                                                solution.Fixed.ContentType),
+                                            contentIfContent(
+                                                fixedStatusCode,
+                                                solution.Fixed.StatusCode))]
+
+                    [#if listenerRulePriority?is_string &&
+                        listenerRulePriority == "default" ]
+                        [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
+                            [#local defaultActions += {
+                                source : fixedRule
+                            }]
+
+                        [#else]
+                            [@fatal
+                                message="Default action for source {source} port already in use"
+                                context={
+                                    "Source" : source,
+                                    "CurrentRule" : defaultActions[source],
+                                    "NewRule" : solution
+                                }
+                            /]
+                        [/#if]
+                    [#else]
                         [@createListenerRule
                             id=listenerRuleId
                             listenerId=listenerId
-                            actions=getListenerRuleFixedAction(
-                                    contentIfContent(
-                                        fixedMessage,
-                                        solution.Fixed.Message),
-                                    contentIfContent(
-                                        fixedContentType,
-                                        solution.Fixed.ContentType),
-                                    contentIfContent(
-                                        fixedStatusCode,
-                                        solution.Fixed.StatusCode))
+                            actions=fixedRule
                             conditions=listenerRuleConditions
                             priority=listenerRulePriority
                         /]
+                    [/#if]
                 [/#if]
             [/#if]
         [/#if]
@@ -408,22 +465,46 @@
                         [#local userPoolOauthScope = linkTargetAttributes["LB_OAUTH_SCOPE"]!"HamletFatal: Userpool OAuth scope not found"  ]
 
                         [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) && engine == "application" ]
-                            [@createListenerRule
-                                id=listenerRuleId
-                                listenerId=listenerId
-                                actions=getListenerRuleAuthCognitoAction(
-                                                    userPoolArn,
-                                                    userPoolClientId,
-                                                    userPoolDomain,
-                                                    userPoolSessionCookieName,
-                                                    userPoolSessionTimeout,
-                                                    userPoolOauthScope,
-                                                    1
-                                            ) +
-                                        getListenerRuleForwardAction(targetGroupId, 2)
-                                conditions=listenerRuleConditions
-                                priority=listenerRulePriority
-                            /]
+
+                            [#local authForwardRule =
+                                    getListenerRuleAuthCognitoAction(
+                                            userPoolArn,
+                                            userPoolClientId,
+                                            userPoolDomain,
+                                            userPoolSessionCookieName,
+                                            userPoolSessionTimeout,
+                                            userPoolOauthScope,
+                                            1
+                                    ) +
+                                    getListenerRuleForwardAction(targetGroupId, 2)]
+
+                            [#if listenerRulePriority?is_string &&
+                                listenerRulePriority == "default" ]
+                                [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
+                                    [#local defaultActions += {
+                                        source : authForwardRule
+                                    }]
+
+                                [#else]
+                                    [@fatal
+                                        message="Default action for source {source} port already in use"
+                                        context={
+                                            "Source" : source,
+                                            "CurrentRule" : defaultActions[source],
+                                            "NewRule" : solution
+                                        }
+                                    /]
+                                [/#if]
+                            [#else]
+
+                                [@createListenerRule
+                                    id=listenerRuleId
+                                    listenerId=listenerId
+                                    actions=authForwardRule
+                                    conditions=listenerRuleConditions
+                                    priority=listenerRulePriority
+                                /]
+                            [/#if]
                         [/#if]
                         [#break]
 
@@ -431,19 +512,43 @@
                         [#local targetGroupRequired = false ]
                         [#local listenerForwardRule = false ]
                         [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) && engine == "application"  ]
-                            [@createListenerRule
-                                id=listenerRuleId
-                                listenerId=listenerId
-                                actions=getListenerRuleRedirectAction(
+
+                            [#local spaRedirectRule =
+                                        getListenerRuleRedirectAction(
                                             "HTTPS",
                                             "443",
                                             linkTargetAttributes.FQDN,
                                             "",
                                             "",
-                                            false)
-                                conditions=listenerRuleConditions
-                                priority=listenerRulePriority
-                            /]
+                                            false
+                                        )]
+
+                            [#if listenerRulePriority?is_string &&
+                                listenerRulePriority == "default" ]
+                                [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
+                                    [#local defaultActions += {
+                                        source : spaRedirectRule
+                                    }]
+
+                                [#else]
+                                    [@fatal
+                                        message="Default action for source {source} port already in use"
+                                        context={
+                                            "Source" : source,
+                                            "CurrentRule" : defaultActions[source],
+                                            "NewRule" : solution
+                                        }
+                                    /]
+                                [/#if]
+                            [#else]
+                                [@createListenerRule
+                                    id=listenerRuleId
+                                    listenerId=listenerId
+                                    actions=spaRedirectRule
+                                    conditions=listenerRuleConditions
+                                    priority=listenerRulePriority
+                                /]
+                            [/#if]
                         [/#if]
                         [#break]
                 [/#switch]
@@ -588,13 +693,36 @@
                 [#-- Basic Forwarding --]
                 [#if listenerForwardRule ]
                     [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+
+                        [#local forwardRule = getListenerRuleForwardAction(targetGroupId)]
+
+                        [#if listenerRulePriority?is_string &&
+                            listenerRulePriority == "default" ]
+                            [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
+                                [#local defaultActions += {
+                                    source : forwardRule
+                                }]
+
+                            [#else]
+                                [@fatal
+                                    message="Default action for source {source} port already in use"
+                                    context={
+                                        "Source" : source,
+                                        "CurrentRule" : defaultActions[source],
+                                        "NewRule" : solution
+                                    }
+                                /]
+                            [/#if]
+                        [#else]
+
                             [@createListenerRule
                                 id=listenerRuleId
                                 listenerId=listenerId
-                                actions=getListenerRuleForwardAction(targetGroupId)
+                                actions=forwardRule
                                 conditions=listenerRuleConditions
                                 priority=listenerRulePriority
                             /]
+                        [/#if]
                     [/#if]
                 [/#if]
 
@@ -604,29 +732,18 @@
                         "deregistration_delay.timeout_seconds" : solution.Forward.DeregistrationTimeout
                     }]
 
-                [#if firstMappingForPort ]
-                    [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-                        [@createALBListener
-                            id=listenerId
-                            port=sourcePort
-                            albId=lbId
-                            defaultTargetGroupId=defaultTargetGroupId
-                            certificateId=certificateId
-                            sslPolicy=securityProfile.HTTPSProfile
-                        /]
-
-                        [@createTargetGroup
-                            id=defaultTargetGroupId
-                            name=defaultTargetGroupName
-                            tier=core.Tier
-                            component=core.Component
-                            destination=destinationPort
-                            attributes=tgAttributes
-                            targetType=solution.Forward.TargetType
-                            vpcId=vpcId
-                            targets=staticTargets
-                        /]
-                    [/#if]
+                [#if engine == "network"]
+                    [@createTargetGroup
+                        id=defaultTargetGroupId
+                        name=defaultTargetGroupName
+                        tier=core.Tier
+                        component=core.Component
+                        destination=destinationPort
+                        attributes=tgAttributes
+                        targetType=solution.Forward.TargetType
+                        vpcId=vpcId
+                        targets=staticTargets
+                    /]
                 [/#if]
 
                 [#if ( targetGroupRequired ) &&
@@ -796,6 +913,40 @@
                         networkLBId=lbId
                     /]
                 [/#if]
+
+                [#list lbListeners as lbListener ]
+                    [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+
+                        [#switch engine]
+                            [#case "network"]
+                                [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
+                                    [#local defaultActions += { source : getListenerRuleForwardAction(lbListener.DefaultTargetGroupId)} ]
+                                [/#if]
+                                [#break]
+
+                            [#case "application"]
+                                [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
+                                    [#local defaultActions += {
+                                        lbListener.Source : getListenerRuleFixedAction(
+                                            "Access Denied - Last Rule",
+                                            "text/plain",
+                                            403
+                                        )
+                                    }]
+                                [/#if]
+                                [#break]
+                        [/#switch]
+
+                        [@createALBListener
+                            id=lbListener.Id
+                            port=lbListener.SourcePort
+                            albId=lbId
+                            defaultActions=defaultActions[lbListener.Source]
+                            certificateId=lbListener.CertificateId
+                            sslPolicy=securityProfile.HTTPSProfile
+                        /]
+                    [/#if]
+                [/#list]
             [/#if]
             [#break]
 
