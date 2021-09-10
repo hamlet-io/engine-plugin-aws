@@ -14,7 +14,7 @@
 [#macro aws_spa_cf_deployment_application occurrence  ]
     [@debug message="Entering" context=occurrence enabled=false /]
 
-    [#local core = occurrence.Core ]
+   [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
     [#local settings = occurrence.Configuration.Settings ]
     [#local resources = occurrence.State.Resources]
