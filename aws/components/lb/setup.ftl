@@ -280,6 +280,24 @@
                         [#local path = solution.Path ]
                     [/#if]
                 [/#if]
+
+
+                [#if listenerRulePriority?is_string &&
+                            listenerRulePriority == "default" ]
+                    [#if solution.HostFilter || solution.Path != "default" ]
+                        [@fatal
+                            message="Request conditions can not be used for default rules"
+                            context={
+                                "Lb" : lbId,
+                                "PortMapping" : core.RawId,
+                                "Conditions" : {
+                                    "HostFilter" : solution.HostFilter,
+                                    "Path" : solution.Path
+                                }
+                            }
+                        /]
+                    [/#if]
+                [/#if]
                 [#break]
 
             [#default]
@@ -333,6 +351,7 @@
 
                     [#if listenerRulePriority?is_string &&
                             listenerRulePriority == "default" ]
+
                         [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
                             [#local defaultActions += {
                                 source : redirectAction
