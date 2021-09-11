@@ -92,6 +92,7 @@
                 [#case BASELINE_DATA_COMPONENT_TYPE]
                     [#local loggingDestinationId = (s3LinkTarget.State.Resources["bucket"].Id)!"" ]
                     [#local loggingS3Prefix  = getContextPath(occurrence, solution.Logging["destinationType:s3"].Prefix) ]
+                    [#break]
 
                 [#default]
                     [@fatal
