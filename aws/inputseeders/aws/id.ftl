@@ -162,7 +162,8 @@
     [@includeServicesConfiguration
         provider=AWS_PROVIDER
         services=[
-            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE,
+            AWS_NETWORK_FIREWALL_SERVICE
         ]
         deploymentFramework=CLOUD_FORMATION_DEPLOYMENT_FRAMEWORK
     /]
@@ -172,6 +173,12 @@
             [#-- this will return the value for all attribute lookups --]
             [#-- VPC only has ref so that is ok --]
             [#local value = "vpc-123456789abcdef12" ]
+            [#break]
+
+        [#case AWS_NETWORK_FIREWALL_RESOURCE_TYPE]
+            [#if id?ends_with(INTERFACE_ATTRIBUTE_TYPE)]
+                [#local value = "ap-mock-1a:vpce-111122223333,ap-mock-1b:vpce-987654321098,ap-mock-1c:vpce-012345678901"]
+            [/#if]
             [#break]
     [/#switch]
 
