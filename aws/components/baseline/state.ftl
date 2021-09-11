@@ -226,7 +226,7 @@
 
         [#case "ssh"]
             [#local legacyKey = false]
-            [#if core.SubComponent.Id == "ssh" &&
+            [#if core.SubComponent.RawId == "ssh" &&
                     getExistingReference(formatEC2KeyPairId(), NAME_ATTRIBUTE_TYPE)?has_content ]
                 [#local keyPairId = formatEC2KeyPairId()]
                 [#local keyPairName = formatSegmentFullName() ]

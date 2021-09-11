@@ -454,82 +454,71 @@
                         [@addToDefaultBashScriptOutput
                             content=
                             [
-                                "function manage_ssh_credentials() {"
-                                "  info \"Checking SSH credentials ...\"",
-                                "  #",
-                                "  # Create SSH credential for the segment",
-                                "  mkdir -p \"$\{SEGMENT_OPERATIONS_DIR}\"",
-                                "  create_pki_credentials \"$\{SEGMENT_OPERATIONS_DIR}\" " +
-                                        "\"" + regionId + "\" " +
-                                        "\"" + accountObject.Id + "\" " +
-                                        "\"" + localKeyPairPublicKey + "\" " +
-                                        "\"" + localKeyPairPrivateKey + "\" || return $?",
-                                "  #",
-                                "  # Update the credential if required",
-                                "  if ! check_ssh_credentials" + " " +
-                                    "\"" + regionId + "\" " +
-                                    "\"$\{key_pair_name}\"; then",
-                                "    pem_file=\"$\{SEGMENT_OPERATIONS_DIR}/" + localKeyPairPublicKey + "\"",
-                                "    update_ssh_credentials" + " " +
-                                    "\"" + regionId + "\" " +
-                                    "\"$\{key_pair_name}\" " +
-                                    "\"$\{pem_file}\" || return $?",
-                                "    [[ -f \"$\{SEGMENT_OPERATIONS_DIR}/" + localKeyPairPrivateKey + ".plaintext\" ]] && ",
-                                "      { encrypt_kms_file" + " " +
-                                        "\"" + regionId + "\" " +
-                                        "\"$\{SEGMENT_OPERATIONS_DIR}/" + localKeyPairPrivateKey + ".plaintext\" " +
-                                        "\"$\{SEGMENT_OPERATIONS_DIR}/" + localKeyPairPrivateKey + "\" " +
-                                        "\"" + cmkAlias + "\" || return $?; }"
-                                "  fi",
-                                "  #"
+                                r'function manage_ssh_credentials() {',
+                                r'  info "Checking SSH credentials ..."',
+                                r'  # Create SSH credential for the segment',
+                                r'  mkdir -p "${SEGMENT_OPERATIONS_DIR}"',
+                                r'  create_pki_credentials "${SEGMENT_OPERATIONS_DIR}" ' +
+                                        r'"' + regionId + r'" ' +
+                                        r'"' + accountObject.Id + r'" ' +
+                                        r'"' + localKeyPairPublicKey + r'" ' +
+                                        r'"' + localKeyPairPrivateKey + r'" ' +
+                                        r'"' + legacyKey?c + r'" || return $?',
+                                r'  # Update the credential if required',
+                                r'  if ! check_ssh_credentials "'+ regionId + r'" "${key_pair_name}"; then',
+                                r'    update_ssh_credentials "' + regionId + r'" ' +
+                                    r'"${key_pair_name}" ' +
+                                    r'"${SEGMENT_OPERATIONS_DIR}/' + localKeyPairPrivateKey + r'.plaintext" || return $?',
+                                r'    [[ -f "${SEGMENT_OPERATIONS_DIR}/' + localKeyPairPrivateKey + r'.plaintext" ]] && ',
+                                r'      { encrypt_kms_file' + " " +
+                                        r'"' + regionId + r'" ' +
+                                        r'"${SEGMENT_OPERATIONS_DIR}/' + localKeyPairPrivateKey + r'.plaintext" ' +
+                                        r'"${SEGMENT_OPERATIONS_DIR}/' + localKeyPairPrivateKey + r'" ' +
+                                        r'"' + cmkAlias + r'" || return $?; }',
+                                r'  fi'
                             ] +
                             pseudoStackOutputScript(
                                 "SSH Key Pair",
                                 {
-                                    ec2KeyPairId : "$\{key_pair_name}",
-                                    formatId(ec2KeyPairId, "name") : "$\{key_pair_name}"
+                                    ec2KeyPairId : r'${key_pair_name}',
+                                    formatId(ec2KeyPairId, "name") : r'${key_pair_name}'
                                 },
-                                "keypair"
+                                ( legacyKey || subCore.SubComponent.RawId == "ssh")?then(
+                                    "keypair",
+                                    "keypair-${subCore.SubComponent.RawName}"
+                                )
                             ) +
                             valueIfTrue(
                                 [
-                                    "   info \"Removing old ssh pseudo stack output ...\"",
-                                    "   legacy_pseudo_stack_file=\"$(fileBase \"$\{BASH_SOURCE}\")\"",
-                                    "   legacy_pseudo_stack_filepath=\"$\{CF_DIR/baseline/cmk}/$\{legacy_pseudo_stack_file/-baseline-/-cmk-}-keypair-pseudo-stack.json\"",
-                                    "   if [ -f \"$\{legacy_pseudo_stack_filepath}\" ]; then",
-                                    "       info \"Deleting $\{legacy_pseudo_stack_filepath} ...\"",
-                                    "       rm -f \"$\{legacy_pseudo_stack_filepath}\"",
-                                    "   else",
-                                    "       warn \"Unable to locate pseudo stack file $\{legacy_pseudo_stack_filepath}\"",
-                                    "   fi"
+                                    r'   info "Removing old ssh pseudo stack output ..."',
+                                    r'   legacy_pseudo_stack_file="$(fileBase "${BASH_SOURCE}")"',
+                                    r'   legacy_pseudo_stack_filepath="${CF_DIR/baseline/cmk}${legacy_pseudo_stack_file/-baseline-/-cmk-}-keypair-pseudo-stack.json"',
+                                    r'   if [ -f "${legacy_pseudo_stack_filepath}" ]; then',
+                                    r'       info "Deleting ${legacy_pseudo_stack_filepath} ..."',
+                                    r'       rm -f "${legacy_pseudo_stack_filepath}"',
+                                    r'   else',
+                                    r'       warn "Unable to locate pseudo stack file ${legacy_pseudo_stack_filepath}"',
+                                    r'   fi'
                                 ],
                                 legacyKey,
                                 []
                             ) +
                             [
-                                "  #",
-                                "  show_ssh_credentials" + " " +
-                                    "\"" + regionId + "\" " +
-                                    "\"$\{key_pair_name}\"",
-                                "  #",
-                                "  return 0"
-                                "}",
-                                "#",
-                                "# Determine the required key pair name",
-                                "key_pair_name=\"" + ec2KeyPairName + "\"",
-                                "#",
-                                "case $\{STACK_OPERATION} in",
-                                "  delete)",
-                                "    delete_ssh_credentials " + " " +
-                                    "\"" + regionId + "\" " +
-                                    "\"$\{key_pair_name}\" || return $?",
-                                "    delete_pki_credentials \"$\{SEGMENT_OPERATIONS_DIR}\" || return $?",
-                                "    rm -f \"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE}\")-keypair-pseudo-stack.json\"",
-                                "    ;;",
-                                "  create|update)",
-                                "    manage_ssh_credentials || return $?",
-                                "    ;;",
-                                " esac"
+                                r'  show_ssh_credentials "' + regionId + r'" "${key_pair_name}"',
+                                r'}',
+                                r'# Determine the required key pair name',
+                                r'key_pair_name="' + ec2KeyPairName + r'"',
+                                r'case ${STACK_OPERATION} in',
+                                r'  delete)',
+                                r'    delete_ssh_credentials "'+ regionId + r'" ' +
+                                        r'"${key_pair_name}" || return $?',
+                                r'    delete_pki_credentials "${SEGMENT_OPERATIONS_DIR}" || return $?',
+                                r'    rm -f "${CF_DIR}/$(fileBase "${BASH_SOURCE}")-keypair-pseudo-stack.json"',
+                                r'    ;;',
+                                r'  create|update)',
+                                r'    manage_ssh_credentials || return $?',
+                                r'    ;;',
+                                r' esac'
                             ]
                         /]
                     [/#if]
