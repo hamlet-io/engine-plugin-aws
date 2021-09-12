@@ -128,10 +128,6 @@
                         },
                         "JSON" : {
                             "Match" : {
-                                "DeployTagName" : {
-                                    "Path"  : "Resources.apiDeployXappXapigatewaybaseXrunId098.Properties.Tags[10].Value",
-                                    "Value" : "mockedup-integration-application-apigatewaybase"
-                                },
                                 "RestAPITagName" : {
                                     "Path"  : "Resources.apiXappXapigatewaybase.Properties.Tags[10].Value",
                                     "Value" : "mockedup-integration-application-apigatewaybase"
