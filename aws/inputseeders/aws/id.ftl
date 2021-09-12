@@ -194,7 +194,8 @@
 [/#function]
 
 [#function aws_stateseeder_simulate filter state]
-    [#if ! state.Value?has_content]
+    [#-- Override any value already mocked by the shared seeder --]
+    [#if (!state.Value?has_content) || (state.Mocked!false)]
         [#return aws_stateseeder_fixture(filter, state) ]
     [/#if]
     [#return state]
