@@ -255,9 +255,35 @@
             [#else]
 
                 [#local routeTable = getLinkTarget(occurrence, networkLink + { "RouteTable" : routeTableId }, false )]
+                [#if ! routeTable?has_content ]
+                    [@fatal
+                        message="RouteTable not found for subnet"
+                        detail="Make sure your subnet is configured with a RouteTable from your network component"
+                        context={
+                            "SubnetTier" : tierId,
+                            "RouteTable" : routeTableId,
+                            "Network" : networkLink
+                        }
+                    /]
+                    [#continue]
+                [/#if]
+
                 [#local routeTableZones = routeTable.State.Resources["routeTables"] ]
 
                 [#local networkACL = getLinkTarget(occurrence, networkLink + { "NetworkACL" : networkACLId }, false )]
+                [#if ! networkACL?has_content ]
+                    [@fatal
+                        message="NetworkACL not found for subnet"
+                        detail="Make sure your subnet is configured with a NetworkACL from your network component"
+                        context={
+                            "SubnetTier" : tierId,
+                            "NetworkACL" : networkACLId,
+                            "Network" : networkLink
+                        }
+                    /]
+                    [#continue]
+                [/#if]
+
                 [#local networkACLId = networkACL.State.Resources["networkACL"].Id ]
 
                 [#local tierSubnetIdRefs = []]
