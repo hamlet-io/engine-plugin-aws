@@ -321,7 +321,8 @@
 
 [#function getNetworkFirewallRuleGroupPort port ]
 
-    [#if port?is_string && port == "any" ]
+    [#if ( port?is_string && port == "any")
+            || ( port.PortRange.Configured && port.PortRange.From == 0 && port.PortRange.To == 65535 ) ]
         [#return "ANY"]
     [/#if]
 
@@ -331,16 +332,22 @@
     [#return (port.Port)?c ]
 [/#function]
 
-[#function getNetworkFirewallRuleGroupSimpleStatefulRules action destinations destinationPort sources sourcePort direction="any" ruleOptions=[] ]
+[#function getNetworkFirewallRuleGroupSimpleStatefulRules action destinations destinationPort sources sourcePort priority direction="any" ruleOptions=[] ]
     [#local result = []]
     [#list destinations as destination ]
         [#list sources as source ]
+
+            [#local srcdstRuleOptions = combineEntities(ruleOptions,[{
+                "Keyword" : "sid",
+                "Settings" : [ "${priority}${destination?index}${source?index}" ]
+            }],
+            APPEND_COMBINE_BEHAVIOUR)]
 
             [#local result +=
                 [
                     {
                         "Action" : action?upper_case,
-                        "RuleOptions" : ruleOptions,
+                        "RuleOptions" : srcdstRuleOptions,
                         "Header" : {
                             "Destination" : destination,
                             "DestinationPort" : getNetworkFirewallRuleGroupPort(destinationPort),
