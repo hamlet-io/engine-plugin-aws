@@ -191,10 +191,11 @@
                             [#local ruleGroupArgs += {
                                 "statefulSimpleRules" : ruleGroupArgs.statefulSimpleRules + getNetworkFirewallRuleGroupSimpleStatefulRules(
                                     subSolution.Action,
-                                    getGroupCIDRs(subSolution.NetworkTuple.Destination.IPAddressGroups),
+                                    getGroupCIDRs(subSolution.NetworkTuple.Destination.IPAddressGroups, true, occurrence),
                                     ports[subSolution.NetworkTuple.Destination.Port],
-                                    getGroupCIDRs(subSolution.NetworkTuple.Source.IPAddressGroups),
+                                    getGroupCIDRs(subSolution.NetworkTuple.Source.IPAddressGroups, true, occurrence),
                                     ports[subSolution.NetworkTuple.Source.Port],
+                                    subSolution.Priority,
                                     "any"
                                 )
                             }]
@@ -299,9 +300,9 @@
                                     "statelessRule" : getFirewallRuleGroupStatelessRule(
                                                         priority,
                                                         statelessAction,
-                                                        getGroupCIDRs(subSolution.NetworkTuple.Source.IPAddressGroups),
+                                                        getGroupCIDRs(subSolution.NetworkTuple.Source.IPAddressGroups, true, occurrence),
                                                         ports[subSolution.NetworkTuple.Source.Port],
-                                                        getGroupCIDRs(subSolution.NetworkTuple.Destination.IPAddressGroups),
+                                                        getGroupCIDRs(subSolution.NetworkTuple.Destination.IPAddressGroups, true, occurrence),
                                                         ports[subSolution.NetworkTuple.Destination.Port]
                                                     )
                                 }]
