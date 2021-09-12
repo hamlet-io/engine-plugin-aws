@@ -481,10 +481,6 @@
                 }
             outputs={}
             dependencies=apiId
-            tags=
-                getOccurrenceCoreTags(
-                    occurrence,
-                    deployName)
         /]
 
         [#-- Throttling Configuration --]
