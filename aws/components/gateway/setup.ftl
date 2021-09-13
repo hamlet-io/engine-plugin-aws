@@ -659,14 +659,14 @@
                                 [#local zoneGroups = {}]
                                 [#list solution.IPAddressGroups as IPAddressGroup ]
                                     [#if IPAddressGroup?starts_with("_tier") ]
-                                        [#list zones as zone ]
+                                        [#list zones as zone ]=
                                             [#local zoneGroups += {
-                                                zone.AWSZone : combineEntities((zoneGroups[zone.AWSZone])![], getIPAddressGroup("${IPAddressGroup}:${zone.Id}", subOccurrence))
+                                                zone.AWSZone : combineEntities((zoneGroups[zone.AWSZone])![], [ getIPAddressGroup("${IPAddressGroup}:${zone.Id}", subOccurrence)], APPEND_COMBINE_BEHAVIOUR )
                                             }]
                                         [/#list]
                                     [#else]
                                         [#local zoneGroups += {
-                                            "global" : combineEntities((zoneGroups["global"])![], getIPAddressGroup(IPAddressGroup, subOccurrence ) )
+                                            "global" : combineEntities((zoneGroups["global"])![], [ getIPAddressGroup(IPAddressGroup, subOccurrence)], APPEND_COMBINE_BEHAVIOUR )
                                         }]
                                     [/#if]
                                 [/#list]
@@ -675,33 +675,36 @@
 
                                     [#local defaultFirewallEndpoint = firewallVPCEndpoints[0]?split(":")[1] ]
 
-                                    [#if zone != "group" ]
-                                        [#local zoneEndpoint = defaultFirewallEndpoint]
-                                    [#else]
-                                        [#local zoneEndpoint = ((firewallVPCEndpoints?filter(x -> x?starts_with("${zone}:"))[0])?split(":")[1])!defaultFirewallEndpoint ]
-                                    [/#if]
+                                    [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
 
-                                    [#list groups as group]
-                                        [#if ! (group.IsLocal)!false ]
-                                            [@fatal
-                                                message="Internet Gateway can only route to local networks when using a firewall"
-                                                context={
-                                                    "IPAddressGroups" : solution.IPAddressGroups,
-                                                    "Links" : solution.Links
-                                                }
-                                            /]
+                                        [#if zone != "group" ]
+                                            [#local zoneEndpoint = defaultFirewallEndpoint]
+                                        [#else]
+                                            [#local zoneEndpoint = ((firewallVPCEndpoints?filter(x -> x?starts_with("${zone}:"))[0])?split(":")[1])!defaultFirewallEndpoint ]
                                         [/#if]
 
-                                        [#list getGroupCIDRs([group.Id], true, occurrence) as cidr]
-                                            [@createRoute
-                                                id=resources["routes"][replaceAlphaNumericOnly(cidr)].Id
-                                                routeTableId=IGWRouteTableId
-                                                destinationType="vpcendpoint"
-                                                destinationAttribute=zoneEndpoint
-                                                destinationCidr=cidr
-                                            /]
+                                        [#list groups as group]
+                                            [#if ! (group.IsLocal)!false ]
+                                                [@fatal
+                                                    message="Internet Gateway can only route to local networks when using a firewall"
+                                                    context={
+                                                        "IPAddressGroups" : solution.IPAddressGroups,
+                                                        "Links" : solution.Links
+                                                    }
+                                                /]
+                                            [/#if]
+
+                                            [#list getGroupCIDRs([group.Id], true, occurrence) as cidr]
+                                                [@createRoute
+                                                    id=resources["routes"][replaceAlphaNumericOnly(cidr)].Id
+                                                    routeTableId=IGWRouteTableId
+                                                    destinationType="vpcendpoint"
+                                                    destinationAttribute=zoneEndpoint
+                                                    destinationCidr=cidr
+                                                /]
+                                            [/#list]
                                         [/#list]
-                                    [/#list]
+                                    [/#if]
                                 [/#list]
                             [/#if]
                             [#break]
