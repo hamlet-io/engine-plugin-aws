@@ -659,7 +659,7 @@
                                 [#local zoneGroups = {}]
                                 [#list solution.IPAddressGroups as IPAddressGroup ]
                                     [#if IPAddressGroup?starts_with("_tier") ]
-                                        [#list zones as zone ]=
+                                        [#list zones as zone ]
                                             [#local zoneGroups += {
                                                 zone.AWSZone : combineEntities((zoneGroups[zone.AWSZone])![], [ getIPAddressGroup("${IPAddressGroup}:${zone.Id}", subOccurrence)], APPEND_COMBINE_BEHAVIOUR )
                                             }]
