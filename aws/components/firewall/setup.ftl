@@ -186,6 +186,8 @@
 
             [#switch subSolution.Inspection]
                 [#case "Stateful"]
+                    [#local statefulRuleGroupIds = combineEntities(statefulRuleGroupIds, [ruleGroupId], UNIQUE_COMBINE_BEHAVIOUR ) ]
+
                     [#switch subSolution.Type ]
                         [#case "NetworkTuple" ]
                             [#local ruleGroupArgs += {
