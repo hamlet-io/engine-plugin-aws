@@ -61,7 +61,7 @@
             [#if deploymentSubsetRequired(QUEUEHOST_COMPONENT_TYPE, true)]
                 [@createSecurityGroupRulesFromLink
                     occurrence=occurrence
-                    groupId=cacheSecurityGroupId
+                    groupId=securityGroupId
                     linkTarget=linkTarget
                     inboundPorts=[ port ]
                 /]
