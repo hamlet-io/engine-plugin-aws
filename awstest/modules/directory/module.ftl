@@ -127,7 +127,7 @@
                                     }
                                 },
                                 "Engine": "ActiveDirectory",
-                                "Size": "Standard",
+                                "Size": "Small",
                                 "Profiles" : {
                                     "Testing" : [ "directoryadbase" ]
                                 },

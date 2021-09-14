@@ -53,7 +53,7 @@
     [#switch engine]
         [#case "ActiveDirectory"]
             [#local type = "MicrosoftAD"]
-            [#local size = (solution.Size == "Standard")?then("Standard","Enterprise")]
+            [#local size = (solution.Size == "Small")?then("Standard","Enterprise")]
             [#break]
 
         [#case "Simple"]
