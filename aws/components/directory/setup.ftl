@@ -27,19 +27,6 @@
     [#local networkResources = networkLinkTarget.State.Resources ]
     [#local vpcId = networkResources["vpc"].Id ]
 
-    [#local dnsPorts = [ 
-        "dns-tcp", "dns-tcp",
-        "globalcatalog",
-        "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
-        "ldap-tcp", "ldap-udp", "ldaps",
-        "netlogin-tcp", "netlogin-udp", 
-        "ntp",
-        "rpc", "ephemeralrpctcp", "ephemeralrpcudp",
-        "rsync",
-        "smb-tcp", "smb-udp", 
-        "anyicmp"
-    ]]
-
     [#-- Resources and base configuration --]
     [#local dsId = resources["directory"].Id ]
     [#local fqdName = resources["directory"].Name ]
@@ -54,11 +41,34 @@
         [#case "ActiveDirectory"]
             [#local type = "MicrosoftAD"]
             [#local size = (solution.Size == "Small")?then("Standard","Enterprise")]
+            [#local dnsPorts = [ 
+                "dns-tcp", "dns-udp",
+                "globalcatalog",
+                "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
+                "ldap-tcp", "ldap-udp", "ldaps",
+                "netlogin-tcp", "netlogin-udp", 
+                "ntp",
+                "rpc", "ephemeralrpctcp", "ephemeralrpcudp",
+                "rsync",
+                "smb-tcp", "smb-udp", 
+                "anyicmp"
+            ]]
             [#break]
 
         [#case "Simple"]
             [#local type = "SimpleAD"]
             [#local size = (solution.Size == "Small")?then("Small","Large")]
+            [#local dnsPorts = [ 
+                "dns-tcp", "dns-udp",
+                "globalcatalog",
+                "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
+                "ldap-tcp", "ldap-udp", "ldaps",
+                "netlogin-tcp", "netlogin-udp", 
+                "ntp",
+                "rsync",
+                "smb-tcp", "smb-udp", 
+                "anyicmp"
+            ]]
             [#break]
 
         [#default]
@@ -69,6 +79,9 @@
             /]
             [#local type = "unknown" ]
             [#local size = "unknown" ]
+            [#local dnsPorts = [ 
+                "dns-tcp", "dns-udp"
+            ]]
 
             [#break]
     [/#switch]

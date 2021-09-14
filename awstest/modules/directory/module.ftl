@@ -81,7 +81,7 @@
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
-                                "queueHost" : {
+                                "directoryHost" : {
                                     "Name" : "directoryXappXdirectorysimplebase",
                                     "Type" : "AWS::DirectoryService::SimpleAD"
                                 },
@@ -185,7 +185,7 @@
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
-                                "queueHost" : {
+                                "directoryHost" : {
                                     "Name" : "directoryXappXdirectoryadbase",
                                     "Type" : "AWS::DirectoryService::MicrosoftAD"
                                 },
