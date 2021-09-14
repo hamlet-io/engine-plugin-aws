@@ -359,7 +359,7 @@
                     [/#if]
                 [/#list]
 
-                [#list solution.Links?values as link]
+                [#list subSolution.Links?values as link]
                     [#if link?is_hash]
 
                         [#local linkTarget = getLinkTarget(occurrence, link) ]
