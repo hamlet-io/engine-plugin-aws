@@ -9,6 +9,25 @@
     [#local segmentSeedId = formatSegmentSeedId() ]
     [#local segmentSeed = getExistingReference(segmentSeedId)]
 
+    [#local certificateObject = getCertificateObject(solution.Certificate!"")]
+    [#local certificateDomains = getCertificateDomains(certificateObject) ]
+    [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
+    [#local hostName = getHostName(certificateObject, occurrence) ]
+    [#local fqdn = formatDomainName(hostName, primaryDomainObject) ]
+
+    [#local dnsPorts = [ 
+        "dns-tcp", "dns-tcp",
+        "globalcatalog",
+        "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
+        "ldap-tcp", "ldap-udp", "ldaps",
+        "netlogin-tcp", "netlogin-udp", 
+        "ntp",
+        "rpc", "ephemeralrpctcp", "ephemeralrpcudp",
+        "rsync",
+        "smb-tcp", "smb-udp", 
+        "anyicmp"
+    ]]
+
     [#local rootCredentialResources = getComponentSecretResources(
                                         occurrence,
                                         "root",
@@ -21,7 +40,7 @@
             "Resources" : {
                 "directory" : {
                     "Id" : id,
-                    "Name" : core.FullName,
+                    "Name" : fqdn,
                     "ShortName" : formatName( core.ShortFullName, segmentSeed)?truncate_c(50, ''),
                     "Type" : AWS_DIRECTORY_RESOURCE_TYPE,
                     "Monitored" : true
@@ -50,7 +69,7 @@
                 },
                 "Outbound" : {
                     "networkacl" : {
-                        "Ports" : [ "ssh" ],
+                        "Ports" : dnsPorts,
                         "SecurityGroups" : securityGroupId,
                         "Description" : core.FullName
                     }

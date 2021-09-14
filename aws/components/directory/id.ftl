@@ -1,7 +1,13 @@
 [#ftl]
 [@addResourceGroupInformation
     type=DIRECTORY_COMPONENT_TYPE
-    attributes=[]
+    attributes=[
+        {
+            "Names" : "aws:EnableSSO",
+            "Types" : BOOLEAN_TYPE,
+            "Default" : false
+        }
+    ]
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=
@@ -10,15 +16,4 @@
             AWS_DIRECTORY_SERVICE,
             AWS_SECRETS_MANAGER_SERVICE
         ]
-/]
-
-[@addResourceGroupAttributeValues
-    type=DIRECTORY_COMPONENT_TYPE
-    provider=AWS_PROVIDER
-    extensions=[
-        {
-            "Names" : "Engine",
-            "Values" : [ "ms-std", "ms-ent" ]
-        }
-    ]
 /]

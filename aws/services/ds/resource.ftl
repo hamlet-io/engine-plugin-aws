@@ -4,12 +4,6 @@
     {
         REFERENCE_ATTRIBUTE_TYPE : {
             "UseRef" : true
-        },
-        ALIAS_ATTRIBUTE_TYPE : {
-            "Attribute" : "Alias"
-        },
-        IP_ADDRESS_ATTRIBUTE_TYPE : {
-            "Attribute" : "DnsIpAddresses"
         }
     }
 ]
@@ -21,12 +15,12 @@
 
 [#macro createDSInstance id name
     type
-    edition
+    size
     masterPassword=""
     enableSSO=false
-    dsName=""
+    fqdName=""
     shortName=""
-    size=""
+    vpcSettings=""
 ]
     [@cfResource
     id=id
@@ -35,12 +29,12 @@
         {
             "Password": masterPassword,
             "EnableSso": enableSSO,
-            "Name": dsName,
-            "VpcSettings" : VpcSettings
+            "Name": fqdName,
+            "VpcSettings": vpcSettings
         } +
         attributeIfContent(
             "Edition",
-            edition
+            (type="MicrosoftAD")?then(size,"")
         ) +
         attributeIfContent(
             "ShortName",
@@ -48,7 +42,7 @@
         ) +
         attributeIfContent(
             "Size",
-            size
+            (type="MicrosoftAD")?then("",size)
         )
     outputs=
         DIRECTORY_OUTPUT_MAPPINGS

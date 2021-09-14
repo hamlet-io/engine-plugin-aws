@@ -117,6 +117,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "db"
                             },
+                            "directory" : {
+                                "Provider" : "awstest",
+                                "Name" : "directory"
+                            },
                             "ecs" : {
                                 "Provider" : "awstest",
                                 "Name" : "ecs"
@@ -145,9 +149,17 @@
                                 "Provider" : "awstest",
                                 "Name" : "network"
                             },
+                            "queuehost" : {
+                                "Provider" : "awstest",
+                                "Name" : "queuehost"
+                            },
                             "s3" : {
                                 "Provider" : "awstest",
                                 "Name" : "s3"
+                            },
+                            "sqs" : {
+                                "Provider" : "awstest",
+                                "Name" : "sqs"
                             },
                             "service" : {
                                 "Provider" : "awstest",
@@ -164,14 +176,6 @@
                             "userpool" : {
                                 "Provider" : "awstest",
                                 "Name" : "userpool"
-                            },
-                            "queuehost" : {
-                                "Provider" : "awstest",
-                                "Name" : "queuehost"
-                            },
-                            "sqs" : {
-                                "Provider" : "awstest",
-                                "Name" : "sqs"
                             }
                         }
                     },

@@ -11,10 +11,6 @@
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources ]
 
-    [#local core = occurrence.Core ]
-    [#local solution = occurrence.Configuration.Solution ]
-    [#local resources = occurrence.State.Resources ]
-
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
@@ -31,32 +27,38 @@
     [#local networkResources = networkLinkTarget.State.Resources ]
     [#local vpcId = networkResources["vpc"].Id ]
 
+    [#local dnsPorts = [ 
+        "dns-tcp", "dns-tcp",
+        "globalcatalog",
+        "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
+        "ldap-tcp", "ldap-udp", "ldaps",
+        "netlogin-tcp", "netlogin-udp", 
+        "ntp",
+        "rpc", "ephemeralrpctcp", "ephemeralrpcudp",
+        "rsync",
+        "smb-tcp", "smb-udp", 
+        "anyicmp"
+    ]]
+
     [#-- Resources and base configuration --]
     [#local dsId = resources["directory"].Id ]
-    [#local dsFullName = resources["directory"].Name ]
+    [#local fqdName = resources["directory"].Name ]
     [#local dsShortName = resources["directory"].ShortName ]
     [#local securityGroupId = resources["sg"].Id ]
     [#local securityGroupName = resources["sg"].Name ]
 
     [#local engine = solution.Engine]
+    [#local enableSSO = solution["aws:EnableSSO"]]
 
     [#switch engine]
-        [#case "aws:ms-std"]
+        [#case "ActiveDirectory"]
             [#local type = "MicrosoftAD"]
-            [#local edition = "Standard"]
-            [#local size = ""]
+            [#local size = (solution.Size == "Standard")?then("Standard","Enterprise")]
             [#break]
 
-        [#case "aws:ms-ent"]
-            [#local type = "MicrosoftAD"]
-            [#local edition = "Enterprise"]
-            [#local size = ""]
-            [#break]
-
-        [#case "simple"]
-            [#local type = "Simple"]
-            [#local edition = ""]
-            [#local size = (solution.Size!"Small" = "Small")?then("Small","Large")]
+        [#case "Simple"]
+            [#local type = "SimpleAD"]
+            [#local size = (solution.Size == "Small")?then("Small","Large")]
             [#break]
 
         [#default]
@@ -66,7 +68,7 @@
                 detail="Unsupported engine provided"
             /]
             [#local type = "unknown" ]
-            [#local edition = "unknown" ]
+            [#local size = "unknown" ]
 
             [#break]
     [/#switch]
@@ -94,9 +96,10 @@
             [#if deploymentSubsetRequired(DIRECTORY_COMPONENT_TYPE, true)]
                 [@createSecurityGroupRulesFromLink
                     occurrence=occurrence
-                    groupId=cacheSecurityGroupId
+                    groupId=securityGroupId
                     linkTarget=linkTarget
-                    inboundPorts=[ "ssh" ]
+                    inboundPorts=dnsPorts
+                    networkProfile=networkProfile
                 /]
             [/#if]
 
@@ -108,8 +111,7 @@
     [#local passwordSecretKey = "password" ]
 
     [#if secretStoreLink?has_content ]
-
-        [@setupComponentSecret
+       [@setupComponentSecret
             occurrence=occurrence
             secretStoreLink=secretStoreLink
             kmsKeyId=cmkKeyId
@@ -146,11 +148,11 @@
             occurrence=occurrence
             groupId=securityGroupId
             networkProfile=networkProfile
-            inboundPorts=brokerPorts
+            inboundPorts=dnsPorts
         /]
 
         [#local ingressNetworkRule = {
-                "Ports" : brokerPorts,
+                "Ports" : dnsPorts,
                 "IPAddressGroups" : solution.IPAddressGroups
         }]
 
@@ -161,64 +163,57 @@
         /]
 
         [#if !hibernate]
-
-            [#if ! testMaintenanceWindow(solution.MaintenanceWindow)]
-                [@fatal message="Maintenance window incorrectly configured" context=solution /]
-                [#return]
-            [/#if]
-
-            [#-- Monitoring and Alerts --]
-            [#list solution.Alerts?values as alert ]
-
-                [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
-                [#list monitoredResources as name,monitoredResource ]
-
-                    [@debug message="Monitored resource" context=monitoredResource enabled=false /]
-
-                    [#switch alert.Comparison ]
-                        [#case "Threshold" ]
-                            [@createAlarm
-                                id=formatDependentAlarmId(monitoredResource.Id, alert.Id )
-                                severity=alert.Severity
-                                resourceName=core.FullName
-                                alertName=alert.Name
-                                actions=getCWAlertActions(occurrence, solution.Profiles.Alert, alert.Severity )
-                                metric=getCWMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
-                                namespace=getCWResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
-                                description=alert.Description!alert.Name
-                                threshold=alert.Threshold
-                                statistic=alert.Statistic
-                                evaluationPeriods=alert.Periods
-                                period=alert.Time
-                                operator=alert.Operator
-                                reportOK=alert.ReportOk
-                                unit=alert.Unit
-                                missingData=alert.MissingData
-                                dimensions=getCWResourceMetricDimensions(monitoredResource, resources)
-                            /]
-                        [#break]
-                    [/#switch]
-                [/#list]
-            [/#list]
+            [#local vpcSettings= {
+                    "SubnetIds" : getSubnets(core.Tier, networkResources),
+                    "VpcId" : getReference(vpcId)
+                }]
 
             [#-- Component Specific Resources --]
             [@createDSInstance
                 id=dsId
                 name=dsShortName
                 type=type
-                edition=edition
                 masterPassword=getSecretManagerSecretRef(resources["rootCredentials"]["secret"].Id, "password")
                 enableSSO=enableSSO
-                dsName=dsName
+                fqdName=fqdName
                 shortName=shortName
                 size=size
-
-                instanceType=solution.Processor.Type
-                encrypted=solution.Encrypted
-                kmsKeyId=cmkKeyId
-                subnets=getSubnets(core.Tier, networkResources )
-                securityGroupId=securityGroupId
+                vpcSettings=vpcSettings
             /]
+
+            [@cfOutput
+                formatId(dsId, IP_ADDRESS_ATTRIBUTE_TYPE), 
+                {
+                    "Fn::Join": [
+                        ",",
+                        {
+                            "Fn::GetAtt": [
+                                dsId,
+                                "DnsIpAddresses"
+                            ]
+                        }
+                    ]
+                },
+                false
+            /]
+
+[#--]
+            [@cfOutput
+                formatId(dsId, ALIAS_ATTRIBUTE_TYPE), 
+                {
+                    "Fn::Join": [
+                        ",",
+                        {
+                            "Fn::GetAtt": [
+                                dsId,
+                                "Alias"
+                            ]
+                        }
+                    ]
+                },
+                false
+            /]
+--]
 
         [/#if]
     [/#if]
@@ -232,7 +227,7 @@
                 r'  create|update)',
                 r'    info "Generating Encrypted Url"',
                 r'    secret_arn="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + resources["rootCredentials"]["secret"].Id + r' "ref" || return $?)"',
-                r'    amqp_endopoint="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + brokerId + r' "dns" || return $?)"',
+                r'    amqp_endopoint="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + dsId + r' "dns" || return $?)"',
                 r'    secret_content="$(aws --region "' + regionId + r'" --output text secretsmanager get-secret-value --secret-id "${secret_arn}" --query "SecretString" || return $?)"',
                 r'    username="' + solution.RootCredentials.Username + r'"',
                 r'    password="$( echo "${secret_content}" | jq -r ".' + passwordSecretKey + r'")"',
@@ -242,7 +237,7 @@
             pseudoStackOutputScript(
                 "KMS Encrypted Url",
                 {
-                    formatId(brokerId, URL_ATTRIBUTE_TYPE) : r'${kms_encrypted_url}'
+                    formatId(dsId, URL_ATTRIBUTE_TYPE) : r'${kms_encrypted_url}'
                 },
                 secretId
             ) +
