@@ -7,31 +7,23 @@
     [#local securityGroupId = formatDependentSecurityGroupId(id)]
 
     [#local engine = solution.Engine ]
+    [#local engineVersion = solution.EngineVersion ]
 
     [#switch engine]
         [#case "memcached"]
-            [#local engineVersion =
-                valueIfContent(
-                    solution.EngineVersion!"",
-                    solution.EngineVersion!"",
-                    "1.4.24"
-                )
-            ]
             [#local familyVersionIndex = engineVersion?last_index_of(".") - 1]
             [#local family = "memcached" + engineVersion[0..familyVersionIndex]]
             [#local port = solution.Port!"memcached" ]
             [#break]
 
         [#case "redis"]
-            [#local engineVersion =
-                valueIfContent(
-                    solution.EngineVersion!"",
-                    solution.EngineVersion!"",
-                    "2.8.24"
-                )
-            ]
-            [#local familyVersionIndex = engineVersion?last_index_of(".") - 1]
-            [#local family = "redis" + engineVersion[0..familyVersionIndex]]
+            [#if engineVersion?lower_case?ends_with(".x")]
+                [#local family = "redis" + engineVersion?lower_case ]
+            [#else]
+                [#local familyVersionIndex = engineVersion?last_index_of(".") - 1]
+                [#local family = "redis" + engineVersion[0..familyVersionIndex]]
+            [/#if]
+
             [#local port = solution.Port!"redis" ]
             [#break]
 
