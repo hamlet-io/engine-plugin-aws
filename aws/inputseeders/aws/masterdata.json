@@ -1130,9 +1130,6 @@
                                     "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-ECS_Optimized/image_id"
                                 }
                             },
-                            "OSPatching": {
-                                "Enabled":false
-                            },
                             "ComputeTasks": {
                                 "Extensions" : [
                                     "_computetask_awscli",
@@ -1171,9 +1168,6 @@
                                 "aws:Source:SSMParam" : {
                                     "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base"
                                 }
-                            },
-                            "OSPatching": {
-                                "Enabled":false
                             },
                             "ComputeTasks": {
                                 "Extensions" : [
@@ -1214,9 +1208,6 @@
                                     "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base"
                                 }
                             },
-                            "OSPatching": {
-                                "Enabled":false
-                            },
                             "ComputeTasks": {
                                 "Extensions" : [
                                     "_computetask_awscli",
@@ -1254,9 +1245,6 @@
                                 "aws:Source:SSMParam" : {
                                     "Name" : "/aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base"
                                 }
-                            },
-                            "OSPatching": {
-                                "Enabled":false
                             },
                             "ComputeTasks": {
                                 "Extensions" : [
