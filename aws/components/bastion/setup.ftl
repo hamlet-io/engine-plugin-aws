@@ -109,7 +109,7 @@
             "BootstrapProfile" : bootstrapProfile,
             "InstanceLogGroup" : bastionLgName,
             "InstanceOSPatching" : osPatching,
-            "ElasticIPs" : asArray(bastionEIPId)
+            "ElasticIPs" : asArray(bastionEIPId)?filter(x -> x?has_content)
         }
     ]
 
