@@ -130,3 +130,38 @@
         }
     ]
 [/#macro]
+
+[#macro aws_firewalldestination_cf_state occurrence parent={}]
+    [#local core = occurrence.Core ]
+    [#local solution = occurrence.Configuration.Solution ]
+
+    [#local resources = {}]
+
+    [#list zones as zone ]
+        [#list getGroupCIDRs(solution.IPAddressGroups) as cidr ]
+            [#local resources = mergeObjects(
+                resources,
+                {
+                    "routes" : {
+                        zone.Id : {
+                            replaceAlphaNumericOnly(cidr) : {
+                                "Id" : formatResourceId(AWS_VPC_ROUTE_RESOURCE_TYPE, core.Id, zone.Id, replaceAlphaNumericOnly(cidr)),
+                                "Type" : AWS_VPC_ROUTE_RESOURCE_TYPE
+                            }
+                        }
+                    }
+                })]
+        [/#list]
+    [/#list]
+
+    [#assign componentState =
+        {
+            "Resources" : resources,
+            "Attributes" : {},
+            "Roles" : {
+                "Inbound" : {},
+                "Outbound" : {}
+            }
+        }
+    ]
+[/#macro]
