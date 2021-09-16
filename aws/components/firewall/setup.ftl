@@ -394,13 +394,14 @@
                                             [/#if]
 
                                             [#list groups as group ]
-                                                [#list getGroupCIDRs(group) as cidr ]
+                                                [#list getGroupCIDRs(group, true, occurrence) as cidr ]
                                                     [@createRoute
                                                         id=subResources["routes"][routeZone][replaceAlphaNumericOnly(cidr)].Id
                                                         routeTableId=zoneRouteTableId
                                                         destinationType="vpcendpoint"
                                                         destinationAttribute=zoneEndpoint
                                                         destinationCidr=cidr
+                                                        dependencies=[ firewallId ]
                                                     /]
                                                 [/#list]
                                             [/#list]
