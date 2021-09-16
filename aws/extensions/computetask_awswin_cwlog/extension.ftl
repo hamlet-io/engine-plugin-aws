@@ -99,6 +99,18 @@
                 "ERROR",
                 "CRITICAL"
             ],
+            "event_name" : "Microsoft-Windows-Windows Defender/Operational",
+            "log_group_name" : logGroupName,
+            "log_stream_name" : "{instance_id}/AntiVirus"
+        },
+        {
+            "event_format" : "xml",
+            "event_levels" : [
+                "INFORMATION",
+                "WARNING",
+                "ERROR",
+                "CRITICAL"
+            ],
             "event_name" : "Security",
             "log_group_name" : logGroupName,
             "log_stream_name" : "{instance_id}/Security"
