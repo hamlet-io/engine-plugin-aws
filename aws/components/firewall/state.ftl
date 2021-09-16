@@ -138,7 +138,7 @@
     [#local resources = {}]
 
     [#list zones as zone ]
-        [#list getGroupCIDRs(solution.IPAddressGroups) as cidr ]
+        [#list getGroupCIDRs(solution.IPAddressGroups, true, occurrence) as cidr ]
             [#local resources = mergeObjects(
                 resources,
                 {
