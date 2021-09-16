@@ -344,22 +344,7 @@
                 [#local firewallVPCEndpoints = getExistingReference(firewallId, INTERFACE_ATTRIBUTE_TYPE)?split(',') ]
                 [#local firewallZones = firewallVPCEndpoints?map( x -> x?split(":")[0] )]
 
-                [#local zoneIPAddressGroups = {}]
-                [#list subSolution.IPAddressGroups as IPAddressGroup ]
-                    [#if IPAddressGroup?starts_with("_tier") ]
-                        [#list zones as zone ]
-                            [#local zoneIPAddressGroups += {
-                                zone.AWSZone : combineEntities((zoneIPAddressGroups[zone.AWSZone])![], [ getIPAddressGroup("${IPAddressGroup}:${zone.Id}", subOccurrence)], APPEND_COMBINE_BEHAVIOUR )
-                            }]
-                        [/#list]
-                    [#else]
-                        [#local zoneIPAddressGroups += {
-                            "global" : combineEntities((zoneIPAddressGroups["global"])![], [ getIPAddressGroup(IPAddressGroup, subOccurrence)], APPEND_COMBINE_BEHAVIOUR )
-                        }]
-                    [/#if]
-                [/#list]
-
-                [#list subSolution.Links?values as link]
+                [#list subSolution.Links as linkId, link]
                     [#if link?is_hash]
 
                         [#local linkTarget = getLinkTarget(occurrence, link) ]
@@ -378,36 +363,27 @@
                         [#switch linkTargetCore.Type]
                             [#case NETWORK_ROUTE_TABLE_COMPONENT_TYPE]
 
-                                [#list linkTargetResources["routeTables"] as routeZone, zoneRouteTableResources ]
+                                [#if deploymentSubsetRequired(FIREWALL_COMPONENT_TYPE, true)]
 
-                                    [#local zoneRouteTableId = zoneRouteTableResources["routeTable"].Id]
-                                    [#list zoneIPAddressGroups as zone,groups ]
+                                    [#list subResources["routes"] as zoneId, routes]
+                                        [#local zoneDetails = zones?filter( x -> x.Id == zoneId)?first ]
 
-                                        [#local defaultFirewallEndpoint = firewallVPCEndpoints[0]?split(":")[1] ]
+                                        [#local zoneEndpoint = (
+                                                (firewallVPCEndpoints?filter(x -> x?starts_with("${zoneDetails.AWSZone}:"))[0])?split(":")[1]
+                                            )!"HamletFatal: Endpoint not found for AZ" ]
 
-                                        [#if deploymentSubsetRequired(FIREWALL_COMPONENT_TYPE, true)]
-
-                                            [#if zone == "global" ]
-                                                [#local zoneEndpoint = defaultFirewallEndpoint]
-                                            [#else]
-                                                [#local zoneEndpoint = ((firewallVPCEndpoints?filter(x -> x?starts_with("${zone}:"))[0])?split(":")[1])!defaultFirewallEndpoint ]
-                                            [/#if]
-
-                                            [#list groups as group ]
-                                                [#list getGroupCIDRs(group, true, occurrence) as cidr ]
-                                                    [@createRoute
-                                                        id=subResources["routes"][routeZone][replaceAlphaNumericOnly(cidr)].Id
-                                                        routeTableId=zoneRouteTableId
-                                                        destinationType="vpcendpoint"
-                                                        destinationAttribute=zoneEndpoint
-                                                        destinationCidr=cidr
-                                                        dependencies=[ firewallId ]
-                                                    /]
-                                                [/#list]
-                                            [/#list]
-                                        [/#if]
+                                        [#list routes?values as route ]
+                                            [@createRoute
+                                                id=route.Id
+                                                routeTableId=linkTargetResources["routeTables"][zoneId]["routeTable"]["Id"]
+                                                destinationType="vpcendpoint"
+                                                destinationAttribute=zoneEndpoint
+                                                destinationCidr=route.CIDR
+                                                dependencies=[ firewallId ]
+                                            /]
+                                        [/#list]
                                     [/#list]
-                                [/#list]
+                                [/#if]
                                 [#break]
                         [/#switch]
                     [/#if]
