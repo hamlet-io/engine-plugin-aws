@@ -137,20 +137,43 @@
 
     [#local resources = {}]
 
-    [#list zones as zone ]
-        [#list getGroupCIDRs(solution.IPAddressGroups, true, occurrence) as cidr ]
-            [#local resources = mergeObjects(
-                resources,
-                {
-                    "routes" : {
-                        zone.Id : {
-                            replaceAlphaNumericOnly(cidr) : {
-                                "Id" : formatResourceId(AWS_VPC_ROUTE_RESOURCE_TYPE, core.Id, zone.Id, replaceAlphaNumericOnly(cidr)),
-                                "Type" : AWS_VPC_ROUTE_RESOURCE_TYPE
-                            }
-                        }
-                    }
-                })]
+    [#list (solution.Links)?keys as link]
+        [#list zones as zone ]
+            [#list solution.IPAddressGroups as IPAddressGroup ]
+                [#if IPAddressGroup?starts_with("_tier")]
+                    [#list getGroupCIDRs("${IPAddressGroup}:${zone.Id}", true, occurrence) as cidr ]
+                        [#local resources = mergeObjects(
+                            resources,
+                            {
+                                "routes" : {
+                                    zone.Id : {
+                                        formatName(link, replaceAlphaNumericOnly(cidr)) : {
+                                            "Id" : formatResourceId(AWS_VPC_ROUTE_RESOURCE_TYPE, core.Id, zone.Id, link, replaceAlphaNumericOnly(cidr)),
+                                            "CIDR" : cidr,
+                                            "Type" : AWS_VPC_ROUTE_RESOURCE_TYPE
+                                        }
+                                    }
+                                }
+                            })]
+                    [/#list]
+                [#else]
+                    [#list getGroupCIDRs(solution.IPAddressGroups, true, occurrence) as cidr ]
+                        [#local resources = mergeObjects(
+                            resources,
+                            {
+                                "routes" : {
+                                    zone.Id : {
+                                        formatName(link, replaceAlphaNumericOnly(cidr)) : {
+                                            "Id" : formatResourceId(AWS_VPC_ROUTE_RESOURCE_TYPE, core.Id, zone.Id, link, replaceAlphaNumericOnly(cidr)),
+                                            "CIDR" : cidr,
+                                            "Type" : AWS_VPC_ROUTE_RESOURCE_TYPE
+                                        }
+                                    }
+                                }
+                            })]
+                    [/#list]
+                [/#if]
+            [/#list]
         [/#list]
     [/#list]
 
