@@ -171,160 +171,224 @@
             [#local subSolution = subOccurrence.Configuration.Solution ]
             [#local subResources = subOccurrence.State.Resources ]
 
-            [#local ruleGroupId = subResources["rulegroup"].Id ]
-            [#local ruleGroupName = subResources["rulegroup"].Name ]
+            [#if subCore.Type == FIREWALL_RULE_COMPONENT_TYPE ]
+                [#local ruleGroupId = subResources["rulegroup"].Id ]
+                [#local ruleGroupName = subResources["rulegroup"].Name ]
 
-            [#local createRuleGroup = true]
+                [#local createRuleGroup = true]
 
-            [#local ruleGroupArgs = {
-                "httpDomainFilter" : {},
-                "statefulComplexRule" : "",
-                "statefulSimpleRules" : [],
-                "statelessRule" : {},
-                "variables" : {}
-            }]
+                [#local ruleGroupArgs = {
+                    "httpDomainFilter" : {},
+                    "statefulComplexRule" : "",
+                    "statefulSimpleRules" : [],
+                    "statelessRule" : {},
+                    "variables" : {}
+                }]
 
-            [#switch subSolution.Inspection]
-                [#case "Stateful"]
-                    [#local statefulRuleGroupIds = combineEntities(statefulRuleGroupIds, [ruleGroupId], UNIQUE_COMBINE_BEHAVIOUR ) ]
+                [#switch subSolution.Inspection]
+                    [#case "Stateful"]
+                        [#local statefulRuleGroupIds = combineEntities(statefulRuleGroupIds, [ruleGroupId], UNIQUE_COMBINE_BEHAVIOUR ) ]
 
-                    [#switch subSolution.Type ]
-                        [#case "NetworkTuple" ]
-                            [#local ruleGroupArgs += {
-                                "statefulSimpleRules" : ruleGroupArgs.statefulSimpleRules + getNetworkFirewallRuleGroupSimpleStatefulRules(
-                                    subSolution.Action,
-                                    getGroupCIDRs(subSolution.NetworkTuple.Destination.IPAddressGroups, true, occurrence),
-                                    ports[subSolution.NetworkTuple.Destination.Port],
-                                    getGroupCIDRs(subSolution.NetworkTuple.Source.IPAddressGroups, true, occurrence),
-                                    ports[subSolution.NetworkTuple.Source.Port],
-                                    subSolution.Priority,
-                                    "any"
-                                )
-                            }]
-                            [#break]
+                        [#switch subSolution.Type ]
+                            [#case "NetworkTuple" ]
+                                [#local ruleGroupArgs += {
+                                    "statefulSimpleRules" : ruleGroupArgs.statefulSimpleRules + getNetworkFirewallRuleGroupSimpleStatefulRules(
+                                        subSolution.Action,
+                                        getGroupCIDRs(subSolution.NetworkTuple.Destination.IPAddressGroups, true, occurrence),
+                                        ports[subSolution.NetworkTuple.Destination.Port],
+                                        getGroupCIDRs(subSolution.NetworkTuple.Source.IPAddressGroups, true, occurrence),
+                                        ports[subSolution.NetworkTuple.Source.Port],
+                                        subSolution.Priority,
+                                        "any"
+                                    )
+                                }]
+                                [#break]
 
-                        [#case "HostFilter"]
-                            [#local domains = subSolution.HostFilter.Hosts ]
-                            [#list (subSolution.HostFilter.LinkEndpoints)?values as linkEndpoint ]
-                                [#local linkTarget = getLinkTarget(linkEndpoint.Link)]
-                                [#if linkTarget?has_content
-                                        && ((linkTarget.State.Attributes[linkEndpoint.Attribute])!"")?has_content]
-                                    [#local domains = combineEntities(
-                                                        domains,
-                                                        [ linkTarget.State.Attributes[linkEndpoint.Attribute] ],
-                                                        MERGE_COMBINE_BEHAVIOUR) ]
-                                [/#if]
-                            [/#list]
+                            [#case "HostFilter"]
+                                [#local domains = subSolution.HostFilter.Hosts ]
+                                [#list (subSolution.HostFilter.LinkEndpoints)?values as linkEndpoint ]
+                                    [#local linkTarget = getLinkTarget(linkEndpoint.Link)]
+                                    [#if linkTarget?has_content
+                                            && ((linkTarget.State.Attributes[linkEndpoint.Attribute])!"")?has_content]
+                                        [#local domains = combineEntities(
+                                                            domains,
+                                                            [ linkTarget.State.Attributes[linkEndpoint.Attribute] ],
+                                                            MERGE_COMBINE_BEHAVIOUR) ]
+                                    [/#if]
+                                [/#list]
 
-                            [#local hostfilterAction = ""]
-                            [#switch subSolution.Action ]
-                                [#case "pass"]
-                                    [#local hostfilterAction = "allow"]
-                                    [#break]
-
-                                [#case "drop"]
-                                    [#local hostfilterAction = "deny"]
-                                    [#break]
-
-                                [#default]
-                                    [@fatal
-                                        message="Invalid action for HostFilter network Rule"
-                                        context={
-                                            "FirewallId" : core.RawId,
-                                            "RuleId" : subCore.RawId,
-                                            "Action" : subSolution.Action,
-                                            "PermittedActions" : [ "pass", "drop" ]
-                                        }
-                                    /]
-                            [/#switch]
-
-                            [#local ruleGroupArgs += {
-                                "httpDomainFilter" : getNetworkFirewallRuleGroupHTTPDomainFiltering(
-                                    hostfilterAction,
-                                    domains,
-                                    subSolution.HostFilter.Protocols
-                                )
-                            }]
-                            [#break]
-
-                        [#default]
-                            [@fatal
-                                message="Stateful rule inspection does not support rule type"
-                                context={
-                                    "FirewallId" : core.RawId,
-                                    "RuleId" : subCore.RawId,
-                                    "Type" : subSolution.Type
-                                }
-                            /]
-                    [/#switch]
-                    [#break]
-
-                [#case "Stateless"]
-                    [#switch subSolution.Type]
-                        [#case "NetworkTuple"]
-
-                            [#local statelessAction = ""]
-                            [#if subSolution.Priority?is_string && (subSolution.Priority)?lower_case == "default" ]
-                                [#local priority = 1 ]
-                                [#local statelessAction = subSolution.Action ]
-
+                                [#local hostfilterAction = ""]
                                 [#switch subSolution.Action ]
-                                    [#case "drop"]
-                                        [#local statelessDefaultActions += ["aws:drop"]]
-                                        [#break]
                                     [#case "pass"]
-                                        [#local statelessDefaultActions += ["aws:pass"]]
+                                        [#local hostfilterAction = "allow"]
                                         [#break]
-                                    [#case "inspect"]
-                                        [#local statelessDefaultActions += ["aws:forward_to_sfe"]]
+
+                                    [#case "drop"]
+                                        [#local hostfilterAction = "deny"]
                                         [#break]
 
                                     [#default]
                                         [@fatal
-                                            message="Invalid network friewall stateless default action"
+                                            message="Invalid action for HostFilter network Rule"
                                             context={
                                                 "FirewallId" : core.RawId,
                                                 "RuleId" : subCore.RawId,
                                                 "Action" : subSolution.Action,
-                                                "PossibleActions" : [ "drop", "pass", "inspect"]
+                                                "PermittedActions" : [ "pass", "drop" ]
                                             }
                                         /]
                                 [/#switch]
 
-                                [#local createRuleGroup = false ]
-
-                            [#else]
-                                [#local priority = subSolution.Priority]
-                                [#local statelessRuleGroupRefs += [ getNetworkFirewallPolicyStatelessRuleReference(ruleGroupId, subSolution.Priority)] ]
-                                [#local statelessAction = subSolution.Action]
-
                                 [#local ruleGroupArgs += {
-                                    "statelessRule" : getFirewallRuleGroupStatelessRule(
-                                                        priority,
-                                                        statelessAction,
-                                                        getGroupCIDRs(subSolution.NetworkTuple.Source.IPAddressGroups, true, occurrence),
-                                                        ports[subSolution.NetworkTuple.Source.Port],
-                                                        getGroupCIDRs(subSolution.NetworkTuple.Destination.IPAddressGroups, true, occurrence),
-                                                        ports[subSolution.NetworkTuple.Destination.Port]
-                                                    )
+                                    "httpDomainFilter" : getNetworkFirewallRuleGroupHTTPDomainFiltering(
+                                        hostfilterAction,
+                                        domains,
+                                        subSolution.HostFilter.Protocols
+                                    )
                                 }]
-                            [/#if]
-                            [#break]
-                    [/#switch]
-                    [#break]
-            [/#switch]
+                                [#break]
 
-            [#if createRuleGroup ]
-                [@createNetworkFirewallRuleGroup
-                    id=ruleGroupId
-                    name=ruleGroupName
-                    type=subSolution.Inspection
-                    capacity=100
-                    ruleGroup=getNetworkFirewallRuleGroup?with_args(ruleGroupArgs?values)()
-                    tags=getOccurrenceCoreTags(subOccurrence, subCore.FullName)
-                /]
+                            [#default]
+                                [@fatal
+                                    message="Stateful rule inspection does not support rule type"
+                                    context={
+                                        "FirewallId" : core.RawId,
+                                        "RuleId" : subCore.RawId,
+                                        "Type" : subSolution.Type
+                                    }
+                                /]
+                        [/#switch]
+                        [#break]
+
+                    [#case "Stateless"]
+                        [#switch subSolution.Type]
+                            [#case "NetworkTuple"]
+
+                                [#local statelessAction = ""]
+                                [#if subSolution.Priority?is_string && (subSolution.Priority)?lower_case == "default" ]
+                                    [#local priority = 1 ]
+                                    [#local statelessAction = subSolution.Action ]
+
+                                    [#switch subSolution.Action ]
+                                        [#case "drop"]
+                                            [#local statelessDefaultActions += ["aws:drop"]]
+                                            [#break]
+                                        [#case "pass"]
+                                            [#local statelessDefaultActions += ["aws:pass"]]
+                                            [#break]
+                                        [#case "inspect"]
+                                            [#local statelessDefaultActions += ["aws:forward_to_sfe"]]
+                                            [#break]
+
+                                        [#default]
+                                            [@fatal
+                                                message="Invalid network friewall stateless default action"
+                                                context={
+                                                    "FirewallId" : core.RawId,
+                                                    "RuleId" : subCore.RawId,
+                                                    "Action" : subSolution.Action,
+                                                    "PossibleActions" : [ "drop", "pass", "inspect"]
+                                                }
+                                            /]
+                                    [/#switch]
+
+                                    [#local createRuleGroup = false ]
+
+                                [#else]
+                                    [#local priority = subSolution.Priority]
+                                    [#local statelessRuleGroupRefs += [ getNetworkFirewallPolicyStatelessRuleReference(ruleGroupId, subSolution.Priority)] ]
+                                    [#local statelessAction = subSolution.Action]
+
+                                    [#local ruleGroupArgs += {
+                                        "statelessRule" : getFirewallRuleGroupStatelessRule(
+                                                            priority,
+                                                            statelessAction,
+                                                            getGroupCIDRs(subSolution.NetworkTuple.Source.IPAddressGroups, true, occurrence),
+                                                            ports[subSolution.NetworkTuple.Source.Port],
+                                                            getGroupCIDRs(subSolution.NetworkTuple.Destination.IPAddressGroups, true, occurrence),
+                                                            ports[subSolution.NetworkTuple.Destination.Port]
+                                                        )
+                                    }]
+                                [/#if]
+                                [#break]
+                        [/#switch]
+                        [#break]
+                [/#switch]
+
+                [#if createRuleGroup ]
+                    [@createNetworkFirewallRuleGroup
+                        id=ruleGroupId
+                        name=ruleGroupName
+                        type=subSolution.Inspection
+                        capacity=100
+                        ruleGroup=getNetworkFirewallRuleGroup?with_args(ruleGroupArgs?values)()
+                        tags=getOccurrenceCoreTags(subOccurrence, subCore.FullName)
+                    /]
+                [/#if]
             [/#if]
 
+            [#if subCore.Type == FIREWALL_DESTINATION_COMPONENT_TYPE ]
+
+                [#if ! getExistingReference(firewallId, INTERFACE_ATTRIBUTE_TYPE)?has_content ]
+                    [@warn
+                        message="Firewall must be deployed before destination routes can be added"
+                        detail="Rerun this deployment to complete the setup"
+                        context={
+                            "Firewall" : core.RawId,
+                            "Destination" : subCore.RawId
+                        }
+                    /]
+                    [#continue]
+                [/#if]
+
+                [#local firewallVPCEndpoints = getExistingReference(firewallId, INTERFACE_ATTRIBUTE_TYPE)?split(',') ]
+                [#local firewallZones = firewallVPCEndpoints?map( x -> x?split(":")[0] )]
+
+                [#list subSolution.Links as linkId, link]
+                    [#if link?is_hash]
+
+                        [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+                        [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                        [#if !linkTarget?has_content]
+                            [#continue]
+                        [/#if]
+
+                        [#local linkTargetCore = linkTarget.Core ]
+                        [#local linkTargetConfiguration = linkTarget.Configuration ]
+                        [#local linkTargetResources = linkTarget.State.Resources ]
+                        [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+                        [#switch linkTargetCore.Type]
+                            [#case NETWORK_ROUTE_TABLE_COMPONENT_TYPE]
+
+                                [#if deploymentSubsetRequired(FIREWALL_COMPONENT_TYPE, true)]
+
+                                    [#list subResources["routes"] as zoneId, routes]
+                                        [#local zoneDetails = zones?filter( x -> x.Id == zoneId)?first ]
+
+                                        [#local zoneEndpoint = (
+                                                (firewallVPCEndpoints?filter(x -> x?starts_with("${zoneDetails.AWSZone}:"))[0])?split(":")[1]
+                                            )!"HamletFatal: Endpoint not found for AZ" ]
+
+                                        [#list routes?values as route ]
+                                            [@createRoute
+                                                id=route.Id
+                                                routeTableId=linkTargetResources["routeTables"][zoneId]["routeTable"]["Id"]
+                                                destinationType="vpcendpoint"
+                                                destinationAttribute=zoneEndpoint
+                                                destinationCidr=route.CIDR
+                                                dependencies=[ firewallId ]
+                                            /]
+                                        [/#list]
+                                    [/#list]
+                                [/#if]
+                                [#break]
+                        [/#switch]
+                    [/#if]
+                [/#list]
+            [/#if]
         [/#list]
 
         [#if ! statelessDefaultActions?has_content ]
