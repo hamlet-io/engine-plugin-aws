@@ -18,7 +18,7 @@
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence)]
 
-    [#local legacyVpc = legacyVpc
+    [#local legacyVpc = legacyVpc()
                 && occurrenceNetwork.Link.Tier == "mgmt" && occurrenceNetwork.Link.Component == "vpc"
                 && occurrenceNetwork.Link.Instance == "" && occurrenceNetwork.Link.Version == "" ]
 

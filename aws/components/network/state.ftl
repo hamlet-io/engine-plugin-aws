@@ -5,7 +5,7 @@
     [#local solution = occurrence.Configuration.Solution]
 
     [#-- Only apply legacy controls to the default master data vpc --]
-    [#local legacyVpc = legacyVpc
+    [#local legacyVpc = legacyVpc()
                             && core.Tier.Id == "mgmt" && core.Component.RawId == "vpc"
                             && core.Instance.Id == "" && core.Version.Id = ""]
 
