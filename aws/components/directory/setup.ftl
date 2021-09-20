@@ -41,16 +41,16 @@
         [#case "ActiveDirectory"]
             [#local type = "MicrosoftAD"]
             [#local size = (solution.Size == "Small")?then("Standard","Enterprise")]
-            [#local dnsPorts = [ 
+            [#local dnsPorts = [
                 "dns-tcp", "dns-udp",
                 "globalcatalog",
                 "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
                 "ldap-tcp", "ldap-udp", "ldaps",
-                "netlogin-tcp", "netlogin-udp", 
+                "netlogin-tcp", "netlogin-udp",
                 "ntp",
                 "rpc", "ephemeralrpctcp", "ephemeralrpcudp",
                 "rsync",
-                "smb-tcp", "smb-udp", 
+                "smb-tcp", "smb-udp",
                 "anyicmp"
             ]]
             [#break]
@@ -58,15 +58,15 @@
         [#case "Simple"]
             [#local type = "SimpleAD"]
             [#local size = (solution.Size == "Small")?then("Small","Large")]
-            [#local dnsPorts = [ 
+            [#local dnsPorts = [
                 "dns-tcp", "dns-udp",
                 "globalcatalog",
                 "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
                 "ldap-tcp", "ldap-udp", "ldaps",
-                "netlogin-tcp", "netlogin-udp", 
+                "netlogin-tcp", "netlogin-udp",
                 "ntp",
                 "rsync",
-                "smb-tcp", "smb-udp", 
+                "smb-tcp", "smb-udp",
                 "anyicmp"
             ]]
             [#break]
@@ -79,7 +79,7 @@
             /]
             [#local type = "unknown" ]
             [#local size = "unknown" ]
-            [#local dnsPorts = [ 
+            [#local dnsPorts = [
                 "dns-tcp", "dns-udp"
             ]]
 
@@ -195,7 +195,7 @@
             /]
 
             [@cfOutput
-                formatId(dsId, IP_ADDRESS_ATTRIBUTE_TYPE), 
+                formatId(dsId, IP_ADDRESS_ATTRIBUTE_TYPE),
                 {
                     "Fn::Join": [
                         ",",
@@ -210,9 +210,9 @@
                 false
             /]
 
-[#--
+            [#--
             [@cfOutput
-                formatId(dsId, ALIAS_ATTRIBUTE_TYPE), 
+                formatId(dsId, ALIAS_ATTRIBUTE_TYPE),
                 {
                     "Fn::Join": [
                         ",",
@@ -226,7 +226,7 @@
                 },
                 false
             /]
---]
+            --]
 
         [/#if]
     [/#if]
