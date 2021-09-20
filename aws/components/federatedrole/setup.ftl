@@ -180,7 +180,7 @@
                     "ForAnyValue:StringLike": {
                         "cognito-identity.amazonaws.com:amr": valueIfTrue(
                                                                 "unauthenticated",
-                                                                subCore.Type == "Unauthenticated",
+                                                                subSolution.Type == "Unauthenticated",
                                                                 "authenticated"
                         )
                     }
