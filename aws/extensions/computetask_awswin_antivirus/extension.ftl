@@ -138,8 +138,8 @@
                             "\n",
                             [
                                 "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-step.log -Append ;",
-                                r'echo "Config AntiVirus - config_av.ps1" ;'
-                            ] + config_av + [
+                                r'echo "Config AntiVirus - unconfig_av.ps1" ;'
+                            ] + unconfig_av + [
                                 r"Stop-Transcript | out-null"
                             ]
                         ]
