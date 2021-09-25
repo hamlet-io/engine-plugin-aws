@@ -79,7 +79,7 @@
             ],
             []
         ) +
-        getCLOConfigurationReference()?has_content(
+        getCLOConfigurationReference()?has_content?then(
             [
                 { "Key" : "cot:configuration", "Value" : getCLOConfigurationReference() }
             ],
