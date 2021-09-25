@@ -66,21 +66,37 @@
 [/#function]
 
 [#function getCfTemplateCoreTags name="" tier="" component="" zone="" propagate=false flatten=false maxTagCount=-1]
-    [#local result =
-        [
-            { "Key" : "cot:request", "Value" : getCLORequestReference() }
-        ] +
+    [#local result = [] +
+        getCLORequestReference()?has_content?then(
+            [
+                { "Key" : "cot:request", "Value" : getCLORequestReference() }
+            ],
+            []
+        ) +
         accountObject.CostCentre?has_content?then(
             [
                 { "Key" : "cot:costcentre", "Value" : accountObject.CostCentre }
             ],
             []
         ) +
-        [
-            { "Key" : "cot:configuration", "Value" : getCLOConfigurationReference() },
-            { "Key" : "cot:tenant", "Value" : tenantName },
-            { "Key" : "cot:account", "Value" : accountName }
-        ] +
+        getCLOConfigurationReference()?has_content(
+            [
+                { "Key" : "cot:configuration", "Value" : getCLOConfigurationReference() }
+            ],
+            []
+        ) +
+        tenantName?has_content?then(
+            [
+                { "Key" : "cot:tenant", "Value" : tenantName }
+            ],
+            []
+        ) +
+        accountName?has_content?then(
+            [
+                { "Key" : "cot:account", "Value" : accountName }
+            ],
+            []
+        ) +
         productId?has_content?then(
             [
                 { "Key" : "cot:product", "Value" : productName }
@@ -93,9 +109,12 @@
             ],
             []
         ) +
-        [
-            { "Key" : "cot:category", "Value" : categoryName }
-        ] +
+        categoryName?has_content?then(
+            [
+                { "Key" : "cot:category", "Value" : categoryName }
+            ],
+            []
+        ) +
         segmentId?has_content?then(
             [
                 { "Key" : "cot:segment", "Value" : segmentName }
