@@ -9,22 +9,22 @@
     [#local segmentSeedId = formatSegmentSeedId() ]
     [#local segmentSeed = getExistingReference(segmentSeedId)]
 
-    [#local certificateObject = getCertificateObject(solution.Certificate!"")]
+    [#local certificateObject = getCertificateObject(solution.Hostname!"")]
     [#local certificateDomains = getCertificateDomains(certificateObject) ]
     [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
     [#local hostName = getHostName(certificateObject, occurrence) ]
     [#local fqdn = formatDomainName(hostName, primaryDomainObject) ]
 
-    [#local dnsPorts = [ 
+    [#local dnsPorts = [
         "dns-tcp", "dns-tcp",
         "globalcatalog",
         "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
         "ldap-tcp", "ldap-udp", "ldaps",
-        "netlogin-tcp", "netlogin-udp", 
+        "netlogin-tcp", "netlogin-udp",
         "ntp",
         "rpc", "ephemeralrpctcp", "ephemeralrpcudp",
         "rsync",
-        "smb-tcp", "smb-udp", 
+        "smb-tcp", "smb-udp",
         "anyicmp"
     ]]
 
@@ -54,9 +54,8 @@
             },
             "Attributes" : {
                 "ENGINE" : solution.Engine,
-                "URL" : getExistingReference(id, URL_ATTRIBUTE_TYPE)?ensure_starts_with(solution.RootCredentials.EncryptionScheme),
-                "ENDPOINT" : getExistingReference(id, DNS_ATTRIBUTE_TYPE),
                 "USERNAME" : solution.RootCredentials.Username,
+                "IP_ADDRESSES" : getExistingReference(id, IP_ADDRESS_ATTRIBUTE_TYPE),
                 "PASSWORD" : getExistingReference(rootCredentialResources["secret"].Id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(solution.RootCredentials.EncryptionScheme),
                 "SECRET" : getExistingReference(rootCredentialResources["secret"].Id )
             },
