@@ -373,6 +373,7 @@
             id=rdsOptionGroupId
             type="AWS::RDS::OptionGroup"
             deletionPolicy="Retain"
+            updateReplacePolicy="Retain"
             properties=
                 {
                     "EngineName": engine,

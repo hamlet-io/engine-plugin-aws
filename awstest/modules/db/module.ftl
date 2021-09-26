@@ -47,6 +47,9 @@
             "TestCases" : {
                 "postgresdbbase" : {
                     "OutputSuffix" : "template.json",
+                    "Tools" : {
+                       "CFNLint" : true
+                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -136,6 +139,9 @@
             "TestCases" : {
                 "postgresdbgenerated" : {
                     "OutputSuffix" : "template.json",
+                    "Tools" : {
+                       "CFNLint" : true
+                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -221,6 +227,9 @@
             "TestCases" : {
                 "postgresdbmaintenance" : {
                     "OutputSuffix" : "template.json",
+                    "Tools" : {
+                       "CFNLint" : true
+                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
