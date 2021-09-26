@@ -82,7 +82,7 @@
 [#macro createRDSInstance id name
     engine
     processor
-    availabilityZone
+    zoneId
     subnetGroupId
     parameterGroupId
     optionGroupId
@@ -164,7 +164,7 @@
             },
             ( multiAZ && !clusterMember ),
             {
-                "AvailabilityZone" : getCFAWSAzReference(availabilityZone)
+                "AvailabilityZone" : getCFAWSAzReference(zoneId)
             }
         ) +
         valueIfTrue(
@@ -245,10 +245,6 @@
     updateReplacePolicy="Snapshot"
     maintenanceWindow=""
 ]
-    [#local availabilityZones = []]
-    [#list zones as zone ]
-        [#local availabilityZones += [ zone.AWSZone ] ]
-    [/#list]
 
     [@cfResource
         id=id
@@ -262,7 +258,7 @@
                 "DBSubnetGroupName" : subnetGroupId,
                 "Port" : port,
                 "VpcSecurityGroupIds" : asArray(securityGroupId),
-                "AvailabilityZones" : getCFAWSAzReferences(availabilityZones),
+                "AvailabilityZones" : getCFAWSAzReferences(zones),
                 "Engine" : engine,
                 "EngineVersion" : engineVersion,
                 "BackupRetentionPeriod" : retentionPeriod

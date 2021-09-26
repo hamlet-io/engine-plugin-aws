@@ -168,7 +168,7 @@
                             "dbInstance" + resourceZone.Id + instanceId : {
                                 "Id" : formatId( AWS_RDS_RESOURCE_TYPE, core.Id, resourceZone.Id, instanceId),
                                 "Name" : formatName( core.FullName, resourceZone.Name, instanceId ),
-                                "AvailabilityZone" : resourceZone.AWSZone,
+                                "ZoneId" : resourceZone.Id,
                                 "Type" : AWS_RDS_RESOURCE_TYPE
                             }
                         }
