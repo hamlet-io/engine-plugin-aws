@@ -373,6 +373,7 @@
             id=rdsOptionGroupId
             type="AWS::RDS::OptionGroup"
             deletionPolicy="Retain"
+            updateReplacePolicy="Retain"
             properties=
                 {
                     "EngineName": engine,
@@ -497,7 +498,7 @@
                 [@fatal message="Maintenance window incorrectly configured" context=solution /]
                 [#return]
             [/#if]
-            
+
             [#if auroraCluster ]
 
                 [#if solution.Cluster.ScalingPolicies?has_content ]
@@ -737,7 +738,7 @@
                     [@createRDSInstance
                         id=dbInstance.Id
                         name=dbInstance.Name
-                        availabilityZone=dbInstance.AvailabilityZone
+                        zoneId=dbInstance.ZoneId
                         engine=engine
                         processor=processorProfile.Processor
                         port=portObject.Port
@@ -775,47 +776,47 @@
 
             [#else]
                 [@createRDSInstance
-                        id=rdsId
-                        name=rdsFullName
-                        engine=engine
-                        engineVersion=engineVersion
-                        processor=processorProfile.Processor
-                        size=solution.Size
-                        port=portObject.Port
-                        multiAZ=multiAZ
-                        availabilityZone=zones[0].AWSZone
-                        encrypted=solution.Encrypted
-                        kmsKeyId=cmkKeyId
-                        caCertificate=requiredRDSCA
-                        masterUsername=rdsUsername
-                        masterPassword=rdsPassword
-                        databaseName=rdsDatabaseName
-                        retentionPeriod=solution.Backup.RetentionPeriod
-                        snapshotArn=snapshotArn
-                        subnetGroupId=rdsSubnetGroupId
-                        parameterGroupId=rdsParameterGroupId
-                        optionGroupId=rdsOptionGroupId
-                        securityGroupId=rdsSecurityGroupId
-                        allowMajorVersionUpgrade=solution.AllowMajorVersionUpgrade
-                        autoMinorVersionUpgrade=autoMinorVersionUpgrade
-                        deleteAutomatedBackups=solution.Backup.DeleteAutoBackups
-                        deletionPolicy=deletionPolicy
-                        updateReplacePolicy=updateReplacePolicy
-                        tags=rdsTags
-                        enhancedMonitoring=solution.Monitoring.DetailedMetrics.Enabled
-                        enhancedMonitoringInterval=solution.Monitoring.DetailedMetrics.CollectionInterval
-                        enhancedMonitoringRoleId=monitoringRoleId!""
-                        performanceInsights=solution.Monitoring.QueryPerformance.Enabled
-                        performanceInsightsRetention=solution.Monitoring.QueryPerformance.RetentionPeriod
-                        maintenanceWindow=
-                            solution.MaintenanceWindow.Configured?then(
-                                getAmazonRdsMaintenanceWindow(
-                                    solution.MaintenanceWindow.DayOfTheWeek,
-                                    solution.MaintenanceWindow.TimeOfDay,
-                                    solution.MaintenanceWindow.TimeZone
-                                ),
-                                ""
-                            )
+                    id=rdsId
+                    name=rdsFullName
+                    engine=engine
+                    engineVersion=engineVersion
+                    processor=processorProfile.Processor
+                    size=solution.Size
+                    port=portObject.Port
+                    multiAZ=multiAZ
+                    zoneId=zones[0].Id
+                    encrypted=solution.Encrypted
+                    kmsKeyId=cmkKeyId
+                    caCertificate=requiredRDSCA
+                    masterUsername=rdsUsername
+                    masterPassword=rdsPassword
+                    databaseName=rdsDatabaseName
+                    retentionPeriod=solution.Backup.RetentionPeriod
+                    snapshotArn=snapshotArn
+                    subnetGroupId=rdsSubnetGroupId
+                    parameterGroupId=rdsParameterGroupId
+                    optionGroupId=rdsOptionGroupId
+                    securityGroupId=rdsSecurityGroupId
+                    allowMajorVersionUpgrade=solution.AllowMajorVersionUpgrade
+                    autoMinorVersionUpgrade=autoMinorVersionUpgrade
+                    deleteAutomatedBackups=solution.Backup.DeleteAutoBackups
+                    deletionPolicy=deletionPolicy
+                    updateReplacePolicy=updateReplacePolicy
+                    tags=rdsTags
+                    enhancedMonitoring=solution.Monitoring.DetailedMetrics.Enabled
+                    enhancedMonitoringInterval=solution.Monitoring.DetailedMetrics.CollectionInterval
+                    enhancedMonitoringRoleId=monitoringRoleId!""
+                    performanceInsights=solution.Monitoring.QueryPerformance.Enabled
+                    performanceInsightsRetention=solution.Monitoring.QueryPerformance.RetentionPeriod
+                    maintenanceWindow=
+                        solution.MaintenanceWindow.Configured?then(
+                            getAmazonRdsMaintenanceWindow(
+                                solution.MaintenanceWindow.DayOfTheWeek,
+                                solution.MaintenanceWindow.TimeOfDay,
+                                solution.MaintenanceWindow.TimeZone
+                            ),
+                            ""
+                        )
                     /]
             [/#if]
         [/#if]
