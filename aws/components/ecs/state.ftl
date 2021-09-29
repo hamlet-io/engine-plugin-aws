@@ -94,7 +94,7 @@
     [#else]
         [#local maxSize = processorProfile.MaxPerZone]
         [#if multiAZ]
-            [#local maxSize = maxSize * zones?size]
+            [#local maxSize = maxSize * getZones()?size]
         [/#if]
     [/#if]
 
@@ -234,7 +234,7 @@
     [#local lgId = formatDependentLogGroupId(taskId) ]
     [#local lgName = core.FullAbsolutePath ]
 
-    [#local region = getExistingReference(serviceId, REGION_ATTRIBUTE_TYPE )!regionId ]
+    [#local region = getExistingReference(serviceId, REGION_ATTRIBUTE_TYPE )!getRegion() ]
 
     [#local availablePorts = [  ]]
 

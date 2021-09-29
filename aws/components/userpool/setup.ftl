@@ -709,10 +709,10 @@
                     [
                         r'case ${STACK_OPERATION} in',
                         r'  create|update)',
-                        r'    user_pool_id="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + userPoolId + r' "ref" || return $?)"',
-                        r'    client_id="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + userPoolClientId + r' "ref" || return $?)"',
-                        r'    client_secret="$(aws --region "' + regionId + r'" --output text cognito-idp describe-user-pool-client --user-pool-id "${user_pool_id}" --client-id "${client_id}" --query "UserPoolClient.ClientSecret" || return $?)"',
-                        r'    encrypted_client_secret="$(encrypt_kms_string "' + regionId + r'" ' + r' "${client_secret}" ' + r' "' + cmkKeyArn + r'" || return $?)"'
+                        r'    user_pool_id="$(get_cloudformation_stack_output "' + getRegion() + r'" ' + r' "${STACK_NAME}" ' + userPoolId + r' "ref" || return $?)"',
+                        r'    client_id="$(get_cloudformation_stack_output "' + getRegion() + r'" ' + r' "${STACK_NAME}" ' + userPoolClientId + r' "ref" || return $?)"',
+                        r'    client_secret="$(aws --region "' + getRegion() + r'" --output text cognito-idp describe-user-pool-client --user-pool-id "${user_pool_id}" --client-id "${client_id}" --query "UserPoolClient.ClientSecret" || return $?)"',
+                        r'    encrypted_client_secret="$(encrypt_kms_string "' + getRegion() + r'" ' + r' "${client_secret}" ' + r' "' + cmkKeyArn + r'" || return $?)"'
                     ] +
                     pseudoStackOutputScript(
                         "Userpool Client secret",

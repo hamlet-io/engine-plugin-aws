@@ -156,7 +156,7 @@
 
                     [@createRole
                         id=forwardingRoleId
-                        trustedServices=[  "logs." + regionId + ".amazonaws.com" ]
+                        trustedServices=[  "logs." + getRegion() + ".amazonaws.com" ]
                         policies=[]
                         tags=getCfTemplateCoreTags()
                     /]
@@ -304,7 +304,7 @@
                 [#local widgetProperties =
                     {
                         "metrics" : widgetMetrics,
-                        "region" : regionId,
+                        "region" : getRegion(),
                         "stat" : "Sum",
                         "period": 300,
                         "view" : widget.asGraph?has_content?then(

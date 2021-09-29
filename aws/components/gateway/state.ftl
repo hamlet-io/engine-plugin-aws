@@ -11,14 +11,14 @@
     [#local zoneResources = {}]
 
     [#if multiAZ!false ]
-        [#local resourceZones = zones ]
+        [#local resourceZones = getZones() ]
     [#else]
-        [#local resourceZones = [ zones[0] ]]
+        [#local resourceZones = [ getZones()[0] ]]
     [/#if]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence)]
 
-    [#local legacyVpc = legacyVpc
+    [#local legacyVpc = legacyVpc()
                 && occurrenceNetwork.Link.Tier == "mgmt" && occurrenceNetwork.Link.Component == "vpc"
                 && occurrenceNetwork.Link.Instance == "" && occurrenceNetwork.Link.Version == "" ]
 
@@ -161,7 +161,7 @@
 
                         [#case "zone" ]
 
-                            [#local endpointZone = zones[endpoint.Zone] ]
+                            [#local endpointZone = getZones()[endpoint.Zone] ]
 
                             [#if asArray(zoneResources)?seq_contains( endpointZone.Id )]
                                 [#local zoneResources = mergeObjects(
@@ -316,9 +316,9 @@
     [#local engine = parentSolution.Engine ]
 
     [#if multiAZ!false || ( engine == "vpcendpoint" || engine == "privateservice" ) ]
-        [#local resourceZones = zones ]
+        [#local resourceZones = getZones() ]
     [#else]
-        [#local resourceZones = [zones[0]] ]
+        [#local resourceZones = [getZones()[0]] ]
     [/#if]
 
     [#local resources = {} ]
@@ -352,7 +352,7 @@
 
             [#local endpointZones = {} ]
             [#list resourceZones as zone]
-                [#local networkEndpoints = getNetworkEndpoints(solution.NetworkEndpointGroups, zone.Id, regionId)]
+                [#local networkEndpoints = getNetworkEndpoints(solution.NetworkEndpointGroups, zone.Id, getRegion())]
                 [#list networkEndpoints as id, networkEndpoint  ]
                     [#local endpointTypeZones = endpointZones[id]![] ]
                     [#local endpointZones += { id : endpointTypeZones + [ zone.Id ] }]

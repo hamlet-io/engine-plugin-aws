@@ -33,8 +33,8 @@
         [#-- These volumes are provided through DataVolumes which are an indepdent component --]
         [#-- These are attached to instances through links and VolumeMount macro which applies the extra configuration required --]
         [#local zoneResources = occurrence.State.Resources.Zones]
-        [#list zones as zone]
-            [#if multiAZ || (zones[0].Id = zone.Id)]
+        [#list getZones() as zone]
+            [#if multiAZ || (getZones()[0].Id = zone.Id)]
                 [#local zoneEc2InstanceId = zoneResources[zone.Id]["ec2Instance"].Id ]
                 [#list (_context.VolumeMounts)![] as mountId,volumeMount ]
                     [#local dataVolume = _context.DataVolumes[mountId]!{} ]
@@ -140,9 +140,9 @@
     [/#if]
 
     [@computeTaskConfigSection
-        computeTaskTypes=[ 
-            COMPUTE_TASK_DATA_VOLUME_MOUNTING, 
-            COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING 
+        computeTaskTypes=[
+            COMPUTE_TASK_DATA_VOLUME_MOUNTING,
+            COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING
         ]
         id="VolumeMount"
         priority=1

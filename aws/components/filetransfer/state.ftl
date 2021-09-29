@@ -14,7 +14,7 @@
 
         [#local fqdn = formatDomainName(hostName, primaryDomainObject) ]
     [#else]
-        [#local fqdn = "${getExistingReference(fileServerId)}.server.transfer.${regionId}.amazonaws.com"]
+        [#local fqdn = "${getExistingReference(fileServerId)}.server.transfer.${getRegion()}.amazonaws.com"]
     [/#if]
 
     [#local securityGroupId = formatDependentSecurityGroupId(fileServerId) ]
@@ -33,9 +33,9 @@
 
         [#if publicRouteTable ]
             [#if multiAZ!false ]
-                [#local resourceZones = zones ]
+                [#local resourceZones = getZones() ]
             [#else]
-                [#local resourceZones = [ zones[0] ]]
+                [#local resourceZones = [ getZones()[0] ]]
             [/#if]
 
 

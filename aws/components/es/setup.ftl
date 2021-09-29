@@ -60,7 +60,7 @@
     [#local loggingProfile = getLoggingProfile(occurrence)]
     [#local processorProfile = getProcessor(occurrence, ES_COMPONENT_TYPE)]
     [#local dataNodeCount = multiAZ?then(
-                                    processorProfile.CountPerZone * zones?size,
+                                    processorProfile.CountPerZone * getZones()?size,
                                     processorProfile.CountPerZone
                             )]
 
@@ -269,7 +269,7 @@
                                 content=[
                                     "info \"Syncing snapshot repository....\"",
                                     "aws --region \""
-                                        + regionId + "\" s3 sync --delete --only-show-errors "
+                                        + getRegion() + "\" s3 sync --delete --only-show-errors "
                                         + registryS3Source + " " + snapshotS3Destination
                                 ]
                             /]
@@ -423,7 +423,7 @@
                             {
                                 "ZoneAwarenessEnabled" : true,
                                 "ZoneAwarenessConfig" : {
-                                    "AvailabilityZoneCount" : zones?size
+                                    "AvailabilityZoneCount" : getZones()?size
                                 }
                             },
                             (( !solution.VPCAccess && dataNodeCount > 1 ) || ( solution.VPCAccess && multiAZ )),

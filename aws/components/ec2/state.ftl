@@ -13,7 +13,7 @@
         [#local availablePorts += [ port.Name ]]
     [/#list]
 
-    [#list zones as zone ]
+    [#list getZones() as zone ]
         [#local zoneResources +=
             { zone.Id : {
                 "ec2Instance" : {

@@ -867,7 +867,7 @@
                             attributeIfTrue(
                                 "SSLCertificateId",
                                 classicSSLRequired,
-                                getReference(certificateId, ARN_ATTRIBUTE_TYPE, regionId)
+                                getReference(certificateId, ARN_ATTRIBUTE_TYPE, getRegion())
                             ) +
                             attributeIfContent(
                                 "PolicyNames",

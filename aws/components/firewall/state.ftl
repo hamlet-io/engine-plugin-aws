@@ -138,7 +138,7 @@
     [#local resources = {}]
 
     [#list (solution.Links)?keys as link]
-        [#list zones as zone ]
+        [#list getZones() as zone ]
             [#list solution.IPAddressGroups as IPAddressGroup ]
                 [#if IPAddressGroup?starts_with("_tier")]
                     [#list getGroupCIDRs("${IPAddressGroup}:${zone.Id}", true, occurrence) as cidr ]

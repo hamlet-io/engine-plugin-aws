@@ -89,7 +89,7 @@
         [@addToDefaultBashScriptOutput
             content=
                 getImageFromUrlScript(
-                    regionId,
+                    getRegion(),
                     productName,
                     environmentName,
                     segmentName,
@@ -557,7 +557,7 @@
                     findAsFilesScript("filesToSync", asFiles) +
                     syncFilesToBucketScript(
                         "filesToSync",
-                        regionId,
+                        getRegion(),
                         operationsBucket,
                         getOccurrenceSettingValue(fn, "SETTINGS_PREFIX"),
                         false
@@ -573,7 +573,7 @@
                     ) +
                     syncFilesToBucketScript(
                         "configFiles",
-                        regionId,
+                        getRegion(),
                         operationsBucket,
                         formatRelativePath(
                             getOccurrenceSettingValue(fn, "SETTINGS_PREFIX"),
@@ -592,7 +592,7 @@
                     "# Release ENIs",
                     "info \"Releasing ENIs ... \"",
                     "release_enis" +
-                    " \"" + regionId + "\" " +
+                    " \"" + getRegion() + "\" " +
                     " \"" + fnName + "\" || return $?"
 
                 ] +
@@ -626,7 +626,7 @@
                     findAsFilesScript("filesToSync", asFiles) +
                     syncFilesToBucketScript(
                         "filesToSync",
-                        regionId,
+                        getRegion(),
                         operationsBucket,
                         getOccurrenceSettingValue(fn, "SETTINGS_PREFIX"),
                         true,
@@ -643,7 +643,7 @@
                     ) +
                     syncFilesToBucketScript(
                         "configFiles",
-                        regionId,
+                        getRegion(),
                         operationsBucket,
                         formatRelativePath(
                             getOccurrenceSettingValue(fn, "SETTINGS_PREFIX"),

@@ -16,8 +16,8 @@
 
     [#local segmentSeedId = formatSegmentSeedId() ]
     [#if !(getExistingReference(segmentSeedId)?has_content) ]
-        [#if legacyVpc ]
-            [#local segmentSeedValue = vpc?remove_beginning("vpc-")]
+        [#if legacyVpc() ]
+            [#local segmentSeedValue = vpc()?remove_beginning("vpc-")]
         [#else]
             [#local segmentSeedValue = ( getCLORunId() + accountObject.Seed)[0..(solution.Seed.Length - 1)]  ]
         [/#if]
@@ -240,8 +240,8 @@
                 {
                     "localKeyPair" : {
                         "Id" : formatResourceId(LOCAL_SSH_PRIVATE_KEY_RESOURCE_TYPE, core.Id),
-                        "PrivateKey" : formatName(".aws", accountObject.Id, regionId, core.SubComponent.Name, "prv") + ".pem",
-                        "PublicKey" : formatName(".aws", accountObject.Id, regionId, core.SubComponent.Name, "crt") + ".pem",
+                        "PrivateKey" : formatName(".aws", accountObject.Id, getRegion(), core.SubComponent.Name, "prv") + ".pem",
+                        "PublicKey" : formatName(".aws", accountObject.Id, getRegion(), core.SubComponent.Name, "crt") + ".pem",
                         "Type" : LOCAL_SSH_PRIVATE_KEY_RESOURCE_TYPE
                     },
                     "ec2KeyPair" : {

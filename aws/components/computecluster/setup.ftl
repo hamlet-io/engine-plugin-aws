@@ -70,7 +70,7 @@
             [@addToDefaultBashScriptOutput
                 content=
                     getImageFromUrlScript(
-                        regionId,
+                        getRegion(),
                         productName,
                         environmentName,
                         segmentName,
@@ -195,16 +195,16 @@
                             )
                         ) +
                         s3AccountEncryptionReadPermission(
-                            registryBucket,
+                            registryBucket(),
                             getRegistryPrefix("scripts", occurrence),
-                            registryBucketRegion
+                            registryBucketRegion()
                         ) +
-                        s3ListPermission(codeBucket) +
-                        s3ReadPermission(codeBucket) +
+                        s3ListPermission(codeBucket()) +
+                        s3ReadPermission(codeBucket()) +
                         s3AccountEncryptionReadPermission(
-                            codeBucket,
+                            codeBucket(),
                             "*",
-                            codeBucketRegion
+                            codeBucketRegion()
                         ) +
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +

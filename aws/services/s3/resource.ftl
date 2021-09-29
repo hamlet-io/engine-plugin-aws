@@ -382,7 +382,7 @@
 
     [#-- Enabling logging on the audit bucket would cause an infinite loop --]
     [#if formatAccountS3Id("audit") != id ]
-        [#if getExistingReference(formatAccountS3Id("audit"), "", regionId )?has_content ]
+        [#if getExistingReference(formatAccountS3Id("audit"), "", getRegion() )?has_content ]
             [#local loggingConfiguration = getS3LoggingConfiguration(
                                     getExistingReference(formatAccountS3Id("audit")),
                                     name) ]

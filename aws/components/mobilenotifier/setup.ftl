@@ -214,7 +214,7 @@
                             "       split_cli_file \"$\{CLI}\" \"$\{tmpdir}\" || return $?",
                             "       info \"Deploying SNS PlatformApp: " + core.SubComponent.Name + "\"",
                             "       platform_app_arn=\"$(deploy_sns_platformapp" +
-                            "       \"" + regionId + "\" " +
+                            "       \"" + getRegion() + "\" " +
                             "       \"" + platformAppName + "\" " +
                             "       \"" + platformArn + "\" " +
                             "       \"" + encryptionScheme + "\" " +
@@ -227,7 +227,7 @@
                             {
                                 platformAppId : core.Name,
                                 formatId(platformAppId, ARN_ATTRIBUTE_TYPE) : "$\{platform_app_arn}",
-                                formatId(platformAppId, REGION_ATTRIBUTE_TYPE) : regionId
+                                formatId(platformAppId, REGION_ATTRIBUTE_TYPE) : getRegion()
                             },
                             core.SubComponent.Id
                         ) +
@@ -237,7 +237,7 @@
                             "       # Delete SNS Platform Application",
                             "       info \"Deleting SNS Platform App " + core.SubComponent.Name + "\" ",
                             "       delete_sns_platformapp" +
-                            "       \"" + regionId + "\" " +
+                            "       \"" + getRegion() + "\" " +
                             "       \"" + platformArn + "\" "
                             "   ;;",
                             "   esac"
@@ -257,7 +257,7 @@
                         "  create|update)",
                         "       info \"Cleaning up platforms that have been removed from config\"",
                         "       cleanup_sns_platformapps " +
-                        "       \"" + regionId + "\" " +
+                        "       \"" + getRegion() + "\" " +
                         "       \"" + platformAppName + "\" " +
                         "       '" + getJSON(deployedPlatformAppArns, false) + "' || return $?",
                         "       ;;",

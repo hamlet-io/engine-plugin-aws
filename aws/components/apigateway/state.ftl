@@ -97,7 +97,7 @@ created in either case.
 
     [#local region = contentIfContent(
                         getExistingReference(apiId, REGION_ATTRIBUTE_TYPE),
-                        regionId
+                        getRegion()
                     )]
     [#-- The AWS assigned domain for the API --]
     [#local internalFqdn =

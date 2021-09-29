@@ -128,7 +128,7 @@
                 )
         /]
 
-        [#list zones as zone ]
+        [#list getZones() as zone ]
             [#local zoneEfsMountTargetId   = zoneResources[zone.Id]["efsMountTarget"].Id]
             [@createEFSMountTarget
                 id=zoneEfsMountTargetId

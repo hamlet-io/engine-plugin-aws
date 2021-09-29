@@ -47,7 +47,7 @@
     [#local lgFailureId = formatMobileNotifierLogGroupId(engine, name, true) ]
     [#local lgFailureName = formatMobileNotifierLogGroupName(engine, name, true)]
 
-    [#local region = contentIfContent(getExistingReference(id, REGION_ATTRIBUTE_TYPE), regionId) ]
+    [#local region = contentIfContent(getExistingReference(id, REGION_ATTRIBUTE_TYPE), getRegion()) ]
 
     [#local logMetrics = {} ]
     [#list solution.LogMetrics as name,logMetric ]
@@ -103,7 +103,7 @@
             "Attributes" : {
                 "ARN" : (engine == MOBILENOTIFIER_SMS_ENGINE)?then(
                             formatArn(
-                                regionObject.Partition,
+                                getRegionObject().Partition,
                                 "sns",
                                 region,
                                 accountObject.ProviderId,

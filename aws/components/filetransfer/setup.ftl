@@ -56,7 +56,7 @@
                     r'  delete)',
                     r'    info "Removing security group from transfer vpc endpoint..."',
                     r'    manage_transfer_security_groups' +
-                    r'     "' + regionId + r'" ' +
+                    r'     "' + getRegion() + r'" ' +
                     r'     "${STACK_OPERATION}" ' +
                     r'     "${STACK_NAME}" ' +
                     r'     "' + securityGroupId + r'" ' +
@@ -176,9 +176,9 @@
         [/#if]
 
         [#if multiAZ!false ]
-            [#local resourceZones = zones ]
+            [#local resourceZones = getZones() ]
         [#else]
-            [#local resourceZones = [ zones[0] ]]
+            [#local resourceZones = [ getZones()[0] ]]
         [/#if]
 
         [#local subnets = resourceZones?map( zone -> getSubnets(core.Tier, networkResources, zone.Id)[0] ) ]
@@ -209,7 +209,7 @@
                     r'  create|update)',
                     r'    info "Assigning security group to transfer vpc endpoint..."',
                     r'    manage_transfer_security_groups' +
-                    r'     "' + regionId + r'" ' +
+                    r'     "' + getRegion() + r'" ' +
                     r'     "${STACK_OPERATION}" ' +
                     r'     "${STACK_NAME}" ' +
                     r'     "' + securityGroupId + r'" ' +

@@ -60,7 +60,7 @@
             [@addToDefaultBashScriptOutput
                 content=
                     getImageFromUrlScript(
-                        regionId,
+                        getRegion(),
                         productName,
                         environmentName,
                         segmentName,
@@ -81,13 +81,13 @@
     [#local vpcId = networkResources["vpc"].Id ]
 
     [#local parameterValues = {
-            "_AWS_REGION" : regionId,
-            "_AVAILABILITY_ZONE" : zones[0].AWSZone,
+            "_AWS_REGION" : getRegion(),
+            "_AVAILABILITY_ZONE" : getZones()[0].AWSZone,
             "_VPC_ID" : getExistingReference(vpcId),
             "_SUBNET_ID" : getSubnets(core.Tier, networkResources)[0],
             "_SSH_KEY_PAIR" : getExistingReference(sshKeyPairId, NAME_ATTRIBUTE_TYPE),
             "_INSTANCE_TYPE_EC2" : ec2ProcessorProfile.Processor,
-            "_INSTANCE_IMAGE_EC2" : regionObject.AMIs.Centos.EC2,
+            "_INSTANCE_IMAGE_EC2" : getRegionObject().AMIs.Centos.EC2,
             "_INSTANCE_TYPE_EMR" : emrProcessorProfile.Processor,
             "_INSTANCE_COUNT_EMR_CORE" : emrProcessorProfile.DesiredCorePerZone?c,
             "_INSTANCE_COUNT_EMR_TASK" : emrProcessorProfile.DesiredCorePerZone?c,
@@ -297,7 +297,7 @@
                     findAsFilesScript("filesToSync", asFiles) +
                     syncFilesToBucketScript(
                         "filesToSync",
-                        regionId,
+                        getRegion(),
                         operationsBucket,
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX")
                     ) /]
@@ -309,7 +309,7 @@
             content=
                 getBuildScript(
                     "pipelineFiles",
-                    regionId,
+                    getRegion(),
                     "pipeline",
                     productName,
                     occurrence,
@@ -318,7 +318,7 @@
                 ) +
                 syncFilesToBucketScript(
                     "pipelineFiles",
-                    regionId,
+                    getRegion(),
                     operationsBucket,
                     formatRelativePath(
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
@@ -340,13 +340,13 @@
                     r'       # Create Data pipeline',
                     r'       info "Applying cli level configurtion"',
                     r'       pipelineId="$(create_data_pipeline' +
-                    r'       "' + regionId + r'" ' +
+                    r'       "' + getRegion() + r'" ' +
                     r'       "${tmpdir}/cli-' +
                                 pipelineId + r'-' + pipelineCreateCommand + r'.json")"',
                     r'       # Add Pipeline Definition',
                     r'       info "Updating pipeline definition"',
                     r'       update_data_pipeline' +
-                    r'       "' + regionId + r'" ' +
+                    r'       "' + getRegion() + r'" ' +
                     r'       "${pipelineId}" ' +
                     r'       "${tmpdir}/pipeline/pipeline-definition.json" ' +
                     r'       "${tmpdir}/pipeline/pipeline-parameters.json" ' +

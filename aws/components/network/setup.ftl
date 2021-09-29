@@ -288,7 +288,7 @@
 
                 [#local tierSubnetIdRefs = []]
 
-                [#list zones as zone]
+                [#list getZones() as zone]
 
                     [#if zoneSubnets[zone.Id]?has_content]
 
@@ -360,7 +360,7 @@
 
             [#local zoneRouteTables = resources["routeTables"] ]
 
-            [#list zones as zone ]
+            [#list getZones() as zone ]
 
                 [#if zoneRouteTables[zone.Id]?has_content ]
                     [#local zoneRouteTableResources = zoneRouteTables[zone.Id] ]

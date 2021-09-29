@@ -335,7 +335,7 @@
                                     ) +
                                     syncFilesToBucketScript(
                                         "rootCAFile",
-                                        regionId,
+                                        getRegion(),
                                         operationsBucket,
                                         mutualTLSTrustPrefix,
                                         false
@@ -372,7 +372,7 @@
                                     findAsFilesScript("filesToSync", asFiles) +
                                     syncFilesToBucketScript(
                                         "filesToSync",
-                                        regionId,
+                                        getRegion(),
                                         operationsBucket,
                                         mutualTLSTrustPrefix
                                         false
@@ -569,7 +569,7 @@
                                 ".",
                                 [
                                     getReference(apiId),
-                                    "execute-api." + regionId + ".amazonaws.com"
+                                    "execute-api." + getRegion() + ".amazonaws.com"
                                 ]
                             ]
                         }
@@ -655,7 +655,7 @@
                         {
                             "RegionalCertificateArn":
                                 contentIfContent(
-                                    getArn(value["domain"].CertificateId, true, regionId)
+                                    getArn(value["domain"].CertificateId, true, getRegion())
                                     "HamletFatal: Could not find certificate " + value["domain"].CertificateId
                                 ),
                             "EndpointConfiguration" : {
@@ -829,7 +829,7 @@
                         ] +
                         syncFilesToBucketScript(
                             "clear_bucket_files",
-                            regionId,
+                            getRegion(),
                             value["bucket"].Name,
                             ""
                         )
@@ -859,7 +859,7 @@
                     "   # Fetch the apidoc file",
                     "   info \"Building API Specification Document\"",
                     "   copyFilesFromBucket" + " " +
-                        regionId + " " +
+                        getRegion() + " " +
                         operationsBucket + " " +
                         openapiFileLocation + " " +
                     "   \"$\{tmpdir}\" || return $?"
@@ -929,13 +929,13 @@
                 ] +
                 syncFilesToBucketScript(
                     "clear_bucket_files",
-                    regionId,
+                    getRegion(),
                     getExistingReference(legacyId, NAME_ATTRIBUTE_TYPE),
                     ""
                 ) +
                 [
                     "deleteBucket" + " " +
-                        regionId + " " +
+                        getRegion() + " " +
                         getExistingReference(legacyId, NAME_ATTRIBUTE_TYPE) + " " +
                         "|| return $?"
                 ]
@@ -952,7 +952,7 @@
             [@addToDefaultBashScriptOutput
                 content=
                     getImageFromUrlScript(
-                        regionId,
+                        getRegion(),
                         productName,
                         environmentName,
                         segmentName,
@@ -972,7 +972,7 @@
                 content=
                     getBuildScript(
                         "openapiFiles",
-                        regionId,
+                        getRegion(),
                         buildRegistry,
                         productName,
                         occurrence,
@@ -986,7 +986,7 @@
                                 "\"" + core.Name + "\"" + " " +
                                 "\"" + accountId + "\"" + " " +
                                 "\"" + accountObject.ProviderId + "\"" + " " +
-                                "\"" + regionId + "\"" + " || return $?",
+                                "\"" + getRegion() + "\"" + " || return $?",
                         "#"
 
                     ]
@@ -1011,7 +1011,7 @@
                 [#local openapiContext =
                     {
                         "Account" : accountObject.ProviderId,
-                        "Region" : regionId,
+                        "Region" : getRegion(),
                         "CognitoPools" : cognitoPools,
                         "LambdaAuthorizers" : lambdaAuthorizers,
                         "PrivateHTTPEndpoints" : privateHTTPEndpoints,
@@ -1078,7 +1078,7 @@
                 ) +
                 syncFilesToBucketScript(
                     "configFiles",
-                    regionId,
+                    getRegion(),
                     operationsBucket,
                     formatRelativePath(
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
@@ -1099,7 +1099,7 @@
                 ) +
                 syncFilesToBucketScript(
                     "configFiles",
-                    regionId,
+                    getRegion(),
                     operationsBucket,
                     formatRelativePath(
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
@@ -1125,7 +1125,7 @@
                         "DEFINITION_FILE=$( get_openapi_definition_filename " +
                                 "\"" + core.Name + "\"" + " " +
                                 "\"" + accountId + "\"" + " " +
-                                "\"" + regionId + "\"" + " )",
+                                "\"" + getRegion() + "\"" + " )",
                         "#"
                     ] +
                     getLocalFileScript(
@@ -1139,7 +1139,7 @@
                     content=
                         syncFilesToBucketScript(
                             "referenceFiles",
-                            regionId,
+                            getRegion(),
                             operationsBucket,
                             formatRelativePath(
                                 lambdaAuthorizer.SettingsPrefix,

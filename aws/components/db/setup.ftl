@@ -259,7 +259,7 @@
                     [
                         "# Check Snapshot MasterUserName",
                         "check_rds_snapshot_username" +
-                        " \"" + regionId + "\" " +
+                        " \"" + getRegion() + "\" " +
                         " \"" + rdsManualSnapshot + "\" " +
                         " \"" + rdsUsername + "\" || return $?"
                     ],
@@ -271,7 +271,7 @@
                         "function create_deploy_snapshot() {",
                         "info \"Creating Pre-Deployment snapshot... \"",
                         "create_snapshot" +
-                        " \"" + regionId + "\" " +
+                        " \"" + getRegion() + "\" " +
                         " \"" + hostType + "\" " +
                         " \"" + rdsFullName + "\" " +
                         " \"" + rdsPreDeploySnapshotId + "\" || return $?"
@@ -296,7 +296,7 @@
                         "function convert_plaintext_snapshot() {",
                         "info \"Checking Snapshot Encryption... \"",
                         "encrypt_snapshot" +
-                        " \"" + regionId + "\" " +
+                        " \"" + getRegion() + "\" " +
                         " \"" + hostType + "\" " +
                         " \"" + rdsPreDeploySnapshotId + "\" " +
                         " \"" + cmkKeyArn + "\" || return $?",
@@ -784,7 +784,7 @@
                     size=solution.Size
                     port=portObject.Port
                     multiAZ=multiAZ
-                    zoneId=zones[0].Id
+                    zoneId=getZones()[0].Id
                     encrypted=solution.Encrypted
                     kmsKeyId=cmkKeyId
                     caCertificate=requiredRDSCA
@@ -837,14 +837,14 @@
                     "case $\{STACK_OPERATION} in",
                     "  create|update)"
                     "       rds_hostname=\"$(get_rds_hostname" +
-                    "       \"" + regionId + "\" " +
+                    "       \"" + getRegion() + "\" " +
                     "       \"" + hostType + "\" " +
                     "       \"" + rdsFullName + "\" || return $?)\""
                 ] +
                 auroraCluster?then(
                     [
                         "       rds_read_hostname=\"$(get_rds_hostname" +
-                        "       \"" + regionId + "\" " +
+                        "       \"" + getRegion() + "\" " +
                         "       \"" + hostType + "\" " +
                         "       \"" + rdsFullName + "\" " +
                         "       \"read\" || return $?)\""
@@ -859,12 +859,12 @@
                         "master_password=\"$(generateComplexString" +
                         " \"" + rdsPasswordLength + "\" )\"",
                         "encrypted_master_password=\"$(encrypt_kms_string" +
-                        " \"" + regionId + "\" " +
+                        " \"" + getRegion() + "\" " +
                         " \"$\{master_password}\" " +
                         " \"" + cmkKeyArn + "\" || return $?)\"",
                         "info \"Setting Master Password... \"",
                         "set_rds_master_password" +
-                        " \"" + regionId + "\" " +
+                        " \"" + getRegion() + "\" " +
                         " \"" + hostType + "\" " +
                         " \"" + rdsFullName + "\" " +
                         " \"$\{master_password}\" || return $?"
@@ -884,7 +884,7 @@
                         " \"" + (portObject.Port)?c + "\" " +
                         " \"" + rdsDatabaseName + "\" || return $?)\"",
                         "encrypted_rds_url=\"$(encrypt_kms_string" +
-                        " \"" + regionId + "\" " +
+                        " \"" + getRegion() + "\" " +
                         " \"$\{rds_url}\" " +
                         " \"" + cmkKeyArn + "\" || return $?)\""
                     ] +
@@ -899,7 +899,7 @@
                             " \"" + (portObject.Port)?c + "\" " +
                             " \"" + rdsDatabaseName + "\" || return $?)\"",
                             "encrypted_rds_read_url=\"$(encrypt_kms_string" +
-                            " \"" + regionId + "\" " +
+                            " \"" + getRegion() + "\" " +
                             " \"$\{rds_read_url}\" " +
                             " \"" + cmkKeyArn + "\" || return $?)\""
                         ],
@@ -926,11 +926,11 @@
                         "info \"Getting Master Password... \"",
                         "encrypted_master_password=\"" + rdsEncryptedPassword + "\"",
                         "master_password=\"$(decrypt_kms_string" +
-                        " \"" + regionId + "\" " +
+                        " \"" + getRegion() + "\" " +
                         " \"$\{encrypted_master_password}\" || return $?)\"",
                         "info \"Resetting Master Password... \"",
                         "set_rds_master_password" +
-                        " \"" + regionId + "\" " +
+                        " \"" + getRegion() + "\" " +
                         " \"" + hostType + "\" " +
                         " \"" + rdsFullName + "\" " +
                         " \"$\{master_password}\" || return $?",
@@ -943,7 +943,7 @@
                         " \"" + (portObject.Port)?c + "\" " +
                         " \"" + rdsDatabaseName + "\" || return $?)\"",
                         "encrypted_rds_url=\"$(encrypt_kms_string" +
-                        " \"" + regionId + "\" " +
+                        " \"" + getRegion() + "\" " +
                         " \"$\{rds_url}\" " +
                         " \"" + cmkKeyArn + "\" || return $?)\""
                     ] +
@@ -958,7 +958,7 @@
                             " \"" + (portObject.Port)?c + "\" " +
                             " \"" + rdsDatabaseName + "\" || return $?)\"",
                             "encrypted_rds_read_url=\"$(encrypt_kms_string" +
-                            " \"" + regionId + "\" " +
+                            " \"" + getRegion() + "\" " +
                             " \"$\{rds_read_url}\" " +
                             " \"" + cmkKeyArn + "\" || return $?)\""
                         ],

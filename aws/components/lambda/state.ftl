@@ -35,7 +35,7 @@
         [#local versionId = versionOutputId]
     [/#if]
 
-    [#local region = getExistingReference(id, REGION_ATTRIBUTE_TYPE)!regionId]
+    [#local region = getExistingReference(id, REGION_ATTRIBUTE_TYPE)!getRegion()]
 
     [#local lgId = formatLogGroupId(core.Id)]
     [#local lgName = formatAbsolutePath("aws", "lambda", core.FullName)]
@@ -99,7 +99,7 @@
                             getExistingReference(versionOutputId),
                             fixedCodeVersion
                             formatArn(
-                                regionObject.Partition,
+                                getRegionObject().Partition,
                                 "lambda",
                                 region,
                                 accountObject.ProviderId,

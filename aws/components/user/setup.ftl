@@ -86,7 +86,7 @@
                 "case $\{STACK_OPERATION} in",
                 "  delete)",
                 "   manage_iam_userpassword" +
-                "   \"" + regionId + "\" " +
+                "   \"" + getRegion() + "\" " +
                 "   \"delete\" " +
                 "   \"" + userName + "\" || return $?",
                 "   ;;",
@@ -102,7 +102,7 @@
                     findAsFilesScript("filesToSync", asFiles) +
                     syncFilesToBucketScript(
                         "filesToSync",
-                        regionId,
+                        getRegion(),
                         operationsBucket,
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX")
                     ) /]
@@ -271,16 +271,16 @@
                     "function generate_iam_accesskey() {",
                     "info \"Generating IAM AccessKey... \"",
                     "access_key=\"$(create_iam_accesskey" +
-                    " \"" + regionId + "\" " +
+                    " \"" + getRegion() + "\" " +
                     " \"" + userName + "\" || return $?)\"",
                     "access_key_array=($access_key)",
                     "encrypted_secret_key=\"$(encrypt_kms_string" +
-                    " \"" + regionId + "\" " +
+                    " \"" + getRegion() + "\" " +
                     " \"$\{access_key_array[1]}\" " +
                     " \"" + cmkKeyArn + "\" || return $?)\"",
                     "smtp_password=\"$(get_iam_smtp_password \"$\{access_key_array[1]}\" )\"",
                     "encrypted_smtp_password=\"$(encrypt_kms_string" +
-                    " \"" + regionId + "\" " +
+                    " \"" + getRegion() + "\" " +
                     " \"$\{smtp_password}\" " +
                     " \"" + cmkKeyArn + "\" || return $?)\""
                 ] +
@@ -306,12 +306,12 @@
                     "user_password=\"$(generateComplexString" +
                     " \"" + userPasswordLength + "\" )\"",
                     "encrypted_user_password=\"$(encrypt_kms_string" +
-                    " \"" + regionId + "\" " +
+                    " \"" + getRegion() + "\" " +
                     " \"$\{user_password}\" " +
                     " \"" + cmkKeyArn + "\" || return $?)\"",
                     "info \"Setting User Password... \"",
                     "manage_iam_userpassword" +
-                    " \"" + regionId + "\" " +
+                    " \"" + getRegion() + "\" " +
                     " \"manage\" " +
                     " \"" + userName + "\" " +
                     " \"$\{user_password}\" || return $?"
