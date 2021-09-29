@@ -104,9 +104,9 @@
 
         [#-- Calcuate the number of fixed instances required --]
         [#if multiAZ!false ]
-            [#local resourceZones = zones ]
+            [#local resourceZones = getZones() ]
         [#else]
-            [#local resourceZones = [zones[0]] ]
+            [#local resourceZones = [getZones()[0]] ]
         [/#if]
 
         [#local processor = getProcessor(
@@ -133,7 +133,7 @@
         [#if solution.Cluster.ScalingPolicies?has_content ]
 
             [#-- Autoscaling requires 2 fixed instances at all times so we force it to be set --]
-            [#local resourceZones = zones[0..1]]
+            [#local resourceZones = getZones()[0..1]]
             [#local instancesPerZone = 1 ]
 
             [#local autoScaling +=

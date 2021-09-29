@@ -167,7 +167,7 @@
     computeTaskConfig
     environmentId
     keyPairId
-    sshFromProxy=sshFromProxySecurityGroup
+    sshFromProxy=sshFromProxySecurityGroup()
     dependencies=""
     outputId=""
 ]
@@ -303,38 +303,38 @@
 ]
 
     [#if processorProfile.MaxCount?has_content ]
-        [#assign maxSize = processorProfile.MaxCount ]
+        [#local maxSize = processorProfile.MaxCount ]
     [#else]
-        [#assign maxSize = processorProfile.MaxPerZone]
+        [#local maxSize = processorProfile.MaxPerZone]
         [#if multiAZ]
-            [#assign maxSize = maxSize * zones?size]
+            [#local maxSize = maxSize * getZones()?size]
         [/#if]
     [/#if]
 
     [#if processorProfile.MinCount?has_content ]
-        [#assign minSize = processorProfile.MinCount ]
+        [#local minSize = processorProfile.MinCount ]
     [#else]
-        [#assign minSize = processorProfile.MinPerZone]
+        [#local minSize = processorProfile.MinPerZone]
         [#if multiAZ]
-            [#assign minSize = minSize * zones?size]
+            [#local minSize = minSize * getZones()?size]
         [/#if]
     [/#if]
 
     [#if maxSize <= autoScalingConfig.MinUpdateInstances ]
-        [#assign maxSize = maxSize + autoScalingConfig.MinUpdateInstances ]
+        [#local maxSize = maxSize + autoScalingConfig.MinUpdateInstances ]
     [/#if]
 
-    [#assign desiredCapacity = processorProfile.DesiredCount!multiAZ?then(
-                    processorProfile.DesiredPerZone * zones?size,
+    [#local desiredCapacity = processorProfile.DesiredCount!multiAZ?then(
+                    processorProfile.DesiredPerZone * getZones()?size,
                     processorProfile.DesiredPerZone
     )]
 
-    [#assign autoscalingMinUpdateInstances = autoScalingConfig.MinUpdateInstances ]
+    [#local autoscalingMinUpdateInstances = autoScalingConfig.MinUpdateInstances ]
     [#if hibernate ]
-        [#assign minSize = 0 ]
-        [#assign desiredCapacity = 0 ]
-        [#assign maxSize = 1]
-        [#assign autoscalingMinUpdateInstances = 0 ]
+        [#local minSize = 0 ]
+        [#local desiredCapacity = 0 ]
+        [#local maxSize = 1]
+        [#local autoscalingMinUpdateInstances = 0 ]
     [/#if]
 
     [#-- The startup hook is a default hook that we use for cloud task processing --]
@@ -501,7 +501,7 @@
             [#local OSFamily = imageConfiguration["Source:Reference"]["OS"]]
             [#local OSType = imageConfiguration["Source:Reference"]["Type"]]
 
-            [#local imageId = regionObject.AMIs[OSFamily][OSType]]
+            [#local imageId = getRegionObject().AMIs[OSFamily][OSType]]
             [#break]
 
         [#case "aws:AMI"]

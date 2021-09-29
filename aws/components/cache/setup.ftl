@@ -47,7 +47,7 @@
 
     [#local countPerZone = processorProfile.CountPerZone]
     [#local awsZones = [] ]
-    [#list zones as zone]
+    [#list getZones() as zone]
         [#list 1..countPerZone as i]
             [#local awsZones += [zone.AWSZone] ]
         [/#list]
@@ -201,12 +201,12 @@
                     multiAZ?then(
                         {
                             "AZMode": "cross-az",
-                            "PreferredAvailabilityZones" : getCFAWSAzReferences(zones?map( x -> x.Id)),
-                            "NumCacheNodes" : processorProfile.CountPerZone * zones?size
+                            "PreferredAvailabilityZones" : getCFAWSAzReferences(getZones()?map( x -> x.Id)),
+                            "NumCacheNodes" : processorProfile.CountPerZone * getZones()?size
                         },
                         {
                             "AZMode": "single-az",
-                            "PreferredAvailabilityZone" : getCFAWSAzReference(zones[0].Id),
+                            "PreferredAvailabilityZone" : getCFAWSAzReference(getZones()[0].Id),
                             "NumCacheNodes" : processorProfile.CountPerZone
                         }
                     ) +

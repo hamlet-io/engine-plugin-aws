@@ -467,13 +467,13 @@
                                                     r'       # Create Data pipeline',
                                                     r'       info "Applying cli level configurtion"',
                                                     r'       update_vpn_options ' +
-                                                    r'       "' + regionId + r'" ' +
+                                                    r'       "' + getRegion() + r'" ' +
                                                     r'       "${STACK_NAME}"' +
                                                     r'       "' + vpnConnectionId + r'" ' +
                                                     r'       "${tmpdir}/cli-' +
                                                                 vpnConnectionId + "-" + vpnOptionsCommand + r'.json" || return $?'
                                                     r'      tunnel_ips=$(get_vpn_connection_tunnel_ips ' +
-                                                    r'       "' + regionId + r'" ' +
+                                                    r'       "' + getRegion() + r'" ' +
                                                     r'       "${STACK_NAME}"' +
                                                     r'       "' + vpnConnectionId + r'" )',
                                                     r'      tunnel_ip_1="${tunnel_ips[0]}"',
@@ -541,7 +541,7 @@
                                             [#if multiAZ ]
                                                 [#local natGatewayId = (zoneResources[zone]["natGateway"]).Id]
                                             [#else]
-                                                [#local natGatewayId = (zoneResources[(zones[0].Id)]["natGateway"]).Id]
+                                                [#local natGatewayId = (zoneResources[(getZones()[0].Id)]["natGateway"]).Id]
                                             [/#if]
                                             [#list cidrs as cidr ]
                                                 [@createRoute
@@ -625,7 +625,7 @@
                                                     [#if multiAZ ]
                                                         [#local gateway = zoneResources[zone]["endpoint"] ]
                                                     [#else]
-                                                        [#local gateway = zoneResources[zones[0]]["endpoint"] ]
+                                                        [#local gateway = zoneResources[getZones()[0]]["endpoint"] ]
                                                     [/#if]
                                                     [#break]
 
@@ -659,7 +659,7 @@
                                 [#local zoneGroups = {}]
                                 [#list solution.IPAddressGroups as IPAddressGroup ]
                                     [#if IPAddressGroup?starts_with("_tier") ]
-                                        [#list zones as zone ]
+                                        [#list getZones() as zone ]
                                             [#local zoneGroups += {
                                                 zone.AWSZone : combineEntities((zoneGroups[zone.AWSZone])![], [ getIPAddressGroup("${IPAddressGroup}:${zone.Id}", subOccurrence)], APPEND_COMBINE_BEHAVIOUR )
                                             }]

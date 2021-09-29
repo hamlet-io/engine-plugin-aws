@@ -38,9 +38,9 @@
             [#assign componentState +=
                 {
                     "Attributes" : {
-                        "REGION" : regionId,
+                        "REGION" : getRegion(),
                         "FROM" : hostName + "@" + formatDomainName(primaryDomainObject),
-                        "ENDPOINT" : formatDomainName("email", regionId, "amazonaws", "com")
+                        "ENDPOINT" : formatDomainName("email", getRegion(), "amazonaws", "com")
                     },
                     "Roles" : {
                         "Outbound" : {
@@ -57,8 +57,8 @@
             [#assign componentState +=
                 {
                     "Attributes" : {
-                        "RULESET" : getExistingReference(formatSESReceiptRuleSetId(), NAME_ATTRIBUTE_TYPE, regionId),
-                        "REGION" : regionId
+                        "RULESET" : getExistingReference(formatSESReceiptRuleSetId(), NAME_ATTRIBUTE_TYPE, getRegion()),
+                        "REGION" : getRegion()
                     }
                 }
             ]

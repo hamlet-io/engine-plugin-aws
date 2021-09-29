@@ -20,7 +20,7 @@
     [#list solution.Regions as region ]
         [#switch region ]
             [#case "_product" ]
-                [#local regionIds += [ regionId ]]
+                [#local regionIds += [ getRegion() ]]
                 [#break]
 
             [#case "_all"]
@@ -57,12 +57,12 @@
             [#local destinationLink = (destination["Link"])!{} ]
             [#local explicitAddress = (destination["Address"])!"" ]
 
-            [#if regionId != "us-east-1" ]
+            [#if getRegion() != "us-east-1" ]
                 [@fatal
                     message="Simple Health checks must be deployed to us-east-1 in AWS"
                     context={
                         "HealthCheckId" : occurrence.Core.Id,
-                        "Region" : regionId
+                        "Region" : getRegion()
                     }
                 /]
             [/#if]
@@ -186,7 +186,7 @@
                 [@addToDefaultBashScriptOutput
                     content=
                         getImageFromUrlScript(
-                            regionId,
+                            getRegion(),
                             productName,
                             environmentName,
                             segmentName,
@@ -456,7 +456,7 @@
                             findAsFilesScript("filesToSync", asFiles) +
                             syncFilesToBucketScript(
                                 "filesToSync",
-                                regionId,
+                                getRegion(),
                                 operationsBucket,
                                 getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
                                 false
@@ -475,7 +475,7 @@
                             findAsFilesScript("filesToSync", asFiles) +
                             syncFilesToBucketScript(
                                 "filesToSync",
-                                regionId,
+                                getRegion(),
                                 operationsBucket,
                                 getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
                                 true

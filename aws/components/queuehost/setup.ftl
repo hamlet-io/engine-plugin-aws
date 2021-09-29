@@ -212,13 +212,13 @@
                 r'case ${STACK_OPERATION} in',
                 r'  create|update)',
                 r'    info "Generating Encrypted Url"',
-                r'    secret_arn="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + resources["rootCredentials"]["secret"].Id + r' "ref" || return $?)"',
-                r'    amqp_endopoint="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + brokerId + r' "dns" || return $?)"',
-                r'    secret_content="$(aws --region "' + regionId + r'" --output text secretsmanager get-secret-value --secret-id "${secret_arn}" --query "SecretString" || return $?)"',
+                r'    secret_arn="$(get_cloudformation_stack_output "' + getRegion() + r'" ' + r' "${STACK_NAME}" ' + resources["rootCredentials"]["secret"].Id + r' "ref" || return $?)"',
+                r'    amqp_endopoint="$(get_cloudformation_stack_output "' + getRegion() + r'" ' + r' "${STACK_NAME}" ' + brokerId + r' "dns" || return $?)"',
+                r'    secret_content="$(aws --region "' + getRegion() + r'" --output text secretsmanager get-secret-value --secret-id "${secret_arn}" --query "SecretString" || return $?)"',
                 r'    username="' + solution.RootCredentials.Username + r'"',
                 r'    password="$( echo "${secret_content}" | jq -r ".' + passwordSecretKey + r'")"',
                 r'    url="${amqp_endopoint/"amqps://"/"amqps://${username}:${password}@"}"',
-                r'    kms_encrypted_url="$(encrypt_kms_string "' + regionId + r'" ' + r' "${url}" ' + r' "' + getExistingReference(cmkKeyId, ARN_ATTRIBUTE_TYPE) + r'" || return $?)"'
+                r'    kms_encrypted_url="$(encrypt_kms_string "' + getRegion() + r'" ' + r' "${url}" ' + r' "' + getExistingReference(cmkKeyId, ARN_ATTRIBUTE_TYPE) + r'" || return $?)"'
             ] +
             pseudoStackOutputScript(
                 "KMS Encrypted Url",

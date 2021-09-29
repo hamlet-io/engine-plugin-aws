@@ -247,12 +247,12 @@
                 [
                     getPolicyDocument(
                         ec2ReadTagsPermission() +
-                        s3ListPermission(codeBucket) +
-                        s3ReadPermission(codeBucket) +
+                        s3ListPermission(codeBucket()) +
+                        s3ReadPermission(codeBucket()) +
                         s3AccountEncryptionReadPermission(
-                            codeBucket,
+                            codeBucket(),
                             "*",
-                            codeBucketRegion
+                            codeBucketRegion()
                         ) +
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
@@ -326,8 +326,8 @@
             outputs={}
         /]
 
-        [#list zones as zone]
-            [#if multiAZ || (zones[0].Id = zone.Id)]
+        [#list getZones() as zone]
+            [#if multiAZ || (getZones()[0].Id = zone.Id)]
                 [#local zoneEc2InstanceId          = zoneResources[zone.Id]["ec2Instance"].Id ]
                 [#local zoneEc2InstanceName        = zoneResources[zone.Id]["ec2Instance"].Name ]
                 [#local zoneEc2ComputeTasks        = zoneResources[zone.Id]["ec2Instance"].ComputeTasks]
@@ -404,8 +404,8 @@
                                 "SourceDestCheck" : true,
                                 "GroupSet" :
                                     [getReference(ec2SecurityGroupId)] +
-                                    sshFromProxySecurityGroup?has_content?then(
-                                        [sshFromProxySecurityGroup],
+                                    sshFromProxySecurityGroup()?has_content?then(
+                                        [sshFromProxySecurityGroup()],
                                         []
                                     )
                             }

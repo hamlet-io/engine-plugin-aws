@@ -141,22 +141,22 @@
                     getPolicyDocument(
                             ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
                             ec2ReadTagsPermission() +
-                            s3ListPermission(codeBucket) +
-                            s3ReadPermission(credentialsBucket, accountId + "/alm/docker") +
+                            s3ListPermission(codeBucket()) +
+                            s3ReadPermission(credentialsBucket(), accountId + "/alm/docker") +
                             s3AccountEncryptionReadPermission(
-                                credentialsBucket,
+                                credentialsBucket(),
                                 "*",
-                                credentialsBucketRegion
+                                credentialsBucketRegion()
                             ) +
                             fixedIP?then(
                                 ec2IPAddressUpdatePermission(),
                                 []
                             ) +
-                            s3ReadPermission(codeBucket) +
+                            s3ReadPermission(codeBucket()) +
                             s3AccountEncryptionReadPermission(
-                                codeBucket,
+                                codeBucket(),
                                 "*",
-                                codeBucketRegion
+                                codeBucketRegion()
                             ) +
                             s3ListPermission(operationsBucket) +
                             s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
@@ -484,7 +484,7 @@
         [#else]
             [#local maxSize = processorProfile.MaxPerZone]
             [#if multiAZ]
-                [#local maxSize = maxSize * zones?size]
+                [#local maxSize = maxSize * getZones()?size]
             [/#if]
         [/#if]
 
@@ -588,7 +588,7 @@
             deploymentSubsetRequired("prologue", false)]
         [@addToDefaultBashScriptOutput
             content=[
-                r'remove_ec2_scaleinprotection "' + regionId + r'" "' + getExistingReference(ecsAutoScaleGroupId) + r'"'
+                r'remove_ec2_scaleinprotection "' + getRegion() + r'" "' + getExistingReference(ecsAutoScaleGroupId) + r'"'
             ]
         /]
     [/#if]
@@ -1534,7 +1534,7 @@
                                 "docker",
                                 getRegistryEndPoint("docker", subOccurrence),
                                 "ecr",
-                                regionId
+                                getRegion()
                         )
                 /]
             [/#if]
@@ -1650,7 +1650,7 @@
                         findAsFilesScript("filesToSync", asFiles) +
                         syncFilesToBucketScript(
                             "filesToSync",
-                            regionId,
+                            getRegion(),
                             operationsBucket,
                             getOccurrenceSettingValue(subOccurrence, "SETTINGS_PREFIX")
                         ) /]

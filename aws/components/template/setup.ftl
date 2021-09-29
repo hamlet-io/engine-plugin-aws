@@ -48,7 +48,7 @@
         [@addToDefaultBashScriptOutput
             content=
                 getImageFromUrlScript(
-                    regionId,
+                    getRegion(),
                     productName,
                     environmentName,
                     segmentName,
@@ -67,7 +67,7 @@
             content=
                 getBuildScript(
                     "cfnTemplates",
-                    regionId,
+                    getRegion(),
                     "scripts",
                     productName,
                     occurrence,
@@ -76,7 +76,7 @@
                 ) +
                 syncFilesToBucketScript(
                     "cfnTemplates",
-                    regionId,
+                    getRegion(),
                     operationsBucket,
                     templatePath
                 )

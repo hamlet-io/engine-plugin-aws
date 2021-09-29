@@ -36,19 +36,19 @@
     [#local envVariables += {
         "hamlet_request" : getCLORequestReference(),
         "hamlet_configuration" : getCLOConfigurationReference(),
-        "hamlet_accountRegion" : accountRegionId,
+        "hamlet_accountRegion" : accountRegion(),
         "hamlet_tenant" : tenantId,
         "hamlet_account" : accountId,
         "hamlet_product" : productId,
-        "hamlet_region" : regionId,
+        "hamlet_region" : getRegion(),
         "hamlet_segment" : segmentId,
         "hamlet_environment" : environmentId,
         "hamlet_tier" : occurrence.Core.Tier.Id ,
         "hamlet_component" : occurrence.Core.Component.Id,
-        "hamlet_credentials" : credentialsBucket,
-        "hamlet_code" : codeBucket,
-        "hamlet_logs" : operationsBucket,
-        "hamlet_backups" : dataBucket
+        "hamlet_credentials" : credentialsBucket(),
+        "hamlet_code" : codeBucket(),
+        "hamlet_logs" : operationsBucket(),
+        "hamlet_backups" : dataBucket()
     }
     ]]
 

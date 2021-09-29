@@ -44,7 +44,7 @@
                                     false)]
 
         [#local resourceZone = {}]
-        [#list zones as zone ]
+        [#list getZones() as zone ]
             [#if zoneId == zone.Id ]
                 [#local resourceZone = zone ]
             [/#if]

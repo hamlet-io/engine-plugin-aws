@@ -9,7 +9,7 @@
     [#local availablePorts = [ "nfs" ]]
 
     [#local zoneResources = {} ]
-    [#list zones as zone ]
+    [#list getZones() as zone ]
         [#local zoneResources +=
             {
                 zone.Id : {

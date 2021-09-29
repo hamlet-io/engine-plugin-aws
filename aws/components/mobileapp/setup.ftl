@@ -35,7 +35,7 @@
             [@addToDefaultBashScriptOutput
                 content=
                     getImageFromUrlScript(
-                        regionId,
+                        getRegion(),
                         productName,
                         environmentName,
                         segmentName,
@@ -119,7 +119,7 @@
                     findAsFilesScript("filesToSync", asFiles) +
                     syncFilesToBucketScript(
                         "filesToSync",
-                        regionId,
+                        getRegion(),
                         operationsBucket,
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX")
                     ) /]
@@ -134,7 +134,7 @@
                 ) +
                 syncFilesToBucketScript(
                     "configFiles",
-                    regionId,
+                    getRegion(),
                     operationsBucket,
                     configFilePath
                 ) /]

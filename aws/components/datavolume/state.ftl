@@ -5,9 +5,9 @@
     [#local solution = occurrence.Configuration.Solution]
 
     [#if multiAZ!false ]
-        [#local resourceZones = zones ]
+        [#local resourceZones = getZones() ]
     [#else]
-        [#local resourceZones = [ zones[0] ] ]
+        [#local resourceZones = [ getZones()[0] ] ]
     [/#if]
 
     [#local zoneResources = {} ]

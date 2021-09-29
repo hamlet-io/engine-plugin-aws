@@ -100,7 +100,7 @@
                     }
                 ),
                 "Attributes" : {
-                    "REGION" : getExistingReference(esId, REGION_ATTRIBUTE_TYPE)!regionId,
+                    "REGION" : getExistingReference(esId, REGION_ATTRIBUTE_TYPE)!getRegion(),
                     "AUTH" : solution.Authentication,
                     "FQDN" : esHostName,
                     "URL" : "https://" + esHostName,

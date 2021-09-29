@@ -5,7 +5,7 @@
     [#local solution = occurrence.Configuration.Solution]
 
     [#-- Only apply legacy controls to the default master data vpc --]
-    [#local legacyVpc = legacyVpc
+    [#local legacyVpc = legacyVpc()
                             && core.Tier.Id == "mgmt" && core.Component.RawId == "vpc"
                             && core.Instance.Id == "" && core.Version.Id = ""]
 
@@ -39,7 +39,7 @@
                     (networkTier.Network.Link.Version!core.Version.Id) == core.Version.Id && (networkTier.Network.Link.Instance!core.Instance.Id) == core.Instance.Id  ) ]
             [#continue]
         [/#if]
-        [#list zones as zone]
+        [#list getZones() as zone]
             [#local subnetId = legacyVpc?then(
                                     formatSubnetId(networkTier, zone),
                                     formatResourceId(AWS_VPC_SUBNET_RESOURCE_TYPE, core.Id, networkTier.Id, zone.Id))]
@@ -213,7 +213,7 @@
             [#continue]
         [/#if]
 
-        [#list zones as zone]
+        [#list getZones() as zone]
             [#local zoneRouteTableId = formatId(routeTableId, zone.Id)]
             [#local zoneRouteTableName = formatName(routeTableName, zone.Id)]
 

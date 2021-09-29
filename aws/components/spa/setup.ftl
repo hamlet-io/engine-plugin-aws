@@ -96,7 +96,7 @@
         [@addToDefaultBashScriptOutput
             content=
                 getImageFromUrlScript(
-                    regionId,
+                    getRegion(),
                     productName,
                     environmentName,
                     segmentName,
@@ -116,7 +116,7 @@
             content=
                 getBuildScript(
                     "spaFiles",
-                    regionId,
+                    getRegion(),
                     "spa",
                     productName,
                     occurrence,
@@ -125,7 +125,7 @@
                 ) +
                 syncFilesToBucketScript(
                     "spaFiles",
-                    regionId,
+                    getRegion(),
                     operationsBucket,
                     formatRelativePath(
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
@@ -139,7 +139,7 @@
                 ) +
                 syncFilesToBucketScript(
                     "configFiles",
-                    regionId,
+                    getRegion(),
                     operationsBucket,
                     formatRelativePath(
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
@@ -158,7 +158,7 @@
                 "       # Invalidate distribution",
                 "       info \"Invalidating cloudfront distribution " + distributionId + " " + pathPattern + "\"",
                 "       invalidate_distribution" +
-                "       \"" + regionId + "\" " +
+                "       \"" + getRegion() + "\" " +
                 "       \"" + distributionId + "\" " +
                 "       \"" + pathPattern + "\" || return $?"
             ]]

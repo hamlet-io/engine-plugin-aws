@@ -170,7 +170,7 @@
                                         cmkKeyId,
                                         dataBucket,
                                         dataBucketPrefix,
-                                        regionId
+                                        getRegion()
                                 ),
                                 []
                             ) +
@@ -194,7 +194,7 @@
 
             [@createRole
                 id=streamSubscriptionRoleId
-                trustedServices=[ formatDomainName("logs", regionId, "amazonaws.com") ]
+                trustedServices=[ formatDomainName("logs", getRegion(), "amazonaws.com") ]
                 tags=getOccurrenceCoreTags(occurrence)
             /]
         [/#if]

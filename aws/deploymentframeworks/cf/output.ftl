@@ -6,7 +6,7 @@
 
 [#macro addCFTemplateAzParams zoneIds ]
     [#list asArray(zoneIds) as zoneId ]
-        [#list zones as zone ]
+        [#list getZones() as zone ]
             [#if zoneId == zone.Id ]
                 [@cfParameter
                     id=formatAWSAzParameterId(zoneId)

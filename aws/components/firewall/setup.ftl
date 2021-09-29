@@ -39,7 +39,7 @@
         [#if multiAZ ]
             [#local subnets = getSubnets(core.Tier, networkResources)]
         [#else]
-            [#local subnets = getSubnets(core.Tier, networkResources, zones[0].Id )]
+            [#local subnets = getSubnets(core.Tier, networkResources, getZones()[0].Id )]
         [/#if]
 
         [@createNetworkFirewall
@@ -366,7 +366,7 @@
                                 [#if deploymentSubsetRequired(FIREWALL_COMPONENT_TYPE, true)]
 
                                     [#list subResources["routes"] as zoneId, routes]
-                                        [#local zoneDetails = zones?filter( x -> x.Id == zoneId)?first ]
+                                        [#local zoneDetails = getZones()?filter( x -> x.Id == zoneId)?first ]
 
                                         [#local zoneEndpoint = (
                                                 (firewallVPCEndpoints?filter(x -> x?starts_with("${zoneDetails.AWSZone}:"))[0])?split(":")[1]

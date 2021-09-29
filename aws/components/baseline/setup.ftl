@@ -322,18 +322,18 @@
                                 "AWSLogs",
                                 "*",
                                 {
-                                    "AWS": "arn:aws:iam::" + regionObject.Accounts["ELB"] + ":root"
+                                    "AWS": "arn:aws:iam::" + getRegionObject().Accounts["ELB"] + ":root"
                                 }
                             ) +
                             s3ReadBucketACLPermission(
                                 bucketName,
-                                { "Service": "logs." + regionId + ".amazonaws.com" }
+                                { "Service": "logs." + getRegion() + ".amazonaws.com" }
                             ) +
                             s3WritePermission(
                                 bucketName,
                                 "",
                                 "*",
-                                { "Service": "logs." + regionId + ".amazonaws.com" },
+                                { "Service": "logs." + getRegion() + ".amazonaws.com" },
                                 { "StringEquals": { "s3:x-amz-acl": "bucket-owner-full-control" } }
                             ) +
                             valueIfContent(
@@ -459,19 +459,19 @@
                                 r'  # Create SSH credential for the segment',
                                 r'  mkdir -p "${SEGMENT_OPERATIONS_DIR}"',
                                 r'  create_pki_credentials "${SEGMENT_OPERATIONS_DIR}" ' +
-                                        r'"' + regionId + r'" ' +
+                                        r'"' + getRegion() + r'" ' +
                                         r'"' + accountObject.Id + r'" ' +
                                         r'"' + localKeyPairPublicKey + r'" ' +
                                         r'"' + localKeyPairPrivateKey + r'" ' +
                                         r'"' + legacyKey?c + r'" || return $?',
                                 r'  # Update the credential if required',
-                                r'  if ! check_ssh_credentials "'+ regionId + r'" "${key_pair_name}"; then',
-                                r'    update_ssh_credentials "' + regionId + r'" ' +
+                                r'  if ! check_ssh_credentials "'+ getRegion() + r'" "${key_pair_name}"; then',
+                                r'    update_ssh_credentials "' + getRegion() + r'" ' +
                                     r'"${key_pair_name}" ' +
                                     r'"${SEGMENT_OPERATIONS_DIR}/' + localKeyPairPrivateKey + r'.plaintext" || return $?',
                                 r'    [[ -f "${SEGMENT_OPERATIONS_DIR}/' + localKeyPairPrivateKey + r'.plaintext" ]] && ',
                                 r'      { encrypt_kms_file' + " " +
-                                        r'"' + regionId + r'" ' +
+                                        r'"' + getRegion() + r'" ' +
                                         r'"${SEGMENT_OPERATIONS_DIR}/' + localKeyPairPrivateKey + r'.plaintext" ' +
                                         r'"${SEGMENT_OPERATIONS_DIR}/' + localKeyPairPrivateKey + r'" ' +
                                         r'"' + cmkAlias + r'" || return $?; }',
@@ -504,13 +504,13 @@
                                 []
                             ) +
                             [
-                                r'  show_ssh_credentials "' + regionId + r'" "${key_pair_name}"',
+                                r'  show_ssh_credentials "' + getRegion() + r'" "${key_pair_name}"',
                                 r'}',
                                 r'# Determine the required key pair name',
                                 r'key_pair_name="' + ec2KeyPairName + r'"',
                                 r'case ${STACK_OPERATION} in',
                                 r'  delete)',
-                                r'    delete_ssh_credentials "'+ regionId + r'" ' +
+                                r'    delete_ssh_credentials "'+ getRegion() + r'" ' +
                                         r'"${key_pair_name}" || return $?',
                                 r'    delete_pki_credentials "${SEGMENT_OPERATIONS_DIR}" || return $?',
                                 r'    rm -f "${CF_DIR}/$(fileBase "${BASH_SOURCE}")-keypair-pseudo-stack.json"',
@@ -571,20 +571,20 @@
                                         "case $\{STACK_OPERATION} in",
                                         "  delete)",
                                         "    delete_oai_credentials" + " " +
-                                               "\"" + regionId + "\" " +
+                                               "\"" + getRegion() + "\" " +
                                                "\"" + legacyOAIName + "\" || return $?",
                                         "    rm -f \"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE}\")-pseudo-stack.json\"",
                                         "    ;;",
                                         "  create|update)",
                                         "    info \"Removing legacy oai credential ...\"",
                                         "    used=$(is_oai_credential_used" + " " +
-                                               "\"" + regionId + "\" " +
+                                               "\"" + getRegion() + "\" " +
                                                "\"" + legacyOAIName + "\" ) || return $?",
                                         "    if [[ \"$\{used}\" == \"true\" ]]; then",
                                         "      warn \"Legacy OAI in use - rerun the baseline unit to remove it once it is no longer in use ...\"",
                                         "    else",
                                         "      delete_oai_credentials" + " " +
-                                                 "\"" + regionId + "\" " +
+                                                 "\"" + getRegion() + "\" " +
                                                  "\"" + legacyOAIName + "\" || return $?",
                                         "      info \"Removing legacy oai pseudo stack output\"",
                                         "      legacy_pseudo_stack_file=\"$(fileBase \"$\{BASH_SOURCE}\")\"",

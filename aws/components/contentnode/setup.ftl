@@ -29,7 +29,7 @@
             [@addToDefaultBashScriptOutput
                 content=
                     getImageFromUrlScript(
-                        regionId,
+                        getRegion(),
                         productName,
                         environmentName,
                         segmentName,
@@ -71,7 +71,7 @@
                                 "function get_contentnode_file_${core.RawId}() {",
                                 "  # Fetch the spa zip file",
                                 "  copyFilesFromBucket" + " " +
-                                    regionId + " " +
+                                    getRegion() + " " +
                                     getRegistryEndPoint("contentnode", occurrence) + " " +
                                     formatRelativePath(
                                         getRegistryPrefix("contentnode", occurrence),

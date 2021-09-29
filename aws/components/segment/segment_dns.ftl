@@ -20,7 +20,7 @@
                     "VPCs" : [
                         {
                             "VPCId" : getReference(formatVPCId()),
-                            "VPCRegion" : regionId
+                            "VPCRegion" : getRegion()
                         }
                     ]
                 }

@@ -93,7 +93,7 @@
         [@addToDefaultBashScriptOutput
             content=
                 [
-                    "workgroup_deployed=\"$(aws --region " + regionId + " athena list-work-groups --query 'WorkGroups[?Name==`" + workGroupName + "`].Name' --output text)\"",
+                    "workgroup_deployed=\"$(aws --region " + getRegion() + " athena list-work-groups --query 'WorkGroups[?Name==`" + workGroupName + "`].Name' --output text)\"",
                     "case $\{STACK_OPERATION} in",
                     "  create|update)"
                     "       # Get cli config file",
@@ -101,12 +101,12 @@
                     "       info \"Setting up athena workgroup " + workGroupName + "\"",
                     "       if [[ -z \"$\{workgroup_deployed}\" ]]; then ",
                     "           info \"Creating Athena workgroup\"",
-                    "           aws --region " + regionId +
+                    "           aws --region " + getRegion() +
                     "           athena create-work-group --cli-input-json \"file://$\{tmpdir}/cli-" +
                                         workGroupCreateId + "-" + workGroupCreateCommand + ".json\" || exit $?",
                     "       else",
                     "           info \"Updating Athena workgroup" + workGroupName + "\"",
-                    "           aws --region " + regionId +
+                    "           aws --region " + getRegion() +
                     "           athena update-work-group --cli-input-json \"file://$\{tmpdir}/cli-" +
                                     workGroupUpdateId + "-" + workGroupUpdateCommand + ".json\" || exit $?",
                     "        fi"
@@ -122,7 +122,7 @@
                     "  delete)",
                     "       if [[ -n \"$\{workgroup_deployed}\" ]]; then ",
                     "           info \"Deleting Athena workgroup" + workGroupName + "\"",
-                    "           aws --region " + regionId + " athena delete-work-group --work-group \"" + workGroupName + "\" --recursive-delete-option || exit $?",
+                    "           aws --region " + getRegion() + " athena delete-work-group --work-group \"" + workGroupName + "\" --recursive-delete-option || exit $?",
                     "       fi",
                     " ;;",
                     "esac"

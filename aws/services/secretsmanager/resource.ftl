@@ -190,10 +190,10 @@
                             r'case ${STACK_OPERATION} in',
                             r'  create|update)',
                             r'    info "Saving secret to CMDB"',
-                            r'    secret_arn="$(get_cloudformation_stack_output "' + regionId + r'" ' + r' "${STACK_NAME}" ' + secretId + r' "ref" || return $?)"',
-                            r'    secret_content="$(aws --region "' + regionId + r'" --output text secretsmanager get-secret-value --secret-id "${secret_arn}" --query "SecretString" || return $?)"',
+                            r'    secret_arn="$(get_cloudformation_stack_output "' + getRegion() + r'" ' + r' "${STACK_NAME}" ' + secretId + r' "ref" || return $?)"',
+                            r'    secret_content="$(aws --region "' + getRegion() + r'" --output text secretsmanager get-secret-value --secret-id "${secret_arn}" --query "SecretString" || return $?)"',
                             r'    secret_value="$( echo "${secret_content}" | jq -r "' + secretKeyPath + r'")"',
-                            r'    kms_encrypted_secret="$(encrypt_kms_string "' + regionId + r'" ' + r' "${secret_value}" ' + r' "' + getExistingReference(kmsKeyId, ARN_ATTRIBUTE_TYPE) + r'" || return $?)"'
+                            r'    kms_encrypted_secret="$(encrypt_kms_string "' + getRegion() + r'" ' + r' "${secret_value}" ' + r' "' + getExistingReference(kmsKeyId, ARN_ATTRIBUTE_TYPE) + r'" || return $?)"'
                         ] +
                         pseudoStackOutputScript(
                             "KMS Encrypted Secret",
