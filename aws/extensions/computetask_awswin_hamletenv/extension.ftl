@@ -73,8 +73,9 @@
                                 "\n",
                                 [
                                     "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-step.log -Append ;",
-                                    r'echo "Directory and File Creation - set_dirs.ps1" ;'
-                                    r"mkdir c:\ProgramData\Hamlet\Logs\codeontap"
+                                    r'echo "Directory and File Creation and TimeZone setting - set_dirs.ps1" ;'
+                                    r"mkdir c:\ProgramData\Hamlet\Logs\codeontap ;",
+                                    r'Set-TimeZone -Name "AUS Eastern Standard Time" '
                                 ]
                             ]
                         },
