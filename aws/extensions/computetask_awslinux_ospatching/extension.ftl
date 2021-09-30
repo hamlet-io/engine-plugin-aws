@@ -64,7 +64,8 @@
     [@computeTaskConfigSection
         computeTaskTypes=[ 
             COMPUTE_TASK_OS_SECURITY_PATCHING, 
-            COMPUTE_TASK_ANTIVIRUS_CONFIG 
+            COMPUTE_TASK_ANTIVIRUS_CONFIG,
+            COMPUTE_TASK_APPWHITELIST_CONFIG
         ]
         id="OSPatching"
         priority=1

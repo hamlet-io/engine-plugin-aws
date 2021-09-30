@@ -7,6 +7,32 @@
         {
             "Names" : "AntiVirus",
             "AttributeSet" : AWS_ANTIVIRUS_ATTRIBUTESET_TYPE
+        },
+        {
+            "Names" : "AppWhitelist",
+            "Children" : [
+                {
+                    "Names": "Mode",
+                    "Types" : STRING_TYPE,
+                    "Values" : [ "Audit", "Block" ],
+                    "Default" : "Audit"
+                },
+                {
+                    "Names" : "Allow",
+                    "Children" : [
+                        {
+                            "Names": "Files",
+                            "Types" : ARRAY_OF_STRING_TYPE,
+                            "Default" : []
+                        },
+                        {
+                            "Names": "Folders",
+                            "Types" : ARRAY_OF_STRING_TYPE,
+                            "Default" : []
+                        }
+                    ]
+                }
+            ]
         }
     ]
     services=
