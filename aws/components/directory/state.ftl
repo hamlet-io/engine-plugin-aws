@@ -15,6 +15,8 @@
     [#local hostName = getHostName(certificateObject, occurrence) ]
     [#local fqdn = formatDomainName(hostName, primaryDomainObject) ]
 
+    [#local defaultAdminUser = "Admin"]
+
     [#local dnsPorts = [
         "dns-tcp", "dns-tcp",
         "globalcatalog",
@@ -42,6 +44,7 @@
                     "Id" : id,
                     "Name" : fqdn,
                     "ShortName" : formatName( core.ShortFullName, segmentSeed)?truncate_c(50, ''),
+                    "Username" : defaultAdminUser,
                     "Type" : AWS_DIRECTORY_RESOURCE_TYPE,
                     "Monitored" : true
                 },
@@ -54,8 +57,10 @@
             },
             "Attributes" : {
                 "ENGINE" : solution.Engine,
-                "USERNAME" : solution.RootCredentials.Username,
                 "IP_ADDRESSES" : getExistingReference(id, IP_ADDRESS_ATTRIBUTE_TYPE),
+                "DOMAIN_ID" : getExistingReference(id),
+                "DOMAIN_NAME" : fqdn,
+                "USERNAME" : defaultAdminUser,
                 "PASSWORD" : getExistingReference(rootCredentialResources["secret"].Id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(solution.RootCredentials.EncryptionScheme),
                 "SECRET" : getExistingReference(rootCredentialResources["secret"].Id )
             },

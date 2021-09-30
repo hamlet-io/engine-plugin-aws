@@ -31,6 +31,8 @@
     [#local dsId = resources["directory"].Id ]
     [#local fqdName = resources["directory"].Name ]
     [#local dsShortName = resources["directory"].ShortName ]
+    [#local dsUserName = resources["directory"].Username ]
+
     [#local securityGroupId = resources["sg"].Id ]
     [#local securityGroupName = resources["sg"].Name ]
 
@@ -132,7 +134,9 @@
             secretComponentConfiguration=
                 solution.RootCredentials.Secret + {
                     "Generated" : {
-                        "Content" : { "username" : solution.RootCredentials.Username },
+                        "Content" : {
+                            "username" : dsUserName
+                        },
                         "SecretKey" : passwordSecretKey
                     }
                 }
@@ -155,6 +159,28 @@
             name=securityGroupName
             vpcId=vpcId
             occurrence=occurrence
+        /]
+
+        [@createSecurityGroupIngress
+            id=
+                formatDependentSecurityGroupIngressId(
+                    securityGroupId,
+                    "self"
+                )
+            port="any"
+            group=securityGroupId
+            groupId=securityGroupId
+        /]
+
+        [@createSecurityGroupEgress
+            id=
+                formatDependentSecurityGroupEgressId(
+                    securityGroupId,
+                    "self"
+                )
+            port="any"
+            group=securityGroupId
+            groupId=securityGroupId
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
