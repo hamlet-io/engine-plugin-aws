@@ -315,7 +315,7 @@
                     port=destinationPort
                     cidr=cidr
                     groupId=computeClusterSecurityGroupId
-            /]
+                /]
             [/#list]
 
             [#list sourceSecurityGroupIds as group ]
