@@ -42,7 +42,7 @@
                 "firewallbase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {
@@ -131,7 +131,7 @@
                 "firewallsimplenet" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {
@@ -229,7 +229,7 @@
                 "firewalldomainfilter" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {

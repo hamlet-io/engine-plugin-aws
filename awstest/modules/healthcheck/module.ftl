@@ -108,7 +108,7 @@
                 "healthchecksimplebase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {
@@ -127,7 +127,7 @@
                 "healthcheckcomplexbase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {

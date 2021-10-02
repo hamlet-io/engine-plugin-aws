@@ -34,7 +34,7 @@
                 "networkbase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                        "CFNLint" : true
+                        "cfn-lint" : {}
                     },
                     "Structural" : {
                     }
@@ -146,7 +146,7 @@
                 "networksubnet" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                        "CFNLint" : true
+                        "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {
@@ -264,7 +264,7 @@
                 "networklogging" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                        "CFNLint" : true
+                        "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {
