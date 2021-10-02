@@ -17,7 +17,7 @@ if [[ "${process}" == "true" ]]; then
   fi
 
   # List of regions
-  aws --profile "${profile}" --region ap-southeast-2 ec2 describe-regions | jq -r '.Regions | .[].RegionName' | dos2unix | sort > amis/regions.txt
+  aws --profile "${profile}" --region ap-southeast-2 ec2 describe-regions | jq -r '.Regions | .[].RegionName' | sort > amis/regions.txt
   readarray -t regions < amis/regions.txt
 
   # Find AMIs for each region
