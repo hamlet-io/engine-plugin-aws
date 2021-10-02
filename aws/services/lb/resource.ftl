@@ -424,26 +424,71 @@
     ]
 [/#function]
 
-[#function getListenerRulePathCondition paths]
-    [#return
-        [
-            {
-                "Field": "path-pattern",
-                "Values": asArray(paths)
-            }
-        ]
-    ]
-[/#function]
+[#function getListenerRuleCondition type conditionValue ]
+    [#local result = {
+        "Field" : type
+    }]
 
-[#function getListenerRuleHostCondition hosts ]
-    [#return
-        [
-            {
-                "Field" : "host-header",
-                "Values" : asArray(hosts)
-            }
-        ]
-    ]
+    [#switch type ]
+        [#case "http-header" ]
+            [#local result += {
+                "HttpHeaderConfig" : {
+                    "HttpHeaderName" : conditionValue.HeaderName,
+                    "Values" : conditionValue.Values
+                }
+            }]
+            [#break]
+
+        [#case "query-string" ]
+            [#local result += {
+                "QueryStringConfig" : {
+                    "Values" : asFlattenedArray(conditionValue)
+                }
+            }]
+            [#break]
+
+        [#case "http-request-method" ]
+            [#local result += {
+                "HttpRequestMethodConfig" : {
+                    "Values"  : asFlattenedArray(conditionValue)
+                }
+            }]
+            [#break]
+
+        [#case "host-header" ]
+            [#local result += {
+                "HostHeaderConfig" : {
+                    "Values" : asFlattenedArray(conditionValue)
+                }
+            }]
+            [#break]
+
+        [#case "path-pattern" ]
+            [#local result += {
+                "PathPatternConfig" : {
+                    "Values" : asFlattenedArray(conditionValue)
+                }
+            }]
+            [#break]
+
+        [#case "source-ip" ]
+            [#local result += {
+                "SourceIpConfig" : {
+                    "Values" : asFlattenedArray(conditionValue)
+                }
+            }]
+            [#break]
+
+        [#default]
+            [@fatal
+                message="Invalid Application Load balancer Rule Condition"
+                context={
+                    "Type" : type,
+                    "Values" : values
+                }
+            /]
+    [/#switch]
+    [#return [ result ]]
 [/#function]
 
 [#macro createListenerRule id listenerId actions=[] conditions=[] priority=100 dependencies=""]

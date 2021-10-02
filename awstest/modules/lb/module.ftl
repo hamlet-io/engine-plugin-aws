@@ -128,9 +128,11 @@
                                     "Path" : "Resources.listenerRuleXelbXhttpslbXhttpsX500.Properties.Conditions[1]",
                                     "Value" : {
                                         "Field": "host-header",
-                                        "Values": [
-                                            "test-integration.mock.local"
-                                        ]
+                                        "HostHeaderConfig": {
+                                            "Values": [
+                                                "test-integration.mock.local"
+                                            ]
+                                        }
                                     }
                                 },
                                 "HTTPSAction" : {
@@ -150,7 +152,7 @@
                         }
                     }
                 },
-                "validation" : {
+                "lint" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
                         "CFNLint" : true,
@@ -161,7 +163,7 @@
             "TestProfiles" : {
                 "httpslb" : {
                     "lb" : {
-                        "TestCases" : [ "httpslb", "validation" ]
+                        "TestCases" : [ "httpslb", "lint" ]
                     }
                 }
             }
@@ -255,11 +257,13 @@
                                 },
                                 "HTTPCondition" : {
                                     "Path" : "Resources.listenerRuleXelbXhttplbXhttpX100.Properties.Conditions[1]",
-                                    "Value" : {
+                                    "Value" :           {
                                         "Field": "host-header",
-                                        "Values": [
-                                            "test-integration.mock.local"
-                                        ]
+                                        "HostHeaderConfig": {
+                                            "Values": [
+                                                "test-integration.mock.local"
+                                            ]
+                                        }
                                     }
                                 },
                                 "HTTPAction" : {
@@ -324,7 +328,7 @@
                         }
                     }
                 },
-                "validation" : {
+                "lint" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
                         "CFNLint" : true,
@@ -335,7 +339,179 @@
             "TestProfiles" : {
                 "httplb" : {
                     "lb" : {
-                        "TestCases" : [ "httplb", "httplbfixeddefault", "validation" ]
+                        "TestCases" : [ "httplb", "httplbfixeddefault", "lint" ]
+                    }
+                }
+            }
+        }
+    /]
+
+    [#-- Condition Checking --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "elb" : {
+                    "Components" : {
+                        "conditionapplb" : {
+                            "LB" : {
+                                "Instances" : {
+                                    "default" : {
+                                        "DeploymentUnits" : ["aws-lb-app-condition"]
+                                    }
+                                },
+                                "Engine" : "application",
+                                "Logs" : true,
+                                "Profiles" : {
+                                    "Testing" : [ "conditionapplb" ]
+                                },
+                                "PortMappings" : {
+                                    "http" : {
+                                        "IPAddressGroups" : ["_global"],
+                                        "Conditions" : {
+                                            "httpHeader" : {
+                                                "Type" : "httpHeader",
+                                                "type:httpHeader" : {
+                                                    "HeaderName" : "TestHeader",
+                                                    "HeaderValues" : [ "testValue1" ]
+                                                }
+                                            },
+                                            "httpRequestMethod" : {
+                                                "Type" : "httpRequestMethod",
+                                                "type:httpRequestMethod" : {
+                                                    "Methods" : [ "GET", "HEAD" ]
+                                                }
+                                            },
+                                            "httpQueryString" : {
+                                                "Type" : "httpQueryString",
+                                                "type:httpQueryString" : {
+                                                    "query" : {
+                                                        "Key" : "query",
+                                                        "Value" : "queryValue1"
+                                                    }
+                                                }
+                                            },
+                                            "SourceIP" : {
+                                                "Type" : "SourceIP",
+                                                "type:SourceIP" : {
+                                                    "IPAddressGroups" : [ "_localnet" ]
+                                                }
+                                            }
+                                        },
+                                        "Forward" : {}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "conditionapplb" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "httpListenerRule" : {
+                                    "Name" : "listenerRuleXelbXconditionapplbXhttpX100",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::ListenerRule"
+                                },
+                                "httpListener" : {
+                                    "Name" : "listenerXelbXconditionapplbXhttp",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::Listener"
+                                },
+                                "loadBalancer" : {
+                                    "Name" : "albXelbXconditionapplb",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer"
+                                }
+                            },
+                            "Output" : [
+                                "listenerXelbXconditionapplbXhttp"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "LBName" : {
+                                    "Path"  : "Resources.albXelbXconditionapplb.Properties.Name",
+                                    "Value" : "mockedup-int-elb-conditionapplb"
+                                },
+                                "HTTPConditionDefaultPath" : {
+                                    "Path" : "Resources.listenerRuleXelbXconditionapplbXhttpX100.Properties.Conditions[0]",
+                                    "Value" : {
+                                        "Field": "path-pattern",
+                                        "PathPatternConfig": {
+                                            "Values": [
+                                                "*"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "HTTPConditionHttpHeader" : {
+                                    "Path" : "Resources.listenerRuleXelbXconditionapplbXhttpX100.Properties.Conditions[1]",
+                                    "Value" :           {
+                                        "Field": "http-header",
+                                        "HttpHeaderConfig": {
+                                        "Values": [
+                                            "testValue1"
+                                        ],
+                                        "HttpHeaderName": "TestHeader"
+                                        }
+                                    }
+                                },
+                                "HTTPConditionRequestMethod" : {
+                                    "Path" : "Resources.listenerRuleXelbXconditionapplbXhttpX100.Properties.Conditions[2]",
+                                    "Value" : {
+                                        "Field": "http-request-method",
+                                        "HttpRequestMethodConfig": {
+                                        "Values": [
+                                            "GET",
+                                            "HEAD"
+                                        ]
+                                        }
+                                    }
+                                },
+                                "HTTPConditionSourceIP" : {
+                                    "Path" : "Resources.listenerRuleXelbXconditionapplbXhttpX100.Properties.Conditions[4]",
+                                    "Value" :           {
+                                        "Field": "source-ip",
+                                        "SourceIpConfig": {
+                                            "Values": [
+                                                "10.0.0.0/16"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "HTTPAction" : {
+                                    "Path" : "Resources.listenerRuleXelbXconditionapplbXhttpX100.Properties.Actions[0]",
+                                    "Value" : {
+                                        "Type": "forward",
+                                        "TargetGroupArn": "arn:aws:iam::123456789012:mock/tgXelbXconditionapplbXhttpXarn"
+                                    }
+                                }
+                            },
+                            "Length" : {
+                                "listenerRuleConditions" : {
+                                    "Path" : "Resources.listenerRuleXelbXconditionapplbXhttpX100.Properties.Conditions",
+                                    "Count" : 5
+                                }
+                            },
+                            "NotEmpty" : [
+                                "Resources.listenerRuleXelbXconditionapplbXhttpX100.Properties.Priority"
+                            ]
+                        }
+                    }
+                },
+                "lint" : {
+                    "OutputSuffix" : "template.json",
+                    "Tools" : {
+                        "CFNLint" : true,
+                        "CFNNag" : false
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "conditionapplb" : {
+                    "lb" : {
+                        "TestCases" : [ "conditionapplb", "lint" ]
                     }
                 }
             }

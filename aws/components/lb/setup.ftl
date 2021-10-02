@@ -301,10 +301,19 @@
                 [#break]
 
             [#default]
+                [#if isPresent(solution.Conditions) ]
+                    [@fatal
+                        message="Conditions not support for this engine type"
+                        context={
+                            "Engine" : engine,
+                            "Conditions" : solution.Conditions
+                        }
+                    /]
+                [/#if]
                 [#local path = "" ]
                 [#break]
         [/#switch]
-        [#local listenerRuleConditions = getListenerRulePathCondition(path) ]
+        [#local listenerRuleConditions = getListenerRuleCondition("path-pattern", path) ]
 
         [#if engine == "application" ]
             [#-- FQDN processing --]
@@ -321,18 +330,59 @@
                                     fqdn,
                                     "#\{path}",
                                     "#\{query}")
-                            conditions=getListenerRuleHostCondition(rule.RedirectFrom)
+                            conditions=getListenerRuleCondition("host-header", rule.RedirectFrom)
                             priority=rule.Priority
                         /]
                     [/#if]
 
                 [/#list]
 
-                [#local listenerRuleConditions += getListenerRuleHostCondition(fqdn) ]
+                [#local listenerRuleConditions += getListenerRuleCondition("host-header", fqdn) ]
                 [#if ! fqdn?has_content]
                     [@fatal message="HostName/Certificate property is required when HostFilter:true " context=solution /]
                 [/#if]
             [/#if]
+
+            [#list solution.Conditions as id, condition ]
+                [#switch condition.Type ]
+                    [#case "httpHeader" ]
+                        [#local listenerRuleConditions +=
+                            getListenerRuleCondition(
+                                "http-header",
+                                {
+                                    "HeaderName" : (condition["type:httpHeader"].HeaderName)!"HamletFatal: Missing HeaderName for httpHeader filter",
+                                    "Values" : (condition["type:httpHeader"].HeaderValues)!"HamletFatal: Missing HeaderValues for httpHeader filter"
+                                }
+                            )]
+                        [#break]
+                    [#case "httpRequestMethod" ]
+                        [#local listenerRuleConditions +=
+                            getListenerRuleCondition(
+                                "http-request-method",
+                                (condition["type:httpRequestMethod"].Methods)!"HamletFatal: Missing Methods for httpRequestMethod condition"
+                            )]
+                        [#break]
+                    [#case "httpQueryString" ]
+                        [#list condition["type:httpQueryString"] as id,query ]
+                            [#local listenerRuleConditions +=
+                                getListenerRuleCondition(
+                                    "query-string",
+                                    {
+                                        "Key" : (query.Key)!"HamletFatal: Missing Key in httpQueryString condition",
+                                        "Value" : (query.Value)!"HamletFatal: Missing Value in httpQueryString condition"
+                                    }
+                                )]
+                        [/#list]
+                        [#break]
+                    [#case "SourceIP" ]
+                        [#local listenerRuleConditions +=
+                            getListenerRuleCondition(
+                                "source-ip",
+                                getGroupCIDRs(condition["type:SourceIP"].IPAddressGroups, true, subOccurrence)
+                            )]
+                        [#break]
+                [/#switch]
+            [/#list]
 
             [#-- Redirect rule processing --]
             [#if isPresent(solution.Redirect) ]
