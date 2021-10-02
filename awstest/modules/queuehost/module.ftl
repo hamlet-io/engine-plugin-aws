@@ -57,7 +57,7 @@
                 "queuehostbase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {
@@ -147,7 +147,7 @@
                 "queuehostmaintenance" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {

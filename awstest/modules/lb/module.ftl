@@ -155,8 +155,7 @@
                 "lint" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                        "CFNLint" : true,
-                        "CFNNag" : false
+                        "cfn-lint" : {}
                     }
                 }
             },
@@ -331,8 +330,7 @@
                 "lint" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                        "CFNLint" : true,
-                        "CFNNag" : false
+                        "cfn-lint" : {}
                     }
                 }
             },
@@ -503,8 +501,7 @@
                 "lint" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                        "CFNLint" : true,
-                        "CFNNag" : false
+                        "cfn-lint" : {}
                     }
                 }
             },

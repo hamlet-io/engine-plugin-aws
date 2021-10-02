@@ -34,7 +34,7 @@
                 "topicbase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {

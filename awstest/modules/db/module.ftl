@@ -48,7 +48,7 @@
                 "postgresdbbase" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {
@@ -140,7 +140,7 @@
                 "postgresdbgenerated" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {
@@ -228,7 +228,7 @@
                 "postgresdbmaintenance" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
-                       "CFNLint" : true
+                       "cfn-lint" : {}
                     },
                     "Structural" : {
                         "CFN" : {
