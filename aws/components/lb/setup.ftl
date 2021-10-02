@@ -303,7 +303,7 @@
             [#default]
                 [#if isPresent(solution.Conditions) ]
                     [@fatal
-                        message="Conditions not support for this engine type"
+                        message="Conditions not supported for this engine type"
                         context={
                             "Engine" : engine,
                             "Conditions" : solution.Conditions
