@@ -167,7 +167,7 @@
     computeTaskConfig
     environmentId
     keyPairId
-    sshFromProxy=sshFromProxySecurityGroup()
+    sshFromProxy=getSshFromProxySecurityGroup()
     dependencies=""
     outputId=""
 ]

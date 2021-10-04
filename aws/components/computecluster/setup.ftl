@@ -195,16 +195,16 @@
                             )
                         ) +
                         s3AccountEncryptionReadPermission(
-                            registryBucket(),
+                            getRegistryBucket(),
                             getRegistryPrefix("scripts", occurrence),
-                            registryBucketRegion()
+                            getRegistryBucketRegion()
                         ) +
-                        s3ListPermission(codeBucket()) +
-                        s3ReadPermission(codeBucket()) +
+                        s3ListPermission(getCodeBucket()) +
+                        s3ReadPermission(getCodeBucket()) +
                         s3AccountEncryptionReadPermission(
-                            codeBucket(),
+                            getCodeBucket(),
                             "*",
-                            codeBucketRegion()
+                            getCodeBucketRegion()
                         ) +
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +

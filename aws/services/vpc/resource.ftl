@@ -301,7 +301,7 @@
                 "GroupDescription" : description?has_content?then(description, name),
                 "VpcId" : (vpcId?has_content)?then(
                                 getReference(vpcId),
-                                vpc()
+                                getVpc()
                             )
             }
         tags=
