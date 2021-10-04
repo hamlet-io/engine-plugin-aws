@@ -16,8 +16,8 @@
 
     [#local segmentSeedId = formatSegmentSeedId() ]
     [#if !(getExistingReference(segmentSeedId)?has_content) ]
-        [#if legacyVpc() ]
-            [#local segmentSeedValue = vpc()?remove_beginning("vpc-")]
+        [#if getLegacyVpc() ]
+            [#local segmentSeedValue = getVpc()?remove_beginning("vpc-")]
         [#else]
             [#local segmentSeedValue = ( getCLORunId() + accountObject.Seed)[0..(solution.Seed.Length - 1)]  ]
         [/#if]

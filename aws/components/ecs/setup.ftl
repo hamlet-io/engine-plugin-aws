@@ -141,22 +141,22 @@
                     getPolicyDocument(
                             ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
                             ec2ReadTagsPermission() +
-                            s3ListPermission(codeBucket()) +
-                            s3ReadPermission(credentialsBucket(), accountId + "/alm/docker") +
+                            s3ListPermission(getCodeBucket()) +
+                            s3ReadPermission(getCredentialsBucket(), accountId + "/alm/docker") +
                             s3AccountEncryptionReadPermission(
-                                credentialsBucket(),
+                                getCredentialsBucket(),
                                 "*",
-                                credentialsBucketRegion()
+                                getCredentialsBucketRegion()
                             ) +
                             fixedIP?then(
                                 ec2IPAddressUpdatePermission(),
                                 []
                             ) +
-                            s3ReadPermission(codeBucket()) +
+                            s3ReadPermission(getCodeBucket()) +
                             s3AccountEncryptionReadPermission(
-                                codeBucket(),
+                                getCodeBucket(),
                                 "*",
-                                codeBucketRegion()
+                                getCodeBucketRegion()
                             ) +
                             s3ListPermission(operationsBucket) +
                             s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +

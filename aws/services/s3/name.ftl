@@ -23,7 +23,7 @@
                 occurrence.Core.Component,
                 occurrence
                 extensions),
-            segmentSeed())]
+            getSegmentSeed())]
 [/#function]
 
 [#function formatAccountS3PrimaryBucketName bucketType ]

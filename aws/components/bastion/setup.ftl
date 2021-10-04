@@ -156,12 +156,12 @@
                             ec2AutoScaleGroupLifecyclePermission(bastionAutoScaleGroupName) +
                             ec2IPAddressUpdatePermission() +
                             ec2ReadTagsPermission() +
-                            s3ListPermission(codeBucket()) +
-                            s3ReadPermission(codeBucket()) +
+                            s3ListPermission(getCodeBucket()) +
+                            s3ReadPermission(getCodeBucket()) +
                             s3AccountEncryptionReadPermission(
-                                codeBucket(),
+                                getCodeBucket(),
                                 "*",
-                                codeBucketRegion()
+                                getCodeBucketRegion()
                             ) +
                             cwMetricsProducePermission("CWAgent") +
                             cwLogsProducePermission(bastionLgName),

@@ -247,12 +247,12 @@
                 [
                     getPolicyDocument(
                         ec2ReadTagsPermission() +
-                        s3ListPermission(codeBucket()) +
-                        s3ReadPermission(codeBucket()) +
+                        s3ListPermission(getCodeBucket()) +
+                        s3ReadPermission(getCodeBucket()) +
                         s3AccountEncryptionReadPermission(
-                            codeBucket(),
+                            getCodeBucket(),
                             "*",
-                            codeBucketRegion()
+                            getCodeBucketRegion()
                         ) +
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
@@ -404,8 +404,8 @@
                                 "SourceDestCheck" : true,
                                 "GroupSet" :
                                     [getReference(ec2SecurityGroupId)] +
-                                    sshFromProxySecurityGroup()?has_content?then(
-                                        [sshFromProxySecurityGroup()],
+                                    getSshFromProxySecurityGroup()?has_content?then(
+                                        [getSshFromProxySecurityGroup()],
                                         []
                                     )
                             }

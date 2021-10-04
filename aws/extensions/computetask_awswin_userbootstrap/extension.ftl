@@ -85,7 +85,7 @@
                                     r'.\aws --region "${Region}" s3 sync "s3://${CodeBucket}/${ScriptStorePrefix}" "${!BOOTSTRAP_SCRIPTS_DIR}" 2>&1 | Write-Output ',
                                     {
                                         "Region" : { "Ref" : "AWS::Region" },
-                                        "CodeBucket" : codeBucket,
+                                        "CodeBucket" : getCodeBucket(),
                                         "ScriptStorePrefix" : scriptStorePrefix
                                     }
                                 ]
