@@ -30,6 +30,7 @@ jobs:
         env:
           GENERATION_PLUGIN_DIRS: ${{ github.workspace }}
         run: |
+          hamlet engine install-engine unicycle
           hamlet engine set-engine unicycle
           hamlet -i mock -p aws -p awstest -f cf deploy test-deployments -p '--junitxml=junit.xml' -o 'hamlet_tests/'
 
