@@ -36,7 +36,7 @@
     [#local envVariables += {
         "hamlet_request" : getCLORequestReference(),
         "hamlet_configuration" : getCLOConfigurationReference(),
-        "hamlet_accountRegion" : accountRegion(),
+        "hamlet_accountRegion" : getAccountRegion(),
         "hamlet_tenant" : tenantId,
         "hamlet_account" : accountId,
         "hamlet_product" : productId,
