@@ -66,7 +66,7 @@
         [#local solution = subOccurrence.Configuration.Solution ]
         [#local resources = subOccurrence.State.Resources ]
 
-        [#local destinationCidrs = getGroupCIDRs(solution.IPAddressGroups, true, occurrence)]
+        [#local destinationCidrs = getGroupCIDRs(solution.IPAddressGroups, true, subOccurrence)]
 
         [#switch solution.Action ]
             [#case "forward" ]
@@ -104,11 +104,11 @@
                                 [#local routeTableAssociationId = resources["routeAssociations"][linkTargetCore.Id].Id]
 
                                 [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
-                                [@createTransitGatewayRouteTableAssociation
-                                    id=routeTableAssociationId
-                                    transitGatewayAttachment=transitGatewayAttachment
-                                    transitGatewayRouteTable=getReference(routeTableId)
-                                /]
+                                    [@createTransitGatewayRouteTableAssociation
+                                        id=routeTableAssociationId
+                                        transitGatewayAttachment=transitGatewayAttachment
+                                        transitGatewayRouteTable=getReference(routeTableId)
+                                    /]
                                 [/#if]
 
                                 [#list destinationCidrs as destinationCidr ]
@@ -124,6 +124,35 @@
                                         /]
                                     [/#if]
                                 [/#list]
+                                [#break]
+
+                            [#case NETWORK_GATEWAY_COMPONENT_TYPE]
+                                [#local transitGatewayAttachment = (linkTargetAttributes["TRANSIT_GATEWAY_ATTACHMENT"])!"" ]
+
+                                [#if !transitGatewayAttachment?has_content ]
+                                    [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
+                                        [@fatal
+                                            message="Could not find transit Gateway Attachment Id"
+                                            detail="Add setting TRANSIT_GATEWAY_ATTACHMENT as the transit gateawy attachment for the route"
+                                            enabled=false
+                                        /]
+                                    [/#if]
+                                [/#if]
+
+                                [#list destinationCidrs as destinationCidr ]
+                                    [#local destinationCidrId = replaceAlphaNumericOnly(destinationCidr)]
+                                    [#local routeId = resources["routes"][linkTargetCore.Id][destinationCidrId].Id ]
+
+                                    [#if deploymentSubsetRequired(NETWORK_ROUTER_COMPONENT_TYPE, true)]
+                                        [@createTransitGatewayRoute
+                                                id=routeId
+                                                transitGatewayRouteTable=getReference(routeTableId)
+                                                transitGatewayAttachment=transitGatewayAttachment
+                                                destinationCidr=destinationCidr
+                                        /]
+                                    [/#if]
+                                [/#list]
+
                                 [#break]
                         [/#switch]
                     [/#if]
