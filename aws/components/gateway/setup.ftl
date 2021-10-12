@@ -294,7 +294,7 @@
 
                             [#local routerFound = true ]
                             [#local transitGateway = getExistingReference( linkTargetResources["transitGateway"].Id ) ]
-                            [#local transitGatewayRouteTableId = getExistingReference( linkTargetResources["routeTable"].Id ) ]
+                            [#local transitGatewayRouteTable = getExistingReference( linkTargetResources["routeTable"].Id ) ]
 
                         [/#if]
                         [#break]
@@ -347,20 +347,28 @@
                             transitGatewayRouteTable=transitGatewayRouteTable
                         /]
 
-                        [#list sourceCidrs as souceCidr ]
-                            [#local vpcRouteId = formatResourceId(
-                                    AWS_TRANSITGATEWAY_ROUTE_RESOURCE_TYPE,
-                                    gwCore.Id,
-                                    souceCidr?index
-                            )]
+                        [#if ! gwSolution.BGP.Enabled ]
+                            [#list sourceCidrs as souceCidr ]
+                                [#local vpcRouteId = formatResourceId(
+                                        AWS_TRANSITGATEWAY_ROUTE_RESOURCE_TYPE,
+                                        gwCore.Id,
+                                        souceCidr?index
+                                )]
 
-                            [@createTransitGatewayRoute
-                                    id=vpcRouteId
-                                    transitGatewayRouteTable=transitGatewayRouteTable
-                                    transitGatewayAttachment=getReference(transitGatewayAttachmentId)
-                                    destinationCidr=souceCidr
+                                [@createTransitGatewayRoute
+                                        id=vpcRouteId
+                                        transitGatewayRouteTable=transitGatewayRouteTable
+                                        transitGatewayAttachment=getReference(transitGatewayAttachmentId)
+                                        destinationCidr=souceCidr
+                                /]
+                            [/#list]
+                        [#else]
+                            [@createTransitGatewayRouteTablePropagation
+                                id=transitGatewayRoutePropogationId
+                                transitGatewayAttachment=getReference(transitGatewayAttachmentId)
+                                transitGatewayRouteTable=transitGatewayRouteTable
                             /]
-                        [/#list]
+                        [/#if]
                     [/#if]
                 [/#if]
                 [#break]

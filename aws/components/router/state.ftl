@@ -69,6 +69,7 @@
                                             }
                                         })]
 
+                    [#case NETWORK_GATEWAY_COMPONENT_TYPE ]
                         [#list destinationCidrs as destinationCidr ]
                             [#local destinationCidrId = replaceAlphaNumericOnly(destinationCidr)]
                             [#local resources = mergeObjects(resources,
