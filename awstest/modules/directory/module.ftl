@@ -92,7 +92,6 @@
                             },
                             "Output" : [
                                 "directoryXappXdirectorysimplebaseXip",
-                                "securityGroupXdirectoryXappXdirectorysimplebase",
                                 "secretXappXdirectorysimplebaseXroot"
                             ]
                         }
@@ -192,7 +191,6 @@
                             },
                             "Output" : [
                                 "directoryXappXdirectoryadbaseXip",
-                                "securityGroupXdirectoryXappXdirectoryadbase",
                                 "secretXappXdirectoryadbaseXroot"
                             ]
                         }
