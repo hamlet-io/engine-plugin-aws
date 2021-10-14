@@ -85,10 +85,6 @@
                                     "Name" : "directoryXappXdirectorysimplebase",
                                     "Type" : "AWS::DirectoryService::SimpleAD"
                                 },
-                                "securityGroup" : {
-                                    "Name" : "securityGroupXdirectoryXappXdirectorysimplebase",
-                                    "Type" : "AWS::EC2::SecurityGroup"
-                                },
                                 "rootSecret" : {
                                     "Name" : "secretXappXdirectorysimplebaseXroot",
                                     "Type" : "AWS::SecretsManager::Secret"
@@ -188,10 +184,6 @@
                                 "directoryHost" : {
                                     "Name" : "directoryXappXdirectoryadbase",
                                     "Type" : "AWS::DirectoryService::MicrosoftAD"
-                                },
-                                "securityGroup" : {
-                                    "Name" : "securityGroupXdirectoryXappXdirectoryadbase",
-                                    "Type" : "AWS::EC2::SecurityGroup"
                                 },
                                 "rootSecret" : {
                                     "Name" : "secretXappXdirectoryadbaseXroot",
