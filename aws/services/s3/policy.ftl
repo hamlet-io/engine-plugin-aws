@@ -17,13 +17,15 @@
 [#function getS3BucketStatement actions bucket key="" object="" principals="" conditions={} ]
     [#local s3PrefixCondition = {} ]
     [#if key?has_content || object?has_content ]
-        [#local s3PrefixCondition =
-            {
-                "StringLike" : {
-                    "s3:prefix" : (key?has_content?then(key, "") + object?has_content?then("/" + object, ""))?remove_beginning("/")
+        [#if key?has_content && object != "*" ]
+            [#local s3PrefixCondition =
+                {
+                    "StringLike" : {
+                        "s3:prefix" : (key?has_content?then(key, "") + object?has_content?then("/" + object, ""))?remove_beginning("/")
+                    }
                 }
-            }
-        ]
+            ]
+        [/#if]
     [/#if]
     [#return
         [
