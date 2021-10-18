@@ -21,6 +21,7 @@
     fqdName=""
     shortName=""
     vpcSettings=""
+    dependencies=[]
 ]
     [@cfResource
     id=id
@@ -44,6 +45,7 @@
             "Size",
             (type="MicrosoftAD")?then("",size)
         )
+    dependencies=dependencies
     outputs=
         DIRECTORY_OUTPUT_MAPPINGS
     /]
