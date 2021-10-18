@@ -218,6 +218,9 @@
                 shortName=shortName
                 size=size
                 vpcSettings=vpcSettings
+                dependencies=[
+                    resources["rootCredentials"]["secret"].Id
+                ]
             /]
 
             [@cfOutput
