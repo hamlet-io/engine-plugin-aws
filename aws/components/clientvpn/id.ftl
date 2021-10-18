@@ -1,0 +1,14 @@
+[#ftl]
+[@addResourceGroupInformation
+    type=CLIENTVPN_COMPONENT_TYPE
+    attributes=[]
+    provider=AWS_PROVIDER
+    resourceGroup=DEFAULT_RESOURCE_GROUP
+    services=
+        [
+            AWS_CLIENTVPN_SERVICE,
+            AWS_CERTIFICATE_MANAGER_SERVICE,
+            AWS_CLOUDWATCH_SERVICE,
+            AWS_IDENTITY_SERVICE
+        ]
+/]
