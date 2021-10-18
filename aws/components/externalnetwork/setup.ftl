@@ -66,7 +66,7 @@
                 [#local vpnPublicIP = (solution.SiteToSite.PublicIP)!"" ]
 
                 [#local vpnOptionsCommand = "vpnOptions"]]
-                [#local vpnSecurityProfile = getSecurityProfile(occurrence, core.Type, "IPSecVPN")]
+                [#local vpnSecurityProfile = getSecurityProfile(subOccurrence, core.Type, "IPSecVPN")]
 
                 [#if ! vpnPublicIP?has_content ]
                     [@fatal
@@ -152,10 +152,10 @@
                                                 r'       "' + vpnConnectionId + r'" ' +
                                                 r'       "${tmpdir}/cli-' +
                                                             vpnConnectionId + "-" + vpnOptionsCommand + r'.json" || return $?'
-                                                r'      tunnel_ips=$(get_vpn_connection_tunnel_ips ' +
+                                                r'      tunnel_ips=($(get_vpn_connection_tunnel_ips ' +
                                                 r'       "' + getRegion() + r'" ' +
                                                 r'       "${STACK_NAME}"' +
-                                                r'       "' + vpnConnectionId + r'" )',
+                                                r'       "' + vpnConnectionId + r'" ))',
                                                 r'      tunnel_ip_1="${tunnel_ips[0]}"',
                                                 r'      tunnel_ip_2="${tunnel_ips[1]}"'
                                             ] +
@@ -165,7 +165,7 @@
                                                             formatId(vpnConnectionTunnel1Id, IP_ADDRESS_ATTRIBUTE_TYPE) : "$\{tunnel_ip_1}",
                                                             formatId(vpnConnectionTunnel2Id, IP_ADDRESS_ATTRIBUTE_TYPE) : "$\{tunnel_ip_2}"
                                                         },
-                                                        "tunnelip"
+                                                        vpnConnectionId
                                                 ) +
                                             [
                                                 r'       ;;',
@@ -248,7 +248,7 @@
                                             "VPN Gateway Attachment",
                                             {
                                                transGatewayAttachmentId : r'${transitGatewayAttachment}'
-                                            }
+                                            },
                                             vpnConnectionId
                                         )
                                     /]
