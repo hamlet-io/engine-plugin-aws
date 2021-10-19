@@ -173,7 +173,7 @@
     /]
 [/#macro]
 
-[#function getVPNTunnelOptionsCli securityProfile ]
+[#function getVPNTunnelOptionsCli securityProfile tunnelInsideCidr ]
 
     [#local ikeVersions =
                 (securityProfile.IKEVersions)?map( version -> { "Value" : version }) ]
@@ -216,7 +216,11 @@
                 "Phase2EncryptionAlgorithms": phase2EncryptionAlgorithms,
                 "Phase2IntegrityAlgorithms": phase2IntegrityAlgorithms,
                 "Phase2DHGroupNumbers": phase2DHGroupNumbers
-            }
+            } +
+            attributeIfContent(
+                "TunnelInsideCidr",
+                tunnelInsideCidr
+            )
         }
     ]
 [/#function]

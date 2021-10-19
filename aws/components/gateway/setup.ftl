@@ -458,9 +458,21 @@
 
                                     [#if deploymentSubsetRequired("cli", false) ]
                                         [@addCliToDefaultJsonOutput
-                                            id=vpnConnectionId
+                                            id=vpnConnectionTunnel1Id
                                             command=vpnOptionsCommand
-                                            content=getVPNTunnelOptionsCli(vpnSecurityProfile)
+                                            content=getVPNTunnelOptionsCli(
+                                                vpnSecurityProfile,
+                                                ((solution.SiteToSite.InsideTunnelCIDRs)![])[0]
+                                            )
+                                        /]
+
+                                        [@addCliToDefaultJsonOutput
+                                            id=vpnConnectionTunnel2Id
+                                            command=vpnOptionsCommand
+                                            content=getVPNTunnelOptionsCli(
+                                                vpnSecurityProfile,
+                                                ((solution.SiteToSite.InsideTunnelCIDRs)![])[1]
+                                            )
                                         /]
                                     [/#if]
 
@@ -478,8 +490,16 @@
                                                     r'       "' + getRegion() + r'" ' +
                                                     r'       "${STACK_NAME}"' +
                                                     r'       "' + vpnConnectionId + r'" ' +
+                                                    r'       "0"' +
                                                     r'       "${tmpdir}/cli-' +
-                                                                vpnConnectionId + "-" + vpnOptionsCommand + r'.json" || return $?'
+                                                                vpnConnectionTunnel1Id + "-" + vpnOptionsCommand + r'.json" || return $?',
+                                                    r'       update_vpn_options ' +
+                                                    r'       "' + getRegion() + r'" ' +
+                                                    r'       "${STACK_NAME}"' +
+                                                    r'       "' + vpnConnectionId + r'" ' +
+                                                    r'       "1"' +
+                                                    r'       "${tmpdir}/cli-' +
+                                                                vpnConnectionTunnel2Id + "-" + vpnOptionsCommand + r'.json" || return $?',
                                                     r'      tunnel_ips=($(get_vpn_connection_tunnel_ips ' +
                                                     r'       "' + getRegion() + r'" ' +
                                                     r'       "${STACK_NAME}"' +
