@@ -160,27 +160,27 @@
 
     [#if ! solution.IPAddressGroups?seq_contains("_global")]
         [#local epilogue_content += [
-                "   info \"SecGroupId = $\{secgrp_id}\"", 
-                "   aws --region " + getRegion() + " ec2 describe-security-group-rules --filter \"Name=group-id, Values=$\{secgrp_id}\" --query \"SecurityGroupRules[?CidrIpv4=='0.0.0.0/0' && IpProtocol!='icmp'].[IpProtocol, FromPort, ToPort, SecurityGroupRuleId]\" --output text | sed 's/\\t/;/g' | while read line",
-                "   do",
-                "      IFS=';' read -r -a RuleSegment <<< \"$line\""
+                r'   info "SecGroupId = ${secgrp_id}"', 
+                r'   aws --region ' + getRegion() + r' ec2 describe-security-group-rules --filter "Name=group-id, Values=${secgrp_id}" --query "SecurityGroupRules[?CidrIpv4==' + r"'0.0.0.0/0' && IpProtocol!='icmp'" + r'].[IpProtocol, FromPort, ToPort, SecurityGroupRuleId]" --output text | ' + r"sed 's/\t/;/g'" + r' | while read line',
+                r'   do',
+                r"      IFS=';'" + r' read -r -a RuleSegment <<< "$line"'
             ]
         ]
         [#-- Loop over all IP addresses that are allowed --]
         [#list getGroupCIDRs(solution.IPAddressGroups, true, occurrence ) as cidr]
             [#local epilogue_content += [
-                    "      info \"cidr = ${cidr}\""
+                    '      info "cidr = ${cidr}"'
                 ]
             ]
             [#local epilogue_content += [
-                    "      aws --region " + getRegion() + " ec2 authorize-security-group-ingress --group-id $\{secgrp_id} --ip-permissions IpProtocol=$\{RuleSegment[0]},FromPort=$\{RuleSegment[1]},ToPort=$\{RuleSegment[2]},IpRanges="+r"'[{CidrIp="+cidr+r"}]'"
+                    r'      aws --region ' + getRegion() + r' ec2 authorize-security-group-ingress --group-id ${secgrp_id} --ip-permissions IpProtocol=${RuleSegment[0]},FromPort=${RuleSegment[1]},ToPort=${RuleSegment[2]},IpRanges=' + r"'[{CidrIp=" + cidr + r"}]'"
                 ]
             ]
         [/#list]
         [#local epilogue_content += [
-                "      info \"Removing Rule $\{RuleSegment[3]}\"",
-                "      aws --region " + getRegion() + " ec2 revoke-security-group-ingress --group-id $\{secgrp_id} --security-group-rule-ids $\{RuleSegment[3]}",
-                "   done"
+                r'      info "Removing Rule ${RuleSegment[3]}"',
+                r'      aws --region ' + getRegion() + r' ec2 revoke-security-group-ingress --group-id ${secgrp_id} --security-group-rule-ids ${RuleSegment[3]}',
+                r'   done'
             ]
         ]
     [/#if]
@@ -189,17 +189,17 @@
         [@addToDefaultBashScriptOutput
             content=
             [
-                "case $\{STACK_OPERATION} in",
-                "  create|update)",
-                "   ds_id=\"$(get_cloudformation_stack_output \"" + getRegion() + "\" \"$\{STACK_NAME}\" \""+dsId+r'" "ref" || return $?)"',
-                "   ds_filter=\"Name=description,Values=AWS created security group for $\{ds_id} directory controllers\"",
-                "   secgrp_id=\"$(aws --region " + getRegion() + " ec2 describe-security-groups --filters \"$\{ds_filter}\" --query 'SecurityGroups[0].GroupId' --output text)\" ",
-                "   info \"SecurityGroupId=$\{secgrp_id}\""
+                r'case ${STACK_OPERATION} in',
+                r'  create|update)',
+                r'   ds_id="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + dsId + r'" "ref" || return $?)"',
+                r'   ds_filter="Name=description,Values=AWS created security group for ${ds_id} directory controllers"',
+                r'   secgrp_id="$(aws --region ' + getRegion() + r' ec2 describe-security-groups --filters "${ds_filter}" --query ' + r"'SecurityGroups[0].GroupId'" + r' --output text)" ',
+                r'   info "SecurityGroupId=${secgrp_id}"'
             ] +
             epilogue_content +
             [
-                "   ;;",
-                "esac"
+                r'   ;;',
+                r'esac'
             ]
         /]
     [/#if]
