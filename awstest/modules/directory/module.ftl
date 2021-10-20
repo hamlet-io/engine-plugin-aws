@@ -85,10 +85,6 @@
                                     "Name" : "directoryXappXdirectorysimplebase",
                                     "Type" : "AWS::DirectoryService::SimpleAD"
                                 },
-                                "securityGroup" : {
-                                    "Name" : "securityGroupXdirectoryXappXdirectorysimplebase",
-                                    "Type" : "AWS::EC2::SecurityGroup"
-                                },
                                 "rootSecret" : {
                                     "Name" : "secretXappXdirectorysimplebaseXroot",
                                     "Type" : "AWS::SecretsManager::Secret"
@@ -96,7 +92,6 @@
                             },
                             "Output" : [
                                 "directoryXappXdirectorysimplebaseXip",
-                                "securityGroupXdirectoryXappXdirectorysimplebase",
                                 "secretXappXdirectorysimplebaseXroot"
                             ]
                         }
@@ -189,10 +184,6 @@
                                     "Name" : "directoryXappXdirectoryadbase",
                                     "Type" : "AWS::DirectoryService::MicrosoftAD"
                                 },
-                                "securityGroup" : {
-                                    "Name" : "securityGroupXdirectoryXappXdirectoryadbase",
-                                    "Type" : "AWS::EC2::SecurityGroup"
-                                },
                                 "rootSecret" : {
                                     "Name" : "secretXappXdirectoryadbaseXroot",
                                     "Type" : "AWS::SecretsManager::Secret"
@@ -200,7 +191,6 @@
                             },
                             "Output" : [
                                 "directoryXappXdirectoryadbaseXip",
-                                "securityGroupXdirectoryXappXdirectoryadbase",
                                 "secretXappXdirectoryadbaseXroot"
                             ]
                         }

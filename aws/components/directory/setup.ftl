@@ -43,34 +43,11 @@
         [#case "ActiveDirectory"]
             [#local type = "MicrosoftAD"]
             [#local size = (solution.Size == "Small")?then("Standard","Enterprise")]
-            [#local dnsPorts = [
-                "dns-tcp", "dns-udp",
-                "globalcatalog",
-                "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
-                "ldap-tcp", "ldap-udp", "ldaps",
-                "netlogin-tcp", "netlogin-udp",
-                "ntp",
-                "rpc", "ephemeralrpctcp", "ephemeralrpcudp",
-                "rsync",
-                "smb-tcp", "smb-udp",
-                "anyicmp"
-            ]]
             [#break]
 
         [#case "Simple"]
             [#local type = "SimpleAD"]
             [#local size = (solution.Size == "Small")?then("Small","Large")]
-            [#local dnsPorts = [
-                "dns-tcp", "dns-udp",
-                "globalcatalog",
-                "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
-                "ldap-tcp", "ldap-udp", "ldaps",
-                "netlogin-tcp", "netlogin-udp",
-                "ntp",
-                "rsync",
-                "smb-tcp", "smb-udp",
-                "anyicmp"
-            ]]
             [#break]
 
         [#default]
@@ -81,45 +58,12 @@
             /]
             [#local type = "unknown" ]
             [#local size = "unknown" ]
-            [#local dnsPorts = [
-                "dns-tcp", "dns-udp"
-            ]]
-
             [#break]
     [/#switch]
 
     [#local networkProfile = getNetworkProfile(occurrence)]
 
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
-
-    [#-- Link Processing --]
-    [#list solution.Links?values as link]
-        [#if link?is_hash]
-            [#local linkTarget = getLinkTarget(occurrence, link) ]
-
-            [@debug message="Link Target" context=linkTarget enabled=false /]
-
-            [#if !linkTarget?has_content]
-                [#continue]
-            [/#if]
-
-            [#local linkTargetCore = linkTarget.Core ]
-            [#local linkTargetConfiguration = linkTarget.Configuration ]
-            [#local linkTargetResources = linkTarget.State.Resources ]
-            [#local linkTargetAttributes = linkTarget.State.Attributes ]
-
-            [#if deploymentSubsetRequired(DIRECTORY_COMPONENT_TYPE, true)]
-                [@createSecurityGroupRulesFromLink
-                    occurrence=occurrence
-                    groupId=securityGroupId
-                    linkTarget=linkTarget
-                    inboundPorts=dnsPorts
-                    networkProfile=networkProfile
-                /]
-            [/#if]
-
-        [/#if]
-    [/#list]
 
     [#-- Secret Management --]
     [#local secretStoreLink = getLinkTarget(occurrence, solution.RootCredentials.SecretStore) ]
@@ -152,55 +96,6 @@
 
     [#-- Output Generation --]
     [#if deploymentSubsetRequired(DIRECTORY_COMPONENT_TYPE, true)]
-
-        [#-- Network Security --]
-        [@createSecurityGroup
-            id=securityGroupId
-            name=securityGroupName
-            vpcId=vpcId
-            occurrence=occurrence
-        /]
-
-        [@createSecurityGroupIngress
-            id=
-                formatDependentSecurityGroupIngressId(
-                    securityGroupId,
-                    "self"
-                )
-            port="any"
-            group=securityGroupId
-            groupId=securityGroupId
-        /]
-
-        [@createSecurityGroupEgress
-            id=
-                formatDependentSecurityGroupEgressId(
-                    securityGroupId,
-                    "self"
-                )
-            port="any"
-            group=securityGroupId
-            groupId=securityGroupId
-        /]
-
-        [@createSecurityGroupRulesFromNetworkProfile
-            occurrence=occurrence
-            groupId=securityGroupId
-            networkProfile=networkProfile
-            inboundPorts=dnsPorts
-        /]
-
-        [#local ingressNetworkRule = {
-                "Ports" : dnsPorts,
-                "IPAddressGroups" : solution.IPAddressGroups
-        }]
-
-        [@createSecurityGroupIngressFromNetworkRule
-            occurrence=occurrence
-            groupId=securityGroupId
-            networkRule=ingressNetworkRule
-        /]
-
         [#if !hibernate]
             [#local vpcSettings= {
                     "SubnetIds" : getSubnets(core.Tier, networkResources),
@@ -259,5 +154,55 @@
 
         [/#if]
     [/#if]
+
+    [#local epilogue_cidr=[]]
+    [#local epilogue_content=[]]
+
+    [#if ! solution.IPAddressGroups?seq_contains("_global")]
+        [#local epilogue_content += [
+                r'   info "SecGroupId = ${secgrp_id}"', 
+                r'   aws --region ' + getRegion() + r' ec2 describe-security-group-rules --filter "Name=group-id, Values=${secgrp_id}" --query "SecurityGroupRules[?CidrIpv4==' + r"'0.0.0.0/0' && IpProtocol!='icmp'" + r'].[IpProtocol, FromPort, ToPort, SecurityGroupRuleId]" --output text | ' + r"sed 's/\t/;/g'" + r' | while read line',
+                r'   do',
+                r"      IFS=';'" + r' read -r -a RuleSegment <<< "$line"'
+            ]
+        ]
+        [#-- Loop over all IP addresses that are allowed --]
+        [#list getGroupCIDRs(solution.IPAddressGroups, true, occurrence ) as cidr]
+            [#local epilogue_content += [
+                    '      info "cidr = ${cidr}"'
+                ]
+            ]
+            [#local epilogue_content += [
+                    r'      aws --region ' + getRegion() + r' ec2 authorize-security-group-ingress --group-id ${secgrp_id} --ip-permissions IpProtocol=${RuleSegment[0]},FromPort=${RuleSegment[1]},ToPort=${RuleSegment[2]},IpRanges=' + r"'[{CidrIp=" + cidr + r"}]'"
+                ]
+            ]
+        [/#list]
+        [#local epilogue_content += [
+                r'      info "Removing Rule ${RuleSegment[3]}"',
+                r'      aws --region ' + getRegion() + r' ec2 revoke-security-group-ingress --group-id ${secgrp_id} --security-group-rule-ids ${RuleSegment[3]}',
+                r'   done'
+            ]
+        ]
+    [/#if]
+
+    [#if deploymentSubsetRequired("epilogue", false ) ]
+        [@addToDefaultBashScriptOutput
+            content=
+            [
+                r'case ${STACK_OPERATION} in',
+                r'  create|update)',
+                r'   ds_id="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + dsId + r'" "ref" || return $?)"',
+                r'   ds_filter="Name=description,Values=AWS created security group for ${ds_id} directory controllers"',
+                r'   secgrp_id="$(aws --region ' + getRegion() + r' ec2 describe-security-groups --filters "${ds_filter}" --query ' + r"'SecurityGroups[0].GroupId'" + r' --output text)" ',
+                r'   info "SecurityGroupId=${secgrp_id}"'
+            ] +
+            epilogue_content +
+            [
+                r'   ;;',
+                r'esac'
+            ]
+        /]
+    [/#if]
+
 
 [/#macro]
