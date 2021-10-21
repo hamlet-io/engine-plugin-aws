@@ -60,7 +60,8 @@
         getS3BucketStatement(
             [
                 "s3:ListBucket",
-                "s3:ListBucketVersions"
+                "s3:ListBucketVersions",
+                "s3:GetBucketLocation"
             ]
             bucket,
             key,
@@ -87,7 +88,8 @@
         getS3BucketStatement(
             [
                 "s3:ListBucket",
-                "s3:ListBucketVersions"
+                "s3:ListBucketVersions",
+                "s3:GetBucketLocation"
             ],
             bucket,
             key,
@@ -114,7 +116,8 @@
         getS3BucketStatement(
             [
                 "s3:ListBucket",
-                "s3:ListBucketVersions"
+                "s3:ListBucketVersions",
+                "s3:GetBucketLocation"
             ],
             bucket,
             key,
@@ -171,7 +174,8 @@
         getS3BucketStatement(
             [
                 "s3:ListBucket",
-                "s3:ListBucketVersions"
+                "s3:ListBucketVersions",
+                "s3:GetBucketLocation"
             ],
             bucket,
             key,
@@ -188,6 +192,7 @@
         getS3BucketStatement(
             [
                 "s3:ListBucket",
+                "s3:GetBucketLocation",
                 "s3:GetBucketLocation"
             ],
             bucket)]
