@@ -1,5 +1,21 @@
 [#ftl]
 
+[#assign SECRETS_MANAGER_SECRET_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        },
+        ARN_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_SECRETS_MANAGER_SECRET_RESOURCE_TYPE
+    mappings=SECRETS_MANAGER_SECRET_OUTPUT_MAPPINGS
+/]
+
 [#function getSecretManagerSecretRef secretId secretKey ]
     [#return
         {
@@ -111,11 +127,61 @@
                 )
             )
         tags=tags
+        outputs=SECRETS_MANAGER_SECRET_OUTPUT_MAPPINGS
     /]
 [/#macro]
 
+[#macro saveSecretValueAsKMSStringScript
+            secretId
+            secretAttribute
+            kmsKeyId
+            secretKeyJSONPath=""
+            subset="epilogue" ]
+    [#if deploymentSubsetRequired(subset, false) ]
+        [@addToDefaultBashScriptOutput
+            content=
+            [
+                r'case ${STACK_OPERATION} in',
+                r'  create|update)',
+                r'    secret_arn="$(get_cloudformation_stack_output "' + getRegion() + r'" ' + r' "${STACK_NAME}" ' + secretId + r' "ref" || return $?)"',
+                r'    if [[ -n "$( aws --region "' + getRegion() + r'" --output text secretsmanager list-secret-version-ids --secret-id "${secret_arn}" --query "Versions[*].VersionId")" ]]; then ',
+                r'       secret_content="$(aws --region "' + getRegion() + r'" --output text secretsmanager get-secret-value --secret-id "${secret_arn}" --query "SecretString" || return $?)"',
+                r'       if [[ -n "${secret_content}" ]]; then'
+                r'            info "Saving secret to CMDB"'
+            ] +
+            secretKeyJSONPath?has_content?then(
+                [
+                    r'        secret_value="$( echo "${secret_content}" | jq -r "' + secretKeyJSONPath + r'")"'
+                ],
+                [
+                    r'        secret_value="${secret_content}"'
+                ]
+            ) +
+            [
+                r'            kms_encrypted_secret="$(encrypt_kms_string "' + getRegion() + r'" ' + r' "${secret_value}" ' + r' "' + getExistingReference(kmsKeyId, ARN_ATTRIBUTE_TYPE) + r'" || return $?)"'
+            ] +
+            pseudoStackOutputScript(
+                "KMS Encrypted Secret",
+                {
+                    formatId(secretId, secretAttribute) : r'${kms_encrypted_secret}'
+                },
+                secretId
+            ) +
+            [
+                r'       else',
+                r'           info "secret emtpy - skipping cmdb save"',
+                r'       fi',
+                r'   else',
+                r'     info "secret emtpy - skipping cmdb save"',
+                r'   fi',
+                r' esac'
+            ]
+        /]
+    [/#if]
+[/#macro]
 
-[#macro setupComponentSecret
+
+[#macro setupComponentGeneratedSecret
             occurrence
             secretStoreLink
             kmsKeyId
@@ -154,14 +220,10 @@
                                 occurrence.Core.Type
         )]
 
-        [#local generateSecret = (solution.Source == "generated") ]
-        [#local secretKeyPath = "." ]
-        [#local secretAttribute = SECRET_ATTRIBUTE_TYPE]
-
-        [#if generateSecret ]
-            [#local secretAttribute = GENERATEDPASSWORD_ATTRIBUTE_TYPE ]
-            [#local secretKeyPath = (solution.Generated.SecretKey)?ensure_starts_with(".") ]
-        [/#if]
+        [#local secretAttribute = GENERATEDPASSWORD_ATTRIBUTE_TYPE ]
+        [#local secretKeyPath = (solution.Generated.SecretKey)?has_content?then(
+                                    (solution.Generated.SecretKey)?ensure_starts_with("."),
+                                    "") ]
 
         [#switch secretStoreSolution.Engine ]
             [#case "aws:secretsmanager" ]
@@ -178,35 +240,19 @@
                         tags=getOccurrenceCoreTags(occurrence, secretName)
                         kmsKeyId=kmsKeyId
                         description=secretDescription
-                        generateSecret=generateSecret
+                        generateSecret=true
                         generateSecretPolicy=secretPolicy
                         secretString=secretString
                     /]
                 [/#if]
-                [#if deploymentSubsetRequired("epilogue", false) ]
-                    [@addToDefaultBashScriptOutput
-                        content=
-                        [
-                            r'case ${STACK_OPERATION} in',
-                            r'  create|update)',
-                            r'    info "Saving secret to CMDB"',
-                            r'    secret_arn="$(get_cloudformation_stack_output "' + getRegion() + r'" ' + r' "${STACK_NAME}" ' + secretId + r' "ref" || return $?)"',
-                            r'    secret_content="$(aws --region "' + getRegion() + r'" --output text secretsmanager get-secret-value --secret-id "${secret_arn}" --query "SecretString" || return $?)"',
-                            r'    secret_value="$( echo "${secret_content}" | jq -r "' + secretKeyPath + r'")"',
-                            r'    kms_encrypted_secret="$(encrypt_kms_string "' + getRegion() + r'" ' + r' "${secret_value}" ' + r' "' + getExistingReference(kmsKeyId, ARN_ATTRIBUTE_TYPE) + r'" || return $?)"'
-                        ] +
-                        pseudoStackOutputScript(
-                            "KMS Encrypted Secret",
-                            {
-                                formatId(secretId, secretAttribute) : r'${kms_encrypted_secret}'
-                            },
-                            secretId
-                        ) +
-                        [
-                            "esac"
-                        ]
-                    /]
-                [/#if]
+
+                [@saveSecretValueAsKMSStringScript
+                    secretId=secretId
+                    secretAttribute=secretAttribute
+                    kmsKeyId=kmsKeyId
+                    secretKeyJSONPath=secretKeyPath
+                /]
+
                 [#break]
         [/#switch]
     [/#if]
