@@ -115,8 +115,13 @@
                                 [#local vpnConnectionTunnel2Id = resources["VpnConnections"][id]["vpnTunnel2"].Id ]
 
                                 [#local transitGateway = getReference( linkTargetResources["transitGateway"].Id ) ]
-                                [#local transitGatewayRouteTable = getReference( linkTargetResources["routeTable"].Id )]
+                                [#local transitGatewayRouteTableId = linkTargetResources["routeTable"].Id  ]
+                                [#local transitGatewayRouteTable = getReference( transitGatewayRouteTableId )]
                                 [#local transGatewayAttachmentId =  formatId(vpnConnectionId, "attach") ]
+
+
+                                [#local externalNetworkCIDRs = getGroupCIDRs(parentSolution.IPAddressGroups, true, occurrence)]
+
 
                                 [#if deploymentSubsetRequired(EXTERNALNETWORK_COMPONENT_TYPE, true)]
                                     [@createVPNConnection
@@ -222,17 +227,12 @@
                                                     transitGatewayRouteTable=transitGatewayRouteTable
                                             /]
                                         [/#if]
-
                                     [#else]
-
-                                        [#local externalNetworkCIDRs = getGroupCIDRs(parentSolution.IPAddressGroups, true, occurrence)]
-
                                         [#list externalNetworkCIDRs as externalNetworkCIDR ]
                                             [#local vpnRouteId = formatResourceId(
                                                     AWS_TRANSITGATEWAY_ROUTE_RESOURCE_TYPE,
-                                                    core.Id,
-                                                    linkTarget.Core.Id,
-                                                    externalNetworkCIDR?index
+                                                    transitGatewayRouteTableId,
+                                                    replaceAlphaNumericOnly(externalNetworkCIDR)
                                             )]
 
                                             [#if deploymentSubsetRequired(EXTERNALNETWORK_COMPONENT_TYPE, true)]
@@ -245,6 +245,7 @@
                                             [/#if]
                                         [/#list]
                                     [/#if]
+
                                 [#else]
 
                                     [#if deploymentSubsetRequired("epilogue", false) ]
