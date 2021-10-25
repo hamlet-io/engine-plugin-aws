@@ -17,3 +17,29 @@
             AWS_SECRETS_MANAGER_SERVICE
         ]
 /]
+
+[@addResourceGroupAttributeValues
+    type=DIRECTORY_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names" : "Engine",
+            "Values" : [
+                "shared:Simple",
+                "shared:ActiveDirectory",
+                "ADConnector"
+            ]
+        },
+        {
+            "Names" : "engine:ADConnector",
+            "Children" : [
+                {
+                    "Names" : "ADIPAddresses",
+                    "Description" : "The IP addresses of the DNS servers for the AD Domain controllers",
+                    "Types" : ARRAY_OF_STRING_TYPE,
+                    "Default" : []
+                }
+            ]
+        }
+    ]
+/]

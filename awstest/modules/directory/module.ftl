@@ -207,4 +207,44 @@
         }
     /]
 
+    [#-- AD Connector --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "app" : {
+                    "Components" : {
+                        "adconnectorbase" : {
+                            "Type" : "directory",
+                            "deployment:Unit" : "aws-adconnector-base",
+                            "Engine" : "aws:ADConnector",
+                            "Size" : "Small",
+                            "aws:engine:ADConnector" : {
+                                "ADIPAddresses" : [
+                                    "10.1.1.1",
+                                    "10.1.1.2"
+                                ]
+                            },
+                            "RootCredentials" : {
+                                "Source" : "user",
+                                "Link" : {
+                                    "Tier" : "app",
+                                    "Component" : "adconnectorbasesecret",
+                                    "SubComponent" : "adconnectorbaseuser"
+                                }
+                            }
+                        },
+                        "adconnectorbasesecret" : {
+                            "Type" : "secretstore",
+                            "deployment:Unit" : "aws-adconnector-base-secret",
+                            "Engine" : "aws:secretsmanager",
+                            "Secrets" : {
+                                "adconnectorbaseuser" : {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    /]
+
 [/#macro]
