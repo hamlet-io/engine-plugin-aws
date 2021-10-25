@@ -59,14 +59,24 @@
             [#local linkTargetResources = linkTarget.State.Resources ]
             [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
-            [#if deploymentSubsetRequired(EFS_COMPONENT_TYPE, true)]
-                [@createSecurityGroupRulesFromLink
-                    occurrence=occurrence
-                    groupId=efsSecurityGroupId
-                    linkTarget=linkTarget
-                    inboundPorts=[ port ]
-                    networkProfile=networkProfile
-                /]
+            [#if ( 'directory' == (linkTargetCore.Type)!'' ) ]
+                [#if linkTargetAttributes.ENGINE == 'ActiveDirectory']
+                    [#local directoryId = linkTargetAttributes.DOMAIN_ID]
+                [#else]
+                    [@fatal message='Invalid directory type. Active Directory required' context=linkTargetAttributes /]
+                [/#if]
+            [#else]
+                [#if deploymentSubsetRequired(EFS_COMPONENT_TYPE, true)]
+[#-- Removed to test. Can't see how this ever worked - port not defined
+                    [@createSecurityGroupRulesFromLink
+                        occurrence=occurrence
+                        groupId=efsSecurityGroupId
+                        linkTarget=linkTarget
+                        inboundPorts=[ port ]
+                        networkProfile=networkProfile
+                    /]
+--]
+                [/#if]
             [/#if]
 
         [/#if]
@@ -99,12 +109,36 @@
             networkRule=ingressNetworkRule
         /]
 
+        [#-- Create alias list for FSX mounts --]
+        [#local aliases = []]
+        [#list occurrence.Occurrences![] as subOccurrence]
+            [#local subCore = subOccurrence.Core ]
+            [#local subSolution = subOccurrence.Configuration.Solution ]
+            [#if subCore.Type == EFS_MOUNT_COMPONENT_TYPE ]
+                [#local aliases += [ subSolution.Directory ]]
+            [/#if]
+        [/#list]
+        [#local subnets = []]
+        [#list getZones() as zone ]
+            [#local subnets += getSubnets(core.Tier, networkResources, zone.Id, true, false) ]
+        [/#list]
+        [#local typeSuffix = (getZones()?size>1)?then("-MULTIAZ","") ]
+        [#local fsx_config = {
+            "directoryId": directoryId,
+            "aliases": aliases,
+            "maintenanceWindow": solution["aws:MaintenanceWindow"],
+            "subnets": subnets,
+            "storageCapacity": solution["aws:StorageCapacity"]
+        }]
+
         [@createEFS
             id=efsId
             tags=getOccurrenceCoreTags(occurrence, efsFullName, "", false)
             encrypted=solution.Encrypted
             kmsKeyId=cmkKeyId
             iamRequired=solution["aws:IAMRequired"]
+            type=solution["aws:Type"] + typeSuffix
+            fsx_config=fsx_config
             resourcePolicyStatements=
                 getPolicyStatement(
                     [
@@ -132,6 +166,7 @@
             [#local zoneEfsMountTargetId   = zoneResources[zone.Id]["efsMountTarget"].Id]
             [@createEFSMountTarget
                 id=zoneEfsMountTargetId
+                type=solution["aws:Type"]
                 subnet=getSubnets(core.Tier, networkResources, zone.Id, true, false)
                 efsId=efsId
                 securityGroups=efsSecurityGroupId
@@ -155,6 +190,7 @@
                 [@createEFSAccessPoint
                     id=efsAccessPointId
                     efsId=efsId
+                    type=solution["aws:Type"]
                     tags=getOccurrenceCoreTags(occurrence, efsAccessPointName, "", false)
                     overidePermissions=subSolution.Ownership.Enforced
                     chroot=subSolution.chroot
