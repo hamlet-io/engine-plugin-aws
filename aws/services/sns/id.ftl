@@ -8,6 +8,13 @@
     resource=AWS_SNS_TOPIC_RESOURCE_TYPE
 /]
 
+[#assign AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE = "snstopicpolicy" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_SIMPLE_NOTIFICATION_SERVICE
+    resource=AWS_SNS_TOPIC_RESOURCE_TYPE
+/]
+
 [#assign AWS_SNS_SUBSCRIPTION_RESOURCE_TYPE = "snssub"]
 [@addServiceResource
     provider=AWS_PROVIDER
