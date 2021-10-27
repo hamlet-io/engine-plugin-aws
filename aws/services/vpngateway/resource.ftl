@@ -217,8 +217,7 @@
                 "Phase2LifetimeSeconds": securityProfile.Phase2.Lifetime,
                 "Phase2EncryptionAlgorithms": phase2EncryptionAlgorithms,
                 "Phase2IntegrityAlgorithms": phase2IntegrityAlgorithms,
-                "Phase2DHGroupNumbers": phase2DHGroupNumbers,
-
+                "Phase2DHGroupNumbers": phase2DHGroupNumbers
             } +
             attributeIfContent(
                 "TunnelInsideCidr",
