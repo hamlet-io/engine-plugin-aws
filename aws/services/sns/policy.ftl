@@ -7,9 +7,10 @@
             [
                 getPolicyStatement(
                     actions,
-                    getReference(id, ARN_ATTRIBUTE_TYPE),
+                    getArn(id),
                     principals,
-                    conditions)
+                    conditions
+                )
             ]
         ]
     [#else]
@@ -38,7 +39,7 @@
 [#function snsPublishPermission id="" ]
     [#return
         getSnsStatement(
-            "sns:publish",
+            "sns:Publish",
             id)]
 [/#function]
 
@@ -54,7 +55,7 @@
 
 [#function snsS3WritePermission id bucketName="" ]
     [#return
-        getSqsStatement(
+        getSnsStatement(
             "sns:Publish",
             id,
             "*",
