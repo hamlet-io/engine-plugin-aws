@@ -39,7 +39,7 @@
     [#-- Resources and base configuration --]
     [#switch engine ]
         [#case "ActiveDirectory"]
-        [#case "SimpleAD"]
+        [#case "Simple"]
             [#local directory = resources["directory"]]
             [#break]
 
@@ -76,11 +76,6 @@
             [#break]
 
         [#default]
-            [@precondition
-                function="solution_directory"
-                context=occurrence
-                detail="Unsupported engine provided"
-            /]
             [#local type = "unknown" ]
             [#local size = "unknown" ]
             [#break]
