@@ -49,8 +49,7 @@
 
         [#default]
             [@fatal
-                function="solution_directory"
-                detail="Unsupported engine provided"
+                message="Unsupported engine provided"
                 context={
                     "Id" : core.RawId,
                     "Engine" : engine
