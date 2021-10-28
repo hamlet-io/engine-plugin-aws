@@ -68,6 +68,23 @@
 
                         [#if linkTarget.Core.Type == TOPIC_COMPONENT_TYPE ]
                             [#local topicArn = linkTarget.State.Attributes["ARN"] ]
+
+                            [@createSNSPolicy
+                                id=formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id)
+                                topics=topicArn
+                                statements=getSnsStatement(
+                                    "sns:Publish",
+                                    topicArn
+                                    {
+                                        "Service" : "ses.amazonaws.com"
+                                    },
+                                    {
+                                        "StringEquals" : {
+                                            "AWS:SourceAccount" : { "Ref" : "AWS::AccountId" }
+                                        }
+                                    }
+                                )
+                            /]
                             [#break]
                         [/#if]
                     [/#if]
