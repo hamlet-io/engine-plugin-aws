@@ -161,6 +161,7 @@
             [#case "router"]
                 [#local transitGateway = ""]
                 [#local transitGatewayRouteTable = ""]
+                [#local transitGatewayRouteTableId = ""]
 
                 [#local localRouter = true]
                 [#local routerFound = false]
@@ -294,7 +295,8 @@
 
                             [#local routerFound = true ]
                             [#local transitGateway = getExistingReference( linkTargetResources["transitGateway"].Id ) ]
-                            [#local transitGatewayRouteTable = getExistingReference( linkTargetResources["routeTable"].Id ) ]
+                            [#local transitGatewayRouteTableId = linkTargetResources["routeTable"].Id]
+                            [#local transitGatewayRouteTable = getExistingReference(transitGatewayRouteTableId) ]
 
                         [/#if]
                         [#break]
@@ -351,8 +353,8 @@
                             [#list sourceCidrs as souceCidr ]
                                 [#local vpcRouteId = formatResourceId(
                                         AWS_TRANSITGATEWAY_ROUTE_RESOURCE_TYPE,
-                                        gwCore.Id,
-                                        souceCidr?index
+                                        transitGatewayRouteTableId,
+                                        replaceAlphaNumericOnly(souceCidr)
                                 )]
 
                                 [@createTransitGatewayRoute

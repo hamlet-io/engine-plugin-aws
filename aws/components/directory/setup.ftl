@@ -66,7 +66,7 @@
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
 
     [#-- Secret Management --]
-    [#local secretStoreLink = getLinkTarget(occurrence, solution.RootCredentials.SecretStore) ]
+    [#local secretStoreLink = getLinkTarget(occurrence, solution.RootCredentials.Link) ]
     [#local passwordSecretKey = "password" ]
 
     [#if secretStoreLink?has_content ]
@@ -160,8 +160,8 @@
 
     [#if ! solution.IPAddressGroups?seq_contains("_global")]
         [#local epilogue_content += [
-                r'   info "SecGroupId = ${secgrp_id}"', 
-                r'   aws --region ' + getRegion() + r' ec2 describe-security-group-rules --filter "Name=group-id, Values=${secgrp_id}" --query "SecurityGroupRules[?CidrIpv4==' + r"'0.0.0.0/0' && IpProtocol!='icmp'" + r'].[IpProtocol, FromPort, ToPort, SecurityGroupRuleId]" --output text | ' + r"sed 's/\t/;/g'" + r' | while read line',
+                r'   info "SecGroupId = ${secgrp_id}"',
+                r'   aws --region ' + getRegion() + r' ec2 describe-security-group-rules --filter "Name=group-id, Values=${secgrp_id}" --query "SecurityGroupRules[?CidrIpv4==' + r"'0.0.0.0/0'" + r'].[IpProtocol, FromPort, ToPort, SecurityGroupRuleId]" --output text | ' + r"sed 's/\t/;/g'" + r' | while read line',
                 r'   do',
                 r"      IFS=';'" + r' read -r -a RuleSegment <<< "$line"'
             ]
