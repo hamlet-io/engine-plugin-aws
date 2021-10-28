@@ -14,7 +14,7 @@
         "Outbound" : {}
     }]
 
-    [#switch solution.Type ]
+    [#switch solution.Engine ]
         [#case "Simple" ]
             [#local resources = {
                 "healthcheck" : {

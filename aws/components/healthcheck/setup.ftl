@@ -45,7 +45,7 @@
         [/#if]
     [/#list]
 
-    [#switch solution.Type ]
+    [#switch solution.Engine ]
         [#case "Simple" ]
 
             [#local healthCheckId = resources["healthcheck"].Id ]
@@ -53,7 +53,7 @@
 
             [#local address = ""]
 
-            [#local destination = solution["Type:Simple"]["Destination"] ]
+            [#local destination = solution["Engine:Simple"]["Destination"] ]
             [#local destinationLink = (destination["Link"])!{} ]
             [#local explicitAddress = (destination["Address"])!"" ]
 
@@ -71,7 +71,7 @@
                 [#if isPresent(destinationLink) && ! (explicitAddress?has_content) ]
                     [#local destinationLinkTarget = getLinkTarget(occurrence, destinationLink )]
 
-                    [#local addressAttribute = solution["Type:Simple"]["Destination"]["LinkAttribute"] ]
+                    [#local addressAttribute = solution["Engine:Simple"]["Destination"]["LinkAttribute"] ]
                     [#if destinationLinkTarget?has_content ]
                         [#local address = (destinationLinkTarget.State.Attributes[addressAttribute])!"" ]
                     [/#if]
@@ -92,7 +92,7 @@
                     /]
                 [/#if]
 
-                [#local portName = (solution["Type:Simple"]["Port"])!"" ]
+                [#local portName = (solution["Engine:Simple"]["Port"])!"" ]
                 [#local monitorPort = {}]
                 [#if portName?has_content ]
                     [#local monitorPort = (ports[portName])!{} ]
@@ -109,10 +109,10 @@
                     /]
                 [/#if]
 
-                [#local searchString = solution["Type:Simple"]["HTTPSearchString"] ]
-                [#if solution["Type:Simple"]["HTTPSearchSetting"]?? ]
+                [#local searchString = solution["Engine:Simple"]["HTTPSearchString"] ]
+                [#if solution["Engine:Simple"]["HTTPSearchSetting"]?? ]
                     [#local searchString =
-                        getOccurrenceSettingValue(occurrence, solution["Type:Simple"]["HTTPSearchSetting"], true) ]
+                        getOccurrenceSettingValue(occurrence, solution["Engine:Simple"]["HTTPSearchSetting"], true) ]
                 [/#if]
 
                 [@createRoute53HealthCheck
@@ -149,7 +149,7 @@
 
             [#local scriptFile = formatRelativePath(
                                     scriptsPrefix,
-                                    solution["Type:Complex"]["Image"]["ScriptFileName"]
+                                    solution["Engine:Complex"]["Image"]["ScriptFileName"]
             )]
 
             [#local vpcAccess = solution.NetworkAccess ]
@@ -177,7 +177,7 @@
             [#local buildReference = getOccurrenceBuildReference(occurrence)]
             [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
 
-            [#local imageSource = solution["Type:Complex"].Image.Source]
+            [#local imageSource = solution["Engine:Complex"].Image.Source]
             [#if imageSource == "url" ]
                 [#local buildUnit = occurrence.Core.Name ]
             [/#if]
@@ -250,7 +250,7 @@
                     ["arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"],
                     []
                 ) +
-                (solution["Type:Complex"].Tracing.Configured && solution["Type:Complex"].Tracing.Enabled)?then(
+                (solution["Engine:Complex"].Tracing.Configured && solution["Engine:Complex"].Tracing.Enabled)?then(
                     ["arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"],
                     []
                 ) +
@@ -402,7 +402,7 @@
                 [#local scriptBucket = ""]
                 [#local scriptFilePrefix = ""]
 
-                [#local handler = solution["Type:Complex"].Handler]
+                [#local handler = solution["Engine:Complex"].Handler]
 
                 [#if imageSource == "none" ]
                     [#if _context.Script?has_content ]
@@ -424,13 +424,13 @@
                 [@createCWCanary
                     id=canaryId
                     name=canaryName
-                    handler=solution["Type:Complex"].Handler
+                    handler=solution["Engine:Complex"].Handler
                     artifactS3Url=formatRelativePath("s3://", dataBucket, getAppDataFilePrefix(occurrence))
                     roleId=roleId
-                    runTime=solution["Type:Complex"].RunTime
-                    scheduleExpression=solution["Type:Complex"].Schedule
-                    memory=solution["Type:Complex"].Memory
-                    activeTracing=solution["Type:Complex"].Tracing.Enabled
+                    runTime=solution["Engine:Complex"].RunTime
+                    scheduleExpression=solution["Engine:Complex"].Schedule
+                    memory=solution["Engine:Complex"].Memory
+                    activeTracing=solution["Engine:Complex"].Tracing.Enabled
                     environment=finalEnvironment.Environment
                     successRetention=solution.ReportRetention.Success
                     failureRetention=solution.ReportRetention.Failure
