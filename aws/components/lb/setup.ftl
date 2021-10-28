@@ -178,8 +178,15 @@
         [#-- the same listenerId, so the same port number shouldn't be  --]
         [#-- defined with different names --]
         [#local listenerId = resources["listener"].Id ]
-        [#local defaultTargetGroupId = resources["defaulttg"].Id]
-        [#local defaultTargetGroupName = resources["defaulttg"].Name]
+
+        [#local targetGroupId = (resources["targetgroup"].Id)!""]
+        [#local targetGroupName = (resources["targetgroup"].Name)!"" ]
+        [#local targetGroupRequired = true ]
+
+        [#local listenerRuleId = resources["listenerRule"].Id ]
+        [#local listenerRulePriority = resources["listenerRule"].Priority ]
+
+        [#local fqdn = resources["listenerRule"].FQDN ]
 
         [#local certificateId = ""]
         [#if ((resources["certificate"])!{})?has_content ]
@@ -236,7 +243,7 @@
                     "Id" : listenerId,
                     "Source" : source,
                     "SourcePort" : sourcePort,
-                    "DefaultTargetGroupId" : defaultTargetGroupId,
+                    "DefaultTargetGroupId" : targetGroupId,
                     "CertificateId" : (certificateId)!""
                 }
             ]]
@@ -251,16 +258,6 @@
         [#-- forwarding attributes --]
         [#local tgAttributes = {}]
         [#local classicConnectionDrainingTimeouts += [ solution.Forward.DeregistrationTimeout ]]
-
-        [#-- Rule setup --]
-        [#local targetGroupId = resources["targetgroup"].Id]
-        [#local targetGroupName = resources["targetgroup"].Name]
-        [#local targetGroupRequired = true ]
-
-        [#local listenerRuleId = resources["listenerRule"].Id ]
-        [#local listenerRulePriority = resources["listenerRule"].Priority ]
-
-        [#local fqdn = resources["listenerRule"].FQDN ]
 
         [#local listenerForwardRule = true]
 
@@ -624,6 +621,42 @@
             [/#if]
         [/#list]
 
+        [#-- LB level Alerts --]
+        [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+            [#list solution.Alerts?values as alert ]
+
+                [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
+                [#list monitoredResources as name,monitoredResource ]
+
+                    [@debug message="Monitored resource" context=monitoredResource enabled=false /]
+
+                    [#switch alert.Comparison ]
+                        [#case "Threshold" ]
+                            [@createAlarm
+                                id=formatDependentAlarmId(monitoredResource.Id, alert.Id )
+                                severity=alert.Severity
+                                resourceName=core.FullName
+                                alertName=alert.Name
+                                actions=getCWAlertActions(occurrence, solution.Profiles.Alert, alert.Severity )
+                                metric=getCWMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
+                                namespace=getCWResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
+                                description=alert.Description!alert.Name
+                                threshold=alert.Threshold
+                                statistic=alert.Statistic
+                                evaluationPeriods=alert.Periods
+                                period=alert.Time
+                                operator=alert.Operator
+                                reportOK=alert.ReportOk
+                                unit=alert.Unit
+                                missingData=alert.MissingData
+                                dimensions=getCWMetricDimensions(alert, monitoredResource, resources)
+                            /]
+                        [#break]
+                    [/#switch]
+                [/#list]
+            [/#list]
+        [/#if]
+
         [#-- Create the security group for the listener --]
         [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) &&
                 securityGroupRequired ]
@@ -803,8 +836,8 @@
 
                 [#if engine == "network"]
                     [@createTargetGroup
-                        id=defaultTargetGroupId
-                        name=defaultTargetGroupName
+                        id=targetGroupId
+                        name=targetGroupName
                         tier=core.Tier
                         component=core.Component
                         destination=destinationPort
