@@ -176,6 +176,8 @@
 
     [#local securityGroupId = formatDependentSecurityGroupId(listenerId) ]
 
+    [#local resources = {}]
+
     [#switch engine ]
         [#case "application" ]
         [#case "classic" ]
@@ -235,9 +237,30 @@
     [#switch parentSolution.Engine ]
         [#case "application" ]
             [#local targetGroupArn = getExistingReference(targetGroupId, ARN_ATTRIBUTE_TYPE)]
+
+            [#if ! isPresent(solution.Redirect) && ! isPresent(solution.Fixed) ]
+                [#local resources += {
+                    "targetgroup" : {
+                        "Id" : targetGroupId,
+                        "Name" : formatName(core.FullName),
+                        "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE,
+                        "Monitored" : true
+                    }
+                }]
+            [/#if]
+
             [#break]
         [#case "network" ]
             [#local targetGroupArn = getExistingReference(defaultTargetGroupId, ARN_ATTRIBUTE_TYPE)]
+
+            [#local resources += {
+                "defaulttg" : {
+                    "Id" : defaultTargetGroupId,
+                    "Name" : defaultTargetGroupName,
+                    "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE
+                }
+            }]
+
             [#break]
         [#default]
             [#local targetGroupArn = ""]
@@ -256,16 +279,6 @@
                     "Priority" : solution.Priority,
                     "FQDN" : fqdn,
                     "Type" : AWS_ALB_LISTENER_RULE_RESOURCE_TYPE
-                },
-                "targetgroup" : {
-                    "Id" : targetGroupId,
-                    "Name" : formatName(core.FullName),
-                    "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE
-                },
-                "defaulttg" : {
-                    "Id" : defaultTargetGroupId,
-                    "Name" : defaultTargetGroupName,
-                    "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE
                 }
             } +
             attributeIfContent("domainRedirectRules", domainRedirectRules)+
@@ -290,7 +303,8 @@
                     "Id" : certificateId,
                     "Type" : AWS_CERTIFICATE_RESOURCE_TYPE
                 }
-            ),
+            ) +
+            resources,
             "Attributes" : {
                 "LB" : lbId,
                 "ENGINE" : engine,
