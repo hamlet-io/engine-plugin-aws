@@ -88,7 +88,7 @@
         type="AWS::SNS::TopicPolicy"
         properties=
             {
-                "Topics" : getReferences(topics, ARN_ATTRIBUTE_TYPE)
+                "Topics" : asFlattenedArray(topics)?map(x -> getArn(x) )
             } +
             getPolicyDocument(statements)
         outputs={}
