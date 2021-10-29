@@ -70,7 +70,7 @@
     [#local passwordSecretKey = "password" ]
 
     [#if secretStoreLink?has_content ]
-       [@setupComponentSecret
+       [@setupComponentGeneratedSecret
             occurrence=occurrence
             secretStoreLink=secretStoreLink
             kmsKeyId=cmkKeyId
