@@ -196,6 +196,8 @@
     [#local phase2DHGroupNumbers =
                 (securityProfile.Phase1.DiffeHellmanGroups)?map( groupNumber -> { "Value" : groupNumber})]
 
+    [#local startupAction = ((securityProfile.StartupAction)!"")?lower_case]
+
     [#return
         {
             "TunnelOptions": {
@@ -220,6 +222,10 @@
             attributeIfContent(
                 "TunnelInsideCidr",
                 tunnelInsideCidr
+            ) +
+            attributeIfContent(
+                "StartupAction",
+                startupAction
             )
         }
     ]
