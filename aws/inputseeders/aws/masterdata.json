@@ -1384,6 +1384,11 @@
                     "deployment:Priority" : 40,
                     "GroupDeploymentUnit" : false
                 },
+                "s3replica" : {
+                    "deployment:Unit" : "s3replica",
+                    "deployment:Priority" : 45,
+                    "GroupDeploymentUnit" : false
+                },
                 "s3" : {
                     "deployment:Unit" : "s3",
                     "deployment:Priority" : 50,
