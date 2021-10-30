@@ -87,25 +87,8 @@
     [#local secretSource = solution.RootCredentials.Secret.Source ]
     [#local secretId = ""]
 
-    [#if secretLink?has_content ]
-       [@setupComponentGeneratedSecret
-            occurrence=occurrence
-            secretStoreLink=secretStoreLink
-            kmsKeyId=cmkKeyId
-            secretComponentResources=resources["rootCredentials"]
-            secretComponentConfiguration=
-                solution.RootCredentials.Secret + {
-                    "Generated" : {
-                        "Content" : {
-                            "username" : dsUserName
-                        },
-                        "SecretKey" : passwordSecretKey
-                    }
-                }
-            componentType=DIRECTORY_COMPONENT_TYPE
-        /]
-    [#else]
-        [@fatal
+    [#if ! secretLink?has_content ]
+       [@fatal
             message="Could not find link to secret store or link was invalid"
             detail="Add a link to a secret store component which will manage the root credentials"
             context=solution.RootCredentials.SecretStore
