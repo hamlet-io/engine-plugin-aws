@@ -55,6 +55,9 @@
                                         "Component" : "directorysimplesecretstore",
                                         "Instance" : "",
                                         "Version" :""
+                                    },
+                                    "Secret" : {
+                                        "Source" : "generated"
                                     }
                                 }
                             }
@@ -86,13 +89,13 @@
                                     "Type" : "AWS::DirectoryService::SimpleAD"
                                 },
                                 "rootSecret" : {
-                                    "Name" : "secretXappXdirectorysimplebaseXroot",
+                                    "Name" : "secretXappXdirectorysimplebaseXAdmin",
                                     "Type" : "AWS::SecretsManager::Secret"
                                 }
                             },
                             "Output" : [
                                 "directoryXappXdirectorysimplebaseXip",
-                                "secretXappXdirectorysimplebaseXroot"
+                                "secretXappXdirectorysimplebaseXAdmin"
                             ]
                         }
                     }
@@ -154,6 +157,9 @@
                                         "Component" : "directoryadsecretstore",
                                         "Instance" : "",
                                         "Version" :""
+                                    },
+                                    "Secret" : {
+                                        "Source" : "generated"
                                     }
                                 }
                             }
@@ -185,13 +191,13 @@
                                     "Type" : "AWS::DirectoryService::MicrosoftAD"
                                 },
                                 "rootSecret" : {
-                                    "Name" : "secretXappXdirectoryadbaseXroot",
+                                    "Name" : "secretXappXdirectoryadbaseXAdmin",
                                     "Type" : "AWS::SecretsManager::Secret"
                                 }
                             },
                             "Output" : [
                                 "directoryXappXdirectoryadbaseXip",
-                                "secretXappXdirectoryadbaseXroot"
+                                "secretXappXdirectoryadbaseXAdmin"
                             ]
                         }
                     }
