@@ -99,9 +99,9 @@
     [#switch solution.Engine ]
         [#case "Simple"]
         [#case "ActiveDirectory" ]
-            [#if (directory.Username)!"" != "Admin" ]
+            [#if ((directory.Username)!"") != "Admin" ]
                 [@fatal
-                    message="Invalid username for directoy engine"
+                    message="Invalid username for directory engine"
                     detail="Only the user name Admin is permitted"
                 /]
             [/#if]
