@@ -55,6 +55,9 @@
                                         "Component" : "directorysimplesecretstore",
                                         "Instance" : "",
                                         "Version" :""
+                                    },
+                                    "Secret" : {
+                                        "Source" : "generated"
                                     }
                                 }
                             }
@@ -86,13 +89,13 @@
                                     "Type" : "AWS::DirectoryService::SimpleAD"
                                 },
                                 "rootSecret" : {
-                                    "Name" : "secretXappXdirectorysimplebaseXroot",
+                                    "Name" : "secretXappXdirectorysimplebaseXAdmin",
                                     "Type" : "AWS::SecretsManager::Secret"
                                 }
                             },
                             "Output" : [
                                 "directoryXappXdirectorysimplebaseXip",
-                                "secretXappXdirectorysimplebaseXroot"
+                                "secretXappXdirectorysimplebaseXAdmin"
                             ]
                         }
                     }
@@ -154,6 +157,9 @@
                                         "Component" : "directoryadsecretstore",
                                         "Instance" : "",
                                         "Version" :""
+                                    },
+                                    "Secret" : {
+                                        "Source" : "generated"
                                     }
                                 }
                             }
@@ -185,13 +191,13 @@
                                     "Type" : "AWS::DirectoryService::MicrosoftAD"
                                 },
                                 "rootSecret" : {
-                                    "Name" : "secretXappXdirectoryadbaseXroot",
+                                    "Name" : "secretXappXdirectoryadbaseXAdmin",
                                     "Type" : "AWS::SecretsManager::Secret"
                                 }
                             },
                             "Output" : [
                                 "directoryXappXdirectoryadbaseXip",
-                                "secretXappXdirectoryadbaseXroot"
+                                "secretXappXdirectoryadbaseXAdmin"
                             ]
                         }
                     }
@@ -201,6 +207,46 @@
                 "directoryadbase" : {
                     "directory" : {
                         "TestCases" : [ "directoryadbase" ]
+                    }
+                }
+            }
+        }
+    /]
+
+    [#-- AD Connector --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "app" : {
+                    "Components" : {
+                        "adconnectorbase" : {
+                            "Type" : "directory",
+                            "deployment:Unit" : "aws-adconnector-base",
+                            "Engine" : "aws:ADConnector",
+                            "Size" : "Small",
+                            "aws:engine:ADConnector" : {
+                                "ADIPAddresses" : [
+                                    "10.1.1.1",
+                                    "10.1.1.2"
+                                ]
+                            },
+                            "RootCredentials" : {
+                                "Source" : "user",
+                                "Link" : {
+                                    "Tier" : "app",
+                                    "Component" : "adconnectorbasesecret",
+                                    "SubComponent" : "adconnectorbaseuser"
+                                }
+                            }
+                        },
+                        "adconnectorbasesecret" : {
+                            "Type" : "secretstore",
+                            "deployment:Unit" : "aws-adconnector-base-secret",
+                            "Engine" : "aws:secretsmanager",
+                            "Secrets" : {
+                                "adconnectorbaseuser" : {}
+                            }
+                        }
                     }
                 }
             }

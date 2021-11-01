@@ -3,9 +3,6 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution ]
 
-    [#local id = formatResourceId(AWS_DIRECTORY_RESOURCE_TYPE, core.Id) ]
-    [#local securityGroupId = formatDependentSecurityGroupId(id)]
-
     [#local segmentSeedId = formatSegmentSeedId() ]
     [#local segmentSeed = getExistingReference(segmentSeedId)]
 
@@ -15,55 +12,116 @@
     [#local hostName = getHostName(certificateObject, occurrence) ]
     [#local fqdn = formatDomainName(hostName, primaryDomainObject) ]
 
-    [#local defaultAdminUser = "Admin"]
+    [#local adminUser = solution.RootCredentials.Username ]
 
     [#local dnsPorts = [
-        "dns-tcp", "dns-tcp",
-        "globalcatalog",
+        "dns-tcp", "dns-tcp", "globalcatalog",
         "kerebosauth88-tcp", "kerebosauth88-udp", "kerebosauth464-tcp", "kerebosauth464-udp",
-        "ldap-tcp", "ldap-udp", "ldaps",
-        "netlogin-tcp", "netlogin-udp",
-        "ntp",
-        "rpc", "ephemeralrpctcp", "ephemeralrpcudp",
-        "rsync",
-        "smb-tcp", "smb-udp",
-        "anyicmp"
+        "ldap-tcp", "ldap-udp", "ldaps", "netlogin-tcp", "netlogin-udp", "ntp",
+        "rpc", "ephemeralrpctcp", "ephemeralrpcudp", "rsync",
+        "smb-tcp", "smb-udp", "anyicmp"
     ]]
 
-    [#local rootCredentialResources = getComponentSecretResources(
-                                        occurrence,
-                                        "root",
-                                        "root",
-                                        "Root credentials for directory services"
-                                    )]
+    [#local resources = {}]
+    [#local attributes = {
+        "ENGINE" : solution.Engine,
+        "DOMAIN_NAME" : fqdn
+    }]
+
+    [#if solution.RootCredentials.Secret.Source == "generated" ]
+        [#local resources = mergeObjects(
+                    resources,
+                    {
+                        "rootCredentials" : getComponentSecretResources(
+                                                occurrence,
+                                                "Admin",
+                                                "Admin",
+                                                "Admin credentials for directory services"
+                                            )
+                    }
+                )]
+
+        [#local attributes = mergeObjects(
+                    attributes,
+                    {
+                        "USERNAME" : adminUser,
+                        "PASSWORD" : getExistingReference(resources["rootCredentials"]["secret"].Id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(solution.RootCredentials.EncryptionScheme),
+                        "SECRET" : getExistingReference(resources["rootCredentials"]["secret"].Id )
+                    }
+                )]
+    [/#if]
+
+    [#switch solution.Engine ]
+        [#case "ActiveDirectory"]
+        [#case "Simple"]
+
+            [#local id = formatResourceId(AWS_DIRECTORY_RESOURCE_TYPE, core.Id) ]
+            [#local securityGroupId = formatDependentSecurityGroupId(id)]
+
+            [#local resources = mergeObjects(
+                    resources,
+                    {
+                        "directory" : {
+                            "Id" : id,
+                            "Name" : fqdn,
+                            "ShortName" : formatName( core.ShortFullName, segmentSeed)?truncate_c(50, ''),
+                            "Username" : adminUser,
+                            "Type" : AWS_DIRECTORY_RESOURCE_TYPE,
+                            "Monitored" : true
+                        },
+                        "sg" : {
+                            "Id" : securityGroupId,
+                            "Name" : core.FullName,
+                            "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+                        }
+                    }
+            )]
+
+            [#local attributes = mergeObjects(
+                        attributes,
+                        {
+                            "IP_ADDRESSES" : getExistingReference(id, IP_ADDRESS_ATTRIBUTE_TYPE),
+                            "DOMAIN_ID" : getExistingReference(id)
+                        }
+            )]
+            [#break]
+
+        [#case "aws:ADConnector" ]
+
+            [#local id = formatResourceId(AWS_DS_AD_CONNECTOR_RESOURCE_TYPE, core.Id) ]
+            [#local securityGroupId = formatDependentSecurityGroupId(id)]
+
+            [#local resources = mergeObjects(
+                    resources,
+                    {
+                        "connector": {
+                            "Id" : id,
+                            "Name" : core.FullName,
+                            "Type" : AWS_DS_AD_CONNECTOR_RESOURCE_TYPE,
+                            "DomainName" : fqdn,
+                            "Monitored" : true
+                        },
+                        "sg" : {
+                            "Id" : securityGroupId,
+                            "Name" : core.FullName,
+                            "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+                        }
+                    }
+            )]
+
+            [#local attributes = mergeObjects(
+                attributes,
+                {
+                    "DOMAIN_ID" : getExistingReference(id)
+                }
+            )]
+            [#break]
+    [/#switch]
 
     [#assign componentState =
         {
-            "Resources" : {
-                "directory" : {
-                    "Id" : id,
-                    "Name" : fqdn,
-                    "ShortName" : formatName( core.ShortFullName, segmentSeed)?truncate_c(50, ''),
-                    "Username" : defaultAdminUser,
-                    "Type" : AWS_DIRECTORY_RESOURCE_TYPE,
-                    "Monitored" : true
-                },
-                "sg" : {
-                    "Id" : securityGroupId,
-                    "Name" : core.FullName,
-                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
-                },
-                "rootCredentials" : rootCredentialResources
-            },
-            "Attributes" : {
-                "ENGINE" : solution.Engine,
-                "IP_ADDRESSES" : getExistingReference(id, IP_ADDRESS_ATTRIBUTE_TYPE),
-                "DOMAIN_ID" : getExistingReference(id),
-                "DOMAIN_NAME" : fqdn,
-                "USERNAME" : defaultAdminUser,
-                "PASSWORD" : getExistingReference(rootCredentialResources["secret"].Id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(solution.RootCredentials.EncryptionScheme),
-                "SECRET" : getExistingReference(rootCredentialResources["secret"].Id )
-            },
+            "Resources" : resources,
+            "Attributes" : attributes,
             "Roles" : {
                 "Inbound" : {
                     "networkacl" : {
