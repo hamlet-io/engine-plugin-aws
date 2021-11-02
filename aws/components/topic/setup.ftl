@@ -78,8 +78,24 @@
         [#switch core.Type]
 
             [#case TOPIC_SUBSCRIPTION_COMPONENT_TYPE  ]
+                [#local filterPolicy = {}]
                 [#local subscriptionId = resources["subscription"].Id ]
-
+                [#list (solution["Filters"]!{}) as FilterKey, FilterVal]
+                    [#if (FilterVal.Links!"")?has_content]
+                        [#local bucketList = []]
+                        [#list FilterVal.Links as LinkKey, LinkVal]
+                            [#local foundLink = getLinkTarget(subOccurrence, LinkVal, false) ]
+                            [#switch FilterVal.MsgKey?lower_case]
+                                [#case "bucketname"]
+                                    [#local bucketList += [ foundLink.State.Resources.bucket.Name ]]
+                                [#break]
+                            [/#switch]
+                        [/#list]
+                        [#local filterPolicy += { FilterVal.MsgKey : bucketList }]
+                    [#else]
+                        [#local filterPolicy += { FilterVal.MsgKey : FilterVal.MsgValues }]
+                    [/#if]
+                [/#list]
                 [#local links = solution.Links ]
 
                 [#list links as linkId,link]
@@ -151,6 +167,7 @@
                             protocol=protocol
                             rawMessageDelivery=solution.RawMessageDelivery
                             deliveryPolicy=deliveryPolicy
+                            filterPolicy=filterPolicy
                             dependencies=subscriptionDependencies
                         /]
                     [/#if]
