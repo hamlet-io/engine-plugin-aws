@@ -86,6 +86,7 @@
                         [#list FilterVal.Links as LinkKey, LinkVal]
                             [#local foundLink = getLinkTarget(subOccurrence, LinkVal, false) ]
                             [#switch FilterVal.MsgKey?lower_case]
+                                [#case "bucket"]
                                 [#case "bucketname"]
                                     [#local bucketList += [ foundLink.State.Resources.bucket.Name ]]
                                 [#break]
