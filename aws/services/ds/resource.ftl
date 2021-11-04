@@ -49,6 +49,22 @@
     outputs=
         DIRECTORY_OUTPUT_MAPPINGS
     /]
+
+    [@cfOutput
+        formatId(id, IP_ADDRESS_ATTRIBUTE_TYPE),
+        {
+            "Fn::Join": [
+                ",",
+                {
+                    "Fn::GetAtt": [
+                        id,
+                        "DnsIpAddresses"
+                    ]
+                }
+            ]
+        },
+        false
+    /]
 [/#macro]
 
 

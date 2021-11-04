@@ -27,3 +27,24 @@
     service=AWS_ROUTE53_SERVICE
     resource=AWS_ROUTE53_DNS_ZONE_RESOURCE_TYPE
 /]
+
+[#assign AWS_ROUTE53_RESOLVER_ENDPOINT_RESOURCE_TYPE = "route53ResolverEndpoint" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_ROUTE53_SERVICE
+    resource=AWS_ROUTE53_RESOLVER_ENDPOINT_RESOURCE_TYPE
+/]
+
+[#assign AWS_ROUTE53_RESOLVER_RULE_RESOURCE_TYPE = "route53ResolverRule" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_ROUTE53_SERVICE
+    resource=AWS_ROUTE53_RESOLVER_RULE_RESOURCE_TYPE
+/]
+
+[#assign AWS_ROUTE53_RESOLVER_RULE_ASSOC_RESOURCE_TYPE = "route53ResolverRuleAssoc" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_ROUTE53_SERVICE
+    resource=AWS_ROUTE53_RESOLVER_RULE_ASSOC_RESOURCE_TYPE
+/]
