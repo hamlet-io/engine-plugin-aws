@@ -14,7 +14,8 @@
         [
             AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE,
             AWS_DIRECTORY_SERVICE,
-            AWS_SECRETS_MANAGER_SERVICE
+            AWS_SECRETS_MANAGER_SERVICE,
+            AWS_ROUTE53_SERVICE
         ]
 /]
 

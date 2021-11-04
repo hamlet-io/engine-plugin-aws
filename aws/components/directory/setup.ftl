@@ -82,7 +82,7 @@
     [/#switch]
 
     [#-- Secret Management --]
-    [#local secretLink = getLinkTarget(occurrence, solution.RootCredentials.Link) ]
+    [#local secretLink = getLinkTarget(occurrence, (solution.RootCredentials.Link)!{}) ]
     [#local passwordSecretKey = "password" ]
     [#local secretSource = solution.RootCredentials.Secret.Source ]
     [#local secretId = ""]
@@ -93,6 +93,7 @@
             detail="Add a link to a secret store component which will manage the root credentials"
             context=solution.RootCredentials.SecretStore
         /]
+        [#return]
     [/#if]
 
     [#-- Validate Username --]
@@ -170,8 +171,10 @@
             [#case "Simple"]
                 [#if !hibernate]
 
+                    [#local directorySubnets = getSubnets(core.Tier, networkResources)]
+
                     [#local vpcSettings= {
-                            "SubnetIds" : getSubnets(core.Tier, networkResources),
+                            "SubnetIds" : directorySubnets,
                             "VpcId" : getReference(vpcId)
                         }]
 
@@ -191,39 +194,99 @@
                         ]
                     /]
 
-                    [@cfOutput
-                        formatId(directory.Id, IP_ADDRESS_ATTRIBUTE_TYPE),
-                        {
-                            "Fn::Join": [
-                                ",",
-                                {
-                                    "Fn::GetAtt": [
-                                        directory.Id,
-                                        "DnsIpAddresses"
-                                    ]
-                                }
-                            ]
-                        },
-                        false
-                    /]
+                    [#if networkConfiguration.DNS.UseProvider ]
 
-                    [#--
-                    [@cfOutput
-                        formatId(directory.Id, ALIAS_ATTRIBUTE_TYPE),
-                        {
-                            "Fn::Join": [
-                                ",",
-                                {
-                                    "Fn::GetAtt": [
-                                        directory.Id,
-                                        "Alias"
-                                    ]
-                                }
-                            ]
-                        },
-                        false
-                    /]
-                    --]
+                        [#local resolverEndpointIPAddresses = getSubnets(core.Tier, networkResources)?map( x -> getResolverIPAddress(x)) ]
+
+                        [#local resolverEndpoint = resources["resolver"]["endpoint"] ]
+                        [#local resolverRule = resources["resolver"]["rule"]]
+                        [#local resolverRuleAssoc = resources["resolver"]["association"]]
+                        [#local resolverSecurityGroup = resources["resolver"]["sg"]]
+
+                        [@createRoute53ResolverEndpoint
+                            id=resolverEndpoint.Id
+                            name=resolverEndpoint.Name
+                            direction="OUTBOUND"
+                            resolverIPAddresses=resolverEndpointIPAddresses
+                            securityGroupIds=resolverSecurityGroup.Id
+                            tags=getOccurrenceCoreTags(occurrence, resolverEndpoint.Name)
+                        /]
+
+                        [#local targetIps = []]
+
+                        [#list directorySubnets as subnet]
+
+                            [#local targetIps += [
+                                getResolverRuleTargetIp(
+                                    {
+                                        "Fn::Select" : [
+                                            subnet?index,
+                                            {
+                                                "Fn::GetAtt": [
+                                                    directory.Id,
+                                                    "DnsIpAddresses"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    ports["dns-udp"]
+                                )]]
+                        [/#list]
+
+                        [@createRoute53ResolverRule
+                            id=resolverRule.Id
+                            name=resolverRule.Name
+                            domainName=directory.Name
+                            resolverEndpointId=resolverEndpoint.Id
+                            ruleType="FORWARD"
+                            tags=getOccurrenceCoreTags(occurrence, resolverRule.Name)
+                            targetIps=targetIps
+                        /]
+
+                        [@createRoute53ResolverRuleAssociation
+                            id=resolverRuleAssoc.Id
+                            name=resolverRuleAssoc.Name
+                            resolverRuleId=resolverRule.Id
+                            vpcId=vpcId
+                        /]
+
+                        [@createSecurityGroup
+                            id=resolverSecurityGroup.Id
+                            name=resolverSecurityGroup.Name
+                            vpcId=vpcId
+                            description="Directory DNS Resolver integration with private network"
+                            occurrence=occurrence
+                        /]
+
+                        [#list solution.Links?values as link]
+                            [#if link?is_hash]
+                                [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+                                [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                                [#if !linkTarget?has_content]
+                                    [#continue]
+                                [/#if]
+
+                                [#if deploymentSubsetRequired("cache", true)]
+                                    [@createSecurityGroupRulesFromLink
+                                        occurrence=occurrence
+                                        groupId=resolverSecurityGroup.Id
+                                        linkTarget=linkTarget
+                                        inboundPorts=[]
+                                    /]
+                                [/#if]
+
+                            [/#if]
+                        [/#list]
+
+                        [@createSecurityGroupRulesFromNetworkProfile
+                            occurrence=occurrence
+                            groupId=resolverSecurityGroup.Id
+                            networkProfile=networkProfile
+                            inboundPorts=[]
+                        /]
+                    [/#if]
 
                 [/#if]
                 [#break]

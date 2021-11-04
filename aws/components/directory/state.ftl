@@ -77,6 +77,40 @@
                     }
             )]
 
+            [#local networkLink = getOccurrenceNetwork(occurrence).Link!{} ]
+            [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
+            [#local providerDNS = (networkLinkTarget.Configuration.Solution.DNS.UseProvider)!true ]
+
+            [#if providerDNS ]
+                [#local resources = mergeObjects(
+                    resources,
+                    {
+                        "resolver" : {
+                            "endpoint" : {
+                                "Id" : formatResourceId(AWS_ROUTE53_RESOLVER_ENDPOINT_RESOURCE_TYPE, core.Id),
+                                "Name" : core.FullName,
+                                "Type" : AWS_ROUTE53_RESOLVER_ENDPOINT_RESOURCE_TYPE
+                            },
+                            "rule" : {
+                                "Id" : formatResourceId(AWS_ROUTE53_RESOLVER_RULE_RESOURCE_TYPE, core.Id),
+                                "Name" : core.FullName,
+                                "Type" : AWS_ROUTE53_RESOLVER_RULE_RESOURCE_TYPE
+                            },
+                            "association" : {
+                                "Id" : formatResourceId(AWS_ROUTE53_RESOLVER_RULE_ASSOC_RESOURCE_TYPE, core.Id),
+                                "Name" : core.FullName,
+                                "Type" : AWS_ROUTE53_RESOLVER_RULE_ASSOC_RESOURCE_TYPE
+                            },
+                            "sg" : {
+                                "Id" : formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id),
+                                "Name" : core.FullName,
+                                "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+                            }
+                        }
+                    }
+                )]
+            [/#if]
+
             [#local attributes = mergeObjects(
                         attributes,
                         {

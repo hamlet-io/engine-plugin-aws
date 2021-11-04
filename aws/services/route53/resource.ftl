@@ -1,5 +1,7 @@
 [#ftl]
 
+[#-- Route53 Healthcheck --]
+
 [#assign AWS_ROUTE53_HEALTHCHECK_OUTPUT_MAPPINGS =
     {
         REFERENCE_ATTRIBUTE_TYPE : {
@@ -144,6 +146,178 @@
                 "HealthCheckTags" : getCfTemplateCoreTags(name)
             }
         outputs=AWS_ROUTE53_HEALTHCHECK_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]
+
+
+
+[#--- Route53 Resolver Endpoint --]
+
+[#assign AWS_ROUTE53_RESOLVER_ENDPOINT_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "Attribute" : "ResolverEndpointId"
+        },
+        ARN_ATTRIBUTE_TYPE : {
+            "Attribute" : "Arn"
+        },
+        NAME_ATTRIBUTE_TYPE : {
+            "Attribute" : "Name"
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_ROUTE53_RESOLVER_ENDPOINT_RESOURCE_TYPE
+    mappings=AWS_ROUTE53_RESOLVER_ENDPOINT_OUTPUT_MAPPINGS
+
+/]
+
+[#function getResolverIPAddress subnetId ipAddress=""  ]
+    [#return
+        {
+            "SubnetId" : subnetId
+        } +
+        attributeIfContent(
+            "Ip",
+            ipAddress
+        )
+    ]
+[/#function]
+
+
+[#macro createRoute53ResolverEndpoint
+        id
+        name
+        direction
+        resolverIPAddresses
+        securityGroupIds
+        tags=[]
+        dependencies=[] ]
+
+    [@cfResource
+        id=id
+        type="AWS::Route53Resolver::ResolverEndpoint"
+        properties={
+            "Direction" : direction?upper_case,
+            "IpAddresses" : resolverIPAddresses,
+            "Name" : name,
+            "SecurityGroupIds" : getReferences(securityGroupIds),
+            "Tags" : tags
+        } +
+        attributeIfContent(
+            "Tags",
+            tags
+        )
+        outputs=AWS_ROUTE53_RESOLVER_ENDPOINT_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]
+
+
+[#-- Route53 Resolver Rule --]
+
+[#assign AWS_ROUTE53_RESOLVER_RULE_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "Attribute" : "ResolverRuleId"
+        },
+        ARN_ATTRIBUTE_TYPE : {
+            "Attribute" : "Arn"
+        },
+        NAME_ATTRIBUTE_TYPE : {
+            "Attribute" : "Name"
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_ROUTE53_RESOLVER_RULE_RESOURCE_TYPE
+    mappings=AWS_ROUTE53_RESOLVER_RULE_OUTPUT_MAPPINGS
+
+/]
+
+[#function getResolverRuleTargetIp ipAddress port ]
+    [#return
+        {
+            "Ip" : ipAddress,
+            "Port" : port.Port
+        }
+    ]
+[/#function]
+
+[#macro createRoute53ResolverRule
+        id
+        name
+        domainName
+        resolverEndpointId
+        ruleType
+        tags=[]
+        targetIps=[]
+        dependencies=[]
+    ]
+
+    [@cfResource
+        id=id
+        type="AWS::Route53Resolver::ResolverRule"
+        properties={
+            "DomainName" : domainName,
+            "Name" : name,
+            "ResolverEndpointId" : getReference(resolverEndpointId),
+            "RuleType" : ruleType
+        } +
+        attributeIfContent(
+            "Tags",
+            tags
+        ) +
+        attributeIfContent(
+            "TargetIps"
+            targetIps
+        )
+        outputs=AWS_ROUTE53_RESOLVER_RULE_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]
+
+
+[#-- Route53 Resolver Rule Association --]
+[#assign AWS_ROUTE53_RESOLVER_RULE_ASSOC_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "Attribute" : "ResolverRuleAssociationId"
+        },
+        NAME_ATTRIBUTE_TYPE : {
+            "Attribute" : "Name"
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_ROUTE53_RESOLVER_RULE_ASSOC_RESOURCE_TYPE
+    mappings=AWS_ROUTE53_RESOLVER_RULE_ASSOC_OUTPUT_MAPPINGS
+/]
+
+[#macro createRoute53ResolverRuleAssociation
+        id
+        name
+        resolverRuleId
+        vpcId
+        dependencies=[]
+    ]
+
+    [@cfResource
+        id=id
+        type="AWS::Route53Resolver::ResolverRuleAssociation"
+        properties={
+            "Name" : name,
+            "ResolverRuleId" : getReference(resolverRuleId),
+            "VPCId" : getReference(vpcId)
+        }
+        outputs=AWS_ROUTE53_RESOLVER_RULE_ASSOC_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]
 [/#macro]
