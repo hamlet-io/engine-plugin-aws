@@ -151,21 +151,33 @@
                 "s3base" : {
                     "s3" : {
                         "TestCases" : [ "s3base" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 },
                 "s3notify" : {
                     "s3" : {
                         "TestCases" : [ "s3notify" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 },
                 "s3replica" : {
                     "s3" : {
                         "TestCases" : [ "s3replica" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 },
                 "s3replicaext" : {
                     "s3" : {
                         "TestCases" : [ "s3replicaext" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             },

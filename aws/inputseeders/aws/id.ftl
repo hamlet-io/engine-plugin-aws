@@ -163,22 +163,42 @@
         provider=AWS_PROVIDER
         services=[
             AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE,
-            AWS_NETWORK_FIREWALL_SERVICE
+            AWS_NETWORK_FIREWALL_SERVICE,
+            AWS_IDENTITY_SERVICE
+            AWS_SIMPLE_STORAGE_SERVICE
         ]
         deploymentFramework=CLOUD_FORMATION_DEPLOYMENT_FRAMEWORK
     /]
 
     [#switch id?split("X")?first ]
-        [#case AWS_VPC_RESOURCE_TYPE ]
-            [#-- this will return the value for all attribute lookups --]
-            [#-- VPC only has ref so that is ok --]
-            [#local value = "vpc-123456789abcdef12" ]
+        [#case AWS_IAM_MANAGED_POLICY_RESOURCE_TYPE]
+            [#if id?ends_with(ARN_ATTRIBUTE_TYPE)]
+                [#local value = "arn:aws:iam::123456789012:policy/managedPolicyXuserXappXapiuserbaseXlinksXarn"]
+            [/#if]
+            [#break]
+
+        [#case AWS_IAM_ROLE_RESOURCE_TYPE]
+            [#if id?ends_with(ARN_ATTRIBUTE_TYPE)]
+                [#local value = "arn:aws:iam::123456789012:role/managedPolicyXuserXappXapiuserbaseXlinksXarn"]
+            [/#if]
             [#break]
 
         [#case AWS_NETWORK_FIREWALL_RESOURCE_TYPE]
             [#if id?ends_with(INTERFACE_ATTRIBUTE_TYPE)]
                 [#local value = "ap-mock-1a:vpce-111122223333,ap-mock-1b:vpce-987654321098,ap-mock-1c:vpce-012345678901"]
             [/#if]
+            [#break]
+
+        [#case AWS_S3_RESOURCE_TYPE]
+            [#if id?ends_with(NAME_ATTRIBUTE_TYPE)]
+                [#local value = replaceAlphaNumericOnly(id)?lower_case]
+            [/#if]
+            [#break]
+
+        [#case AWS_VPC_RESOURCE_TYPE ]
+            [#-- this will return the value for all attribute lookups --]
+            [#-- VPC only has ref so that is ok --]
+            [#local value = "vpc-123456789abcdef12" ]
             [#break]
     [/#switch]
 

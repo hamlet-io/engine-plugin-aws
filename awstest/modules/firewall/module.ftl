@@ -41,9 +41,6 @@
             "TestCases" : {
                 "firewallbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -73,6 +70,9 @@
                 "firewallbase" : {
                     "firewall" : {
                         "TestCases" : [ "firewallbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -130,9 +130,6 @@
             "TestCases" : {
                 "firewallsimplenet" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -170,6 +167,9 @@
                 "firewallsimplenet" : {
                     "firewall" : {
                         "TestCases" : [ "firewallsimplenet" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -228,9 +228,6 @@
             "TestCases" : {
                 "firewalldomainfilter" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -268,6 +265,9 @@
                 "firewalldomainfilter" : {
                     "firewall" : {
                         "TestCases" : [ "firewalldomainfilter" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

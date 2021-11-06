@@ -36,9 +36,6 @@
             "TestCases" : {
                 "computeclusterbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -71,6 +68,9 @@
                 "computeclusterbase" : {
                     "computecluster" : {
                         "TestCases" : [ "computeclusterbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

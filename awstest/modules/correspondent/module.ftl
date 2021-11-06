@@ -34,9 +34,6 @@
             "TestCases" : {
                 "correspondentbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -57,6 +54,9 @@
                 "correspondentbase" : {
                     "correspondent" : {
                         "TestCases" : [ "correspondent" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

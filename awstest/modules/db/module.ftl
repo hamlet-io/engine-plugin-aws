@@ -47,9 +47,6 @@
             "TestCases" : {
                 "postgresdbbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -102,6 +99,9 @@
                 "postgresdbbase" : {
                     "db" : {
                         "TestCases" : [ "postgresdbbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -139,9 +139,6 @@
             "TestCases" : {
                 "postgresdbgenerated" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -186,6 +183,9 @@
                 "postgresdbgenerated" : {
                     "db" : {
                         "TestCases" : [ "postgresdbgenerated" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -227,9 +227,6 @@
             "TestCases" : {
                 "postgresdbmaintenance" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -258,6 +255,9 @@
                 "postgresdbmaintenance" : {
                     "db" : {
                         "TestCases" : [ "postgresdbmaintenance" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

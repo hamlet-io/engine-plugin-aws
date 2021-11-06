@@ -32,9 +32,6 @@
             "TestCases" : {
                 "sqsbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -64,6 +61,9 @@
                 "sqsbase" : {
                     "sqs" : {
                         "TestCases" : [ "sqsbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

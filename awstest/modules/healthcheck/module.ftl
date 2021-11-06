@@ -107,9 +107,6 @@
             "TestCases" : {
                 "healthchecksimplebase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -126,9 +123,6 @@
                 },
                 "healthcheckcomplexbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -164,11 +158,17 @@
                 "healthchecksimplebase" : {
                     "healthcheck" : {
                         "TestCases" : [ "healthchecksimplebase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 },
                 "healthcheckcomplexbase" : {
                     "healthcheck" : {
                         "TestCases" : [ "healthcheckcomplexbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

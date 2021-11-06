@@ -59,6 +59,9 @@
                 "filetransferbase" : {
                     "filetransfer" : {
                         "TestCases" : [ "filetransferbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

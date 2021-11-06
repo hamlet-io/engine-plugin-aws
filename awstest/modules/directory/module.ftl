@@ -78,9 +78,6 @@
             "TestCases" : {
                 "directorysimplebase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -105,6 +102,9 @@
                 "directorysimplebase" : {
                     "directory" : {
                         "TestCases" : [ "directorysimplebase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -180,9 +180,6 @@
             "TestCases" : {
                 "directoryadbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -207,6 +204,9 @@
                 "directoryadbase" : {
                     "directory" : {
                         "TestCases" : [ "directoryadbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

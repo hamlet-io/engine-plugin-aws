@@ -34,9 +34,6 @@
             "TestCases" : {
                 "bastionbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -86,6 +83,9 @@
                 "bastionbase" : {
                     "bastion" : {
                         "TestCases" : [ "bastionbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

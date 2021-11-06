@@ -94,9 +94,6 @@
             "TestCases" : {
                 "cdnbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -125,6 +122,9 @@
                 "cdnbase" : {
                     "cdn" : {
                         "TestCases" : [ "cdnbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
