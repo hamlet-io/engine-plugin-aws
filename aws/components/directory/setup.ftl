@@ -281,6 +281,15 @@
 
         [#if ! solution.IPAddressGroups?seq_contains("_global")]
 
+            [#local secgrp_lockdown += [
+                    r'case ${STACK_OPERATION} in',
+                    r'  create|update)'
+                    r'   ds_filter="Name=description,Values=AWS created security group for ${ds_id} directory controllers"'
+                    r'   secgrp_id="$(aws --region ' + getRegion() + r' ec2 describe-security-groups --filters "${ds_filter}" --query ' + r"'SecurityGroups[0].GroupId'" + r' --output text)" ',
+                    r'   info "SecurityGroupId=${secgrp_id}"'
+                ]
+            ]
+
             [#local work_content = r'   cidr_set="' ]
             [#list getGroupCIDRs(solution.IPAddressGroups, true, occurrence ) as cidr]
                 [#local work_content += ';'+cidr ]
@@ -322,7 +331,9 @@
             [#local secgrp_lockdown += [
                     r'      info "Removing Rule ${RuleSegment[3]}"',
                     r'      aws --region ' + getRegion() + r' ec2 revoke-security-group-ingress --group-id ${secgrp_id} --security-group-rule-ids ${RuleSegment[3]}',
-                    r'   done'
+                    r'   done',
+                    r'   ;;',
+                    r'esac'
                 ]
             ]
 
@@ -332,4 +343,6 @@
             content=
                 directoryIdScript +
                 secgrp_lockdown
+        /]
+    [/#if]
 [/#macro]
