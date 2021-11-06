@@ -68,6 +68,9 @@
                 "userpoolbase" : {
                     "userpool" : {
                         "TestCases" : [ "userpoolbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

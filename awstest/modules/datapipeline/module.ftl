@@ -114,6 +114,9 @@
                 "datapipelinebase" : {
                     "datapipeline" : {
                         "TestCases" : [ "datapipelinebasecli" ,"datapipelinebaseconfig", "datapipelinebasetemplate" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

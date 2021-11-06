@@ -146,6 +146,9 @@
                 "apiusageplanbase" : {
                     "apiusageplan" : {
                         "TestCases" : [ "apiusageplanbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             },

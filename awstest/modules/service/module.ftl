@@ -71,9 +71,6 @@
             "TestCases" : {
                 "servicebase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -103,6 +100,9 @@
                 "servicebase" : {
                     "service" : {
                         "TestCases" : [ "servicebase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

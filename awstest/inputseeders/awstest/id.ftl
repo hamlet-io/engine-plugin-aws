@@ -222,6 +222,14 @@
                                 }
                             }
                         }
+                    },
+                    "TestCases": {
+                        "_cfn-lint" : {
+                            "OutputSuffix" : "template.json",
+                            "Tools" : {
+                                "cfn-lint" : {}
+                            }
+                        }
                     }
                 },
                 FIXTURE_SHARED_INPUT_STAGE

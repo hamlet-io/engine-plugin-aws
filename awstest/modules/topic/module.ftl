@@ -33,9 +33,6 @@
             "TestCases" : {
                 "topicbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -60,6 +57,9 @@
                 "topicbase" : {
                     "topic" : {
                         "TestCases" : [ "topicbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

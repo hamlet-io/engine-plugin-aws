@@ -102,6 +102,9 @@
                 "apigatewaybase" : {
                     "apigateway" : {
                         "TestCases" : [ "apigatewaybase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             },
@@ -257,6 +260,9 @@
                 "apigatewaydomain" : {
                     "apigateway" : {
                         "TestCases" : [ "apigatewaydomain" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             },
@@ -389,6 +395,9 @@
                 "apigatewaycfdistro" : {
                     "apigateway" : {
                         "TestCases" : [ "apigatewaycfdistro" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             },

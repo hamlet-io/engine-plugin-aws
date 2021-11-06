@@ -146,6 +146,9 @@
                 "apiuserbase" : {
                     "user" : {
                         "TestCases" : [ "apiuserbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             },

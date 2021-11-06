@@ -151,18 +151,15 @@
                             ]
                         }
                     }
-                },
-                "lint" : {
-                    "OutputSuffix" : "template.json",
-                    "Tools" : {
-                        "cfn-lint" : {}
-                    }
                 }
             },
             "TestProfiles" : {
                 "httpslb" : {
                     "lb" : {
-                        "TestCases" : [ "httpslb", "lint" ]
+                        "TestCases" : [ "httpslb" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -326,18 +323,15 @@
                             }
                         }
                     }
-                },
-                "lint" : {
-                    "OutputSuffix" : "template.json",
-                    "Tools" : {
-                        "cfn-lint" : {}
-                    }
                 }
             },
             "TestProfiles" : {
                 "httplb" : {
                     "lb" : {
-                        "TestCases" : [ "httplb", "httplbfixeddefault", "lint" ]
+                        "TestCases" : [ "httplb", "httplbfixeddefault" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -497,18 +491,15 @@
                             ]
                         }
                     }
-                },
-                "lint" : {
-                    "OutputSuffix" : "template.json",
-                    "Tools" : {
-                        "cfn-lint" : {}
-                    }
                 }
             },
             "TestProfiles" : {
                 "conditionapplb" : {
                     "lb" : {
-                        "TestCases" : [ "conditionapplb", "lint" ]
+                        "TestCases" : [ "conditionapplb" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

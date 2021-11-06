@@ -72,9 +72,6 @@
             "TestCases" : {
                 "taskbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -103,6 +100,9 @@
                 "taskbase" : {
                     "task" : {
                         "TestCases" : [ "taskbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
