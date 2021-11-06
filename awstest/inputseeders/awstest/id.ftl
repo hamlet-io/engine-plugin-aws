@@ -125,6 +125,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "ecs"
                             },
+                            "fileshare" : {
+                                "Provider" : "awstest",
+                                "Name" : "fileshare"
+                            },
                             "filetransfer" : {
                                 "Provider" : "awstest",
                                 "Name" : "filetransfer"
