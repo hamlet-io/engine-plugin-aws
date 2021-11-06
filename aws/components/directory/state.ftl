@@ -115,7 +115,8 @@
                         attributes,
                         {
                             "IP_ADDRESSES" : getExistingReference(id, IP_ADDRESS_ATTRIBUTE_TYPE),
-                            "DOMAIN_ID" : getExistingReference(id)
+                            "DOMAIN_ID" : getExistingReference(id),
+                            "FQDN" : fqdn
                         }
             )]
             [#break]
@@ -146,7 +147,8 @@
             [#local attributes = mergeObjects(
                 attributes,
                 {
-                    "DOMAIN_ID" : getExistingReference(id)
+                    "DOMAIN_ID" : getExistingReference(id),
+                    "FQDN" : fqdn
                 }
             )]
             [#break]
