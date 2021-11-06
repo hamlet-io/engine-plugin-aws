@@ -227,7 +227,7 @@
                     securityGroupIds=[fileshareSecurityGroupId]
                     encrypted=false
                     kmsKeyId=cmkKeyId
-                    storageCapacity=solution.Size
+                    storageCapacity=(solution.Size)!"HamletFatal: Size missing for SMB fileshare"
                     windowsConfiguration=fsxWindowsConfiguration
                     tags=getOccurrenceCoreTags(occurrence, fileshareName, "", false)
                 /]

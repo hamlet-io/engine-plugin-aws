@@ -71,37 +71,26 @@
     /]
 [/#macro]
 
-[#macro createEFSMountTarget id efsId subnet securityGroups type="NFS" dependencies="" ]
-    [#switch type]
-        [#case "NFS"]
-            [@cfResource
-                id=id
-                type="AWS::EFS::MountTarget"
-                properties=
-                    {
-                        "SubnetId" : subnet?is_enumerable?then(
-                                        subnet[0],
-                                        subnet
-                        ),
-                        "FileSystemId" : getReference(efsId),
-                        "SecurityGroups": getReferences(securityGroups)
-                    }
-                outputs=EFS_MOUNT_TARGET_MAPPINGS
-                dependencies=dependencies
-            /]
-        [#break]
-        [#case "FSX-WIN"]
-            [#-- Not required for this type --]
-        [#break]
-        [#case "FSX-LUSTRE"]
-            [#-- Not required for this type --]
-        [#break]
-    [/#switch]
+[#macro createEFSMountTarget id efsId subnet securityGroups dependencies="" ]
+    [@cfResource
+        id=id
+        type="AWS::EFS::MountTarget"
+        properties=
+            {
+                "SubnetId" : subnet?is_enumerable?then(
+                                subnet[0],
+                                subnet
+                ),
+                "FileSystemId" : getReference(efsId),
+                "SecurityGroups": getReferences(securityGroups)
+            }
+        outputs=EFS_MOUNT_TARGET_MAPPINGS
+        dependencies=dependencies
+    /]
 [/#macro]
 
 [#macro createEFSAccessPoint id efsId tags
         overidePermissions=false
-        type="NFS"
         chroot=false
         uid=""
         gid=""
@@ -110,49 +99,39 @@
         rootPath=""
     ]
 
-    [#switch type]
-        [#case "NFS"]
-            [@cfResource
-                id=id
-                type="AWS::EFS::AccessPoint"
-                properties=
-                    {
-                        "FileSystemId" : getReference(efsId),
-                        "AccessPointTags" : tags
-                    } +
-                    attributeIfTrue(
-                        "PosixUser",
-                        overidePermissions,
-                        {
-                            "Uid" : uid,
-                            "Gid" : gid
-                        } +
-                        attributeIfContent(
-                            "SecondaryGids",
-                            secondaryGids
-                        )
-                    ) +
-                    attributeIfTrue(
-                        "RootDirectory",
-                        chroot,
-                        {
-                            "CreationInfo" : {
-                                "OwnerUid" : uid,
-                                "OwnerGid" : gid,
-                                "Permissions" : permissions
-                            },
-                            "Path" : rootPath?remove_ending("/")?ensure_starts_with("/")
-                        }
-                    )
-                outputs=EFS_ACCESS_POINT_MAPPINGS
-                dependencies=dependencies
-            /]
-        [#break]
-        [#case "FSX-WIN"]
-
-        [#break]
-        [#case "FSX-LUSTRE"]
-
-        [#break]
-    [/#switch]
+    [@cfResource
+        id=id
+        type="AWS::EFS::AccessPoint"
+        properties=
+            {
+                "FileSystemId" : getReference(efsId),
+                "AccessPointTags" : tags
+            } +
+            attributeIfTrue(
+                "PosixUser",
+                overidePermissions,
+                {
+                    "Uid" : uid,
+                    "Gid" : gid
+                } +
+                attributeIfContent(
+                    "SecondaryGids",
+                    secondaryGids
+                )
+            ) +
+            attributeIfTrue(
+                "RootDirectory",
+                chroot,
+                {
+                    "CreationInfo" : {
+                        "OwnerUid" : uid,
+                        "OwnerGid" : gid,
+                        "Permissions" : permissions
+                    },
+                    "Path" : rootPath?remove_ending("/")?ensure_starts_with("/")
+                }
+            )
+        outputs=EFS_ACCESS_POINT_MAPPINGS
+        dependencies=dependencies
+    /]
 [/#macro]
