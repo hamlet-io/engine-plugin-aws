@@ -286,32 +286,57 @@
                     r'  create|update)'
                     r'   ds_filter="Name=description,Values=AWS created security group for ${ds_id} directory controllers"'
                     r'   secgrp_id="$(aws --region ' + getRegion() + r' ec2 describe-security-groups --filters "${ds_filter}" --query ' + r"'SecurityGroups[0].GroupId'" + r' --output text)" ',
-                    r'   info "SecurityGroupId=${secgrp_id}"',
-                    r'   info "SecGroupId = ${secgrp_id}"',
-                    r'   aws --region ' + getRegion() + r' ec2 describe-security-group-rules --filter "Name=group-id, Values=${secgrp_id}" --query "SecurityGroupRules[?CidrIpv4==' + r"'0.0.0.0/0'" + r'].[IpProtocol, FromPort, ToPort, SecurityGroupRuleId]" --output text | ' + r"sed 's/\t/;/g'" + r' | while read line',
+                    r'   info "SecurityGroupId=${secgrp_id}"'
+                ]
+            ]
+
+            [#local work_content = r'   cidr_set="' ]
+            [#list getGroupCIDRs(solution.IPAddressGroups, true, occurrence ) as cidr]
+                [#local work_content += ';'+cidr ]
+            [/#list]
+            [#local work_content += ';"' ]
+            [#local secgrp_lockdown += [
+                    r'   cidr_set="~$(aws --region ' + getRegion() + r' ec2 describe-security-group-rules --filter "Name=group-id, Values=${secgrp_id}" --query "SecurityGroupRules[?CidrIpv4!=' + r"''" + r'].[CidrIpv4]" --output text | ' + r"grep -v 'None'" + r' | sort -u )~"',
+                    r'   cidr_set="$(echo ${cidr_set} | sed ' + r"'s/ /~/g'" + r')"',
+                    r'   info "cidr_set = ${cidr_set}"',
+                    r'   aws --region ' + getRegion() + r' ec2 describe-security-group-rules --filter "Name=group-id, Values=${secgrp_id}" --query "SecurityGroupRules[?CidrIpv4!=' + r"''" + r'].[IpProtocol, FromPort, ToPort]" --output text | ' + r"sed 's/\t/;/g'" + r' | sort -u | while read line',
                     r'   do',
                     r"      IFS=';'" + r' read -r -a RuleSegment <<< "$line"'
                 ]
             ]
             [#-- Loop over all IP addresses that are allowed --]
+            [#local removal_filter = '?']
             [#list getGroupCIDRs(solution.IPAddressGroups, true, occurrence ) as cidr]
                 [#local secgrp_lockdown += [
                         '      info "cidr = ${cidr}"'
                     ]
                 ]
+                [#local removal_filter += r'CidrIpv4!=' + "'${cidr}' && "]
                 [#local secgrp_lockdown += [
-                        r'      aws --region ' + getRegion() + r' ec2 authorize-security-group-ingress --group-id ${secgrp_id} --ip-permissions IpProtocol=${RuleSegment[0]},FromPort=${RuleSegment[1]},ToPort=${RuleSegment[2]},IpRanges=' + r"'[{CidrIp=" + cidr + r"}]'"
+                        r'      if [ -n "$(echo $cidr_set | sed -e "s;.*~' + cidr + r'~.*;;")" ] ; then',
+                        r'          aws --region ' + getRegion() + r' ec2 authorize-security-group-ingress --group-id ${secgrp_id} --ip-permissions IpProtocol=${RuleSegment[0]},FromPort=${RuleSegment[1]},ToPort=${RuleSegment[2]},IpRanges=' + r"'[{CidrIp=" + cidr + r"}]'",
+                        r'      fi'
                     ]
                 ]
             [/#list]
+            [#local removal_filter += "! IsEgress"]
+
+            [#local secgrp_lockdown += [
+                    r'   done'
+                    r'   aws --region ' + getRegion() + r' ec2 describe-security-group-rules --filter "Name=group-id, Values=${secgrp_id}" --query "SecurityGroupRules[' + removal_filter + r'].[IpProtocol, FromPort, ToPort, SecurityGroupRuleId]" --output text | ' + r"sed 's/\t/;/g'" + r' | while read line',
+                    r'   do',
+                    r"      IFS=';'" + r' read -r -a RuleSegment <<< "$line"'
+                ]
+            ]
             [#local secgrp_lockdown += [
                     r'      info "Removing Rule ${RuleSegment[3]}"',
                     r'      aws --region ' + getRegion() + r' ec2 revoke-security-group-ingress --group-id ${secgrp_id} --security-group-rule-ids ${RuleSegment[3]}',
-                    r'   done'
+                    r'   done',
                     r'   ;;',
                     r'esac'
                 ]
             ]
+
         [/#if]
 
         [@addToDefaultBashScriptOutput
