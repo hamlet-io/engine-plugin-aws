@@ -834,7 +834,7 @@
                         "deregistration_delay.timeout_seconds" : solution.Forward.DeregistrationTimeout
                     }]
 
-                [#if engine == "network"]
+                [#if engine == "network" && deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                     [@createTargetGroup
                         id=targetGroupId
                         name=targetGroupName
