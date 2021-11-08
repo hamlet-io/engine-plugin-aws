@@ -1409,8 +1409,8 @@
                     "deployment:Priority" : 100,
                     "GroupDeploymentUnit" : false
                 },
-                "ses" : {
-                    "deployment:Unit" : "ses",
+                "sesruleset" : {
+                    "deployment:Unit" : "sesruleset",
                     "deployment:Priority" : 100,
                     "GroupDeploymentUnit" : false
                 },
