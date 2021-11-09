@@ -107,8 +107,8 @@
                                     {}
                                 )
                             ]
-                            [#-- CloudFormation cannot update a stack when a custom-named resource requires replacing and 
-                                 configsets are custom-named, hence when tags are added, care is needed. Currently only 
+                            [#-- CloudFormation cannot update a stack when a custom-named resource requires replacing and
+                                 configsets are custom-named, hence when tags are added, care is needed. Currently only
                                  attribute is name which can not change --]
                             [@addToDefaultBashScriptOutput
                                 content=
@@ -127,12 +127,25 @@
                                     "esac"
                                 ]
                             /]
+
+                            [#if getExistingReference(formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id))?has_content ]
+                                [@warn
+                                    message="Topic Permissions update required"
+                                    detail=[
+                                        "SNS policies have been migrated to the topic component",
+                                        "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
+                                        "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
+                                    ]?join(',')
+                                    context=subOccurrence.Core.RawId
+                                /]
+                            [/#if]
+                            [#break]
                         [/#if]
                     [/#if]
                 [/#if]
             [/#list]
         [#break]
-        
+
         [#case "receive"]
             [#local ruleSetName = attributes["RULESET"] ]
             [#if ! ruleSetName?has_content ]

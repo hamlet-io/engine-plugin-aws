@@ -14,6 +14,10 @@
                     "Name" : core.FullName,
                     "Type" : AWS_SNS_TOPIC_RESOURCE_TYPE,
                     "Monitored" : true
+                },
+                "policy" : {
+                    "Id" : formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, core.Id),
+                    "Type" : AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE
                 }
             },
             "Attributes" : {

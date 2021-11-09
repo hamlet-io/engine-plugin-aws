@@ -160,17 +160,19 @@
                                         [#case TOPIC_COMPONENT_TYPE]
                                             [#local resourceId = linkTargetResources["topic"].Id ]
                                             [#local resourceType = linkTargetResources["topic"].Type ]
-                                            [#local policyId =
-                                                formatS3NotificationPolicyId(
-                                                    bucketId,
-                                                    resourceId) ]
 
-                                            [#local bucketDependencies += [ policyId ]]
-                                            [@createSNSPolicy
-                                                id=policyId
-                                                topics=resourceId
-                                                statements=snsS3WritePermission(resourceId, bucketName)
-                                            /]
+                                            [#if ! (notification["aws:TopicPermissionMigration"]) ]
+                                                [@fatal
+                                                    message="Topic Permissions update required"
+                                                    detail=[
+                                                        "SNS policies have been migrated to the topic component",
+                                                        "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
+                                                        "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
+                                                    ]?join(',')
+                                                    context=notification
+                                                /]
+                                            [/#if]
+
                                     [/#switch]
 
                                     [#list notification.Events as event ]

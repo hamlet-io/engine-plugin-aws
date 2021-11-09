@@ -103,19 +103,19 @@
                             [#case TOPIC_COMPONENT_TYPE]
                                 [#local resourceId = linkTargetResources["topic"].Id ]
                                 [#local resourceType = linkTargetResources["topic"].Type ]
-                                [#local policyId =
-                                    formatS3NotificationPolicyId(
-                                        s3Id,
-                                        resourceId) ]
 
-                                [#local dependencies += [ policyId ]]
-
-                                [#if deploymentSubsetRequired("s3", true )]
-                                    [@createSNSPolicy
-                                        id=policyId
-                                        topics=resourceId
-                                        statements=snsS3WritePermission(resourceId, s3Name)
-                                    /]
+                                [#if ! (notification["aws:QueuePermissionMigration"]) ]
+                                    [#if deploymentSubsetRequired(S3_COMPONENT_TYPE, true)]
+                                        [@fatal
+                                            message="Topic Permissions update required"
+                                            detail=[
+                                                "SNS policies have been migrated to the topic component",
+                                                "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
+                                                "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
+                                            ]?join(',')
+                                            context=subOccurrence.Core.RawId
+                                        /]
+                                    [/#if]
                                 [/#if]
                         [/#switch]
 

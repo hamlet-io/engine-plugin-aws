@@ -1,6 +1,6 @@
 [#ftl]
 
-[#function getSnsStatement actions id="" principals="" conditions=""]
+[#function getSnsStatement actions id="" principals="" conditions="" allow=true sid="" ]
     [#local result = [] ]
     [#if id?has_content]
         [#local result +=
@@ -9,7 +9,9 @@
                     actions,
                     getArn(id),
                     principals,
-                    conditions
+                    conditions,
+                    allow,
+                    sid
                 )
             ]
         ]
@@ -20,7 +22,9 @@
                     actions,
                     "*",
                     principals
-                    conditions
+                    conditions,
+                    allow,
+                    sid
                 )
             ]
         ]
@@ -29,18 +33,25 @@
     [return result]
 [/#function]
 
-[#function snsAdminPermission id=""]
+[#function snsAdminPermission id="" ]
     [#return
         getSnsStatement(
             "sns:*",
             id)]
 [/#function]
 
-[#function snsPublishPermission id="" ]
+[#function snsPublishPermission id="" principals="*" conditions={} allow=true sid="" ]
     [#return
         getSnsStatement(
-            "sns:Publish",
-            id)]
+            [
+                "sns:Publish"
+            ],
+            id,
+            principals,
+            conditions,
+            allow,
+            sid
+        )]
 [/#function]
 
 [#function snsSMSPermission ]
