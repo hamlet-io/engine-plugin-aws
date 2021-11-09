@@ -89,14 +89,30 @@
                 [#case "inbound" ]
                     [#switch linkRole ]
                         [#case "invoke" ]
+
+                            [#local sourceCondition = {}]
+
+                            [#switch linkTargetCore.Type ]
+                                [#case MTA_COMPONENT_TYPE ]
+                                    [#local sourceCondition = {
+                                        "StringEquals" : {
+                                            "AWS:SourceAccount" : linkTargetRoles.Inbound["invoke"].SourceAccount
+                                        }
+                                    }]
+                                    [#break]
+
+                                [#default]
+                                    [#local sourceCondition = {
+                                        "ArnLike" : {
+                                            "aws:sourceArn" : linkTargetRoles.Inbound["invoke"].SourceArn
+                                        }
+                                    }]
+                            [/#switch]
+
                             [#local topicPolicyStatements += [ snsPublishPermission(
                                                                 topicId,
                                                                 { "Service" : linkTargetRoles.Inbound["invoke"].Principal },
-                                                                {
-                                                                    "ArnLike" : {
-                                                                        "aws:sourceArn" : linkTargetRoles.Inbound["invoke"].SourceArn
-                                                                    }
-                                                                },
+                                                                sourceCondition,
                                                                 true,
                                                                 linkId
                                                             )] ]

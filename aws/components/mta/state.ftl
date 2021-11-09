@@ -31,6 +31,21 @@
     [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
     [#local hostName = getHostName(certificateObject, occurrence) ]
 
+
+    [#-- local invoke permissions for log forwardning --]
+    [#assign componentState +=
+        {
+            "Roles" : {
+                 "Inbound" : {
+                    "invoke" : {
+                        "Principal" : "ses.amazonaws.com",
+                        "SourceAccount" : { "Ref" : "AWS::AccountId" }
+                    }
+                }
+            }
+        }
+    ]
+
     [#-- Direction controls state --]
     [#switch solution.Direction ]
         [#case "send" ]
