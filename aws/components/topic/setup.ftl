@@ -1,9 +1,9 @@
 [#ftl]
-[#macro aws_topic_cf_deployment_generationcontract_solution occurrence ]
+[#macro aws_topic_cf_deployment_generationcontract occurrence ]
     [@addDefaultGenerationContract subsets="template" /]
 [/#macro]
 
-[#macro aws_topic_cf_deployment_solution occurrence ]
+[#macro aws_topic_cf_deployment occurrence ]
     [@debug message="Entering" context=occurrence enabled=false /]
 
     [#local core = occurrence.Core]
@@ -13,12 +13,15 @@
     [#local topicId = resources["topic"].Id ]
     [#local topicName = resources["topic"].Name ]
 
+    [#local topicPolicyId = resources["policy"].Id ]
+
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local cmkKeyId = baselineComponentIds["Encryption"] ]
 
-    [#if deploymentSubsetRequired(TOPIC_COMPONENT_TYPE, true)]
+    [#if deploymentSubsetRequired(TOPIC_COMPONENT_TYPE, true) ]
+
         [@createSNSTopic
             id=topicId
             name=topicName
@@ -29,10 +32,8 @@
                     occurrence,
                     topicName)
         /]
-    [/#if]
 
-        [#-- LB level Alerts --]
-    [#if deploymentSubsetRequired(TOPIC_COMPONENT_TYPE) ]
+        [#--  Alerts --]
         [#list solution.Alerts?values as alert ]
 
             [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
@@ -65,6 +66,53 @@
                 [/#switch]
             [/#list]
         [/#list]
+
+        [#local topicPolicyStatements = []]
+
+        [#list solution.Links as linkId,link]
+
+            [#local linkTarget = getLinkTarget(occurrence, link) ]
+
+            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+            [#if !linkTarget?has_content]
+                [#continue]
+            [/#if]
+
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetResources = linkTarget.State.Resources ]
+            [#local linkTargetRoles = linkTarget.State.Roles ]
+            [#local linkDirection = linkTarget.Direction ]
+            [#local linkRole = linkTarget.Role]
+
+            [#switch linkDirection ]
+                [#case "inbound" ]
+                    [#switch linkRole ]
+                        [#case "invoke" ]
+                            [#local topicPolicyStatements += [ snsPublishPermission(
+                                                                topicId,
+                                                                { "Service" : linkTargetRoles.Inbound["invoke"].Principal },
+                                                                {
+                                                                    "ArnLike" : {
+                                                                        "aws:sourceArn" : linkTargetRoles.Inbound["invoke"].SourceArn
+                                                                    }
+                                                                },
+                                                                true,
+                                                                linkId
+                                                            )] ]
+                            [#break]
+                    [/#switch]
+                    [#break]
+            [/#switch]
+        [/#list]
+
+        [#if topicPolicyStatements?has_content ]
+            [@createSNSPolicy
+                id=topicPolicyId
+                topics=topicId
+                statements=topicPolicyStatements
+            /]
+        [/#if]
     [/#if]
 
     [#list occurrence.Occurrences![] as subOccurrence]
