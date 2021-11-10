@@ -40,7 +40,7 @@
             id)]
 [/#function]
 
-[#function snsPublishPermission id="" principals="*" conditions={} allow=true sid="" ]
+[#function snsPublishPermission id="" principals="" conditions={} allow=true sid="" ]
     [#return
         getSnsStatement(
             [
