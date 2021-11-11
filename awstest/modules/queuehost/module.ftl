@@ -56,9 +56,6 @@
             "TestCases" : {
                 "queuehostbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -88,6 +85,9 @@
                 "queuehostbase" : {
                     "queuehost" : {
                         "TestCases" : [ "queuehostbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -146,9 +146,6 @@
             "TestCases" : {
                 "queuehostmaintenance" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -181,6 +178,9 @@
                 "queuehostmaintenance" : {
                     "queuehost" : {
                         "TestCases" : [ "queuehostmaintenance" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

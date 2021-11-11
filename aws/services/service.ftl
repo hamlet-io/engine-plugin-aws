@@ -58,6 +58,9 @@
 [#assign AWS_ELASTIC_LOAD_BALANCER_SERVICE = "lb"]
 [@addService provider=AWS_PROVIDER service=AWS_ELASTIC_LOAD_BALANCER_SERVICE /]
 
+[#assign AWS_FSX_SERVICE = "fsx" ]
+[@addService provider=AWS_PROVIDER service=AWS_FSX_SERVICE /]
+
 [#assign AWS_TRANSFER_SERVICE = "transfer" ]
 [@addService provider=AWS_PROVIDER service=AWS_TRANSFER_SERVICE /]
 

@@ -45,7 +45,7 @@
     mappings=EFS_ACCESS_POINT_MAPPINGS
 /]
 
-[#macro createEFS id tags encrypted kmsKeyId iamRequired=true resourcePolicyStatements=[]  ]
+[#macro createEFS id tags encrypted kmsKeyId iamRequired=true resourcePolicyStatements=[] dependencies=[]  ]
     [@cfResource
         id=id
         type="AWS::EFS::FileSystem"
@@ -67,6 +67,7 @@
                 getPolicyDocumentContent(resourcePolicyStatements)
             )
         outputs=EFS_OUTPUT_MAPPINGS
+        dependencies=dependencies
     /]
 [/#macro]
 

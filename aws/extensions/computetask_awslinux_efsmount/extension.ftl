@@ -31,8 +31,8 @@
         [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
         [#switch linkTargetCore.Type]
-            [#case EFS_COMPONENT_TYPE ]
-            [#case EFS_MOUNT_COMPONENT_TYPE]
+            [#case FILESHARE_COMPONENT_TYPE ]
+            [#case FILESHARE_MOUNT_COMPONENT_TYPE]
 
                 [#local mountId = linkTargetCore.Id]
                 [#local efsId = linkTargetAttributes.EFS]

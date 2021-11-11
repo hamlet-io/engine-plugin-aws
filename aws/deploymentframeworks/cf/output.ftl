@@ -270,7 +270,7 @@
 
                 [@cfOutput
                     formatAttributeId(oId, type),
-                    content?eval,
+                    content?eval_json,
                     value.Export!false
                 /]
             [#else]

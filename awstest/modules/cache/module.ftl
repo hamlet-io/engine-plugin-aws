@@ -83,6 +83,9 @@
                 "cachebase" : {
                     "cache" : {
                         "TestCases" : [ "cachebase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

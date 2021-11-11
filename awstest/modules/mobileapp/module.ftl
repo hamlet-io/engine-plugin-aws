@@ -65,7 +65,7 @@
                                     "Value" : "ios,android"
                                 },
                                 "BUILD_REFERENCE" : {
-                                    "Path" : "BuildConfig.BUILD_REFERENCE]",
+                                    "Path" : "BuildConfig.BUILD_REFERENCE",
                                     "Value" : "123456789#MockCommit#"
                                 },
                                 "RELEASE_CHANNEL" : {

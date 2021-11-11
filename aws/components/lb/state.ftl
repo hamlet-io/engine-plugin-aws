@@ -254,7 +254,7 @@
             [#local targetGroupArn = getExistingReference(defaultTargetGroupId, ARN_ATTRIBUTE_TYPE)]
 
             [#local resources += {
-                "defaulttg" : {
+                "targetgroup" : {
                     "Id" : defaultTargetGroupId,
                     "Name" : defaultTargetGroupName,
                     "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE

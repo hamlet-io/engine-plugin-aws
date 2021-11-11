@@ -623,7 +623,7 @@
 
         [#-- LB level Alerts --]
         [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-            [#list solution.Alerts?values as alert ]
+            [#list ((solution.Alerts)!{})?values as alert ]
 
                 [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
                 [#list monitoredResources as name,monitoredResource ]
@@ -834,7 +834,7 @@
                         "deregistration_delay.timeout_seconds" : solution.Forward.DeregistrationTimeout
                     }]
 
-                [#if engine == "network"]
+                [#if engine == "network" && deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                     [@createTargetGroup
                         id=targetGroupId
                         name=targetGroupName

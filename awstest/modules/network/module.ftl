@@ -33,9 +33,6 @@
             "TestCases" : {
                 "networkbase" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                        "cfn-lint" : {}
-                    },
                     "Structural" : {
                     }
                 }
@@ -44,6 +41,9 @@
                 "networkbase" : {
                     "network" : {
                         "TestCases" : [ "networkbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -145,9 +145,6 @@
             "TestCases" : {
                 "networksubnet" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                        "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -220,6 +217,9 @@
                 "networksubnet" : {
                     "network" : {
                         "TestCases" : [ "networksubnet" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -263,9 +263,6 @@
             "TestCases" : {
                 "networklogging" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                        "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -310,6 +307,9 @@
                 "networklogging" : {
                     "network" : {
                         "TestCases" : [ "networklogging" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

@@ -33,9 +33,6 @@
             "TestCases" : {
                 "ec2base" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -80,6 +77,9 @@
                 "ec2base" : {
                     "ec2" : {
                         "TestCases" : [ "ec2base" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
