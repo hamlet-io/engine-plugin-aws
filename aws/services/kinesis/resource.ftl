@@ -167,7 +167,10 @@
             [#case S3_COMPONENT_TYPE]
 
                 [#-- Handle target encryption --]
-                [#local isEncrypted = destinationSolution.Encryption.Enabled]
+                [#local isEncrypted =
+                    destinationSolution.Encryption.Enabled &&
+                    destinationSolution.Encryption.EncryptionSource == "EncryptionService" ]
+
                 [#if isEncrypted && !(cmkKeyId?has_content)]
                     [@fatal
                         message="Destination is encrypted, but CMK not provided."

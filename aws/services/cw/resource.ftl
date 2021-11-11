@@ -151,7 +151,33 @@
 
                 [#local roleRequired = true ]
 
-                [#if  deploymentSubsetRequired("iam", true)  &&
+                [#-- These iam resources are very specific to log subscriptions    --]
+                [#-- They need to be in place for the log subscription to succeed  --]
+                [#-- However if an iam subset isn't used, then there is a catch 22 --]
+                [#-- in that the lg subset needs to be run to create the log group --]
+                [#-- before the template, but the log group needs iam resources    --]
+                [#-- that would normally be created in the template.               --]
+                [#-- To get around this, specific checking is done to see if the   --]
+                [#-- iam resource set is active, and if not, the iam resources are --]
+                [#-- created here.                                                 --]
+                [#-- TODO(mfl): consider deprecating the iam pass, and make        --]
+                [#-- subsets harder in that a template will throw an error if a    --]
+                [#-- subset is enabled but the resources are not defined when a    --]
+                [#-- template pass is attempted.                                   --]
+
+                [#local deploymentGroupDetails = getDeploymentGroupDetails(getDeploymentGroup())]
+                [#local iamResourceSetActive = false]
+
+                [#-- Check if iam resource set is active --]
+                [#list ((deploymentGroupDetails.ResourceSets)!{})?values?filter(s -> s.Enabled ) as resourceSet ]
+                    [#if resourceSet["deployment:Unit"] == "iam"]
+                        [#local iamResourceSetActive = true]
+                        [#break]
+                    [/#if]
+                [/#list]
+
+                [#if
+                    ( deploymentSubsetRequired("iam", true) || !iamResourceSetActive ) &&
                     isPartOfCurrentDeploymentUnit(forwardingRoleId) ]
 
                     [@createRole
