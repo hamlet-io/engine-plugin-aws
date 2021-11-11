@@ -58,7 +58,7 @@
     /]
 [/#macro]
 
-[#macro createSNSSubscription id topicId endpoint protocol rawMessageDelivery=false deliveryPolicy={} dependencies=[] ]
+[#macro createSNSSubscription id topicId endpoint protocol rawMessageDelivery=false deliveryPolicy={} filterPolicy={} dependencies=[] ]
     [@cfResource
         id=id
         type="AWS::SNS::Subscription"
@@ -71,6 +71,10 @@
             attributeIfContent(
                 "DeliveryPolicy",
                 deliveryPolicy
+            ) +
+            attributeIfContent(
+                "FilterPolicy",
+                filterPolicy
             ) +
             attributeIfTrue(
                 "RawMessageDelivery",
