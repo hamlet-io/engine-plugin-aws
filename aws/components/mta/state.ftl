@@ -94,38 +94,52 @@
         }
     ]
 
-    [#if parentSolution.Direction != "receive"]
-        [#-- Rules only supported on a receiving MTA --]
-        [#return]
-    [/#if]
-
-    [#-- As it is likely the targets of the rule links may have inbound links pointing --]
-    [#-- back at the MTA, we can't use link lookups to refine the roles on a per rule  --]
-    [#-- basis. So the best we can do is define all the supported link roles           --]
-    [#assign componentState +=
-        {
-            "Resources" : {
-                "rule" : {
-                    "Id" : formatResourceId(AWS_SES_RECEIPT_RULE_RESOURCE_TYPE, core.Id),
-                    "Name" : formatComponentFullName(core.Tier, core.Component, occurrence),
-                    "Type" : AWS_SES_RECEIPT_RULE_RESOURCE_TYPE
-                }
-            },
-            "Roles" : {
-                "Inbound" : {
-                    "invoke" : {
-                        "Principal" : "ses.amazonaws.com",
-                        "SourceAccount" : accountObject.ProviderId
+    [#switch parentSolution.Direction]
+        [#case "receive"]
+            [#-- As it is likely the targets of the rule links may have inbound links pointing --]
+            [#-- back at the MTA, we can't use link lookups to refine the roles on a per rule  --]
+            [#-- basis. So the best we can do is define all the supported link roles           --]
+            [#assign componentState +=
+                {
+                    "Resources" : {
+                        "rule" : {
+                            "Id" : formatResourceId(AWS_SES_RECEIPT_RULE_RESOURCE_TYPE, core.Id),
+                            "Name" : formatComponentFullName(core.Tier, core.Component, occurrence),
+                            "Type" : AWS_SES_RECEIPT_RULE_RESOURCE_TYPE
+                        }
                     },
-                    "save" : {
-                        "Principal" : "ses.amazonaws.com",
-                        "Prefix" : solution["aws:Prefix"]!"",
-                        "Referer" : accountObject.ProviderId
+                    "Roles" : {
+                        "Inbound" : {
+                            "invoke" : {
+                                "Principal" : "ses.amazonaws.com",
+                                "SourceAccount" : accountObject.ProviderId
+                            },
+                            "save" : {
+                                "Principal" : "ses.amazonaws.com",
+                                "Prefix" : solution["aws:Prefix"]!"",
+                                "Referer" : accountObject.ProviderId
+                            }
+                        },
+                        "Outbound" : {}
                     }
-                },
-                "Outbound" : {}
-            }
-        }
-    ]
+                }
+            ]
+        [#break]
+
+        [#case "send"]
+            [#assign componentState +=
+                {
+                    "Resources" : {
+                        "configSet" : {
+                            "Id" : formatResourceId(AWS_SES_CONFIGSET_RESOURCE_TYPE, core.Id),
+                            "Name" : formatComponentShortFullName(core.Tier, core.Component, occurrence),
+                            "Type" : AWS_SES_CONFIGSET_RESOURCE_TYPE
+                        }
+                    }
+                }
+            ]
+        [#break]
+    [/#switch]
+
 
 [/#macro]
