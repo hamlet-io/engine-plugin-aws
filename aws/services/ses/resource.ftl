@@ -47,6 +47,39 @@
     mappings=AWS_SES_RECEIPT_RULE_OUTPUT_MAPPINGS
 /]
 
+[#assign AWS_SES_CONFIGSET_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        },
+        NAME_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_SES_CONFIGSET_RESOURCE_TYPE
+    mappings=AWS_SES_CONFIGSET_OUTPUT_MAPPINGS
+/]
+
+[#macro createSESConfigSet id name dependencies=[] tags=[] ]
+    [#local tags = [] ]
+    [#-- CF doesn't support tags but the console does, so included for future expansion --]
+    [@cfResource
+        id=id
+        type="AWS::SES::ConfigurationSet"
+        properties=
+            {
+                "Name" : name
+            }
+        outputs=AWS_SES_CONFIGSET_OUTPUT_MAPPINGS
+        dependencies=[]
+        tags=tags
+    /]
+[/#macro]
+
 [#macro createSESReceiptRule id name ruleSetName actions=[] afterRuleName="" recipients=[] enabled=true scanEnabled=true tlsRequired=false dependencies=[] ]
     [@cfResource
         id=id

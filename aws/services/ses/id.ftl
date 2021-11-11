@@ -37,3 +37,27 @@
                 AWS_SES_RECEIPT_FILTER_RESOURCE_TYPE,
                 extensions)]
 [/#function]
+
+[#assign AWS_SES_CONFIGSET_RESOURCE_TYPE = "sesconfigset" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_SIMPLE_EMAIL_SERVICE
+    resource=AWS_SES_CONFIGSET_RESOURCE_TYPE
+/]
+
+[#assign AWS_SES_CONFIGSET_DEST_RESOURCE_TYPE = "sesconfigdest" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_SIMPLE_EMAIL_SERVICE
+    resource=AWS_SES_CONFIGSET_DEST_RESOURCE_TYPE
+/]
+
+[#function formatSESConfigSetId ]
+    [#return formatResourceId(AWS_SES_CONFIGSET_RESOURCE_TYPE) ]
+[/#function]
+
+[#function formatSESConfigDestinationId extensions...]
+    [#return formatResourceId(
+                AWS_SES_CONFIGSET_DEST_RESOURCE_TYPE,
+                extensions)]
+[/#function]

@@ -149,6 +149,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "mobileapp"
                             },
+                            "mta" : {
+                                "Provider" : "awstest",
+                                "Name" : "mta"
+                            },
                             "network" : {
                                 "Provider" : "awstest",
                                 "Name" : "network"
