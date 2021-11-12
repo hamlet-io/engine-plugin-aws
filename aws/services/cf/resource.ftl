@@ -358,6 +358,7 @@
     wafAclId=""
     tags=[]
 ]
+    [#local wafAclLink = (wafAclId?is_string)?then(getReference(wafAclId), wafAclId)]
     [@cfResource
        id=id
         type="AWS::CloudFront::Distribution"
@@ -379,7 +380,7 @@
                     attributeIfContent("PriceClass", priceClass) +
                     attributeIfContent("Restrictions", restrictions) +
                     attributeIfContent("ViewerCertificate", certificate) +
-                    attributeIfContent("WebACLId", getReference(wafAclId))
+                    attributeIfContent("WebACLId", wafAclLink)
             }
         outputs=CF_OUTPUT_MAPPINGS
         dependencies=dependencies

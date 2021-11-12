@@ -14,7 +14,10 @@
     [#local cfName              = resources["cf"].Name]
 
     [#local wafPresent          = isPresent(solution.WAF) ]
+    [#local wafVersion          = (solution.WAF.Version)!"V1" ]
     [#local wafAclId            = resources["wafacl"].Id]
+    [#local wafAclArn           = resources["wafacl"].Arn]
+    [#local wafAclLink          = resources["wafacl"][(wafVersion == "V1")?then("Id","Arn")]]
     [#local wafAclName          = resources["wafacl"].Name]
 
     [#local wafLogStreamingResources = resources["wafLogStreaming"]!{} ]
@@ -492,7 +495,7 @@
             restrictions=valueIfContent(
                 restrictions,
                 restrictions)
-            wafAclId=valueIfTrue(wafAclId, wafPresent)
+            wafAclId=valueIfTrue(wafAclLink, wafPresent)
             tags=getOccurrenceCoreTags(occurrence,cfName)
         /]
 
@@ -512,12 +515,16 @@
                     bucketPrefix="WAF"
                     cloudwatchEnabled=true
                     cmkKeyId=kmsKeyId
+                    version=solution.WAF.Version
                 /]
 
                 [@enableWAFLogging
                     wafaclId=wafAclId
+                    wafaclArn=wafAclArn
                     deliveryStreamId=wafLogStreamingResources["stream"].Id
+                    deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
                     regional=false
+                    version=solution.WAF.Version
                 /]
             [/#if]
 
@@ -528,12 +535,13 @@
                 wafSolution=solution.WAF
                 securityProfile=securityProfile
                 occurrence=occurrence
+                version=solution.WAF.Version
             /]
         [/#if]
     [/#if]
 
     [#if deploymentSubsetRequired("epilogue", false)]
-        [#if invalidationPaths?has_content && getExistingReference(cfId)?has_content ]
+        [#if invalidationPaths?has_content && getExistingReference(cfId)?has_content && (wafVersion == "V1") ]
             [@addToDefaultBashScriptOutput
                 [
                     "case $\{STACK_OPERATION} in",

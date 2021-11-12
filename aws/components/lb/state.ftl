@@ -69,6 +69,7 @@
             {
                 "acl" : {
                     "Id" : formatDependentWAFAclId(id),
+                    "Arn": (solution.WAF.Version == "V2")?then({ "Fn::GetAtt" : [ formatDependentWAFAclId(id), "Arn" ] }, ""),
                     "Name" : formatComponentWAFAclName(core.Tier, core.Component, occurrence),
                     "Type" : AWS_WAF_ACL_RESOURCE_TYPE
                 },
