@@ -828,12 +828,16 @@
                 bucketPrefix="WAF"
                 cloudwatchEnabled=true
                 cmkKeyId=kmsKeyId
+                version=solution.WAF.Version
             /]
 
             [@enableWAFLogging
                 wafaclId=wafAclResources.acl.Id
+                wafaclArn=wafAclResources.acl.Arn
                 deliveryStreamId=wafLogStreamingResources["stream"].Id
+                deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
                 regional=wafRegional
+                version=solution.WAF.Version
             /]
 
         [/#if]
@@ -847,13 +851,14 @@
                 securityProfile=securityProfile
                 occurrence=occurrence
                 regional=wafRegional
+                version=solution.WAF.Version
             /]
 
             [#if !cfResources?has_content]
                 [#-- Attach to API Gateway if no CloudFront distribution --]
                 [@createWAFAclAssociation
                     id=wafAclResources.association.Id
-                    wafaclId=wafAclResources.acl.Id
+                    wafaclId=(solution.WAF.Version == "V1")?then(wafAclResources.acl.Id, wafAclResources.acl.Arn)
                     endpointId=
                         formatRegionalArn(
                             "apigateway",
@@ -869,7 +874,8 @@
                                 ]
                             }
                         )
-                    dependencies=stageId
+                    dependencies=stageId,
+                    version=solution.WAF.Version
                 /]
             [/#if]
         [/#if]

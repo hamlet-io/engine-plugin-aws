@@ -1,40 +1,40 @@
 [#ftl]
 
 [#-- Regional resource types replicate global ones --]
-[#function formatWAFResourceType baseResourceType regional ]
-    [#return "AWS::" + regional?then("WAFRegional::","WAF::") + baseResourceType ]
+[#function formatWAFResourceType baseResourceType regional version="V1" ]
+    [#return "AWS::" + (version == "V2")?then("WAFv2::",regional?then("WAFRegional::","WAF::")) + baseResourceType ]
 [/#function]
 
 [#-- Capture similarity between conditions --]
-[#macro createWAFCondition id name type filters=[] valueSet={} regional=false]
+[#macro createWAFCondition id name type filters=[] valueSet={} regional=false version="V1"]
     [#if (WAFConditions[type].ResourceType)?has_content]
         [#local result = [] ]
         [#list asArray(filters) as filter]
             [#switch type]
                 [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFByteMatchTuples(filter, valueSet) ]
+                    [#local result += formatWAFByteMatchTuples(filter, valueSet, version) ]
                     [#break]
                 [#case AWS_WAF_GEO_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFGeoMatchTuples(filter, valueSet) ]
+                    [#local result += formatWAFGeoMatchTuples(filter, valueSet, version) ]
                     [#break]
                 [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFIPMatchTuples(filter, valueSet) ]
+                    [#local result += formatWAFIPMatchTuples(filter, valueSet, version) ]
                     [#break]
                 [#case AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
-                    [#local result += formatWAFSizeConstraintTuples(filter, valueSet) ]
+                    [#local result += formatWAFSizeConstraintTuples(filter, valueSet, version) ]
                     [#break]
                 [#case AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFSqlInjectionMatchTuples(filter, valueSet) ]
+                    [#local result += formatWAFSqlInjectionMatchTuples(filter, valueSet, version) ]
                     [#break]
                 [#case AWS_WAF_XSS_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFXssMatchTuples(filter, valueSet) ]
+                    [#local result += formatWAFXssMatchTuples(filter, valueSet, version) ]
                     [#break]
             [/#switch]
         [/#list]
 
         [@cfResource
             id=id
-            type=formatWAFResourceType(WAFConditions[type].ResourceType, regional)
+            type=formatWAFResourceType(WAFConditions[type].ResourceType, regional, version)
             properties=
                     {
                         "Name": name
@@ -50,17 +50,18 @@
     [/#if]
 [/#macro]
 
-[#macro createWAFByteMatchSetCondition id name matches=[] valueSet={} regional=false]
+[#macro createWAFByteMatchSetCondition id name matches=[] valueSet={} regional=false version="V1" ]
     [@createWAFCondition
         id=id
         name=name
         type=AWS_WAF_BYTE_MATCH_CONDITION_TYPE
         filters=matches
         valueSet=valueSet
-        regional=regional /]
+        regional=regional
+        version=version /]
 [/#macro]
 
-[#macro createWAFGeoMatchSetCondition id name countryCodes=[] regional=true]
+[#macro createWAFGeoMatchSetCondition id name countryCodes=[] regional=true version="V1"]
     [#local filters = [{"Targets" : "countrycodes"}] ]
     [#local valueSet = {"countrycodes" : asFlattenedArray(countryCodes) } ]
     [@createWAFCondition
@@ -69,52 +70,78 @@
         type=AWS_WAF_GEO_MATCH_CONDITION_TYPE
         filters=filters
         valueSet=valueSet
-        regional=regional /]
+        regional=regional
+        version=version /]
 [/#macro]
 
-[#macro createWAFIPSetCondition id name cidr=[] regional=false]
+[#macro createWAFIPSetCondition id name cidr=[] regional=false version="V1" ]
     [#local filters = [{"Targets" : "ips"}] ]
     [#local valueSet = {"ips" : asFlattenedArray(cidr) } ]
-    [@createWAFCondition
-        id=id
-        name=name
-        type=AWS_WAF_IP_MATCH_CONDITION_TYPE
-        filters=filters
-        valueSet=valueSet
-        regional=regional /]
+    [#switch version]
+        [#case "V1"]
+            [@createWAFCondition
+                id=id
+                name=name
+                type=AWS_WAF_IP_MATCH_CONDITION_TYPE
+                filters=filters
+                valueSet=valueSet
+                regional=regional /]
+        [#break]
+        [#case "V2"]
+            [@cfResource
+                id=id
+                type="AWS::WAFv2::IPSet"
+                properties=
+                        {
+                            "Name": name,
+                            "Addresses": formatWAFIPMatchTuples(filter, valueSet, version),
+                            "IPAddressVersion": "IPV4",
+                            "Scope": regional?then("REGIONAL","CLOUDFRONT")
+                        }
+            /]
+        [#break]
+    [/#switch]
 [/#macro]
 
-[#macro createWAFSizeConstraintCondition id name constraints=[] valueSet={} regional=false]
+[#macro createWAFSizeConstraintCondition id name constraints=[] valueSet={} regional=false version="V1"]
     [@createWAFCondition
         id=id
         name=name
         type=AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE
         filters=constraints
         valueSet=valueSet
-        regional=regional /]
+        regional=regional
+        version=version /]
 [/#macro]
 
-[#macro createWAFSqlInjectionMatchSetCondition id name matches=[] valueSet={} regional=false]
+[#macro createWAFSqlInjectionMatchSetCondition id name matches=[] valueSet={} regional=false version="V1"]
     [@createWAFCondition
         id=id
         name=name
         type=AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE
         filters=matches
         valueSet=valueSet
-        regional=regional /]
+        regional=regional
+        version=version /]
 [/#macro]
 
-[#macro createWAFXssMatchSetCondition id name matches=[] valueSet={} regional=false]
+[#macro createWAFXssMatchSetCondition id name matches=[] valueSet={} regional=false version="V1"]
     [@createWAFCondition
         id=id
         name=name
         type=AWS_WAF_XSS_MATCH_CONDITION_TYPE
         filters=matches
         valueSet=valueSet
-        regional=regional /]
+        regional=regional
+        version=version /]
 [/#macro]
 
-[#macro createWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit=""]
+[#macro createWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit="" version="V1"]
+    [#if version == "V2"]
+        [#-- V2 templates create rules as part of WebAcl --]
+        [#return]
+    [/#if]
+
     [#local predicates = [] ]
     [#list asArray(conditions) as condition]
         [#local rateBased = (rateKey?has_content && rateLimit?has_content)]
@@ -135,7 +162,8 @@
                 type=condition.Type
                 filters=condition.Filters
                 valueSet=valueSet
-                regional=regional /]
+                regional=regional
+                version=version /]
         [/#if]
         [#local predicates +=
             [
@@ -166,7 +194,7 @@
 [#-- Rules are grouped into bands. Bands are sorted into ascending alphabetic --]
 [#-- order, with rules within a band ordered based on occurrence in the rules --]
 [#-- array. Rules without a band are put into the default band.               --]
-[#macro createWAFAcl id name metric defaultAction rules=[] valueSet={} regional=false bandDefault="default" ]
+[#macro createWAFAcl id name metric defaultAction rules=[] valueSet={} regional=false bandDefault="default" version="V1" ]
     [#-- Determine the bands --]
     [#local bands = [] ]
     [#list asArray(rules) as rule]
@@ -206,39 +234,92 @@
                     valueSet=valueSet
                     regional=regional
                     rateKey=rule.RateKey!""
-                    rateLimit=rule.RateLimit!"" /]
+                    rateLimit=rule.RateLimit!""
+                    version=version /]
             [/#if]
-            [#local aclRules +=
-                [
-                    {
-                        "RuleId" : getReference(ruleId),
-                        "Priority" : nextRulePriority,
-                        "Action" : {
-                        "Type" : rule.Action
-                        }
-                    }
-                ]
-            ]
+            [#switch version]
+                [#case "V1"]
+                    [#local aclRules +=
+                        [
+                            {
+                                "RuleId" : getReference(ruleId),
+                                "Priority" : nextRulePriority,
+                                "Action" : {
+                                    "Type" : rule.Action
+                                }
+                            }
+                        ]
+                    ]
+                [#break]
+
+                [#case "V2"]
+                    [#local aclRules += 
+                        [
+                            {
+                                "Action" : {
+                                    rule.Action : {}
+                                },
+                                "Name" : ruleName,
+                                "OverrideAction" : { "None": {} },
+                                "Priority" : nextRulePriority,
+                                "Statement" : rule.Conditions,
+                                "VisibilityConfig" : {
+                                    "CloudWatchMetricsEnabled" : true,
+                                    "MetricName" : ruleMetric,
+                                    "SampledRequestsEnabled" : true
+                                }
+                            }
+                        ]
+                    ]
+                [#break]
+            [/#switch]
             [#local nextRulePriority += 1]
         [/#list]
     [/#list]
 
+    [#local properties={}]
+    [#switch version]
+        [#case "V1"]
+            [#local properties=
+                {
+                    "DefaultAction" : {
+                        "Type" : defaultAction
+                    },
+                    "MetricName" : metric?replace("-","X"),
+                    "Name": name,
+                    "Rules" : aclRules
+                }
+            ]
+        [#break]
+
+        [#case "V2"]
+            [#local defAction = defaultAction?lower_case?cap_first ]
+            [#local properties=
+                {
+                    "DefaultAction" : {
+                        defAction: {}
+                    },
+                    "Name": name,
+                    "Rules" : aclRules,
+                    "Scope": regional?then("REGIONAL","CLOUDFRONT"),
+                    "VisibilityConfig" : {
+                        "CloudWatchMetricsEnabled" : true,
+                        "MetricName" : metric?replace("-","X"),
+                        "SampledRequestsEnabled" : true
+                    }
+                }
+            ]
+        [#break]
+    [/#switch]
+
     [@cfResource
         id=id
-        type=formatWAFResourceType("WebACL", regional)
-        properties=
-            {
-                "DefaultAction" : {
-                    "Type" : defaultAction
-                },
-                "MetricName" : metric?replace("-","X"),
-                "Name": name,
-                "Rules" : aclRules
-            }
+        type=formatWAFResourceType("WebACL", regional, version)
+        properties=properties
     /]
 [/#macro]
 
-[#macro createWAFAclFromSecurityProfile id name metric wafSolution securityProfile occurrence={} regional=false]
+[#macro createWAFAclFromSecurityProfile id name metric wafSolution securityProfile occurrence={} regional=false version="V1"]
     [#if wafSolution.OWASP]
         [#local wafProfile = wafProfiles[securityProfile.WAFProfile!""]!{} ]
     [#else]
@@ -338,25 +419,32 @@
         rules=rules
         valueSet=wafValueSet
         regional=regional
-        bandDefault=wafProfile.BandDefault!"default" /]
+        bandDefault=wafProfile.BandDefault!"default"
+        version=version /]
 [/#macro]
 
 [#-- Associations are only relevant for regional endpoints --]
-[#macro createWAFAclAssociation id wafaclId endpointId dependencies=[] ]
+[#macro createWAFAclAssociation id wafaclId endpointId dependencies=[] version="V1" ]
     [@cfResource
         id=id
-        type=formatWAFResourceType("WebACLAssociation", true)
+        type=formatWAFResourceType("WebACLAssociation", true, version)
         properties=
             {
-                "ResourceArn" : getArn(endpointId),
-                "WebACLId" : getReference(wafaclId)
-            }
+                "ResourceArn" : getArn(endpointId)
+            } + (version == "V1")?then(
+                    {
+                        "WebACLId" : getReference(wafaclId)
+                    },
+                    {
+                        "WebACLArn" : wafaclId
+                    }
+                )
         dependencies=dependencies
     /]
 [/#macro]
 
 
-[#macro enableWAFLogging wafaclId deliveryStreamId="" regional=false ]
+[#macro enableWAFLogging wafaclId wafaclArn deliveryStreamId="" deliveryStreamArns=[] regional=false version="V1" ]
 
     [#if regional ]
         [#local wafType = "regional" ]
@@ -364,46 +452,64 @@
         [#local wafType = "global" ]
     [/#if]
 
-    [#if deliveryStreamId?has_content ]
-        [#if deploymentSubsetRequired("epilogue", false) ]
-            [@addToDefaultBashScriptOutput
-                content=[
-                    r' case ${STACK_OPERATION} in',
-                    r'   create|update)',
-                    r'       manage_waf_logging ' +
-                    r'          "' + getRegion() + r'"' +
-                    r'          "' + wafaclId + r'"' +
-                    r'          "' + wafType + r'"' +
-                    r'          "enable"' +
-                    r'          "' + deliveryStreamId + r'"' +
-                    r'          || return $?',
-                    r'       ;;',
-                    r'    delete)',
-                    r'       manage_waf_logging ' +
-                    r'          "' + getRegion() + r'"' +
-                    r'          "' + wafaclId + r'"' +
-                    r'          "' + wafType + r'"' +
-                    r'          "disable"' +
-                    r'          || return $?',
-                    r' esac'
-                ]
-            /]
-        [/#if]
-    [#else]
-        [#if deploymentSubsetRequired("epilogue", false) ]
-            [@addToDefaultBashScriptOutput
-                content=[
-                    r' case ${STACK_OPERATION} in',
-                    r'    create|update|delete)',
-                    r'       manage_waf_logging ' +
-                    r'          "' + getRegion() + r'"' +
-                    r'          "' + wafaclId + r'"' +
-                    r'          "' + wafType + r'"' +
-                    r'          "disable"' +
-                    r'          || return $?',
-                    r' esac'
-                ]
-            /]
-        [/#if]
-    [/#if]
+    [#switch version]
+        [#case "V1"]
+            [#if deliveryStreamId?has_content]
+                [#if deploymentSubsetRequired("epilogue", false) ]
+                    [@addToDefaultBashScriptOutput
+                        content=[
+                            r' case ${STACK_OPERATION} in',
+                            r'   create|update)',
+                            r'       manage_waf_logging ' +
+                            r'          "' + getRegion() + r'"' +
+                            r'          "' + wafaclId + r'"' +
+                            r'          "' + wafType + r'"' +
+                            r'          "enable"' +
+                            r'          "' + deliveryStreamId + r'"' +
+                            r'          || return $?',
+                            r'       ;;',
+                            r'    delete)',
+                            r'       manage_waf_logging ' +
+                            r'          "' + getRegion() + r'"' +
+                            r'          "' + wafaclId + r'"' +
+                            r'          "' + wafType + r'"' +
+                            r'          "disable"' +
+                            r'          || return $?',
+                            r' esac'
+                        ]
+                    /]
+                [/#if]
+            [#else]
+                [#if deploymentSubsetRequired("epilogue", false) ]
+                    [@addToDefaultBashScriptOutput
+                        content=[
+                            r' case ${STACK_OPERATION} in',
+                            r'    create|update|delete)',
+                            r'       manage_waf_logging ' +
+                            r'          "' + getRegion() + r'"' +
+                            r'          "' + wafaclId + r'"' +
+                            r'          "' + wafType + r'"' +
+                            r'          "disable"' +
+                            r'          || return $?',
+                            r' esac'
+                        ]
+                    /]
+                [/#if]
+            [/#if]
+        [#break]
+
+        [#case "V2"]
+            [#if !deploymentSubsetRequired("epilogue", false) ]
+                [@cfResource
+                    id=wafaclId+"Xlogconf"
+                    type="AWS::WAFv2::LoggingConfiguration"
+                    properties=
+                            {
+                                "LogDestinationConfigs": deliveryStreamArns,
+                                "ResourceArn": wafaclArn
+                            }
+                /]
+            [/#if]
+        [#break]
+    [/#switch]
 [/#macro]
