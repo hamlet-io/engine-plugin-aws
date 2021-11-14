@@ -351,17 +351,25 @@
             "CompressionFormat" : "GZIP",
             "Prefix" : bucketPrefix?ensure_ends_with("/"),
             "RoleARN" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
-            "CloudWatchLoggingOptions" : loggingConfiguration
-        } +
-        attributeIfTrue(
-            "EncryptionConfiguration",
-            encrypted,
-            {
-                "KMSEncryptionConfig" : {
-                    "AWSKMSKeyARN" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
-                }
-            }
-        )
+            "CloudWatchLoggingOptions" : loggingConfiguration,
+            [#-- If encryption is turned on and then needs to be turned off, --]
+            [#-- just omitting the EncryptionConfig attribute WON'T remove   --]
+            [#-- the encryption config. It must be explicitly marked as not  --]
+            [#-- required. The behaviour is inconsistent with the way most   --]
+            [#-- templates work, but is needed for things to work.           --]
+            "EncryptionConfiguration" :
+                valueIfTrue(
+                    {
+                        "KMSEncryptionConfig" : {
+                            "AWSKMSKeyARN" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                        }
+                    },
+                    encrypted,
+                    {
+                        "NoEncryptionConfig" : "NoEncryption"
+                    }
+                )
+        }
     ]
 [/#function]
 
@@ -391,7 +399,24 @@
         "CloudWatchLoggingOptions" : loggingConfiguration,
         "CompressionFormat" : "GZIP",
         "RoleARN" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
-        "S3BackupMode" : backupEnabled?then("Enabled", "Disabled")
+        "S3BackupMode" : backupEnabled?then("Enabled", "Disabled"),
+        [#-- If encryption is turned on and then needs to be turned off, --]
+        [#-- just omitting the EncryptionConfig attribute WON'T remove   --]
+        [#-- the encryption config. It must be explicitly marked as not  --]
+        [#-- required. The behaviour is inconsistent with the way most   --]
+        [#-- templates work, but is needed for things to work.           --]
+        "EncryptionConfiguration" :
+            valueIfTrue(
+                {
+                    "KMSEncryptionConfig" : {
+                        "AWSKMSKeyARN" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                    }
+                },
+                encrypted,
+                {
+                    "NoEncryptionConfig" : "NoEncryption"
+                }
+            )
     } +
     attributeIfContent(
         "ProcessingConfiguration",
@@ -416,15 +441,6 @@
             errorPrefix?ensure_ends_with("/"),
             errorPrefix
         )
-    ) +
-    attributeIfTrue(
-        "EncryptionConfiguration",
-        encrypted,
-        {
-            "KMSEncryptionConfig" : {
-                "AWSKMSKeyARN" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
-            }
-        }
     ) +
     attributeIfTrue(
         "S3BackupConfiguration"
