@@ -315,7 +315,7 @@
     [#local parentSolution = parent.Configuration.Solution ]
     [#local engine = parentSolution.Engine ]
 
-    [#if multiAZ!false || ( engine == "vpcendpoint" || engine == "privateservice" ) ]
+    [#if (multiAZ!false) || ( engine == "vpcendpoint" || engine == "privateservice" ) ]
         [#local resourceZones = getZones() ]
     [#else]
         [#local resourceZones = [getZones()[0]] ]
@@ -349,7 +349,6 @@
 
         [#case "vpcendpoint"]
         [#case "privateservice"]
-
             [#local endpointZones = {} ]
             [#list resourceZones as zone]
                 [#local networkEndpoints = getNetworkEndpoints(solution.NetworkEndpointGroups, zone.Id, getRegion())]
