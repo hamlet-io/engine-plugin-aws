@@ -60,23 +60,15 @@
                                     [#continue]
                                 [/#if]
                                 [#if linkTarget.Core.Type == TOPIC_COMPONENT_TYPE ]
-                                    [#local topicArn = linkTarget.State.Attributes["ARN"] ]
-                                    [#if deploymentSubsetRequired(MTA_COMPONENT_TYPE, true) ]
-                                        [@createSNSPolicy
-                                            id=formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, configId, link.Id)
-                                            topics=topicArn
-                                            statements=getSnsStatement(
-                                                "sns:Publish",
-                                                topicArn
-                                                {
-                                                    "Service" : "ses.amazonaws.com"
-                                                },
-                                                {
-                                                    "StringEquals" : {
-                                                        "AWS:SourceAccount" : { "Ref" : "AWS::AccountId" }
-                                                    }
-                                                }
-                                            )
+                                    [#if getExistingReference(formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id))?has_content ]
+                                        [@warn
+                                            message="Topic Permissions update required"
+                                            detail=[
+                                                "SNS policies have been migrated to the topic component",
+                                                "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
+                                                "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
+                                            ]?join(',')
+                                            context=subOccurrence.Core.RawId
                                         /]
                                     [/#if]
                                     [#break]
@@ -127,18 +119,6 @@
                                     "esac"
                                 ]
                             /]
-
-                            [#if getExistingReference(formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id))?has_content ]
-                                [@warn
-                                    message="Topic Permissions update required"
-                                    detail=[
-                                        "SNS policies have been migrated to the topic component",
-                                        "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
-                                        "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
-                                    ]?join(',')
-                                    context=subOccurrence.Core.RawId
-                                /]
-                            [/#if]
                             [#break]
                         [/#if]
                     [/#if]
@@ -194,24 +174,17 @@
                                 [/#if]
 
                                 [#if linkTarget.Core.Type == TOPIC_COMPONENT_TYPE ]
-                                    [#local topicArn = linkTarget.State.Attributes["ARN"] ]
-
-                                    [@createSNSPolicy
-                                        id=formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id)
-                                        topics=topicArn
-                                        statements=getSnsStatement(
-                                            "sns:Publish",
-                                            topicArn
-                                            {
-                                                "Service" : "ses.amazonaws.com"
-                                            },
-                                            {
-                                                "StringEquals" : {
-                                                    "AWS:SourceAccount" : { "Ref" : "AWS::AccountId" }
-                                                }
-                                            }
-                                        )
-                                    /]
+                                    [#if getExistingReference(formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id))?has_content ]
+                                        [@warn
+                                            message="Topic Permissions update required"
+                                            detail=[
+                                                "SNS policies have been migrated to the topic component",
+                                                "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
+                                                "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
+                                            ]?join(',')
+                                            context=subOccurrence.Core.RawId
+                                        /]
+                                    [/#if]
                                     [#break]
                                 [/#if]
                             [/#if]
