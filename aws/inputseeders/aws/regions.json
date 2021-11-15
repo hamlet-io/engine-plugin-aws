@@ -221,6 +221,10 @@
                         "ServiceName": "com.amazonaws.ap-southeast-2.kinesis-streams"
                     },
                     {
+                        "ServiceName": "com.amazonaws.ap-southeast-2.kinesis-firehose",
+                        "Type": "Interface"
+                    },
+                    {
                         "Type": "Interface",
                         "ServiceName": "com.amazonaws.ap-southeast-2.kms"
                     },
@@ -345,6 +349,10 @@
                     },
                     {
                         "ServiceName": "com.amazonaws.ap-southeast-2.kinesis-streams",
+                        "Type": "Interface"
+                    },
+                    {
+                        "ServiceName": "com.amazonaws.ap-southeast-2.kinesis-firehose",
                         "Type": "Interface"
                     },
                     {
@@ -473,6 +481,10 @@
                     {
                         "Type": "Interface",
                         "ServiceName": "com.amazonaws.ap-southeast-2.kinesis-streams"
+                    },
+                    {
+                        "ServiceName": "com.amazonaws.ap-southeast-2.kinesis-firehose",
+                        "Type": "Interface"
                     },
                     {
                         "Type": "Interface",
