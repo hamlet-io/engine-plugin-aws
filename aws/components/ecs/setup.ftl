@@ -661,7 +661,11 @@
         [#local taskName = resources["task"].Name ]
         [#local containers = getTaskContainers(occurrence, subOccurrence) ]
 
-        [#local networkMode = solution.NetworkMode ]
+        [#local networkMode = solution.NetworkMode]
+        [#if solution.NetworkMode == "aws:awsvpc"]
+            [#local networkMode = "awsvpc"]
+        [/#if]
+
         [#local lbTargetType = "instance"]
         [#local networkLinks = [] ]
         [#local executionRoleId = ""]
