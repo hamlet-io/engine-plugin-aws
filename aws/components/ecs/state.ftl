@@ -220,7 +220,12 @@
 
     [#local parentResources = parent.State.Resources ]
 
-    [#if solution.NetworkMode == "awsvpc" ]
+    [#local networkMode = solution.NetworkMode]
+    [#if solution.NetworkMode == "aws:awsvpc"]
+        [#local networkMode = "awsvpc"]
+    [/#if]
+
+    [#if networkMode== "awsvpc" ]
         [#local securityGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ) ]
     [#else]
         [#local securityGroupId = parentResources["securityGroup"].Id ]
@@ -318,7 +323,7 @@
             ) +
             attributeIfTrue(
                 "securityGroup",
-                solution.NetworkMode == "awsvpc",
+                networkMode == "awsvpc",
                 {
                     "Id" : securityGroupId,
                     "Name" : core.FullName,
@@ -387,7 +392,12 @@
 
     [#local subnet = (getSubnets(core.Tier, networkResources))[0]]
 
-    [#if solution.NetworkMode == "awsvpc" ]
+    [#local networkMode = solution.NetworkMode]
+    [#if solution.NetworkMode == "aws:awsvpc"]
+        [#local networkMode = "awsvpc"]
+    [/#if]
+
+    [#if networkMode == "awsvpc" ]
         [#local securityGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id ) ]
     [#else]
         [#local securityGroupId = parentResources["securityGroup"].Id ]
@@ -476,7 +486,7 @@
             ) +
             attributeIfTrue(
                 "securityGroup",
-                solution.NetworkMode == "awsvpc",
+                networkMode == "awsvpc",
                 {
                     "Id" : securityGroupId,
                     "Name" : core.FullName,
@@ -501,12 +511,12 @@
             ) +
             attributeIfTrue(
                 "SECURITY_GROUP",
-                solution.NetworkMode == "awsvpc",
+                networkMode == "awsvpc",
                 getExistingReference(securityGroupId)
             ) +
             attributeIfTrue(
                 "SUBNET",
-                solution.NetworkMode == "awsvpc",
+                networkMode == "awsvpc",
                 subnet
             ),
             "Roles" : {
