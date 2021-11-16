@@ -375,6 +375,35 @@
     ]
 [/#function]
 
+[#-- Check if a prefix is using dynamic partitioning --]
+[#function prefixRequiresDynamicPartitioning prefix]
+
+    [#if prefix?is_string]
+        [#return
+            prefix?contains("!{partitionKeyFromQuery") ||
+            prefix?contains("!{partitionKeyFromLambda")
+        ]
+    [/#if]
+
+    [#if prefix?is_hash]
+        [#list prefix?values as value]
+            [#if prefixRequiresDynamicPartitioning(value) ]
+                [#return true]
+            [/#if]
+        [/#list]
+    [/#if]
+
+    [#if prefix?is_sequence]
+        [#list prefix as value]
+            [#if prefixRequiresDynamicPartitioning(value) ]
+                [#return true]
+            [/#if]
+        [/#list]
+    [/#if]
+
+    [#return false]
+[/#function]
+
 [#function getFirehoseStreamS3Destination
         bucketId
         bucketPrefix
@@ -427,6 +456,12 @@
                 {
                     "NoEncryptionConfig" : "NoEncryption"
                 }
+            ),
+        "DynamicPartitioningConfiguration" :
+            getFirehoseStreamDynamicPartitioningConfiguration(
+                delimiter?has_content ||
+                prefixRequiresDynamicPartitioning(bucketPrefix) ||
+                prefixRequiresDynamicPartitioning(errorPrefix)
             )
     } +
     attributeIfContent(
@@ -525,6 +560,23 @@
                     "ParameterValue" : delimiter
                 }
             ]
+        }
+    ]
+
+[/#function]
+
+
+[#-- Configure dynamic partitioning --]
+[#function getFirehoseStreamDynamicPartitioningConfiguration
+    enabled=true
+    retryDuration=90 ]
+
+    [#return
+        {
+            "Enabled" : enabled,
+            "RetryOptions" : {
+                "DurationInSeconds" : retryDuration
+            }
         }
     ]
 
