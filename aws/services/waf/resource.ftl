@@ -5,6 +5,130 @@
     [#return "AWS::" + (version == "V2")?then("WAFv2::",regional?then("WAFRegional::","WAF::")) + baseResourceType ]
 [/#function]
 
+[#function formatV2TextTransformations textTransformations valueSet={}]
+    [#local retVal=[]]
+    [#list getWAFValueList(textTransformations, valueSet) as transform]
+        [#local retVal += [ {
+                "Priority": transform?counter,
+                "Type": transform
+            } ]]
+    [/#list]
+    [#return retVal]
+[/#function]
+
+[#function formatV2FieldMatch field]
+    [#local retVal={}]
+    [#switch (field.Type)!"Unknown"]
+        [#case "QUERY_STRING"]
+            [#local retVal += {
+                "QueryString": {}
+            }]
+        [#break]
+        [#case "URI"]
+            [#local retVal += {
+                "UriPath": {}
+            }]
+        [#break]
+        [#case "BODY"]
+            [#local retVal += {
+                "JsonBody": {
+                    "InvalidFallbackBehavior" : "EVALUATE_AS_STRING",
+                    "MatchPattern" : {
+                        "All" : {}
+                    },
+                    "MatchScope" : "ALL"
+                }
+            }]
+        [#break]
+        [#case "HEADER"]
+            [#local retVal += {
+                "SingleHeader": {
+                    "Name": field.Data
+                }
+            }]
+        [#break]
+        [#default]
+            [#local retVal += {
+                "UnknownField": field
+            }]
+        [#break]
+    [/#switch]
+    [#return retVal]
+[/#function]
+
+[#function formatV2Conditions conditions valueSet={}]
+    [#local v2Statements = []]
+    [#list conditions as condition]
+        [#list condition.Filters as filter]
+            [#local v2WkStatement = []]
+            [#switch condition.Type]
+                [#case "SqlInjectionMatch"]
+                    [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
+                        [#local v2WkStatement += [ {"SqliMatchStatement": {
+                            "FieldToMatch": formatV2FieldMatch(field),
+                            "TextTransformations": formatV2TextTransformations(filter.Transformations)
+                            }}]]
+                    [/#list]
+                [#break]
+                [#case "XssMatch"]
+                    [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
+                    [#local v2WkStatement += [ { "XssMatchStatement": {
+                        "FieldToMatch": formatV2FieldMatch(field),
+                        "TextTransformations": formatV2TextTransformations(filter.Transformations)
+                        }}]]
+                    [/#list]
+                [#break]
+                [#case "ByteMatch"]
+                    [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
+                        [#list getWAFValueList(filter.Constraints, valueSet) as constraint]
+                            [#list getWAFValueList(filter.Targets, valueSet) as target]
+                                [#local v2WkStatement += [ {"ByteMatchStatement": {
+                                    "FieldToMatch": formatV2FieldMatch(field),
+                                    "PositionalConstraint" : constraint,
+                                    "SearchString" : target,
+                                    "TextTransformations": formatV2TextTransformations(filter.Transformations)
+                                    }}]]
+                            [/#list]
+                        [/#list]
+                    [/#list]
+                [#break]
+                [#case "SizeConstraint"]
+                    [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
+                        [#list getWAFValueList(filter.Operators, valueSet) as operator]
+                            [#list getWAFValueList(filter.Sizes, valueSet) as size]
+                                [#local v2WkStatement += [ { "SizeConstraintStatement": {
+                                    "ComparisonOperator": operator,
+                                    "FieldToMatch": formatV2FieldMatch(field),
+                                    "TextTransformations": formatV2TextTransformations(filter.Transformations),
+                                    "Size": size
+                                    }}]]
+                            [/#list]
+                        [/#list]
+                    [/#list]
+                [#break] 
+                [#default]
+                    [#local v2WkStatement += [ { "UnknownStatement": condition } ]]
+                [#break]
+            [/#switch]
+        [/#list]
+
+        [#if v2WkStatement?size > 1]
+            [#local v2WkStatement = [ {"OrStatement": { "Statements": v2WkStatement}}]]
+        [/#if]
+        [#if condition.Negated]
+            [#local v2Statements += [ { "NotStatement": v2WkStatement[0] }] ]
+        [#else]
+            [#local v2Statements += v2WkStatement]
+        [/#if]
+    [/#list]
+    [#if v2WkStatement?size > 1]
+        [#local v2Statements = { "AndStatement": { "Statements": v2Statements}}]
+    [#else]
+        [#local v2Statements = v2Statements[0] ]
+    [/#if]
+    [#return v2Statements]
+[/#function]
+
 [#-- Capture similarity between conditions --]
 [#macro createWAFCondition id name type filters=[] valueSet={} regional=false version="V1"]
     [#if (WAFConditions[type].ResourceType)?has_content]
@@ -12,22 +136,22 @@
         [#list asArray(filters) as filter]
             [#switch type]
                 [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFByteMatchTuples(filter, valueSet, version) ]
+                    [#local result += formatWAFByteMatchTuples(filter, valueSet) ]
                     [#break]
                 [#case AWS_WAF_GEO_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFGeoMatchTuples(filter, valueSet, version) ]
+                    [#local result += formatWAFGeoMatchTuples(filter, valueSet) ]
                     [#break]
                 [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
                     [#local result += formatWAFIPMatchTuples(filter, valueSet, version) ]
                     [#break]
                 [#case AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
-                    [#local result += formatWAFSizeConstraintTuples(filter, valueSet, version) ]
+                    [#local result += formatWAFSizeConstraintTuples(filter, valueSet) ]
                     [#break]
                 [#case AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFSqlInjectionMatchTuples(filter, valueSet, version) ]
+                    [#local result += formatWAFSqlInjectionMatchTuples(filter, valueSet) ]
                     [#break]
                 [#case AWS_WAF_XSS_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFXssMatchTuples(filter, valueSet, version) ]
+                    [#local result += formatWAFXssMatchTuples(filter, valueSet) ]
                     [#break]
             [/#switch]
         [/#list]
@@ -39,6 +163,10 @@
                     {
                         "Name": name
                     } +
+                    (version == "V2")?then(
+                        { "Scope" : regional?then("REGIONAL","CLOUDFRONT")},
+                        {}
+                    )+
                     contentIfContent(
                         attributeIfContent(
                             WAFConditions[type].TuplesAttributeKey!"",
@@ -253,16 +381,17 @@
                 [#break]
 
                 [#case "V2"]
+                    [#local v2Action = (rule.Action)?lower_case?cap_first]
+                    [#local v2Statement = formatV2Conditions(rule.Conditions, valueSet) ]
                     [#local aclRules += 
                         [
                             {
                                 "Action" : {
-                                    rule.Action : {}
+                                    v2Action : {}
                                 },
                                 "Name" : ruleName,
-                                "OverrideAction" : { "None": {} },
                                 "Priority" : nextRulePriority,
-                                "Statement" : rule.Conditions,
+                                "Statement" : v2Statement,
                                 "VisibilityConfig" : {
                                     "CloudWatchMetricsEnabled" : true,
                                     "MetricName" : ruleMetric,
@@ -337,10 +466,10 @@
                     [
                         {
                         "Rule" : "whitelistips",
-                        "Action" : "ALLOW"
+                        "Action" : (version == "V1")?then("ALLOW","Allow")
                         }
                     ],
-                "DefaultAction" : "BLOCK"
+                "DefaultAction" : (version == "V1")?then("BLOCK","Block")
             } ]
     [/#if]
 
@@ -355,10 +484,10 @@
                     [
                         {
                         "Rule" : "whitelistcountries",
-                        "Action" : "ALLOW"
+                        "Action" : (version == "V1")?then("ALLOW","Allow")
                         }
                     ],
-                "DefaultAction" : "BLOCK"
+                "DefaultAction" : (version == "V1")?then("BLOCK","Block")
             } ]
     [/#if]
 
@@ -373,10 +502,10 @@
                     [
                         {
                         "Rule" : "blacklistcountries",
-                        "Action" : "BLOCK"
+                        "Action" : (version == "V1")?then("BLOCK","Block")
                         }
                     ],
-                "DefaultAction" : "ALLOW"
+                "DefaultAction" : (version == "V1")?then("ALLOW","Allow")
             } ]
     [/#if]
     [#local rules = getWAFProfileRules(wafProfile, wafRuleGroups, wafRules, wafConditions)]
@@ -401,7 +530,7 @@
                                     "Negated" : false
                                 }
                             ],
-                            "Action" : "BLOCK"
+                            "Action" : (version == "V1")?then("BLOCK","Block")
                         }
                     ],
                     ADD_COMBINE_BEHAVIOUR

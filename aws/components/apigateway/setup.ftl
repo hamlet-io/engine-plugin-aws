@@ -874,7 +874,7 @@
                                 ]
                             }
                         )
-                    dependencies=stageId,
+                    dependencies=stageId
                     version=solution.WAF.Version
                 /]
             [/#if]
