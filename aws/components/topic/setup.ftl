@@ -109,13 +109,14 @@
                                     }]
                             [/#switch]
 
-                            [#local topicPolicyStatements += [ snsPublishPermission(
-                                                                topicId,
-                                                                { "Service" : linkTargetRoles.Inbound["invoke"].Principal },
-                                                                sourceCondition,
-                                                                true,
-                                                                linkId
-                                                            )] ]
+                            [#local topicPolicyStatements +=
+                                        [ snsPublishPermission(
+                                            topicId,
+                                            { "Service" : linkTargetRoles.Inbound["invoke"].Principal },
+                                            sourceCondition,
+                                            true,
+                                            linkId
+                                        )] ]
                             [#break]
                     [/#switch]
                     [#break]
