@@ -91,16 +91,26 @@
                             [#local delBash = []]
                             [#list solution.Conditions.Recipients as emailAddr]
                                 [#local addBash += [
-                                    r'    info "Create email identity"',
-                                    r'    aws --region "' + getRegion() + r'" sesv2 create-email-identity --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName
+                                    r'    info "Create email identity configset"',
+                                    r'    if [ -z "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
+                                    r'       aws --region "' + getRegion() + r'" sesv2 create-email-identity --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
+                                    r'    else',
+                                    r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
+                                    r'    fi'
                                 ]]
                                 [#local updBash += [
-                                    r'    info "Update email identity"',
-                                    r'    aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName
+                                    r'    info "Update email identity configset"',
+                                    r'    if [ -z "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
+                                    r'       aws --region "' + getRegion() + r'" sesv2 create-email-identity --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
+                                    r'    else',
+                                    r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
+                                    r'    fi'
                                 ]]
                                 [#local delBash += [
-                                    r'    info "Remove email identity"',
-                                    r'    aws sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r''
+                                    r'    info "Remove email identity configset"',
+                                    r'    if [ -n "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
+                                    r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr,
+                                    r'    fi'
                                 ]]
                             [/#list]
                             [#local configJSON = {
@@ -182,6 +192,8 @@
                 [#local ruleName = resources["rule"].Name ]
 
                 [#local actions = [] ]
+                [#local topicArns = [] ]
+
                 [#switch solution.Action]
                     [#case "forward"]
                         [#local encryptionEnabled = isPresent(solution["aws:Encryption"]) ]
@@ -209,6 +221,8 @@
                                             context=subOccurrence.Core.RawId
                                         /]
                                     [/#if]
+
+                                    [#local topicArns = combineEntities(topicArns, (linkTarget.State.Attributes["ARN"])!"", UNIQUE_COMBINE_BEHAVIOUR)]
                                     [#break]
                                 [/#if]
                             [/#if]
@@ -227,6 +241,7 @@
                                 [#local linkTargetConfiguration = linkTarget.Configuration ]
                                 [#local linkTargetResources = linkTarget.State.Resources ]
                                 [#local linkTargetAttributes = linkTarget.State.Attributes ]
+                                [#local topicArn = linkTargetAttributes.ARN]
 
                                 [#switch linkTargetCore.Type]
                                     [#case EXTERNALSERVICE_COMPONENT_TYPE ]
@@ -256,7 +271,9 @@
                         [#break]
 
                     [#case "drop"]
-                        [#local actions += getSESReceiptStopAction("RuleSet", topicArn) ]
+                        [#list topicArns as topicArn]
+                            [#local actions += getSESReceiptStopAction("RuleSet", topicArn) ]
+                        [/#list]
                         [#break]
                 [/#switch]
 
