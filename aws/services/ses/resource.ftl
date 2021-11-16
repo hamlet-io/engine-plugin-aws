@@ -64,9 +64,7 @@
     mappings=AWS_SES_CONFIGSET_OUTPUT_MAPPINGS
 /]
 
-[#macro createSESConfigSet id name dependencies=[] tags=[] ]
-    [#local tags = [] ]
-    [#-- CF doesn't support tags but the console does, so included for future expansion --]
+[#macro createSESConfigSet id name dependencies=[]]
     [@cfResource
         id=id
         type="AWS::SES::ConfigurationSet"
@@ -76,7 +74,6 @@
             }
         outputs=AWS_SES_CONFIGSET_OUTPUT_MAPPINGS
         dependencies=[]
-        tags=tags
     /]
 [/#macro]
 

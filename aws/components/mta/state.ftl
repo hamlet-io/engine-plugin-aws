@@ -41,7 +41,8 @@
     [#switch solution.Direction ]
         [#case "send" ]
             [#-- Set up sending attributes/permissions --]
-            [#assign componentState +=
+            [#assign componentState = mergeObjects(
+                componentState,
                 {
                     "Attributes" : {
                         "REGION" : getRegion(),
@@ -55,19 +56,20 @@
                         }
                     }
                 }
-            ]
+            )]
             [#break]
 
         [#case "receive" ]
             [#-- The account level SES receive configuration needs to be in the same region as the inbound mta --]
-            [#assign componentState +=
+            [#assign componentState = mergeObjects(
+                componentState,
                 {
                     "Attributes" : {
                         "RULESET" : getExistingReference(formatSESReceiptRuleSetId(), NAME_ATTRIBUTE_TYPE, getRegion()),
                         "REGION" : getRegion()
                     }
                 }
-            ]
+            )]
             [#break]
 
         [#default ]

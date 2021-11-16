@@ -24,13 +24,10 @@
             [#local configSetName = formatName(occurrence.Core.FullName) ]
 
             [#if deploymentSubsetRequired(MTA_COMPONENT_TYPE, true) ]
-                [#local csTags = getOccurrenceCoreTags(occurrence, configSetName)]
-
                 [#-- CF doesn't support tags but the console does, so included for future expansion --]
                 [@createSESConfigSet
                     id=formatSESConfigSetId()
                     name=configSetName
-                    tags=csTags
                 /]
             [/#if]
 
@@ -44,7 +41,8 @@
                 [#local configName = resources["configSet"].Name ]
 
                 [#local eventTypes = solution.Conditions.EventTypes ]
-                [#local topicArn = "" ]
+                [#local topicArns = [] ]
+
                 [#switch solution.Action]
                     [#case "forward"]
                         [#local encryptionEnabled = isPresent(solution["aws:Encryption"]) ]
@@ -71,6 +69,8 @@
                                             context=subOccurrence.Core.RawId
                                         /]
                                     [/#if]
+
+                                    [#local topicArns = combineEntities(topicArns, (linkTarget.State.Attributes["ARN"])!"", UNIQUE_COMBINE_BEHAVIOUR)]
                                     [#break]
                                 [/#if]
                             [/#if]
@@ -82,7 +82,7 @@
                 [/#switch]
 
                 [#if eventTypes?has_content]
-                    [#if topicArn?has_content]
+                    [#list topicArns as topicArn ]
                         [#-- notifications must be done through CLI --]
                         [#if deploymentSubsetRequired("epilogue", false) ]
                             [#local configJSON = {
@@ -113,15 +113,13 @@
                                     r'  update)',
                                     r'    info "Update configsets"',
                                     r'    aws --region "' + getRegion() + r'" ses update-configuration-set-event-destination --configuration-set-name ' + configSetName + ' --event-destination  \'${getJSON(configJSON)}\''
-                                    r'    ;;'
-                                ]+
-                                [
-                                    "esac"
+                                    r'    ;;',
+                                    r'esac'
                                 ]
                             /]
                             [#break]
                         [/#if]
-                    [/#if]
+                    [/#list]
                 [/#if]
             [/#list]
         [#break]
