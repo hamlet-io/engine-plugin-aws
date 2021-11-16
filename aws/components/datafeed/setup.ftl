@@ -311,7 +311,8 @@
                                                 streamLoggingConfiguration,
                                                 solution.Backup.Enabled,
                                                 streamS3BackupDestination,
-                                                streamProcessors
+                                                streamProcessors,
+                                                r"\n"
                 )]
 
                 [@createFirehoseStream

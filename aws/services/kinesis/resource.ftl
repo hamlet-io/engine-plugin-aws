@@ -121,7 +121,8 @@
     cloudwatchEnabled=true
     processorId=""
     cmkKeyId=""
-    dependencies=""]
+    dependencies=""
+    delimiter=r"\n" ]
 
     [#local logPrefix  = {
             "Fn::Join" : [
@@ -227,7 +228,8 @@
                                 bufferSize
                             )
                         ],
-                        [])
+                        []),
+                        delimiter
                     )]
 
                 [#break]
@@ -386,6 +388,15 @@
         backupEnabled
         backupS3Destination
         lambdaProcessor=[]
+        delimiter=""
+]
+
+[#local processors =
+    asArray(lambdaProcessor) +
+    arrayIfTrue(
+        getFirehoseStreamDelimiterProcessor(delimiter),
+        delimiter?has_content
+    )
 ]
 
 [#return
@@ -420,10 +431,10 @@
     } +
     attributeIfContent(
         "ProcessingConfiguration",
-        lambdaProcessor,
+        processors,
         {
             "Enabled" : true,
-            "Processors" : asArray(lambdaProcessor)
+            "Processors" : processors
         }
     ) +
     attributeIfContent(
@@ -495,6 +506,23 @@
                 {
                     "ParameterName" : "RoleArn",
                     "ParameterValue" : getArn(roleId)
+                }
+            ]
+        }
+    ]
+
+[/#function]
+
+[#-- Add a delimiter between records --]
+[#function getFirehoseStreamDelimiterProcessor delimiter ]
+
+    [#return
+        {
+            "Type" : "AppendDelimiterToRecord",
+            "Parameters" : [
+                {
+                    "ParameterName" : "Delimiter",
+                    "ParameterValue" : delimiter
                 }
             ]
         }
