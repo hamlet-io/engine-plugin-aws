@@ -57,6 +57,7 @@
                                 [#if !linkTarget?has_content]
                                     [#continue]
                                 [/#if]
+
                                 [#if linkTarget.Core.Type == TOPIC_COMPONENT_TYPE ]
                                     [#if getExistingReference(formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id))?has_content ]
                                         [@warn
@@ -85,6 +86,23 @@
                     [#list topicArns as topicArn ]
                         [#-- notifications must be done through CLI --]
                         [#if deploymentSubsetRequired("epilogue", false) ]
+                            [#local addBash = []]
+                            [#local updBash = []]
+                            [#local delBash = []]
+                            [#list solution.Conditions.Recipients as emailAddr]
+                                [#local addBash += [
+                                    r'    info "Create email identity"',
+                                    r'    aws --region "' + getRegion() + r'" sesv2 create-email-identity --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName
+                                ]]
+                                [#local updBash += [
+                                    r'    info "Update email identity"',
+                                    r'    aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName
+                                ]]
+                                [#local delBash += [
+                                    r'    info "Remove email identity"',
+                                    r'    aws sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r''
+                                ]]
+                            [/#list]
                             [#local configJSON = {
                                     "Name": configName,
                                     "Enabled": solution.Enabled,
@@ -109,12 +127,21 @@
                                     r'  create)',
                                     r'    info "Assign destination"',
                                     r'    aws --region "' + getRegion() + r'" ses create-configuration-set-event-destination --configuration-set-name ' + configSetName + ' --event-destination  \'${getJSON(configJSON)}\''
+                                ] + addBash + [
                                     r'    ;;'
                                     r'  update)',
                                     r'    info "Update configsets"',
                                     r'    aws --region "' + getRegion() + r'" ses update-configuration-set-event-destination --configuration-set-name ' + configSetName + ' --event-destination  \'${getJSON(configJSON)}\''
-                                    r'    ;;',
-                                    r'esac'
+                                ] + updBash + [
+                                    r'    ;;'
+                                ]+
+                                [
+                                    r'  delete)'
+                                ] + delBash + [
+                                    r'    ;;'
+                                ]+
+                                [
+                                    "esac"
                                 ]
                             /]
                             [#break]
@@ -155,7 +182,6 @@
                 [#local ruleName = resources["rule"].Name ]
 
                 [#local actions = [] ]
-                [#local topicArn = "" ]
                 [#switch solution.Action]
                     [#case "forward"]
                         [#local encryptionEnabled = isPresent(solution["aws:Encryption"]) ]
