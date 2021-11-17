@@ -86,33 +86,6 @@
                     [#list topicArns as topicArn ]
                         [#-- notifications must be done through CLI --]
                         [#if deploymentSubsetRequired("epilogue", false) ]
-                            [#local addBash = []]
-                            [#local updBash = []]
-                            [#local delBash = []]
-                            [#list solution.Conditions.Recipients as emailAddr]
-                                [#local addBash += [
-                                    r'    info "Create email identity configset"',
-                                    r'    if [ -z "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
-                                    r'       aws --region "' + getRegion() + r'" sesv2 create-email-identity --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
-                                    r'    else',
-                                    r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
-                                    r'    fi'
-                                ]]
-                                [#local updBash += [
-                                    r'    info "Update email identity configset"',
-                                    r'    if [ -z "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
-                                    r'       aws --region "' + getRegion() + r'" sesv2 create-email-identity --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
-                                    r'    else',
-                                    r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
-                                    r'    fi'
-                                ]]
-                                [#local delBash += [
-                                    r'    info "Remove email identity configset"',
-                                    r'    if [ -n "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
-                                    r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr,
-                                    r'    fi'
-                                ]]
-                            [/#list]
                             [#local configJSON = {
                                     "Name": configName,
                                     "Enabled": solution.Enabled,
@@ -137,23 +110,45 @@
                                     r'  create)',
                                     r'    info "Assign destination"',
                                     r'    aws --region "' + getRegion() + r'" ses create-configuration-set-event-destination --configuration-set-name ' + configSetName + ' --event-destination  \'${getJSON(configJSON)}\''
-                                ] + addBash + [
                                     r'    ;;'
                                     r'  update)',
                                     r'    info "Update configsets"',
                                     r'    aws --region "' + getRegion() + r'" ses update-configuration-set-event-destination --configuration-set-name ' + configSetName + ' --event-destination  \'${getJSON(configJSON)}\''
-                                ] + updBash + [
                                     r'    ;;'
-                                ]+
-                                [
                                     r'  delete)'
-                                ] + delBash + [
                                     r'    ;;'
                                 ]+
                                 [
                                     "esac"
                                 ]
                             /]
+
+                            [#list solution.Conditions.Recipients as emailAddr]
+                                [@addToDefaultBashScriptOutput
+                                    content=
+                                    [
+                                        r'case ${STACK_OPERATION} in',
+                                        r'  create|update)',
+                                        r'    if [ -z "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
+                                        r'       info "Create email identity and set configset"',
+                                        r'       aws --region "' + getRegion() + r'" sesv2 create-email-identity --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
+                                        r'    else',
+                                        r'       info "Update email identity configset"',
+                                        r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
+                                        r'    fi'
+                                        r'    ;;'
+                                        r'  delete)'
+                                        r'    if [ -n "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
+                                        r'       info "Remove email identity configset"',
+                                        r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr,
+                                        r'    fi'
+                                        r'    ;;'
+                                    ]+
+                                    [
+                                        "esac"
+                                    ]
+                                /]
+                            [/#list]
                             [#break]
                         [/#if]
                     [/#list]
