@@ -121,8 +121,7 @@
     cloudwatchEnabled=true
     processorId=""
     cmkKeyId=""
-    dependencies=""
-    delimiter=r"\n" ]
+    dependencies="" ]
 
     [#local logPrefix  = {
             "Fn::Join" : [
@@ -228,8 +227,7 @@
                                 bufferSize
                             )
                         ],
-                        []),
-                        delimiter
+                        [])
                     )]
 
                 [#break]
@@ -417,21 +415,26 @@
         backupEnabled
         backupS3Destination
         lambdaProcessor=[]
+        dynamicPartitioningEnabled=false
         delimiter=""
+]
+
+[#local dynamicPartitioningRequired =
+    dynamicPartitioningEnabled &&
+    (
+        delimiter?has_content ||
+        prefixRequiresDynamicPartitioning(bucketPrefix) ||
+        prefixRequiresDynamicPartitioning(errorPrefix)
+    )
 ]
 
 [#local processors =
     asArray(lambdaProcessor) +
     arrayIfTrue(
         getFirehoseStreamDelimiterProcessor(delimiter),
+        dynamicPartitioningEnabled &&
         delimiter?has_content
     )
-]
-
-[#local dynamicPartitioningRequired =
-    delimiter?has_content ||
-    prefixRequiresDynamicPartitioning(bucketPrefix) ||
-    prefixRequiresDynamicPartitioning(errorPrefix)
 ]
 
 [#return
