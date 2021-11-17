@@ -449,6 +449,11 @@
                     "Name" : taskName,
                     "Type" : AWS_ECS_TASK_RESOURCE_TYPE
                 },
+                "executionRole" : {
+                    "Id" : executionRoleId,
+                    "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
+                    "IncludeInDeploymentState" : false
+                }
                 "schedules" : schedules
             } +
             solution.TaskLogGroup?then(
@@ -487,14 +492,6 @@
                     "Id" : securityGroupId,
                     "Name" : core.FullName,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
-                }) +
-            attributeIfTrue(
-                "executionRole",
-                ( solution.Engine == "fargate" || solution.Engine == "aws:fargate"),
-                {
-                    "Id" : executionRoleId,
-                    "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
-                    "IncludeInDeploymentState" : false
                 }
             ),
             "Attributes" : {
