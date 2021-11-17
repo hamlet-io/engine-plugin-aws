@@ -453,7 +453,7 @@
                     "Id" : executionRoleId,
                     "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
                     "IncludeInDeploymentState" : false
-                }
+                },
                 "schedules" : schedules
             } +
             solution.TaskLogGroup?then(
