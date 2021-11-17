@@ -668,11 +668,18 @@
 
         [#local lbTargetType = "instance"]
         [#local networkLinks = [] ]
-        [#local executionRoleId = ""]
+
+        [#local executionRoleId = resources["executionRole"].Id]
+        [#local executionRoleRequired = false]
+        [#local executionRolePolicy = []]
 
         [#local engine = solution.Engine?lower_case ]
         [#if engine == "aws:fargate" ]
             [#local engine = "fargate"]
+        [/#if]
+
+        [#if engine == "fargate" ]
+            [#local executionRoleRequired = true]
         [/#if]
 
         [#local useCapacityProvider = true ]
@@ -1357,21 +1364,6 @@
             [/#if]
         [/#if]
 
-        [#local executionRoleId = ""]
-        [#if resources["executionRole"]?has_content ]
-            [#local executionRoleId = resources["executionRole"].Id]
-            [#if deploymentSubsetRequired("iam", true ) && isPartOfCurrentDeploymentUnit(executionRoleId) ]
-                [@createRole
-                    id=executionRoleId
-                    trustedServices=[
-                        "ecs-tasks.amazonaws.com"
-                    ]
-                    managedArns=["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
-                    tags=getOccurrenceCoreTags(occurrence)
-                /]
-            [/#if]
-        [/#if]
-
         [#if core.Type == ECS_TASK_COMPONENT_TYPE]
             [#if solution.Schedules?has_content ]
 
@@ -1380,6 +1372,7 @@
                 [#local cliCleanUpRequired = false]
 
                 [#local scheduleTaskRoleId = resources["scheduleRole"].Id ]
+
                 [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(scheduleTaskRoleId)]
                     [@createRole
                         id=scheduleTaskRoleId
@@ -1393,7 +1386,7 @@
                                     ),
                                     []
                                 ) +
-                                executionRoleId?has_content?then(
+                                executionRoleRequired?then(
                                     iamPassRolePermission(
                                         getReference(executionRoleId, ARN_ATTRIBUTE_TYPE)
                                     ),
@@ -1520,7 +1513,33 @@
                         loggingProfile=loggingProfile
                     /]
             [/#if]
+
+            [#list (container.Secrets)!{} as linkId, secret ]
+                [#local executionRolePolicy = combineEntities(
+                    executionRolePolicy,
+                    secretsManagerReadPermission(secret.Ref, secret.EncryptionKeyId),
+                    APPEND_COMBINE_BEHAVIOUR
+                )]
+            [/#list]
         [/#list]
+
+        [#if executionRoleRequired ]
+            [#if deploymentSubsetRequired("iam", true ) && isPartOfCurrentDeploymentUnit(executionRoleId) ]
+
+                [@createRole
+                    id=executionRoleId
+                    trustedServices=[
+                        "ecs-tasks.amazonaws.com"
+                    ]
+                    managedArns=["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+                    tags=getOccurrenceCoreTags(occurrence)
+                    policies=executionRolePolicy?has_content?then(
+                        getPolicyDocument(executionRolePolicy, "executionPolicies"),
+                        []
+                    )
+                /]
+            [/#if]
+        [/#if]
 
         [#list solution.Containers as id, container ]
             [#local imageSource = container.Image.Source]
@@ -1630,6 +1649,7 @@
                 engine=engine
                 containers=containers
                 role=roleId
+                executionRoleRequired=executionRoleRequired
                 executionRole=executionRoleId
                 networkMode=networkMode
                 dependencies=dependencies

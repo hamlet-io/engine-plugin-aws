@@ -31,6 +31,7 @@
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=
         [
-            AWS_SECRETS_MANAGER_SERVICE
+            AWS_SECRETS_MANAGER_SERVICE,
+            AWS_KEY_MANAGEMENT_SERVICE
         ]
 /]
