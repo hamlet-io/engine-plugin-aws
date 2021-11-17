@@ -428,13 +428,20 @@
     )
 ]
 
+[#local dynamicPartitioningRequired =
+    delimiter?has_content ||
+    prefixRequiresDynamicPartitioning(bucketPrefix) ||
+    prefixRequiresDynamicPartitioning(errorPrefix)
+]
+
 [#return
  {
      "ExtendedS3DestinationConfiguration" : {
         "BucketARN" : getArn(bucketId),
         "BufferingHints" : {
                 "IntervalInSeconds" : bufferInterval,
-                "SizeInMBs" : bufferSize
+                [#-- Dynamic partitioning has a higher minimum buffer size --]
+                "SizeInMBs" : valueIfTrue(bufferSize, (!dynamicPartitioningRequired) || (bufferSize > 64), 64)
             },
         "CloudWatchLoggingOptions" : loggingConfiguration,
         "CompressionFormat" : "GZIP",
@@ -459,9 +466,7 @@
             ),
         "DynamicPartitioningConfiguration" :
             getFirehoseStreamDynamicPartitioningConfiguration(
-                delimiter?has_content ||
-                prefixRequiresDynamicPartitioning(bucketPrefix) ||
-                prefixRequiresDynamicPartitioning(errorPrefix)
+                dynamicPartitioningRequired
             )
     } +
     attributeIfContent(
