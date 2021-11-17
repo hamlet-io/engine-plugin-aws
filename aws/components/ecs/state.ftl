@@ -299,6 +299,11 @@
                     "Id" : taskId,
                     "Name" : taskName,
                     "Type" : AWS_ECS_TASK_RESOURCE_TYPE
+                },
+                "executionRole" : {
+                    "Id" : formatDependentRoleId(taskId, "execution"),
+                    "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
+                    "IncludeInDeploymentState" : false
                 }
             } +
             solution.TaskLogGroup?then(
@@ -330,15 +335,6 @@
                     "Ports" : availablePorts,
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }) +
-            attributeIfTrue(
-                "executionRole",
-                (solution.Engine == "fargate" || solution.Engine == "aws:fargate"),
-                {
-                    "Id" : formatDependentRoleId(taskId, "execution"),
-                    "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
-                    "IncludeInDeploymentState" : false
-                }
-            ) +
             autoScaling,
             "Attributes" : {
                 "ARN": getArn(serviceId)

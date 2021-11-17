@@ -33,11 +33,21 @@
 
     [#local resources = {}]
     [#local attributes = {}]
+    [#local roles = {
+        "Inbound" : {
+        },
+        "Outbound" : {}
+    }]
 
     [#switch parentSolution.Engine ]
         [#case "aws:secretsmanager" ]
 
             [#local secretId = formatResourceId(AWS_SECRETS_MANAGER_SECRET_RESOURCE_TYPE, occurrence.Core.Id)]
+
+            [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption"] )]
+            [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+
+            [#local cmkKeyId = baselineComponentIds["Encryption" ]]
 
             [#local resources = mergeObjects(
                 resources,
@@ -45,7 +55,8 @@
                     "secret" : {
                         "Id" : secretId,
                         "Name" : occurrence.Core.FullName,
-                        "Type" : AWS_SECRETS_MANAGER_SECRET_RESOURCE_TYPE
+                        "Type" : AWS_SECRETS_MANAGER_SECRET_RESOURCE_TYPE,
+                        "cmkKeyId" : cmkKeyId
                     }
                 }
             )]
@@ -54,7 +65,18 @@
                 attributes,
                 {
                     "SECRET_VALUE" : getExistingReference(secretId, SECRET_ATTRIBUTE_TYPE),
-                    "ARN" : getExistingReference(secretId, ARN_ATTRIBUTE_TYPE)
+                    "ARN" : getExistingReference(secretId, ARN_ATTRIBUTE_TYPE),
+                    "ENGINE" : parentSolution.Engine
+                }
+            )]
+
+            [#local roles = mergeObjects(
+                roles,
+                {
+                    "Outbound" : {
+                        "default" : "read",
+                        "read" : secretsManagerReadPermission(secretId, cmkKeyId)
+                    }
                 }
             )]
             [#break]
@@ -64,12 +86,7 @@
         {
             "Resources"  : resources,
             "Attributes" : attributes,
-            "Roles" : {
-                "Inbound" : {
-                },
-                "Outbound" : {
-                }
-            }
+            "Roles" : roles
         }
     ]
 [/#macro]

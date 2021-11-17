@@ -130,7 +130,8 @@
     name
     containers
     engine
-    executionRole
+    executionRoleRequired
+    executionRole=""
     networkMode=""
     fixedName=false
     role=""
@@ -229,6 +230,7 @@
             [/#if]
             [#local volumeNames += [ name ] ]
         [/#list]
+
         [#local portMappings = [] ]
         [#list (container.PortMappings![]) as portMapping]
             [#local portMappings +=
@@ -245,6 +247,7 @@
                 ]
             ]
         [/#list]
+
         [#local environment = [] ]
         [#list (container.Environment!{}) as name,value]
             [#local environment +=
@@ -256,6 +259,7 @@
                 ]
             ]
         [/#list]
+
         [#local extraHosts = [] ]
         [#list (container.Hosts!{}) as name,value]
             [#local extraHosts +=
@@ -267,6 +271,7 @@
                 ]
             ]
         [/#list]
+
         [#local ulimits = []]
         [#list (container.Ulimits!{}) as id, limit ]
             [#local ulimits +=
@@ -280,12 +285,25 @@
             ]
         [/#list]
 
+        [#local secrets = []]
+        [#list (container.SecretEnv!{})?values as secret]
+            [#local secrets +=
+                [
+                    {
+                        "Name" : secret.EnvName,
+                        "ValueFrom" : secret.SecretRef
+                    }
+                ]
+            ]
+        [/#list]
+
         [#local placementConstraints = combineEntities( placementConstraints, container.PlacementConstraints![], UNIQUE_COMBINE_BEHAVIOUR) ]
 
         [#if engine == "fargate" ]
             [#local memoryTotal += container.MaximumMemory]
             [#local cpuTotal += container.Cpu]
         [/#if]
+
         [#local definitions +=
             [
                 {
@@ -308,6 +326,7 @@
                         attributeIfContent("Options", container.LogOptions)
                 } +
                 attributeIfContent("Environment", environment) +
+                attributeIfContent("Secrets", secrets) +
                 attributeIfContent("MountPoints", mountPoints) +
                 attributeIfContent("ExtraHosts", extraHosts) +
                 attributeIfContent("Memory", container.MaximumMemory!"") +
@@ -350,7 +369,7 @@
         attributeIfContent("TaskRoleArn", role, getReference(role, ARN_ATTRIBUTE_TYPE)) +
         attributeIfContent("NetworkMode", networkMode) +
         attributeIfTrue("Family", fixedName, name ) +
-        attributeIfContent("ExecutionRoleArn", executionRole, getReference(executionRole, ARN_ATTRIBUTE_TYPE)) +
+        attributeIfTrue("ExecutionRoleArn", executionRoleRequired, getArn(executionRole)) +
         valueIfTrue(
             {
                 "RequiresCompatibilities" : [ engine?upper_case ],
