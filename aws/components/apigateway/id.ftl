@@ -21,6 +21,18 @@
                     "Description" : "Prevent the destruction of existing LogGroups when enabling KinesisFirehose.",
                     "Types" : BOOLEAN_TYPE,
                     "Default" : true
+                },
+                {
+                    "Names" : "aws:LogFormat",
+                    "Description" : "Log format control",
+                    "Children" : [
+                        {
+                            "Names" : "Syntax",
+                            "Types" : STRING_TYPE,
+                            "Values" : ["text", "json"],
+                            "Default" : "text"
+                        }
+                    ]
                 }
             ]
         }

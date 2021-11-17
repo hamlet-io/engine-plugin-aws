@@ -292,6 +292,29 @@
                     ]
                 }]
 
+                [#-- Ensure dynamic partitioning is enabled if prefixes are using it --]
+                [#if
+                    (
+                        prefixRequiresDynamicPartitioning(streamS3DestinationPrefix) ||
+                        prefixRequiresDynamicPartitioning(streamS3DestinationErrorPrefix)
+                    ) &&
+                    (!solution["aws:Partitioning"].Enabled) ]
+                    [@fatal
+                        message="Dynamic partitioning is not enabled but prefixes are using it"
+                        context=streamName
+                    /]
+                [/#if]
+
+                [#-- The prefix must use dynamic parititioning if partitioning is enabled --]
+                [#if
+                    (!prefixRequiresDynamicPartitioning(streamS3DestinationPrefix)) &&
+                    (solution["aws:Partitioning"].Enabled) ]
+                    [@fatal
+                        message="The prefix must include dynamic information if partitioning is enabled"
+                        context=streamName
+                    /]
+                [/#if]
+
                 [#local s3Encrypt = destinationLink.Configuration.Solution.Encryption.Enabled &&
                                         destinationLink.Configuration.Solution.Encryption.EncryptionSource == "EncryptionService" ]
 
@@ -312,7 +335,12 @@
                                                 solution.Backup.Enabled,
                                                 streamS3BackupDestination,
                                                 streamProcessors,
-                                                r"\n"
+                                                solution["aws:Partitioning"].Enabled,
+                                                valueIfTrue(
+                                                    solution["aws:Partitioning"].Delimiter.Token,
+                                                    solution["aws:Partitioning"].Delimiter.Enabled,
+                                                    ""
+                                                )
                 )]
 
                 [@createFirehoseStream

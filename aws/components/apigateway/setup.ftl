@@ -392,6 +392,45 @@
     [/#if]
 
     [#local accessLogging = solution.AccessLogging ]
+
+    [#-- Determine the log format --]
+    [#-- TODO(mfl): tweak format to better capture waf, authorizer, integration info --]
+    [#switch accessLogging["aws:LogFormat"].Syntax ]
+        [#case "json" ]
+            [#local accessLogFormat =
+                getJSON(
+                    {
+                        "requestId" : "$context.requestId",
+                        "extendedRequestId" : "$context.extendedRequestId",
+                        "ip" : "$context.identity.sourceIp",
+                        "caller" : "$context.identity.caller",
+                        "user" : "$context.identity.user",
+                        "requestTime" : "$context.requestTime",
+                        "httpMethod" : "$context.httpMethod",
+                        "resourcePath" : "$context.resourcePath",
+                        "status" : "$context.status",
+                        "protocol" : "$context.protocol",
+                        "responseLength" : "$context.responseLength"
+                    }
+                ) ]
+            [#break]
+
+        [#default]
+            [#local accessLogFormat = [
+                "$context.identity.sourceIp",
+                "$context.identity.caller",
+                "$context.identity.user",
+                "$context.identity.userArn",
+                "[$context.requestTime]",
+                "$context.apiId $context.httpMethod",
+                "$context.resourcePath",
+                "$context.protocol",
+                "$context.status",
+                "$context.responseLength",
+                "$context.requestId"]?join(" ") ]
+            [#break]
+    [/#switch]
+
     [#if accessLogging.Enabled]
 
         [#-- Manage Access Logs with Kinesis Firehose --]
@@ -404,6 +443,9 @@
             [#if accessLogging["aws:DestinationLink"].Enabled && accessLogging["aws:DestinationLink"].Configured]
                 [#local destinationLink = getLinkTarget(occurrence, accessLogging["aws:DestinationLink"])]
             [/#if]
+
+            [#-- Ensure records end with a delimiter - this carries through to S3 --]
+            [#local accessLogFormat += "\n" ]
 
             [@setupLoggingFirehoseStream
                 occurrence=occurrence
@@ -539,7 +581,7 @@
                     "StageName" : stageName,
                     "AccessLogSetting" : {
                         "DestinationArn" : getArn(stageLogTarget),
-                        "Format" : "$context.identity.sourceIp $context.identity.caller $context.identity.user $context.identity.userArn [$context.requestTime] $context.apiId $context.httpMethod $context.resourcePath $context.protocol $context.status $context.responseLength $context.requestId"
+                        "Format" : accessLogFormat
                     }
                 } +
                 attributeIfContent("MethodSettings", methodSettings) +
