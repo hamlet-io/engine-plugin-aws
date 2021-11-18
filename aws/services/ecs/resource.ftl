@@ -331,6 +331,13 @@
                 attributeIfContent("ExtraHosts", extraHosts) +
                 attributeIfContent("Memory", container.MaximumMemory!"") +
                 attributeIfContent("Cpu", container.Cpu!"") +
+                attributeIfContent("ResourceRequirements", (container.Gpu)!"",
+                                        [
+                                            {
+                                                "Type" : "GPU",
+                                                "Value" : (container.Gpu)!""
+                                            }
+                                        ]) +
                 attributeIfContent("PortMappings", portMappings) +
                 attributeIfContent("LinuxParameters", container.RunCapabilities![],
                                         {
