@@ -11,10 +11,18 @@
     [#local segmentSeedId = formatSegmentSeedId() ]
     [#local segmentSeed = getExistingReference(segmentSeedId)]
 
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption"] )]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+
+    [#local cmkKeyId = baselineComponentIds["Encryption" ]]
+    [#local secretLink = getLinkTarget(occurrence, solution.RootCredentials.Secret.Link, false)]
+
     [#local rootCredentialResources = getComponentSecretResources(
                                         occurrence,
                                         "root",
                                         "root",
+                                        cmkKeyId,
+                                        secretLink.Configuration.Solution.Engine,
                                         "Root credentials for broker"
                                     )]
 

@@ -29,6 +29,13 @@
     }]
 
     [#if solution.RootCredentials.Secret.Source == "generated" ]
+
+        [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption"] )]
+        [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+
+        [#local cmkKeyId = baselineComponentIds["Encryption" ]]
+        [#local secretLink = getLinkTarget(occurrence, solution.RootCredentials.Secret.Link, false)]
+
         [#local resources = mergeObjects(
                     resources,
                     {
@@ -36,6 +43,8 @@
                                                 occurrence,
                                                 "Admin",
                                                 "Admin",
+                                                cmkKeyId,
+                                                secretLink.Configuration.Solution.Engine,
                                                 "Admin credentials for directory services"
                                             )
                     }
