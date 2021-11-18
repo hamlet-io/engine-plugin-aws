@@ -79,6 +79,11 @@
             [#break]
     [/#switch]
 
+    [#local credentialSource = solution["rootCredential:Source"] ]
+    [#if isPresent(solution["rootCredential:Generated"]) && credentialSource != "Generated"]
+        [#local credentialSource = "Generated"]
+    [/#if]
+
     [#if auroraCluster ]
         [#local rdsId = resources["dbCluster"].Id ]
         [#local rdsFullName = resources["dbCluster"].Name ]
@@ -110,25 +115,90 @@
     [#local rdsDatabaseName = (engine?starts_with("sqlserver-"))?then(
             "",
             solution.DatabaseName!productName)]
-    [#local passwordEncryptionScheme = (solution.GenerateCredentials.EncryptionScheme?has_content)?then(
-            solution.GenerateCredentials.EncryptionScheme?ensure_ends_with(":"),
-            "" )]
 
-    [#if solution.GenerateCredentials.Enabled ]
-        [#local rdsUsername = solution.GenerateCredentials.MasterUserName]
-        [#local rdsPasswordLength = solution.GenerateCredentials.CharacterLength]
-        [#local rdsPassword = "DummyPassword" ]
-        [#local rdsEncryptedPassword = (
-                    getExistingReference(
-                        rdsId,
-                        GENERATEDPASSWORD_ATTRIBUTE_TYPE)
-                    )?remove_beginning(
-                        passwordEncryptionScheme
-                    )]
-    [#else]
-        [#local rdsUsername = attributes.USERNAME ]
-        [#local rdsPassword = attributes.PASSWORD ]
-    [/#if]
+    [#-- Root Credential Management --]
+    [#switch credentialSource]
+        [#case "Generated"]
+            [#local passwordEncryptionScheme = (solution["rootCredential:Generated"].EncryptionScheme?has_content)?then(
+                    solution["rootCredential:Generated"].EncryptionScheme?ensure_ends_with(":"),
+                    "" )]
+
+            [#local rdsUsername = solution["rootCredential:Generated"].Username]
+            [#local rdsUsernameRef = rdsUsername]
+            [#local rdsPasswordLength = solution["rootCredential:Generated"].CharacterLength]
+            [#local rdsPassword = "DummyPassword" ]
+            [#local rdsPasswordRef = rdsPassword]
+            [#local rdsEncryptedPassword = (
+                        getExistingReference(
+                            rdsId,
+                            GENERATEDPASSWORD_ATTRIBUTE_TYPE)
+                        )?remove_beginning(
+                            passwordEncryptionScheme
+                        )]
+            [#break]
+
+        [#case "Settings"]
+            [#local rdsUsername = attributes.USERNAME ]
+            [#local rdsUsernameRef = rdsUsername]
+            [#local rdsPassword = attributes.PASSWORD ]
+            [#local rdsPasswordRef = rdsPassword]
+            [#break]
+
+        [#case "SecretStore"]
+            [#local secretLink = getLinkTarget(occurrence, (solution["rootCredential:SecretStore"].Link)!{}, true, true) ]
+
+            [#switch (secretLink.Core.Type)!"" ]
+
+                [#case SECRETSTORE_COMPONENT_TYPE]
+                    [@setupComponentGeneratedSecret
+                        occurrence=occurrence
+                        secretStoreLink=secretLink
+                        kmsKeyId=cmkKeyId
+                        secretComponentResources=resources["rootCredentials"]
+                        secretComponentConfiguration=
+                            {
+                                "Requirements" : solution["rootCredential:SecretStore"].GenerationRequirements,
+                                "Generated" : {
+                                    "Content" : {
+                                        solution["rootCredential:SecretStore"].UsernameAttribute : solution["rootCredential:SecretStore"].Username
+                                    },
+                                    "SecretKey" : solution["rootCredential:SecretStore"].PasswordAttribute
+                                }
+                            }
+                        componentType=DIRECTORY_COMPONENT_TYPE
+                    /]
+
+                    [#local secretId = resources["rootCredentials"]["secret"].Id ]
+
+                    [#local rdsUsername = solution["rootCredential:SecretStore"].Username ]
+                    [#local rdsUsernameRef = getSecretManagerSecretRef(secretId, solution["rootCredential:SecretStore"].UsernameAttribute)]
+                    [#local rdsPassword = ""]
+                    [#local rdsPasswordRef = getSecretManagerSecretRef(secretId, solution["rootCredential:SecretStore"].PasswordAttribute)]
+                    [#break]
+
+                [#case SECRETSTORE_SECRET_COMPONENT_TYPE]
+                    [#local secretId = secretLink.State.Resources["secret"].Id]
+
+                    [#local rdsUsername = solution["rootCredential:SecretStore"].Username]
+                    [#local rdsUsernameRef = getSecretManagerSecretRef(secretId, solution["rootCredential:SecretStore"].UsernameAttribute)]
+                    [#local rdsPassword = ""]
+                    [#local rdsPasswordRef = getSecretManagerSecretRef(secretId, solution["rootCredential:SecretStore"].PasswordAttribute)]
+
+                    [#break]
+
+                [#default]
+                    [@fatal
+                        message="Invalid secretLink for db credentials"
+                        context={
+                            "Id" : core.RawId,
+                            "SecretLink" : solution["rootCredential:SecretStore"].Link,
+                            "SecretLinkComponentType" : (secretLink.Core.Type)!""
+                        }
+                    /]
+
+            [/#switch]
+            [#break]
+    [/#switch]
 
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
 
@@ -257,7 +327,7 @@
             (getExistingReference(rdsId)?has_content)?then(
                 (rdsManualSnapshot?has_content)?then(
                     [
-                        "# Check Snapshot MasterUserName",
+                        "# Check Snapshot Username",
                         "check_rds_snapshot_username" +
                         " \"" + getRegion() + "\" " +
                         " \"" + rdsManualSnapshot + "\" " +
@@ -712,8 +782,8 @@
                     port=portObject.Port
                     encrypted=solution.Encrypted
                     kmsKeyId=cmkKeyId
-                    masterUsername=rdsUsername
-                    masterPassword=rdsPassword
+                    masterUsername=rdsUsernameRef
+                    masterPassword=rdsPasswordRef
                     databaseName=rdsDatabaseName
                     retentionPeriod=solution.Backup.RetentionPeriod
                     subnetGroupId=getReference(rdsSubnetGroupId)
@@ -788,8 +858,8 @@
                     encrypted=solution.Encrypted
                     kmsKeyId=cmkKeyId
                     caCertificate=requiredRDSCA
-                    masterUsername=rdsUsername
-                    masterPassword=rdsPassword
+                    masterUsername=rdsUsernameRef
+                    masterPassword=rdsPasswordRef
                     databaseName=rdsDatabaseName
                     retentionPeriod=solution.Backup.RetentionPeriod
                     snapshotArn=snapshotArn
@@ -851,7 +921,7 @@
                     ],
                     []
                 ) +
-                ( solution.GenerateCredentials.Enabled && !(rdsEncryptedPassword?has_content))?then(
+                ( credentialSource == "Generated" && !(rdsEncryptedPassword?has_content))?then(
                     [
                         "# Generate Master Password",
                         "function generate_master_password() {",
