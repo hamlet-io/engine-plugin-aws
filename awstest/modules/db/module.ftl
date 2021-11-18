@@ -192,6 +192,82 @@
         }
     /]
 
+    [#-- Generated creds --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "db" : {
+                    "Components" : {
+                        "postgresdbsecretstore" : {
+                            "Type" : "db",
+                            "deployment:Unit" : "aws-db-postgres-secretstore",
+                            "Engine" : "postgres",
+                            "EngineVersion" : "11",
+                            "Profiles" : {
+                                "Testing" : [ "postgresdbsecretstore" ]
+                            },
+                            "rootCredential:Source" : "SecretStore",
+                            "rootCredential:SecretStore" : {
+                                "Link" : {
+                                    "Tier" : "db",
+                                    "Component": "postgresdbsecretstore-secretstore"
+                                }
+                            }
+                        },
+                        "postgresdbsecretstore-secretstore" : {
+                            "Type" : "secretstore",
+                            "deployment:Unit" : "aws-db-postgres-secretstore",
+                            "Engine" : "aws:secretsmanager"
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "postgresdbsecretstore" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "rdsInstance" : {
+                                    "Name" : "rdsXdbXpostgresdbsecretstore",
+                                    "Type" : "AWS::RDS::DBInstance"
+                                },
+                                "secret" : {
+                                    "Name" : "secretXdbXpostgresdbsecretstoreXRootCredentials",
+                                    "Type" : "AWS::SecretsManager::Secret"
+                                }
+                            },
+                            "Output" : [
+                                "rdsXdbXpostgresdbsecretstoreXdns",
+                                "rdsXdbXpostgresdbsecretstoreXport",
+                                "secretXdbXpostgresdbsecretstoreXRootCredentialsXarn"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "SecretGeneration" : {
+                                    "Path"  : "Resources.secretXdbXpostgresdbsecretstoreXRootCredentials.Properties.GenerateSecretString.SecretStringTemplate",
+                                    "Value" : getJSON({"username": "root"})
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "postgresdbsecretstore" : {
+                    "db" : {
+                        "TestCases" : [ "postgresdbsecretstore" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+    /]
+
+
     [#-- Maintenance Windows --]
     [@loadModule
         blueprint={
