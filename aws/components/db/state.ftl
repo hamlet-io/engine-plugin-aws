@@ -9,17 +9,23 @@
 
     [#local auroraCluster = false ]
 
+    [#local resources = {}]
+    [#local attributes = {}]
+    [#local roles = {}]
+
     [#switch engine]
         [#case "mysql"]
             [#local family = "mysql" + engineVersion]
             [#local scheme = "mysql" ]
             [#local port = solution.Port!"mysql" ]
             [#break]
+
         [#case "postgres" ]
             [#local family = "postgres" + engineVersion]
             [#local scheme = "postgres" ]
             [#local port = solution.Port!"postgresql" ]
             [#break]
+
         [#case "sqlserver-ee"]
         [#case "sqlserver-se"]
         [#case "sqlserver-ex"]
@@ -28,12 +34,14 @@
             [#local scheme = engine ]
             [#local port = solution.Port!"sqlsvr" ]
             [#break]
+
         [#case "aurora-postgresql" ]
             [#local family = "aurora-postgresql" + engineVersion]
             [#local scheme = "postgres" ]
             [#local auroraCluster = true ]
             [#local port = solution.Port!"postgresql"]
             [#break]
+
         [#default]
             [#local family = engine + engineVersion]
             [#local scheme = engine ]
@@ -55,52 +63,147 @@
     [#local securityGroupId = formatDependentComponentSecurityGroupId(core.Tier, core.Component, id)]
 
     [#local fqdn = getExistingReference(id, DNS_ATTRIBUTE_TYPE)]
-
     [#local name = getExistingReference(id, DATABASENAME_ATTRIBUTE_TYPE)]
     [#local region = getExistingReference(id, REGION_ATTRIBUTE_TYPE)]
-    [#local encryptionScheme = (solution.GenerateCredentials.EncryptionScheme)?has_content?then(
-                        solution.GenerateCredentials.EncryptionScheme?ensure_ends_with(":"),
-                        "" )]
+
     [#if auroraCluster ]
         [#local readfqdn = getExistingReference(id, "read" + DNS_ATTRIBUTE_TYPE )]
+
+        [#local attributes = mergeObjects(
+            attributes,
+            {
+                "READ_FQDN" : readfqdn!""
+            }
+        )]
     [/#if]
 
-    [#if solution.GenerateCredentials.Enabled ]
-        [#local masterUsername = solution.GenerateCredentials.MasterUserName ]
-        [#local masterPassword = getExistingReference(id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme) ]
-        [#local url = getExistingReference(id, URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme) ]
-
-        [#if auroraCluster ]
-            [#local readUrl = getExistingReference(id, "read" + URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme) ]
-        [/#if]
-    [#else]
-        [#-- don't flag an error if credentials missing but component is not enabled --]
-        [#local masterUsername = getOccurrenceSettingValue(occurrence, "MASTER_USERNAME", !solution.Enabled) ]
-        [#local masterPassword = getOccurrenceSettingValue(occurrence, "MASTER_PASSWORD", !solution.Enabled) ]
-        [#local url = scheme + "://" + masterUsername + ":" + masterPassword + "@" + fqdn + ":" + (portObject.Port)!"" + "/" + name]
-
-        [#if auroraCluster ]
-            [#local readUrl = scheme + "://" + masterUsername + ":" + masterPassword + "@" + readfqdn + ":" + (portObject.Port)!"" + "/" + name ]
-        [/#if]
+    [#local credentialSource = solution["rootCredential:Source"]]
+    [#if isPresent(solution["rootCredential:Generated"]) && credentialSource != "Generated"]
+        [#local credentialSource = "Generated"]
     [/#if]
 
-    [#local dbResources = {}]
+    [#switch credentialSource]
+        [#case "Generated"]
+
+            [#local encryptionScheme = (solution["rootCredential:Generated"].EncryptionScheme)?has_content?then(
+                                solution["rootCredential:Generated"].EncryptionScheme?ensure_ends_with(":"),
+                                "" )]
+
+            [#local attributes = mergeObjects(
+                attributes,
+                {
+                    "USERNAME" : solution["rootCredential:Generated"].Username,
+                    "PASSWORD" : getExistingReference(id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme),
+                    "URL" : getExistingReference(id, URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme)
+                }
+            )]
+
+            [#if auroraCluster ]
+                [#local attributes = mergeObjects(
+                    attributes,
+                    {
+                        "READ_URL" : getExistingReference(id, "read" + URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme)
+                    }
+                )]
+            [/#if]
+            [#break]
+
+        [#case "Settings"]
+            [#-- don't flag an error if credentials missing but component is not enabled --]
+            [#local masterUsername = getOccurrenceSettingValue(occurrence, solution["rootCredential:Settings"].UsernameAttribute, !solution.Enabled) ]
+            [#local masterPassword = getOccurrenceSettingValue(occurrence, solution["rootCredential:Settings"].PasswordAttribute, !solution.Enabled) ]
+            [#local url = scheme + "://" + masterUsername + ":" + masterPassword + "@" + fqdn + ":" + (portObject.Port)!"" + "/" + name]
+
+            [#local attributes = mergeObjects(
+                attributes,
+                {
+                    "USERNAME" : masterUsername,
+                    "PASSWORD" : masterPassword,
+                    "URL" : url
+                }
+            )]
+
+            [#if auroraCluster ]
+                [#local attributes = mergeObjects(
+                    attributes,
+                    {
+                        "READ_URL" : scheme + "://" + masterUsername + ":" + masterPassword + "@" + readfqdn + ":" + (portObject.Port)!"" + "/" + name
+                    }
+                )]
+            [/#if]
+            [#break]
+
+        [#case "SecretStore"]
+
+            [#local secretLink = getLinkTarget(occurrence, solution["rootCredential:SecretStore"].Link, false)]
+
+            [#if secretLink.Core.Type == SECRETSTORE_COMPONENT_TYPE ]
+
+                [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption"] )]
+                [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+
+                [#local cmkKeyId = baselineComponentIds["Encryption" ]]
+
+                [#local resources = mergeObjects(
+                    resources,
+                    {
+                        "rootCredentials" :
+                            getComponentSecretResources(
+                                occurrence,
+                                "RootCredentials",
+                                "RootCredentials",
+                                cmkKeyId,
+                                secretLink.Configuration.Solution.Engine,
+                                "Root credentials for database"
+                            )
+                    })]
+
+                [#local roles = mergeObjects(
+                    roles,
+                    {
+                        "Outbound" : {
+                            "default" : "root",
+                            "root" : secretsManagerReadPermission(resources["rootCredentials"]["secret"].Id, cmkKeyId)
+                        }
+                    }
+                )]
+
+                [#local attributes = mergeObjects(
+                    attributes,
+                    {
+                        "SECRET_ARN" : getExistingReference(resources["rootCredentials"]["secret"].Id, ARN_ATTRIBUTE_TYPE)
+                    }
+                )]
+            [/#if]
+
+            [#local attributes = mergeObjects(
+                attributes,
+                {
+                    "USERNAME" : solution["rootCredential:SecretStore"].UsernameAttribute,
+                    "PASSWORD" : solution["rootCredential:SecretStore"].PasswordAttribute
+                }
+            )]
+            [#break]
+    [/#switch]
 
     [#if auroraCluster ]
-        [#local dbResources += {
-            "dbCluster" : {
-                "Id" : id,
-                "Name" : core.FullName,
-                "Port" : port,
-                "Type" : AWS_RDS_CLUSTER_RESOURCE_TYPE,
-                "Monitored" : true
-            },
-            "dbClusterParamGroup" : {
-                "Id" : formatResourceId(AWS_RDS_CLUSTER_PARAMETER_GROUP_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(family, "X") ),
-                "Family" : family,
-                "Type" : AWS_RDS_CLUSTER_PARAMETER_GROUP_RESOURCE_TYPE
+        [#local resources = mergeObjects(
+            resources,
+            {
+                "dbCluster" : {
+                    "Id" : id,
+                    "Name" : core.FullName,
+                    "Port" : port,
+                    "Type" : AWS_RDS_CLUSTER_RESOURCE_TYPE,
+                    "Monitored" : true
+                },
+                "dbClusterParamGroup" : {
+                    "Id" : formatResourceId(AWS_RDS_CLUSTER_PARAMETER_GROUP_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(family, "X") ),
+                    "Family" : family,
+                    "Type" : AWS_RDS_CLUSTER_PARAMETER_GROUP_RESOURCE_TYPE
+                }
             }
-        }]
+        )]
 
         [#-- Calcuate the number of fixed instances required --]
         [#if multiAZ!false ]
@@ -109,10 +212,7 @@
             [#local resourceZones = [getZones()[0]] ]
         [/#if]
 
-        [#local processor = getProcessor(
-                                        occurrence,
-                                        DB_COMPONENT_TYPE,
-                                        solution.ProcessorProfile)]
+        [#local processor = getProcessor(occurrence, DB_COMPONENT_TYPE, solution.ProcessorProfile)]
         [#if processor.DesiredPerZone?has_content ]
                 [#local instancesPerZone = processor.DesiredPerZone ]
         [#else]
@@ -156,13 +256,13 @@
                 ]
             [/#list]
         [/#if]
-        [#local dbResources = mergeObjects( dbResources, autoScaling )]
+        [#local resources = mergeObjects( resources, autoScaling )]
 
         [#-- Define fixed instanaces per zone --]
         [#list resourceZones as resourceZone ]
             [#list 1..instancesPerZone as instanceId ]
-                [#local dbResources = mergeObjects(
-                    dbResources,
+                [#local resources = mergeObjects(
+                    resources,
                     {
                         "dbInstances" : {
                             "dbInstance" + resourceZone.Id + instanceId : {
@@ -177,8 +277,8 @@
             [/#list]
         [/#list]
     [#else]
-        [#local dbResources = mergeObjects(
-            dbResources,
+        [#local resources = mergeObjects(
+            resources,
             {
                 "db" : {
                     "Id" : id,
@@ -191,74 +291,75 @@
         )]
     [/#if]
 
-    [#assign componentState =
-        {
-            "Resources" : {
-                "subnetGroup" : {
-                    "Id" : formatResourceId(AWS_RDS_SUBNET_GROUP_RESOURCE_TYPE, core.Id),
-                    "Type" : AWS_RDS_SUBNET_GROUP_RESOURCE_TYPE
-                },
-                "parameterGroup" : {
-                    "Id" : formatResourceId(AWS_RDS_PARAMETER_GROUP_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(family, "X") ),
-                    "Family" : family,
-                    "Type" : AWS_RDS_PARAMETER_GROUP_RESOURCE_TYPE
-                },
-                "optionGroup" : {
-                    "Id" : formatResourceId(AWS_RDS_OPTION_GROUP_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(family, "X")),
-                    "Type" : AWS_RDS_OPTION_GROUP_RESOURCE_TYPE
-                },
-                "securityGroup" : {
-                    "Id" : securityGroupId,
-                    "Name" : core.FullName,
-                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
-                }
-            } +
-            solution.Monitoring.DetailedMetrics.Enabled?then(
+    [#if  solution.Monitoring.DetailedMetrics.Enabled ]
+        [#local resources = mergeObjects(
+                resources,
                 {
                     "monitoringRole" : {
                         "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, core.Id, "monitoring" ),
                         "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
                         "IncludeInDeploymentState" : false
                     }
-                },
-                {}
-            ) +
-            dbResources,
-            "Attributes" : {
-                "ENGINE" : engine,
-                "TYPE" : auroraCluster?then("cluster", "instance"),
-                "SCHEME" : scheme,
-                "FQDN" : fqdn,
-                "PORT" : (portObject.Port)!"",
-                "NAME" : name,
-                "URL" : url,
-                "USERNAME" : masterUsername,
-                "PASSWORD" : masterPassword,
-                "INSTANCEID" : core.FullName,
-                "REGION" : region
-            } +
-            valueIfTrue(
+                }
+        )]
+    [/#if]
+
+    [#assign componentState =
+        {
+            "Resources" : mergeObjects(
+                resources,
                 {
-                    "READ_FQDN" : readfqdn!"",
-                    "READ_URL" : readUrl!""
-                },
-                auroraCluster
-            ),
-            "Roles" : {
-                "Inbound" : {
-                    "networkacl" : {
-                        "SecurityGroups" : securityGroupId,
-                        "Description" : core.FullName
-                    }
-                },
-                "Outbound" : {
-                    "networkacl" : {
-                        "Ports" : [ port ],
-                        "SecurityGroups" : securityGroupId,
-                        "Description" : core.FullName
+                    "subnetGroup" : {
+                        "Id" : formatResourceId(AWS_RDS_SUBNET_GROUP_RESOURCE_TYPE, core.Id),
+                        "Type" : AWS_RDS_SUBNET_GROUP_RESOURCE_TYPE
+                    },
+                    "parameterGroup" : {
+                        "Id" : formatResourceId(AWS_RDS_PARAMETER_GROUP_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(family, "X") ),
+                        "Family" : family,
+                        "Type" : AWS_RDS_PARAMETER_GROUP_RESOURCE_TYPE
+                    },
+                    "optionGroup" : {
+                        "Id" : formatResourceId(AWS_RDS_OPTION_GROUP_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(family, "X")),
+                        "Type" : AWS_RDS_OPTION_GROUP_RESOURCE_TYPE
+                    },
+                    "securityGroup" : {
+                        "Id" : securityGroupId,
+                        "Name" : core.FullName,
+                        "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                     }
                 }
-            }
+            ),
+            "Attributes" : mergeObjects(
+                attributes,
+                {
+                    "ENGINE" : engine,
+                    "TYPE" : auroraCluster?then("cluster", "instance"),
+                    "SCHEME" : scheme,
+                    "FQDN" : fqdn,
+                    "PORT" : (portObject.Port)!"",
+                    "NAME" : name,
+                    "INSTANCEID" : core.FullName,
+                    "REGION" : region
+                }
+            ),
+            "Roles" : mergeObjects(
+                roles,
+                {
+                    "Inbound" : {
+                        "networkacl" : {
+                            "SecurityGroups" : securityGroupId,
+                            "Description" : core.FullName
+                        }
+                    },
+                    "Outbound" : {
+                        "networkacl" : {
+                            "Ports" : [ port ],
+                            "SecurityGroups" : securityGroupId,
+                            "Description" : core.FullName
+                        }
+                    }
+                }
+            )
         }
     ]
 [/#macro]
