@@ -15,7 +15,7 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
     [#local cmkKeyId = baselineComponentIds["Encryption" ]]
-    [#local secretLink = getLinkTarget(occurrence, solution.RootCredentials.Secret.Link, false)]
+    [#local secretLink = getLinkTarget(occurrence, solution.RootCredentials.SecretStore, false)]
 
     [#local rootCredentialResources = getComponentSecretResources(
                                         occurrence,
