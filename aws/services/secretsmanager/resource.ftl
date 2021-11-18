@@ -30,13 +30,15 @@
     ]
 [/#function]
 
-[#function getComponentSecretResources occurrence secretId secretName secretDescription="" ]
+[#function getComponentSecretResources occurrence secretId secretName cmkKeyId provider secretDescription="" ]
     [#return {
         "secret" : {
             "Id" : formatResourceId(AWS_SECRETS_MANAGER_SECRET_RESOURCE_TYPE, occurrence.Core.Id, secretId),
             "Name" : formatName(occurrence.Core.FullName, secretName),
             "Description" : secretDescription,
-            "Type" : AWS_SECRETS_MANAGER_SECRET_RESOURCE_TYPE
+            "Type" : AWS_SECRETS_MANAGER_SECRET_RESOURCE_TYPE,
+            "cmkKeyId" : cmkKeyId,
+            "Provider" : provider
         }
     }]
 [/#function]
