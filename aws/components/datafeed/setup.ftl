@@ -266,8 +266,8 @@
             [#case S3_COMPONENT_TYPE ]
 
                 [#-- Establish bucket prefixes --]
-                [#local prefixIncludes = [ ] ]
-                [#local errorPrefixIncludes = [ ] ]
+                [#local prefixIncludes = [ (solution.Bucket.Prefix)?remove_ending("/") ] ]
+                [#local errorPrefixIncludes = [ (solution.Bucket.ErrorPrefix)?remove_ending("/") ] ]
                 [#list includeOrder as includePrefix ]
                     [#if solution.Bucket.Include[includePrefix]!false]
                         [#switch includePrefix]
@@ -293,21 +293,35 @@
                     [/#if]
                 [/#list]
 
+                [#-- Ensure last include ends with the trailing delimiter --]
+                [#local delimitedPrefixIncludes = [] ]
+                [#list prefixIncludes as prefixInclude]
+                    [#if prefixInclude?is_last]
+                        [#local delimitedPrefixIncludes += [ prefixInclude?ensure_ends_with("/") ] ]
+                    [#else]
+                        [#local delimitedPrefixIncludes += [ prefixInclude ] ]
+                    [/#if]
+                [/#list]
+                [#local delimitedErrorPrefixIncludes = [] ]
+                [#list errorPrefixIncludes as prefixInclude]
+                    [#if prefixInclude?is_last]
+                        [#local delimitedErrorPrefixIncludes += [ prefixInclude?ensure_ends_with("/") ] ]
+                    [#else]
+                        [#local delimitedErrorPrefixIncludes += [ prefixInclude ] ]
+                    [/#if]
+                [/#list]
+
                 [#local streamS3DestinationPrefix = {
                     "Fn::Join" : [
                         "/",
-                        [  (solution.Bucket.Prefix)?remove_ending("/") ] +
-                        prefixIncludes +
-                        ["/"]
+                        delimitedPrefixIncludes
                     ]
                 }]
 
                 [#local streamS3DestinationErrorPrefix = {
                     "Fn::Join" : [
                         "/",
-                        [ (solution.Bucket.ErrorPrefix)?remove_ending("/") ] +
-                        errorPrefixIncludes +
-                        ["/"]
+                        delimitedErrorPrefixIncludes
                     ]
                 }]
 
