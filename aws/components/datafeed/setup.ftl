@@ -268,11 +268,20 @@
                 [#-- Establish bucket prefixes --]
                 [#local prefixIncludes = [ ] ]
                 [#list includeOrder as includePrefix ]
-                    [#if includePrefix == "AccountId" && solution.Bucket.Include.AccountId ]
-                        [#local prefixIncludes += [ { "Ref" : "AWS::AccountId" } ]]
-                    [/#if]
-                    [#if includePrefix == "ComponentPath" && solution.Bucket.Include.ComponentPath ]
-                        [#local prefixIncludes += [ occurrence.Core.FullRelativePath?ensure_ends_with("/") ]]
+                    [#if solution.Bucket.Include[includePrefix]!false]
+                        [#switch includePrefix]
+                            [#case "AccountId" ]
+                                [#local prefixIncludes += [ { "Ref" : "AWS::AccountId" } ] ]
+                                [#break]
+
+                            [#case "ComponentPath" ]
+                                [#local prefixIncludes += [ occurrence.Core.FullRelativePath?remove_ending("/") ] ]
+                                [#break]
+
+                            [#case "TimePath" ]
+                                [#local prefixIncludes += [ "!{timestamp:yyyy/MM/dd/HH}" ]]
+                                [#break]
+                        [/#switch]
                     [/#if]
                 [/#list]
 
@@ -280,7 +289,8 @@
                     "Fn::Join" : [
                         "/",
                         [  (solution.Bucket.Prefix)?remove_ending("/") ] +
-                        prefixIncludes
+                        prefixIncludes +
+                        ["/"]
                     ]
                 }]
 
@@ -288,7 +298,8 @@
                     "Fn::Join" : [
                         "/",
                         [ (solution.Bucket.ErrorPrefix)?remove_ending("/") ] +
-                        prefixIncludes
+                        prefixIncludes +
+                        ["/"]
                     ]
                 }]
 
