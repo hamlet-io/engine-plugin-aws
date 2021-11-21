@@ -41,8 +41,8 @@
                     {
                         "rootCredentials" : getComponentSecretResources(
                                                 occurrence,
-                                                "Admin",
-                                                "Admin",
+                                                solution.RootCredentials.Username,
+                                                solution.RootCredentials.Username,
                                                 cmkKeyId,
                                                 secretLink.Configuration.Solution.Engine,
                                                 "Admin credentials for directory services"

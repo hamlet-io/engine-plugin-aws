@@ -100,7 +100,12 @@
     [#switch solution.Engine ]
         [#case "Simple"]
         [#case "ActiveDirectory" ]
-            [#if ((directory.Username)!"") != "Admin" ]
+            [#if directory.Username == "root" ]
+                [@warn
+                    message="Root user used for older AD deployments"
+                    detail="The username will be Admin instead of root"
+                /]
+            [#elseif ! directory.Username == "Admin" ]
                 [@fatal
                     message="Invalid username for directory engine"
                     detail="Only the user name Admin is permitted"
