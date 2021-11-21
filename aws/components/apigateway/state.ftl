@@ -127,17 +127,13 @@ created in either case.
     [#local certificateId = "" ]
 
     [#local lgId = formatDependentLogGroupId(stageId) ]
-    [#local lgName = {
-                        "Fn::Join" : [
-                            "",
-                            [
-                                "API-Gateway-Execution-Logs_",
-                                getExistingReference(apiId),
-                                "/",
-                                stageName
-                            ]
-                        ]
-                    }]
+    [#local lgName = [
+            "API-Gateway-Execution-Logs_",
+            getExistingReference(apiId),
+            "/",
+            stageName
+        ]?join("")
+    ]
 
     [#local accessLgId = formatDependentLogGroupId(stageId, "access") ]
     [#local accessLgName = formatAbsolutePath(core.FullAbsolutePath, "access")]
