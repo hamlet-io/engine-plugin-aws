@@ -487,6 +487,10 @@
             logGroupName=executionLgName
             loggingProfile=loggingProfile
         /]
+    [#else]
+        [@warn
+            message="The API gateway must be run at least twice if log subscriptions are required"
+        /]
     [/#if]
 
     [#if deploymentSubsetRequired("apigateway", true)]
