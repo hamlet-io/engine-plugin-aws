@@ -20,6 +20,10 @@
     [#local apiId      = resources["apigateway"].Id]
     [#local apiName    = resources["apigateway"].Name]
 
+    [#-- Execution Log Group --]
+    [#local executionLgId   = resources["lg"].Id]
+    [#local executionLgName = resources["lg"].Name]
+
     [#-- Access Log Group --]
     [#local accessLgId   = resources["accesslg"].Id]
     [#local accessLgName = resources["accesslg"].Name]
@@ -471,6 +475,18 @@
                 loggingProfile=loggingProfile
             /]
         [/#if]
+    [/#if]
+
+    [#-- hamlet doesn't create the execution log group, but can manage any subscriptions   --]
+    [#-- Note that subscriptions will only be created on the second and subsequent stack   --]
+    [#-- execution, i.e. when the epilogue script has been successfully run at least once. --]
+    [#if getExistingReference(executionLgId)?has_content]
+        [@createLogSubscriptionFromLoggingProfile
+            occurrence=occurrence
+            logGroupId=executionLgId
+            logGroupName=executionLgName
+            loggingProfile=loggingProfile
+        /]
     [/#if]
 
     [#if deploymentSubsetRequired("apigateway", true)]
@@ -1149,6 +1165,54 @@
                     true
                 )
         /]
+
+        [#local lgResourceSetActive = false]
+
+        [#-- Check if lg resource set is active --]
+        [#list ((getDeploymentGroupDetails(getDeploymentGroup()).ResourceSets)!{})?values?filter(s -> s.Enabled ) as resourceSet ]
+            [#if resourceSet["deployment:Unit"] == "lg"]
+                [#local lgResourceSetActive = true]
+                [#break]
+            [/#if]
+        [/#list]
+
+        [#-- Save the execution log group as a pseudo stack          --]
+        [#-- Because the log group name includes the apiId, it isn't --]
+        [#-- possible to pre-create it in the same way as the access --]
+        [#-- log.                                                    --]
+        [@addToDefaultBashScriptOutput
+            content=
+            [
+                "case $\{STACK_OPERATION} in",
+                "  create|update)"
+            ] +
+            pseudoStackOutputScript(
+                    "Execution Log Group",
+                    {
+                        executionLgId : executionLgName,
+                        [#-- The deployment unit is set to match the template  --]
+                        [#-- in which the log group would have been created if --]
+                        [#-- that was supported by cloud formation. This       --]
+                        [#-- ensures any log subscriptions for the execution   --]
+                        [#-- log are created in the same place as the other    --]
+                        [#-- log group configuration                           --]
+                        "DeploymentUnit" :
+                            valueIfTrue(
+                                "lg",
+                                lgResourceSetActive,
+                                getCLODeploymentUnit()
+                            )
+                    },
+                    "execlg"
+            ) +
+            [#-- Set the log retention otherwise the log never expires --]
+            [
+                '       set_cloudwatch_log_group_retention "' + getRegion() + '" "' + executionLgName + '" "' + operationsExpiration?c + '" || return $?',
+                "       ;;",
+                "       esac"
+            ]
+        /]
+
 
         [#-- If using an authoriser, give it a copy of the openapi spec --]
         [#-- Also include the definition because authorizers can't have --]
