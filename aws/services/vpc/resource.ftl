@@ -292,6 +292,19 @@
     /]
 [/#macro]
 
+[#assign AWS_VPC_SECURITY_GROUP_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+    mappings=AWS_VPC_SECURITY_GROUP_OUTPUT_MAPPINGS
+/]
+
 [#macro createSecurityGroup id name vpcId occurrence description="" ]
     [@cfResource
         id=id
@@ -310,9 +323,23 @@
                 occurrence.Core.Tier,
                 occurrence.Core.Component
             )
+        outputs=AWS_VPC_SECURITY_GROUP_OUTPUT_MAPPINGS
     /]
 
 [/#macro]
+
+[#assign AWS_VPC_FLOWLOG_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPC_FLOWLOG_RESOURCE_TYPE
+    mappings=AWS_VPC_FLOWLOG_OUTPUT_MAPPINGS
+/]
 
 [#macro createFlowLog
             id
@@ -395,6 +422,7 @@
                 },
                 {}
             )
+        outputs=AWS_VPC_FLOWLOG_OUTPUT_MAPPINGS
     /]
 [/#macro]
 
@@ -436,6 +464,19 @@
     /]
 [/#macro]
 
+[#assign AWS_VPC_IGW_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPC_IGW_RESOURCE_TYPE
+    mappings=AWS_VPC_IGW_OUTPUT_MAPPINGS
+/]
+
 [#macro createIGW
             id
             name
@@ -447,6 +488,7 @@
         type="AWS::EC2::InternetGateway"
         tags=getCfTemplateCoreTags(name)
         outputId=id
+        outputs=AWS_VPC_IGW_OUTPUT_MAPPINGS
     /]
 [/#macro]
 
@@ -519,6 +561,19 @@
 
     /]
 [/#macro]
+
+[#assign AWS_VPC_ROUTE_TABLE_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPC_ROUTE_TABLE_RESOURCE_TYPE
+    mappings=AWS_VPC_ROUTE_TABLE_OUTPUT_MAPPINGS
+/]
 
 [#macro createRouteTable
             id
@@ -624,6 +679,19 @@
     /]
 [/#macro]
 
+[#assign AWS_VPC_NETWORK_ACL_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPC_NETWORK_ACL_RESOURCE_TYPE
+    mappings=AWS_VPC_NETWORK_ACL_OUTPUT_MAPPINGS
+/]
+
 [#macro createNetworkACL
             id,
             name,
@@ -636,7 +704,7 @@
                 "VpcId" : getReference(vpcId)
             }
         tags=getCfTemplateCoreTags(name)
-        outputs={}
+        outputs=AWS_VPC_NETWORK_ACL_OUTPUT_MAPPINGS
     /]
 [/#macro]
 
@@ -724,6 +792,19 @@
     /]
 [/#macro]
 
+[#assign AWS_VPC_SUBNET_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPC_SUBNET_TYPE
+    mappings=AWS_VPC_SUBNET_OUTPUT_MAPPINGS
+/]
+
 [#macro createSubnet
             id,
             name,
@@ -755,6 +836,7 @@
         tags=
             tags +
             getCfTemplateCoreTags(name, tier, "", zone)
+        outputs=AWS_VPC_SUBNET_OUTPUT_MAPPINGS
     /]
 [/#macro]
 
@@ -809,6 +891,19 @@
     /]
 [/#macro]
 
+[#assign AWS_VPC_VPCENDPOINT_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPC_VPCENDPOINT_RESOURCE_TYPE
+    mappings=AWS_VPC_VPCENDPOINT_OUTPUT_MAPPINGS
+/]
+
 [#macro createVPCEndpoint
             id,
             vpcId,
@@ -846,10 +941,22 @@
                 },
                 {}
             )
-
-        outputs={}
+        outputs=AWS_VPC_VPCENDPOINT_OUTPUT_MAPPINGS
     /]
 [/#macro]
+
+[#assign AWS_VPC_ENDPOINT_SERVICE_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_VPC_ENDPOINT_SERVICE_RESOURCE_TYPE
+    mappings=AWS_VPC_ENDPOINT_SERVICE_OUTPUT_MAPPINGS
+/]
 
 [#macro createVPCEndpointService
     id
@@ -866,6 +973,7 @@
             "NetworkLoadBalancerArns" : getReferences(loadBalancerIds, ARN_ATTRIBUTE_TYPE)
         }
         dependencies=dependencies
+        outputs=AWS_VPC_ENDPOINT_SERVICE_OUTPUT_MAPPINGS
     /]
 [/#macro]
 
