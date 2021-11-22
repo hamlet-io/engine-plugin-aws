@@ -1,8 +1,8 @@
 [#ftl]
 
 [#-- Regional resource types replicate global ones --]
-[#function formatWAFResourceType baseResourceType regional version="V1" ]
-    [#return "AWS::" + (version == "V2")?then("WAFv2::",regional?then("WAFRegional::","WAF::")) + baseResourceType ]
+[#function formatWAFResourceType baseResourceType regional version="v1" ]
+    [#return "AWS::" + (version == "v2")?then("WAFv2::",regional?then("WAFRegional::","WAF::")) + baseResourceType ]
 [/#function]
 
 [#function formatV2TextTransformations textTransformations valueSet={}]
@@ -130,7 +130,7 @@
 [/#function]
 
 [#-- Capture similarity between conditions --]
-[#macro createWAFCondition id name type filters=[] valueSet={} regional=false version="V1"]
+[#macro createWAFCondition id name type filters=[] valueSet={} regional=false version="v1"]
     [#if (WAFConditions[type].ResourceType)?has_content]
         [#local result = [] ]
         [#list asArray(filters) as filter]
@@ -163,7 +163,7 @@
                     {
                         "Name": name
                     } +
-                    (version == "V2")?then(
+                    (version == "v2")?then(
                         { "Scope" : regional?then("REGIONAL","CLOUDFRONT")},
                         {}
                     )+
@@ -178,7 +178,7 @@
     [/#if]
 [/#macro]
 
-[#macro createWAFByteMatchSetCondition id name matches=[] valueSet={} regional=false version="V1" ]
+[#macro createWAFByteMatchSetCondition id name matches=[] valueSet={} regional=false version="v1" ]
     [@createWAFCondition
         id=id
         name=name
@@ -189,7 +189,7 @@
         version=version /]
 [/#macro]
 
-[#macro createWAFGeoMatchSetCondition id name countryCodes=[] regional=true version="V1"]
+[#macro createWAFGeoMatchSetCondition id name countryCodes=[] regional=true version="v1"]
     [#local filters = [{"Targets" : "countrycodes"}] ]
     [#local valueSet = {"countrycodes" : asFlattenedArray(countryCodes) } ]
     [@createWAFCondition
@@ -202,11 +202,11 @@
         version=version /]
 [/#macro]
 
-[#macro createWAFIPSetCondition id name cidr=[] regional=false version="V1" ]
+[#macro createWAFIPSetCondition id name cidr=[] regional=false version="v1" ]
     [#local filters = [{"Targets" : "ips"}] ]
     [#local valueSet = {"ips" : asFlattenedArray(cidr) } ]
     [#switch version]
-        [#case "V1"]
+        [#case "v1"]
             [@createWAFCondition
                 id=id
                 name=name
@@ -215,7 +215,7 @@
                 valueSet=valueSet
                 regional=regional /]
         [#break]
-        [#case "V2"]
+        [#case "v2"]
             [@cfResource
                 id=id
                 type="AWS::WAFv2::IPSet"
@@ -231,7 +231,7 @@
     [/#switch]
 [/#macro]
 
-[#macro createWAFSizeConstraintCondition id name constraints=[] valueSet={} regional=false version="V1"]
+[#macro createWAFSizeConstraintCondition id name constraints=[] valueSet={} regional=false version="v1"]
     [@createWAFCondition
         id=id
         name=name
@@ -242,7 +242,7 @@
         version=version /]
 [/#macro]
 
-[#macro createWAFSqlInjectionMatchSetCondition id name matches=[] valueSet={} regional=false version="V1"]
+[#macro createWAFSqlInjectionMatchSetCondition id name matches=[] valueSet={} regional=false version="v1"]
     [@createWAFCondition
         id=id
         name=name
@@ -253,7 +253,7 @@
         version=version /]
 [/#macro]
 
-[#macro createWAFXssMatchSetCondition id name matches=[] valueSet={} regional=false version="V1"]
+[#macro createWAFXssMatchSetCondition id name matches=[] valueSet={} regional=false version="v1"]
     [@createWAFCondition
         id=id
         name=name
@@ -264,8 +264,8 @@
         version=version /]
 [/#macro]
 
-[#macro createWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit="" version="V1"]
-    [#if version == "V2"]
+[#macro createWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit="" version="v1"]
+    [#if version == "v2"]
         [#-- V2 templates create rules as part of WebAcl --]
         [#return]
     [/#if]
@@ -322,7 +322,7 @@
 [#-- Rules are grouped into bands. Bands are sorted into ascending alphabetic --]
 [#-- order, with rules within a band ordered based on occurrence in the rules --]
 [#-- array. Rules without a band are put into the default band.               --]
-[#macro createWAFAcl id name metric defaultAction rules=[] valueSet={} regional=false bandDefault="default" version="V1" ]
+[#macro createWAFAcl id name metric defaultAction rules=[] valueSet={} regional=false bandDefault="default" version="v1" ]
     [#-- Determine the bands --]
     [#local bands = [] ]
     [#list asArray(rules) as rule]
@@ -366,7 +366,7 @@
                     version=version /]
             [/#if]
             [#switch version]
-                [#case "V1"]
+                [#case "v1"]
                     [#local aclRules +=
                         [
                             {
@@ -380,7 +380,7 @@
                     ]
                 [#break]
 
-                [#case "V2"]
+                [#case "v2"]
                     [#local v2Action = (rule.Action)?lower_case?cap_first]
                     [#local v2Statement = formatV2Conditions(rule.Conditions, valueSet) ]
                     [#local aclRules += 
@@ -408,7 +408,7 @@
 
     [#local properties={}]
     [#switch version]
-        [#case "V1"]
+        [#case "v1"]
             [#local properties=
                 {
                     "DefaultAction" : {
@@ -421,7 +421,7 @@
             ]
         [#break]
 
-        [#case "V2"]
+        [#case "v2"]
             [#local defAction = defaultAction?lower_case?cap_first ]
             [#local properties=
                 {
@@ -448,7 +448,7 @@
     /]
 [/#macro]
 
-[#macro createWAFAclFromSecurityProfile id name metric wafSolution securityProfile occurrence={} regional=false version="V1"]
+[#macro createWAFAclFromSecurityProfile id name metric wafSolution securityProfile occurrence={} regional=false version="v1"]
     [#if wafSolution.OWASP]
         [#local wafProfile = wafProfiles[securityProfile.WAFProfile!""]!{} ]
     [#else]
@@ -466,10 +466,10 @@
                     [
                         {
                         "Rule" : "whitelistips",
-                        "Action" : (version == "V1")?then("ALLOW","Allow")
+                        "Action" : (version == "v1")?then("ALLOW","Allow")
                         }
                     ],
-                "DefaultAction" : (version == "V1")?then("BLOCK","Block")
+                "DefaultAction" : (version == "v1")?then("BLOCK","Block")
             } ]
     [/#if]
 
@@ -484,10 +484,10 @@
                     [
                         {
                         "Rule" : "whitelistcountries",
-                        "Action" : (version == "V1")?then("ALLOW","Allow")
+                        "Action" : (version == "v1")?then("ALLOW","Allow")
                         }
                     ],
-                "DefaultAction" : (version == "V1")?then("BLOCK","Block")
+                "DefaultAction" : (version == "v1")?then("BLOCK","Block")
             } ]
     [/#if]
 
@@ -502,10 +502,10 @@
                     [
                         {
                         "Rule" : "blacklistcountries",
-                        "Action" : (version == "V1")?then("BLOCK","Block")
+                        "Action" : (version == "v1")?then("BLOCK","Block")
                         }
                     ],
-                "DefaultAction" : (version == "V1")?then("ALLOW","Allow")
+                "DefaultAction" : (version == "v1")?then("ALLOW","Allow")
             } ]
     [/#if]
     [#local rules = getWAFProfileRules(wafProfile, wafRuleGroups, wafRules, wafConditions)]
@@ -530,7 +530,7 @@
                                     "Negated" : false
                                 }
                             ],
-                            "Action" : (version == "V1")?then("BLOCK","Block")
+                            "Action" : (version == "v1")?then("BLOCK","Block")
                         }
                     ],
                     ADD_COMBINE_BEHAVIOUR
@@ -553,14 +553,14 @@
 [/#macro]
 
 [#-- Associations are only relevant for regional endpoints --]
-[#macro createWAFAclAssociation id wafaclId endpointId dependencies=[] version="V1" ]
+[#macro createWAFAclAssociation id wafaclId endpointId dependencies=[] version="v1" ]
     [@cfResource
         id=id
         type=formatWAFResourceType("WebACLAssociation", true, version)
         properties=
             {
                 "ResourceArn" : getArn(endpointId)
-            } + (version == "V1")?then(
+            } + (version == "v1")?then(
                     {
                         "WebACLId" : getReference(wafaclId)
                     },
@@ -573,7 +573,7 @@
 [/#macro]
 
 
-[#macro enableWAFLogging wafaclId wafaclArn deliveryStreamId="" deliveryStreamArns=[] regional=false version="V1" ]
+[#macro enableWAFLogging wafaclId wafaclArn deliveryStreamId="" deliveryStreamArns=[] regional=false version="v1" ]
 
     [#if regional ]
         [#local wafType = "regional" ]
@@ -582,7 +582,7 @@
     [/#if]
 
     [#switch version]
-        [#case "V1"]
+        [#case "v1"]
             [#if deliveryStreamId?has_content]
                 [#if deploymentSubsetRequired("epilogue", false) ]
                     [@addToDefaultBashScriptOutput
@@ -627,7 +627,7 @@
             [/#if]
         [#break]
 
-        [#case "V2"]
+        [#case "v2"]
             [#if !deploymentSubsetRequired("epilogue", false) ]
                 [@cfResource
                     id=wafaclId+"Xlogconf"

@@ -123,7 +123,7 @@
     processorId=""
     cmkKeyId=""
     dependencies=""
-    version="V1"]
+    version="v1"]
 
     [#local logPrefix  = {
             "Fn::Join" : [
