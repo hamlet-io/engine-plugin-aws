@@ -14,10 +14,10 @@
     [#local cfName              = resources["cf"].Name]
 
     [#local wafPresent          = isPresent(solution.WAF) ]
-    [#local wafVersion          = (solution.WAF.Version)!"V1" ]
+    [#local wafVersion          = (solution.WAF.Version)!"v1" ]
     [#local wafAclId            = resources["wafacl"].Id]
     [#local wafAclArn           = resources["wafacl"].Arn]
-    [#local wafAclLink          = resources["wafacl"][(wafVersion == "V1")?then("Id","Arn")]]
+    [#local wafAclLink          = resources["wafacl"][(wafVersion == "v1")?then("Id","Arn")]]
     [#local wafAclName          = resources["wafacl"].Name]
 
     [#local wafLogStreamingResources = resources["wafLogStreaming"]!{} ]
@@ -541,7 +541,7 @@
     [/#if]
 
     [#if deploymentSubsetRequired("epilogue", false)]
-        [#if invalidationPaths?has_content && getExistingReference(cfId)?has_content && (wafVersion == "V1") ]
+        [#if invalidationPaths?has_content && getExistingReference(cfId)?has_content && (wafVersion == "v1") ]
             [@addToDefaultBashScriptOutput
                 [
                     "case $\{STACK_OPERATION} in",

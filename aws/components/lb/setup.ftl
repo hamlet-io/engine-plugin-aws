@@ -996,7 +996,7 @@
                     /]
                     [@createWAFAclAssociation
                         id=wafAclResources.association.Id
-                        wafaclId=(solution.WAF.Version == "V1")?then(wafAclResources.acl.Id, wafAclResources.acl.Arn)
+                        wafaclId=(solution.WAF.Version == "v1")?then(wafAclResources.acl.Id, wafAclResources.acl.Arn)
                         endpointId=getReference(lbId)
                         version=solution.WAF.Version
                     /]
