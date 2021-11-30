@@ -135,6 +135,9 @@
 
         [#case "SecretStore"]
 
+            [#local secretLink = getLinkTarget(occurrence, solution["rootCredential:SecretStore"].Link, false)]
+            [#local secretEngine = secretLink.Configuration.Solution.Engine ]
+
             [#if secretLink.Core.Type == SECRETSTORE_COMPONENT_TYPE ]
 
                 [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption"], true, false )]
@@ -142,12 +145,8 @@
                 [#if baselineLinks?has_content ]
                     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
                     [#local cmkKeyId = (baselineComponentIds["Encryption"]) ]
-
-                    [#local secretLink = getLinkTarget(occurrence, solution["rootCredential:SecretStore"].Link, false)]
-                    [#local secretEngine = secretLink.Configuration.Solution.Engine ]
                 [#else]
                     [#local cmkKeyId = ""]
-                    [#local secretEngine = ""]
                 [/#if]
 
                 [#local resources = mergeObjects(
