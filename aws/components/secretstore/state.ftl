@@ -44,10 +44,14 @@
 
             [#local secretId = formatResourceId(AWS_SECRETS_MANAGER_SECRET_RESOURCE_TYPE, occurrence.Core.Id)]
 
-            [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption"] )]
-            [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+            [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption"], true, false )]
 
-            [#local cmkKeyId = baselineComponentIds["Encryption" ]]
+            [#if baselineLinks?has_content ]
+                [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+                [#local cmkKeyId = (baselineComponentIds["Encryption"]) ]
+            [#else]
+                [#local cmkKeyId = ""]
+            [/#if]
 
             [#local resources = mergeObjects(
                 resources,
