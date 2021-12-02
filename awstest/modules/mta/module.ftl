@@ -12,17 +12,6 @@
 
     [#-- Base outbound setup --]
     [@loadModule
-        settingSets=[
-            {
-                "Type" : "Settings",
-                "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-mta-out",
-                "Settings" : {
-                    "MASTER_USERNAME" : "testUser",
-                    "MASTER_PASSWORD" : "testPassword"
-                }
-            }
-        ]
         blueprint={
             "Tiers" : {
                 "app" : {
@@ -30,18 +19,20 @@
                         "mtaoutbase" : {
                             "Type": "mta",
                             "deployment:Unit" : "aws-mta-out-base",
-                                "Profiles" : {
-                                    "Testing" : [ "mtaoutbase" ]
-                                },
+                            "Profiles" : {
+                                "Testing" : [ "mtaoutbase" ]
+                            },
+                            "Hostname" : {},
                             "Direction" : "send",
                             "Rules" : {
                                 "transmissions" : {
                                     "Enabled" : true,
                                     "Order" : 1,
                                     "Conditions" : {
-                                        "EventTypes" : ["delivery"]
+                                        "Senders" : [ "*" ]
                                     },
-                                    "Action" : "forward",
+                                    "EventTypes" : ["delivery"],
+                                    "Action" : "log",
                                     "Links" : {
                                         "topic": {
                                             "Tier": "app",
@@ -51,8 +42,7 @@
                                         }
                                     }
                                 }
-                            },
-                            "Certificate" : {}
+                            }
                         },
                         "mtatopic" : {
                             "Type" : "topic",
@@ -76,13 +66,13 @@
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
-                                "mtaOutInstance" : {
-                                    "Name" : "sesconfigset",
+                                "ConfigurationSet" : {
+                                    "Name" : "sesconfigsetXappXmtaoutbaseXtransmissions",
                                     "Type" : "AWS::SES::ConfigurationSet"
                                 }
                             },
                             "Output" : [
-                                "sesconfigsetXname"
+                                "sesconfigsetXappXmtaoutbaseXtransmissionsXname"
                             ]
                         }
                     }
