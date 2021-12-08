@@ -2,7 +2,6 @@
 
 [@addAttributeSet
     type=AWS_ANTIVIRUS_ATTRIBUTESET_TYPE
-    pluralType="MaintenanceWindows"
     properties=[
         {
             "Type"  : "Description",
