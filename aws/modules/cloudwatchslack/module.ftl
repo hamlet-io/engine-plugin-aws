@@ -118,33 +118,31 @@
                             }
                         },
                         lambdaName : {
-                            "lambda" : {
-                                "Type" : "lambda",
-                                "deployment:Unit" : lambdaName,
-                                "Functions" : {
-                                    "send" : {
-                                        "Handler" : "cloudwatch-slack/lambda_function.lambda_handler",
-                                        "RunTime" : "python3.6",
-                                        "MemorySize" : 128,
-                                        "Timeout" : 15,
-                                        "VPCAccess" : false,
-                                        "PredefineLogGroup" : true,
-                                        "Links" : {
-                                            "alerts" : {
-                                                "Tier" : tier,
-                                                "Component" : topicName,
-                                                "Direction" : "inbound",
-                                                "Role" : "invoke"
-                                            }
+                            "Type" : "lambda",
+                            "deployment:Unit" : lambdaName,
+                            "Functions" : {
+                                "send" : {
+                                    "Handler" : "cloudwatch-slack/lambda_function.lambda_handler",
+                                    "RunTime" : "python3.6",
+                                    "MemorySize" : 128,
+                                    "Timeout" : 15,
+                                    "VPCAccess" : false,
+                                    "PredefineLogGroup" : true,
+                                    "Links" : {
+                                        "alerts" : {
+                                            "Tier" : tier,
+                                            "Component" : topicName,
+                                            "Direction" : "inbound",
+                                            "Role" : "invoke"
                                         }
                                     }
-                                },
-                                "Image" : {
-                                    "Source" : "url",
-                                    "UrlSource" : {
-                                        "Url" : lambdaSourceUrl,
-                                        "ImageHash" : lambdaSourceHash
-                                    }
+                                }
+                            },
+                            "Image" : {
+                                "Source" : "url",
+                                "UrlSource" : {
+                                    "Url" : lambdaSourceUrl,
+                                    "ImageHash" : lambdaSourceHash
                                 }
                             }
                         }
