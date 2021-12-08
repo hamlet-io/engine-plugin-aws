@@ -913,6 +913,11 @@
         [/#switch]
     [/#list]
 
+    [#-- Reset common variables to this scope (from subOccurrence scope above) --]
+    [#local core = occurrence.Core ]
+    [#local solution = occurrence.Configuration.Solution ]
+    [#local resources = occurrence.State.Resources ]
+
     [#if cleanupStates?has_content ]
         [#if deploymentSubsetRequired("prologue", false)]
             [@addToDefaultBashScriptOutput
@@ -964,12 +969,16 @@
                     bucketPrefix="WAF"
                     cloudwatchEnabled=true
                     cmkKeyId=kmsKeyId
+                    version=solution.WAF.Version
                 /]
 
                 [@enableWAFLogging
                     wafaclId=wafAclResources.acl.Id
+                    wafaclArn=wafAclResources.acl.Arn
                     deliveryStreamId=wafLogStreamingResources["stream"].Id
+                    deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
                     regional=true
+                    version=solution.WAF.Version
                 /]
             [/#if]
             [#if wafAclResources?has_content ]
@@ -983,11 +992,13 @@
                         securityProfile=securityProfile
                         occurrence=occurrence
                         regional=true
+                        version=solution.WAF.Version
                     /]
                     [@createWAFAclAssociation
                         id=wafAclResources.association.Id
-                        wafaclId=wafAclResources.acl.Id
+                        wafaclId=(solution.WAF.Version == "v1")?then(wafAclResources.acl.Id, wafAclResources.acl.Arn)
                         endpointId=getReference(lbId)
+                        version=solution.WAF.Version
                     /]
                 [/#if]
             [/#if]

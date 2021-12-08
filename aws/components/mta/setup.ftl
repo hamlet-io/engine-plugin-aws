@@ -9,27 +9,21 @@
     [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
     [#local attributes = occurrence.State.Attributes ]
+    [#local resources = occurrence.State.Resources]
 
-    [#switch solution.Direction]
+    [#-- Get domain/host information --]
+    [#local certificateObject = getCertificateObject(solution.Hostname)]
+    [#local mailDomains = getCertificateDomains(certificateObject) ]
+
+    [#-- Baseline component lookup to obtain the kms key --]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]!""]
+
+    [#local direction = solution.Direction]
+
+    [#switch direction]
         [#case "send"]
-            [#-- Get domain/host information --]
-            [#local certificateObject = getCertificateObject(solution.Certificate)]
-            [#local certificateDomains = getCertificateDomains(certificateObject) ]
-
-            [#-- Baseline component lookup to obtain the kms key --]
-            [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
-            [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-            [#local kmsKeyId = baselineComponentIds["Encryption"]!""]
-
-            [#local configSetName = formatName(occurrence.Core.FullName) ]
-
-            [#if deploymentSubsetRequired(MTA_COMPONENT_TYPE, true) ]
-                [#-- CF doesn't support tags but the console does, so included for future expansion --]
-                [@createSESConfigSet
-                    id=formatSESConfigSetId()
-                    name=configSetName
-                /]
-            [/#if]
 
             [#-- Process the rules according to the provided order --]
             [#list (occurrence.Occurrences![]) as subOccurrence]
@@ -37,18 +31,53 @@
                 [#local solution = subOccurrence.Configuration.Solution ]
                 [#local resources = subOccurrence.State.Resources ]
 
-                [#local configId = resources["configSet"].Id ]
-                [#local configName = resources["configSet"].Name ]
+                [#local eventTypes = solution.EventTypes ]
 
-                [#local eventTypes = solution.Conditions.EventTypes ]
-                [#local topicArns = [] ]
+                [#local emailSendIdentities = expandSESRecipients(solution.Conditions.Senders, mailDomains)]
+
+                [#local configSet = resources["configset"]]
+
+                [#if deploymentSubsetRequired(MTA_COMPONENT_TYPE, true) ]
+                    [@createSESConfigSet
+                        id=configSet.Id
+                        name=configSet.Name
+                    /]
+                [/#if]
+
+                [#list expandSESRecipients(solution.Conditions.Senders, mailDomains) as emailAddr]
+                    [#if deploymentSubsetRequired("epilogue", false) ]
+                        [@addToDefaultBashScriptOutput
+                            content=
+                            [
+                                r'case ${STACK_OPERATION} in',
+                                r'  create|update)',
+                                r'    if [ -z "$(aws --region "' + getRegion() + r'" ses list-identities --query ' + r"'Identities[?@==`" + emailAddr + r"`]'" + r' --output text)" ]; then',
+                                r'       info "Creating email identity and assigning config set for identity: ' + emailAddr + r'"',
+                                r'       aws --region "' + getRegion() + r'" sesv2 create-email-identity --email-identity ' + emailAddr + r' --configuration-set-name ' + configSet.Name,
+                                r'    else',
+                                r'       info "Updating email identity and configset for identity: ' + emailAddr + r'"',
+                                r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r' --configuration-set-name ' + configSet.Name,
+                                r'    fi'
+                                r'    ;;'
+                                r'  delete)'
+                                r'    if [ -z "$(aws --region "' + getRegion() + r'" ses list-identities --query ' + r"'Identities[?@==`" + emailAddr + r"`]'" + r' --output text)" ]; then',
+                                r'       info "Removing configset from email identity: ' + emailAddr + r'"',
+                                r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr,
+                                r'    fi',
+                                r'    ;;',
+                                r'esac'
+                            ]
+                        /]
+                    [/#if]
+                [/#list]
+
 
                 [#switch solution.Action]
-                    [#case "forward"]
+                    [#case "log"]
                         [#local encryptionEnabled = isPresent(solution["aws:Encryption"]) ]
 
                         [#-- Look for any link to a topic --]
-                        [#list solution.Links?values as link]
+                        [#list solution.Links as linkId, link]
                             [#if link?is_hash]
 
                                 [#local linkTarget = getLinkTarget(occurrence, link) ]
@@ -58,101 +87,71 @@
                                     [#continue]
                                 [/#if]
 
-                                [#if linkTarget.Core.Type == TOPIC_COMPONENT_TYPE ]
-                                    [#if getExistingReference(formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id))?has_content ]
-                                        [@warn
-                                            message="Topic Permissions update required"
-                                            detail=[
-                                                "SNS policies have been migrated to the topic component",
-                                                "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
-                                                "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
-                                            ]?join(',')
-                                            context=subOccurrence.Core.RawId
-                                        /]
-                                    [/#if]
+                                [#switch linkTarget.Core.Type ]
+                                    [#case TOPIC_COMPONENT_TYPE]
 
-                                    [#local topicArns = combineEntities(topicArns, (linkTarget.State.Attributes["ARN"])!"", UNIQUE_COMBINE_BEHAVIOUR)]
+                                        [#if getExistingReference(formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id))?has_content ]
+                                            [@warn
+                                                message="Topic Permissions update required"
+                                                detail=[
+                                                    "SNS policies have been migrated to the topic component",
+                                                    "For each MTA add an inbound-invoke link from the Topic to the mta",
+                                                    "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
+                                                ]?join(',')
+                                                context=subOccurrence.Core.RawId
+                                            /]
+                                        [/#if]
+
+                                        [#if deploymentSubsetRequired("epilogue", false) ]
+                                            [#local configJSON = {
+                                                    "Name": linkId,
+                                                    "Enabled": true,
+                                                    "MatchingEventTypes": asArray(eventTypes),
+                                                    "SNSDestination": {
+                                                        "TopicARN": linkTarget.State.Attributes.ARN
+                                                    }
+                                                }]
+
+                                            [@addToDefaultBashScriptOutput
+                                                content=
+                                                [
+                                                    r'case ${STACK_OPERATION} in',
+                                                    r'  create|update)',
+                                                    r'    info "Adding event destination for rule link: ' + linkId + r'"',
+                                                    r'    # ensure that the config set is available',
+                                                    r'    config_set_name="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + configSet.Id + r'" "name" || return $?)"',
+                                                    r'    if [[ "$(aws --region "' +  getRegion() + r'" ses describe-configuration-set --configuration-set-name "$config_set_name" --configuration-set-attribute-names eventDestinations --query ' + r"'EventDestinations[?Name==`" + linkId + r"`].Name'" + r')" == "null" ]]; then',
+                                                    r'      aws --region "' + getRegion() + r'" ses create-configuration-set-event-destination --configuration-set-name "${config_set_name}" --event-destination ' + '\'${getJSON(configJSON)}\'',
+                                                    r'    else',
+                                                    r'      aws --region "' + getRegion() + r'" ses update-configuration-set-event-destination --configuration-set-name "${config_set_name}" --event-destination ' + '\'${getJSON(configJSON)}\'',
+                                                    r'    fi',
+                                                    r'    ;;'
+                                                    r'esac'
+                                                ]
+                                            /]
+
+                                            [#break]
+                                        [/#if]
+
                                     [#break]
-                                [/#if]
+
+                                [/#switch]
                             [/#if]
                         [/#list]
                     [#break]
 
-                    [#case "drop"]
+                    [#default]
+                        [@fatal
+                            message="Action not supported for the mta direction"
+                            context={
+                                "Id" : occurrence.Core.RawId,
+                                "Direction" : direction,
+                                "Action" : solution.Action
+                            }
+                        /]
                     [#break]
                 [/#switch]
 
-                [#if eventTypes?has_content]
-                    [#list topicArns as topicArn ]
-                        [#-- notifications must be done through CLI --]
-                        [#if deploymentSubsetRequired("epilogue", false) ]
-                            [#local configJSON = {
-                                    "Name": configName,
-                                    "Enabled": solution.Enabled,
-                                    "MatchingEventTypes": asArray(eventTypes)
-                                }+
-                                (topicArn?has_content)?then(
-                                    {
-                                        "SNSDestination": {
-                                            "TopicARN": topicArn
-                                        }
-                                    },
-                                    {}
-                                )
-                            ]
-                            [#-- CloudFormation cannot update a stack when a custom-named resource requires replacing and
-                                 configsets are custom-named, hence when tags are added, care is needed. Currently only
-                                 attribute is name which can not change --]
-                            [@addToDefaultBashScriptOutput
-                                content=
-                                [
-                                    r'case ${STACK_OPERATION} in',
-                                    r'  create)',
-                                    r'    info "Assign destination"',
-                                    r'    aws --region "' + getRegion() + r'" ses create-configuration-set-event-destination --configuration-set-name ' + configSetName + ' --event-destination  \'${getJSON(configJSON)}\''
-                                    r'    ;;'
-                                    r'  update)',
-                                    r'    info "Update configsets"',
-                                    r'    aws --region "' + getRegion() + r'" ses update-configuration-set-event-destination --configuration-set-name ' + configSetName + ' --event-destination  \'${getJSON(configJSON)}\''
-                                    r'    ;;'
-                                    r'  delete)'
-                                    r'    ;;'
-                                ]+
-                                [
-                                    "esac"
-                                ]
-                            /]
-
-                            [#list solution.Conditions.Recipients as emailAddr]
-                                [@addToDefaultBashScriptOutput
-                                    content=
-                                    [
-                                        r'case ${STACK_OPERATION} in',
-                                        r'  create|update)',
-                                        r'    if [ -z "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
-                                        r'       info "Create email identity and set configset"',
-                                        r'       aws --region "' + getRegion() + r'" sesv2 create-email-identity --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
-                                        r'    else',
-                                        r'       info "Update email identity configset"',
-                                        r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr + r' --configuration-set-name ' + configSetName,
-                                        r'    fi'
-                                        r'    ;;'
-                                        r'  delete)'
-                                        r'    if [ -n "$(aws --region "' + getRegion() + r'" ses list-identities | grep "' + emailAddr + r'")" ]; then ',
-                                        r'       info "Remove email identity configset"',
-                                        r'       aws --region "' + getRegion() + r'" sesv2 put-email-identity-configuration-set-attributes --email-identity ' + emailAddr,
-                                        r'    fi'
-                                        r'    ;;'
-                                    ]+
-                                    [
-                                        "esac"
-                                    ]
-                                /]
-                            [/#list]
-                            [#break]
-                        [/#if]
-                    [/#list]
-                [/#if]
             [/#list]
         [#break]
 
@@ -164,15 +163,6 @@
                 /]
                 [#return]
             [/#if]
-
-            [#-- Get domain/host information --]
-            [#local certificateObject = getCertificateObject(solution.Certificate)]
-            [#local certificateDomains = getCertificateDomains(certificateObject) ]
-
-            [#-- Baseline component lookup to obtain the kms key --]
-            [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
-            [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-            [#local kmsKeyId = baselineComponentIds["Encryption"]!""]
 
             [#local lastRuleName = getOccurrenceSettingValue(occurrence, ["AFTER","RULE","NAME"], true)]
 
@@ -189,39 +179,40 @@
                 [#local actions = [] ]
                 [#local topicArns = [] ]
 
+                [#-- Look for any link to a topic --]
+                [#list solution.Links?values as link]
+                    [#if link?is_hash]
+
+                        [#local linkTarget = getLinkTarget(occurrence, link) ]
+                        [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                        [#if !linkTarget?has_content]
+                            [#continue]
+                        [/#if]
+
+                        [#if linkTarget.Core.Type == TOPIC_COMPONENT_TYPE ]
+                            [#if getExistingReference(formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id))?has_content ]
+                                [@warn
+                                    message="Topic Permissions update required"
+                                    detail=[
+                                        "SNS policies have been migrated to the topic component",
+                                        "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
+                                        "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
+                                    ]?join(',')
+                                    context=subOccurrence.Core.RawId
+                                /]
+                            [/#if]
+
+                            [#local topicArns = combineEntities(topicArns, (linkTarget.State.Attributes["ARN"])!"", UNIQUE_COMBINE_BEHAVIOUR)]
+                            [#break]
+                        [/#if]
+                    [/#if]
+                [/#list]
+
                 [#switch solution.Action]
                     [#case "forward"]
                         [#local encryptionEnabled = isPresent(solution["aws:Encryption"]) ]
 
-                        [#-- Look for any link to a topic --]
-                        [#list solution.Links?values as link]
-                            [#if link?is_hash]
-
-                                [#local linkTarget = getLinkTarget(occurrence, link) ]
-                                [@debug message="Link Target" context=linkTarget enabled=false /]
-
-                                [#if !linkTarget?has_content]
-                                    [#continue]
-                                [/#if]
-
-                                [#if linkTarget.Core.Type == TOPIC_COMPONENT_TYPE ]
-                                    [#if getExistingReference(formatResourceId(AWS_SNS_TOPIC_POLICY_RESOURCE_TYPE, ruleId, link.Id))?has_content ]
-                                        [@warn
-                                            message="Topic Permissions update required"
-                                            detail=[
-                                                "SNS policies have been migrated to the topic component",
-                                                "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
-                                                "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
-                                            ]?join(',')
-                                            context=subOccurrence.Core.RawId
-                                        /]
-                                    [/#if]
-
-                                    [#local topicArns = combineEntities(topicArns, (linkTarget.State.Attributes["ARN"])!"", UNIQUE_COMBINE_BEHAVIOUR)]
-                                    [#break]
-                                [/#if]
-                            [/#if]
-                        [/#list]
                         [#list solution.Links?values as link]
                             [#if link?is_hash]
 
@@ -236,7 +227,6 @@
                                 [#local linkTargetConfiguration = linkTarget.Configuration ]
                                 [#local linkTargetResources = linkTarget.State.Resources ]
                                 [#local linkTargetAttributes = linkTarget.State.Attributes ]
-                                [#local topicArn = linkTargetAttributes.ARN]
 
                                 [#switch linkTargetCore.Type]
                                     [#case EXTERNALSERVICE_COMPONENT_TYPE ]
@@ -246,7 +236,7 @@
                                                 linkTargetAttributes["NAME"]!"",
                                                 solution["aws:Prefix"]!"",
                                                 valueIfTrue(kmsKeyId,encryptionEnabled,""),
-                                                topicArn
+                                                (topicArns[0])!""
                                             )
                                         ]
                                         [#break]
@@ -256,7 +246,7 @@
                                             getSESReceiptLambdaAction(
                                                 linkTargetAttributes["ARN"]!"",
                                                 true,
-                                                topicArn
+                                                (topicArns[0])!""
                                             )
                                         ]
                                         [#break]
@@ -279,7 +269,7 @@
                         ruleSetName=ruleSetName
                         actions=actions
                         afterRuleName=lastRuleName
-                        recipients=expandSESRecipients(solution.Conditions.Recipients, certificateDomains)
+                        recipients=expandSESRecipients(solution.Conditions.Recipients, mailDomains)
                         enabled=solution.Enabled
                     /]
                     [#local lastRuleName = ruleName]

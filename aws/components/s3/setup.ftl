@@ -43,7 +43,7 @@
     [#local notifications = []]
 
     [#list solution.Notifications as id,notification ]
-        [#if notification?is_hash]
+        [#if notification?is_hash && notification.Enabled ]
             [#list notification.Links?values as link]
                 [#if link?is_hash]
                     [#local linkTarget = getLinkTarget(occurrence, link, false) ]

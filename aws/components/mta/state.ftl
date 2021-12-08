@@ -22,7 +22,7 @@
     ]
 
     [#-- The certificate is needed to know the email domain --]
-    [#if ! isPresent(solution.Certificate) ]
+    [#if ! isPresent(solution.Hostname) ]
         [@fatal
             message="MTA Certificate must be configured to determine the email domain"
             context=occurrence
@@ -31,11 +31,10 @@
     [/#if]
 
     [#-- Get domain/host information --]
-    [#local certificateObject = getCertificateObject(solution.Certificate)]
+    [#local certificateObject = getCertificateObject(solution.Hostname)]
     [#local certificateDomains = getCertificateDomains(certificateObject) ]
     [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
     [#local hostName = getHostName(certificateObject, occurrence) ]
-
 
     [#-- Direction controls state --]
     [#switch solution.Direction ]
@@ -138,9 +137,9 @@
             [#assign componentState +=
                 {
                     "Resources" : {
-                        "configSet" : {
+                        "configset" : {
                             "Id" : formatResourceId(AWS_SES_CONFIGSET_RESOURCE_TYPE, core.Id),
-                            "Name" : formatComponentShortFullName(core.Tier, core.Component, occurrence),
+                            "Name" : occurrence.Core.FullName,
                             "Type" : AWS_SES_CONFIGSET_RESOURCE_TYPE
                         }
                     }
@@ -148,6 +147,4 @@
             ]
         [#break]
     [/#switch]
-
-
 [/#macro]

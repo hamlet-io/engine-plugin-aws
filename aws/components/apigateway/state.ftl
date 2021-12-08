@@ -272,6 +272,7 @@ created in either case.
             {
                 "acl" : {
                     "Id" : formatDependentWAFAclId(apiId),
+                    "Arn": (solution.WAF.Version == "v2")?then({ "Fn::GetAtt" : [ formatDependentWAFAclId(cfId), "Arn" ] }, ""),
                     "Name" : formatComponentWAFAclName(core.Tier, core.Component, occurrence),
                     "Type" : AWS_WAF_ACL_RESOURCE_TYPE
                 },

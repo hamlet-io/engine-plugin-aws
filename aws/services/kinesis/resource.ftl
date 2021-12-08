@@ -91,6 +91,7 @@
         {
             "stream" : {
                 "Id" : streamId,
+                "Arn": getReference(streamId, ARN_ATTRIBUTE_TYPE),
                 "Name" : formatName(streamNamePrefix, name, destinationLinkId )?truncate_c(64, ""),
                 "Type" : AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE
             },
@@ -121,7 +122,8 @@
     cloudwatchEnabled=true
     processorId=""
     cmkKeyId=""
-    dependencies="" ]
+    dependencies=""
+    version="v1"]
 
     [#local logPrefix  = {
             "Fn::Join" : [

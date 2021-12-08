@@ -445,7 +445,7 @@
         id=id
         type="AWS::EC2::Volume"
         properties={
-            "AvailabilityZone" : getCFAWSAzReference(zone.AWSZone),
+            "AvailabilityZone" : getCFAWSAzReference(zone.Id),
             "VolumeType" : volumeType,
             "Size" : size
         } +
