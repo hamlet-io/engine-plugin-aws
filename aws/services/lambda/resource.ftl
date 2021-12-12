@@ -75,7 +75,14 @@
                 "Code" :
                     valueIfContent(
                         {
-                            "ZipFile" : settings.ZipFile!""
+                            "ZipFile" : {
+                                "Fn::Join" : [
+                                    "\n",
+                                    asFlattenedArray(
+                                        (settings.ZipFile)![]
+                                    )
+                                ]
+                            }
                         },
                         settings.ZipFile!"",
                         {
