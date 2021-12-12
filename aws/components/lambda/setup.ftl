@@ -94,10 +94,10 @@
                     environmentName,
                     segmentName,
                     fn,
-                    solution.Image.UrlSource.Url,
+                    solution.Image["source:Url"].Url,
                     "lambda",
                     "lambda.zip",
-                    solution.Image.UrlSource.ImageHash
+                    solution.Image["source:Url"].ImageHash
                 )
         /]
     [/#if]
@@ -127,9 +127,25 @@
             "ManagedPolicy" : [],
             "CodeHash" : solution.FixedCodeVersion.CodeHash,
             "VersionDependencies" : [],
-            "CreateVersionInExtension" : false
+            "CreateVersionInExtension" : false,
+            "ZipFile" : []
         }
     ]
+
+    [#-- Ensures that all ZipFile hashses are unique --]
+    [#if imageSource == "extension" && solution.Image["source:Extension"].IncludeRunId ]
+        [#local runIdComment = "${solution.Image['source:Extension'].CommentCharacters} RunId: ${getCLORunId()}" ]
+        [#local _context  = mergeObjects(_context,
+            { "ZipFile" :
+                combineEntities(
+                    _context.ZipFile,
+                    [ runIdComment ],
+                    APPEND_COMBINE_BEHAVIOUR
+                )
+            }
+        )]
+    [/#if]
+
     [#local _context = invokeExtensions( fn, _context )]
 
     [#if deploymentSubsetRequired("lambda", true)]
@@ -351,6 +367,10 @@
                 targetId=fnId
                 codeHash=_context.CodeHash!""
                 outputId=versionId
+                deletionPolicy=(solution.FixedCodeVersion.NewVersionOnDeploy)?then(
+                    "Retain",
+                    ""
+                )
             /]
         [/#if]
     [/#if]
