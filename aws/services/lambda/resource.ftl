@@ -131,7 +131,9 @@
             codeHash=""
             description=""
             dependencies=""
-            outputId="" ]
+            outputId=""
+            deletionPolicy=""
+            updateReplacePolicy="" ]
     [@cfResource
         id=id
         type="AWS::Lambda::Version"
@@ -150,6 +152,8 @@
         outputs=LAMBDA_VERSION_OUTPUT_MAPPINGS
         outputId=outputId
         dependencies=dependencies
+        updateReplacePolicy=updateReplacePolicy
+        deletionPolicy=deletionPolicy
     /]
 [/#macro]
 
