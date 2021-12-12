@@ -121,11 +121,7 @@
             "DefaultBaselineVariables" : true
         }
     ]
-
-    [#if solution.Extensions?has_content ]
-        [#-- Add in extension specifics including override of defaults --]
-        [#local _context = invokeExtensions( occurrence, _context )]
-    [/#if]
+    [#local _context = invokeExtensions( occurrence, _context, {}, solution.Extensions, true )]
 
     [#local _context += getFinalEnvironment(occurrence, _context ) ]
     [#local parameterValues += _context.Environment ]
