@@ -272,7 +272,7 @@
                         recipients=expandSESRecipients(solution.Conditions.Recipients, mailDomains)
                         enabled=solution.Enabled
                     /]
-                    [#local lastRuleName = ruleName]
+                    [#local lastRuleName = getReference(ruleId)]
                 [/#if]
             [/#list]
         [#break]
