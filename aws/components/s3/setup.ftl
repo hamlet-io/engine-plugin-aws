@@ -70,7 +70,7 @@
                                             detail=[
                                                 "SQS policies have been migrated to the queue component",
                                                 "For each S3 bucket add an inbound-invoke link from the Queue to the bucket",
-                                                "When this is completed update the configuration of this notification to QueuePermissionMigration : true"
+                                                "When this is completed update the configuration of this notification to aws:QueuePermissionMigration : true"
                                             ]
                                             context=notification
                                         /]
@@ -104,16 +104,16 @@
                                 [#local resourceId = linkTargetResources["topic"].Id ]
                                 [#local resourceType = linkTargetResources["topic"].Type ]
 
-                                [#if ! (notification["aws:QueuePermissionMigration"]) ]
+                                [#if ! (notification["aws:TopicPermissionMigration"]) ]
                                     [#if deploymentSubsetRequired(S3_COMPONENT_TYPE, true)]
                                         [@fatal
                                             message="Topic Permissions update required"
                                             detail=[
                                                 "SNS policies have been migrated to the topic component",
                                                 "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
-                                                "When this is completed update the configuration of this notification to TopicPermissionMigration : true"
-                                            ]?join(',')
-                                            context=subOccurrence.Core.RawId
+                                                "When this is completed update the configuration of this notification to aws:TopicPermissionMigration : true"
+                                            ]
+                                            context=occurrence.Core.RawId
                                         /]
                                     [/#if]
                                 [/#if]
