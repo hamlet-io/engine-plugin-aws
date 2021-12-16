@@ -3,7 +3,6 @@
 [@addExtendedAttributeSet
     type=AWS_COMPUTEIMAGE_ATTRIBUTESET_TYPE
     baseType=COMPUTEIMAGE_ATTRIBUTESET_TYPE
-    pluralType="AWSComputeImages"
     provider=AWS_PROVIDER
     properties=[
         {
