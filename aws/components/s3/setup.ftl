@@ -21,6 +21,14 @@
 
     [#local versioningEnabled = solution.Versioning!solution.Lifecycle.Versioning ]
 
+    [#-- TODO(mfl): remove once Lifecycle.Versioning atribute is removed --]
+    [#if solution.Lifecycle.Versioning]
+        [@warn
+            message="Use of Lifecycle.Versioning have been deprecated"
+            detail="Please use the top level Versioning attribute instead. NOTE: Default behaviour if enabling versioning under Lifecycle WILL lifecycle objects even if only Versioning is enabled."
+        /]
+    [/#if]
+
     [#local replicationEnabled = false]
     [#local replicationConfiguration = {} ]
     [#local replicationBucket = ""]
