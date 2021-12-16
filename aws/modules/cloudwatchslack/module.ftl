@@ -102,56 +102,47 @@
                 tier : {
                     "Components" : {
                         topicName : {
-                            "topic" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : [ topicName ]
-                                    }
-                                },
-                                "Subscriptions" : {
-                                    "slack" : {
-                                        "Links" : {
-                                            "lambda" : {
-                                                "Tier" : tier,
-                                                "Component" : lambdaName,
-                                                "Function" : "send"
-                                            }
+                            "Type" : "topic",
+                            "deployment:Unit" : topicName,
+                            "deployment:Priority" : 50,
+                            "Subscriptions" : {
+                                "slack" : {
+                                    "Links" : {
+                                        "lambda" : {
+                                            "Tier" : tier,
+                                            "Component" : lambdaName,
+                                            "Function" : "send"
                                         }
                                     }
                                 }
                             }
                         },
                         lambdaName : {
-                            "lambda" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : [ lambdaName ]
+                            "Type" : "lambda",
+                            "deployment:Unit" : lambdaName,
+                            "Functions" : {
+                                "send" : {
+                                    "Handler" : "cloudwatch-slack/lambda_function.lambda_handler",
+                                    "RunTime" : "python3.6",
+                                    "MemorySize" : 128,
+                                    "Timeout" : 15,
+                                    "VPCAccess" : false,
+                                    "PredefineLogGroup" : true,
+                                    "Links" : {
+                                        "alerts" : {
+                                            "Tier" : tier,
+                                            "Component" : topicName,
+                                            "Direction" : "inbound",
+                                            "Role" : "invoke"
+                                        }
                                     }
-                                },
-                                "Functions" : {
-                                    "send" : {
-                                        "Handler" : "cloudwatch-slack/lambda_function.lambda_handler",
-                                        "RunTime" : "python3.6",
-                                        "MemorySize" : 128,
-                                        "Timeout" : 15,
-                                        "VPCAccess" : false,
-                                        "PredefineLogGroup" : true
-                                    }
-                                },
-                                "Links" : {
-                                    "alerts" : {
-                                        "Tier" : tier,
-                                        "Component" : topicName,
-                                        "Direction" : "inbound",
-                                        "Role" : "invoke"
-                                    }
-                                },
-                                "Image" : {
-                                    "Source" : "url",
-                                    "UrlSource" : {
-                                        "Url" : lambdaSourceUrl,
-                                        "ImageHash" : lambdaSourceHash
-                                    }
+                                }
+                            },
+                            "Image" : {
+                                "Source" : "url",
+                                "UrlSource" : {
+                                    "Url" : lambdaSourceUrl,
+                                    "ImageHash" : lambdaSourceHash
                                 }
                             }
                         }
