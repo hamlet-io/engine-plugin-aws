@@ -3,7 +3,6 @@
 [@addExtendedAttributeSet
     type=AWS_OPERATINGSYSTEM_ATTRIBUTESET_TYPE
     baseType=OPERATINGSYSTEM_ATTRIBUTESET_TYPE
-    pluralType="AWSOperatingSystems"
     provider=AWS_PROVIDER
     properties=[
         {
