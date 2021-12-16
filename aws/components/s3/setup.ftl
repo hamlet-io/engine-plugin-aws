@@ -19,7 +19,7 @@
 
     [#local roleId = resources["role"].Id ]
 
-    [#local versioningEnabled = solution.Lifecycle.Versioning ]
+    [#local versioningEnabled = solution.Versioning!solution.Lifecycle.Versioning ]
 
     [#local replicationEnabled = false]
     [#local replicationConfiguration = {} ]
@@ -468,7 +468,7 @@
             tier=core.Tier
             component=core.Component
             lifecycleRules=
-                (solution.Lifecycle.Configured && solution.Lifecycle.Enabled && ((solution.Lifecycle.Expiration!operationsExpiration)?has_content || (solution.Lifecycle.Offline!operationsOffline)?has_content))?then(
+                (isPresent(solution.Lifecycle) && ((solution.Lifecycle.Expiration!operationsExpiration)?has_content || (solution.Lifecycle.Offline!operationsOffline)?has_content))?then(
                         getS3LifecycleRule(solution.Lifecycle.Expiration!operationsExpiration, solution.Lifecycle.Offline!operationsOffline),
                         []
                 )
