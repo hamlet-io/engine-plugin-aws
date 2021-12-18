@@ -1186,6 +1186,14 @@
             [/#if]
         [/#list]
 
+
+        [#local lgLookupName = [
+                "API-Gateway-Execution-Logs_",
+                r'${api_id}',
+                "/",
+                stageName
+            ]?join("")]
+
         [#-- Save the execution log group as a pseudo stack          --]
         [#-- Because the log group name includes the apiId, it isn't --]
         [#-- possible to pre-create it in the same way as the access --]
@@ -1193,8 +1201,8 @@
         [@addToDefaultBashScriptOutput
             content=
             [
-                "case $\{STACK_OPERATION} in",
-                "  create|update)"
+                r'case ${STACK_OPERATION} in',
+                r'  create|update)'
             ] +
             pseudoStackOutputScript(
                     "Execution Log Group",
@@ -1217,12 +1225,12 @@
             ) +
             [#-- Set the log retention otherwise the log never expires --]
             [
-                '       set_cloudwatch_log_group_retention "' + getRegion() + '" "' + executionLgName + '" "' + operationsExpiration?c + '" || return $?',
+                r'      api_id="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + apiId + r'" "ref" || return $?)"',
+                '       set_cloudwatch_log_group_retention "' + getRegion() + '" "' + lgLookupName + '" "' + operationsExpiration?c + '" || return $?',
                 "       ;;",
                 "       esac"
             ]
         /]
-
 
         [#-- If using an authoriser, give it a copy of the openapi spec --]
         [#-- Also include the definition because authorizers can't have --]
