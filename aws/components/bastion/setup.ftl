@@ -1,6 +1,13 @@
 [#ftl]
 [#macro aws_bastion_cf_deployment_generationcontract_segment occurrence ]
-    [@addDefaultGenerationContract subsets="template" /]
+    [@addDefaultGenerationContract
+        subsets="template"
+        alternatives=[
+            "primary",
+            { "subset" : "template", "alternative" : "replace1"},
+            { "subset" : "template", "alternative" : "replace2"}
+        ]
+    /]
 [/#macro]
 
 [#macro aws_bastion_cf_deployment_segment occurrence ]
@@ -66,6 +73,11 @@
     [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
     [#local sshActive = sshActive || solution.Active ]
+
+    [#-- override sshActive on replace to ensure we bring the cluster down before a new instance --]
+    [#if getCLODeploymentUnitAlternative() == "replace1" && sshActive ]
+        [#local sshActive = false ]
+    [/#if]
 
     [#local processorProfile += {
                 "MaxCount" : 2,
