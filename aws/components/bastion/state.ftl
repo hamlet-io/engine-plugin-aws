@@ -5,11 +5,13 @@
 
     [#local securityGroupToId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id )]
 
+    [#local eipId = formatEIPId(core.Id) ]
+
     [#assign componentState =
         {
             "Resources" : {
                 "eip" : {
-                    "Id" : formatEIPId(core.Id),
+                    "Id" : eipId,
                     "Name" : core.FullName,
                     "Type" : AWS_EIP_RESOURCE_TYPE
                 },
@@ -64,6 +66,7 @@
                 }
             },
             "Attributes" : {
+                "IP_ADDRESS" : getExistingReference(eipId)
             },
             "Roles" : {
                 "Inbound" : {
