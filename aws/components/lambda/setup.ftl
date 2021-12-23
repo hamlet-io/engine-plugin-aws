@@ -136,7 +136,8 @@
             "CodeHash" : solution.FixedCodeVersion.CodeHash,
             "VersionDependencies" : [],
             "CreateVersionInExtension" : false,
-            "ZipFile" : []
+            "ZipFile" : [],
+            "Layers" : []
         }
     ]
 
