@@ -102,20 +102,28 @@
         /]
     [/#if]
 
+    [#local registryName = "lambda" ]
+    [#local lambdaPackage = "lambda.zip"]
+
+    [#if ((fn.Configuration.Settings.Build.BUILD_FORMATS.Value)![])?seq_contains("lambda_jar") ]
+        [#local registryName = "lambda_jar" ]
+        [#local lambdaPackage = "lambda_jar.jar" ]
+    [/#if]
+
     [#local contextLinks = getLinkTargets(fn) ]
     [#local _context =
         {
             "DefaultEnvironment" : defaultEnvironment(fn, contextLinks, baselineLinks),
             "Environment" : {},
-            "S3Bucket" : getRegistryEndPoint("lambda", fn),
+            "S3Bucket" : getRegistryEndPoint(registryName, fn),
             "S3Key" :
                 formatRelativePath(
-                    getRegistryPrefix("lambda", fn),
+                    getRegistryPrefix(registryName, fn),
                     getOccurrenceBuildProduct(fn,productName),
                     getOccurrenceBuildScopeExtension(fn),
                     buildUnit,
                     buildReference,
-                    "lambda.zip"
+                    lambdaPackage
                 ),
             "Links" : contextLinks,
             "BaselineLinks" : baselineLinks,

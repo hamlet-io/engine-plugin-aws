@@ -126,6 +126,11 @@
                 "ReservedConcurrentExecutions",
                 settings.ReservedExecutions >= 1,
                 settings.ReservedExecutions
+            ) +
+            attributeIfContent(
+                "Layers",
+                _context.Layers,
+                asFlattenedArray(_context.Layers)
             )
 
         outputs=LAMBDA_FUNCTION_OUTPUT_MAPPINGS
