@@ -6,6 +6,11 @@
             "Names" : "AccessLogging",
             "Children" : [
                 {
+                    "Names" : "Enabled",
+                    "Types" : BOOLEAN_TYPE,
+                    "Default" : true
+                },
+                {
                     "Names" : "aws:DestinationLink",
                     "Description" : "Destination for the Access logs. If not provided but AccessLogging is enabled, Access logs will be sent to CloudWatch.",
                     "AttributeSet" : LINK_ATTRIBUTESET_TYPE

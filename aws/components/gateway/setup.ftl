@@ -384,7 +384,7 @@
             [#local solution = subOccurrence.Configuration.Solution ]
             [#local resources = subOccurrence.State.Resources ]
 
-            [#if !(solution.Enabled!false)]
+            [#if ! solution.Enabled ]
                 [#continue]
             [/#if]
 
