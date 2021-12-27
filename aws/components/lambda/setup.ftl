@@ -296,7 +296,7 @@
             ["arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"],
             ["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"]
         ) +
-        (solution.Tracing.Configured && solution.Tracing.Enabled)?then(
+        (isPresent(solution.Tracing))?then(
             ["arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"],
             []
         ) +

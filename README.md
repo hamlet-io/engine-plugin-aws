@@ -99,7 +99,7 @@ To run the test suite locally install the hamlet cli and use the provider testin
 pip install hamlet
 
 # run the tests
-hamlet -p aws -p awstest -f cf deploy run-deployments
+hamlet -i mock -p aws -p awstest -f cf deploy test-deployments -o /tmp/awstests
 ```
 
 This will run all of the tests and provide you the results. We also run this on all Pull requests made to the repository

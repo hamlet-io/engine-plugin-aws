@@ -49,7 +49,7 @@
             [#local linkTargetCore = linkTarget.Core ]
             [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
-            [#if !(linkTarget.Configuration.Solution.Enabled!true) ]
+            [#if ! linkTarget.Configuration.Solution.Enabled ]
                 [#continue]
             [/#if]
 

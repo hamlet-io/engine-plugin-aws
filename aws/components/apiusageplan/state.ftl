@@ -18,7 +18,7 @@
             [#local linkTargetCore = linkTarget.Core ]
             [#local linkTargetRoles = linkTarget.State.Roles ]
 
-            [#if !(linkTarget.Configuration.Solution.Enabled!true) ]
+            [#if ! linkTarget.Configuration.Solution.Enabled ]
                 [#continue]
             [/#if]
 

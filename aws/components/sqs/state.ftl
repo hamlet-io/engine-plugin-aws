@@ -61,7 +61,7 @@
 
         [#local dlqRequired =
             isPresent(solution.DeadLetterQueue) ||
-            ((environmentObject.Operations.DeadLetterQueue.Enabled)!false)]
+            (environmentObject.Operations.DeadLetterQueue.Enabled) ]
 
         [#assign componentState =
             {
