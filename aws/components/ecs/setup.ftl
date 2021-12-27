@@ -1553,6 +1553,7 @@
                                 environmentName,
                                 segmentName,
                                 subOccurrence,
+                                id,
                                 container.Image["Source:containerregistry"].Image,
                                 "docker",
                                 getRegistryEndPoint("docker", subOccurrence),
