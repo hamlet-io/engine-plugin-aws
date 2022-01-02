@@ -236,10 +236,12 @@
                 [#local keyPairName = core.FullName ]
             [/#if]
 
+            [#local localKeyPairId = formatResourceId(LOCAL_SSH_PRIVATE_KEY_RESOURCE_TYPE, core.Id)]
+
             [#local resources +=
                 {
                     "localKeyPair" : {
-                        "Id" : formatResourceId(LOCAL_SSH_PRIVATE_KEY_RESOURCE_TYPE, core.Id),
+                        "Id" : localKeyPairId,
                         "PrivateKey" : formatName(".aws", accountObject.Id, getRegion(), core.SubComponent.Name, "prv") + ".pem",
                         "PublicKey" : formatName(".aws", accountObject.Id, getRegion(), core.SubComponent.Name, "crt") + ".pem",
                         "Type" : LOCAL_SSH_PRIVATE_KEY_RESOURCE_TYPE
@@ -252,6 +254,11 @@
                     }
                 }
             ]
+
+            [#local attributes += {
+                "PRIVATE_KEY" : getExistingReference(localKeyPairId, KEY_ATTRIBUTE_TYPE)?ensure_starts_with(solution["engine:ssh"].EncryptionScheme),
+                "ENCRYPTION_SCHEME" : solution["engine:ssh"].EncryptionScheme
+            }]
 
             [#break]
         [#case "oai"]

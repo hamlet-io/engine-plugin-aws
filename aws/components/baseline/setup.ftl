@@ -483,7 +483,8 @@
                                 "SSH Key Pair",
                                 {
                                     ec2KeyPairId : r'${key_pair_name}',
-                                    formatId(ec2KeyPairId, "name") : r'${key_pair_name}'
+                                    formatId(ec2KeyPairId, "name") : r'${key_pair_name}',
+                                    formatId(localKeyPairId, KEY_ATTRIBUTE_TYPE) : r'$( cat "${SEGMENT_OPERATIONS_DIR}/' + localKeyPairPrivateKey + r'" )'
                                 },
                                 ( legacyKey || subCore.SubComponent.RawId == "ssh")?then(
                                     "keypair",
