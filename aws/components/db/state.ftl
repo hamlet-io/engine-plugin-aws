@@ -94,7 +94,8 @@
                 {
                     "USERNAME" : solution["rootCredential:Generated"].Username,
                     "PASSWORD" : getExistingReference(id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme),
-                    "URL" : getExistingReference(id, URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme)
+                    "URL" : getExistingReference(id, URL_ATTRIBUTE_TYPE)?ensure_starts_with(encryptionScheme),
+                    "ENCRYPTION_SCHEME" : encryptionScheme
                 }
             )]
 
