@@ -79,10 +79,7 @@
                                         "Type" : "set_provider_credentials",
                                         "Properties" : {
                                             "AccountId" : {
-                                                "Source" : "Setting",
-                                                "source:Setting" : {
-                                                    "Name" : "ACCOUNT"
-                                                }
+                                                "Value" : "__setting:ACCOUNT__"
                                             }
                                         }
                                     }
@@ -92,41 +89,21 @@
                                     "Extensions" : [ "_runbook_get_region" ],
                                     "Task" : {
                                         "Type" : "aws_decrypt_kms_ciphertext",
-                                        "Properties" : {
+                                        "Parameters" : {
                                             "Ciphertext" : {
-                                                "Source" : "Attribute",
-                                                "source:Attribute" : {
-                                                    "LinkId" : "ssh_key",
-                                                    "Name" : "PRIVATE_KEY"
-                                                }
+                                                "Value" : "__attribute:ssh_key:PRIVATE_KEY__"
                                             },
                                             "EncryptionScheme" : {
-                                                "Source" : "Attribute",
-                                                "source:Attribute" : {
-                                                    "LinkId" : "ssh_key",
-                                                    "Name" : "ENCRYPTION_SCHEME"
-                                                }
+                                                "Value" : "__attribute:ssh_key:ENCRYPTION_SCHEME__"
                                             },
                                             "AWSAccessKeyId" : {
-                                                "Source" : "Output",
-                                                "source:Output" : {
-                                                    "StepId" : "aws_login",
-                                                    "Name" : "aws_access_key_id"
-                                                }
+                                                "Value" : "__output:aws_login:aws_access_key_id__"
                                             },
                                             "AWSSecretAccessKey" : {
-                                                "Source" : "Output",
-                                                "source:Output" : {
-                                                    "StepId" : "aws_login",
-                                                    "Name" : "aws_secret_access_key"
-                                                }
+                                                "Value" : "__output:aws_login:aws_secret_access_key__"
                                             },
                                             "AWSSessionToken" : {
-                                                "Source" : "Output",
-                                                "source:Output" : {
-                                                    "StepId" : "aws_login",
-                                                    "Name" : "aws_session_token"
-                                                }
+                                                "Value" : "__output:aws_login:aws_session_token__"
                                             }
                                         }
                                     },
@@ -142,27 +119,19 @@
                                 "start_ssh_shell" : {
                                     "Priority" : 50,
                                     "Task" : {
-                                        "Type" : "start_ssh_shell",
-                                        "Properties" : {
+                                        "Type" : "ssh_run_command",
+                                        "Parameters" : {
                                             "Host" : {
-                                                "Source" : "Attribute",
-                                                "source:Attribute" : {
-                                                    "LinkId" : "bastion",
-                                                    "Name" : "IP_ADDRESS"
-                                                }
+                                                "Value" : "__attribute:bastion:IP_ADDRESS__"
                                             },
                                             "Username" : {
-                                                "Source" : "Fixed",
-                                                "source:Fixed" : {
-                                                    "Value" : "ec2-user"
-                                                }
+                                                "Value" : "ec2-user"
                                             },
                                             "SSHKey" : {
-                                                "Source" : "Output",
-                                                "source:Output" : {
-                                                    "StepId" : "ssh_key_decrypt",
-                                                    "Name" : "result"
-                                                }
+                                                "Value" : "__output:ssh_key_decrypt:result__"
+                                            },
+                                            "Command" : {
+                                                "Value" : "/bin/bash"
                                             }
                                         }
                                     },
