@@ -1,6 +1,226 @@
 # Changelog
 
-## Unreleased (2021-07-07)
+## Unreleased (2022-01-03)
+
+#### New Features
+
+* pg_dump runbook
+* bastion module with ssh runbook
+* (baseline): add ssh key as an attribute
+* (lambda): layers and jar file support ([#489](https://github.com/hamlet-io/engine-plugin-aws/issues/489))
+* ensure inline code changes on update
+* wafv2
+* wafv2
+* wafv2
+* (apigateway): Execution Log Control ([#476](https://github.com/hamlet-io/engine-plugin-aws/issues/476))
+* (kinesis): ErrorType in prefix ([#472](https://github.com/hamlet-io/engine-plugin-aws/issues/472))
+* (kinesis): Prefix time path control ([#471](https://github.com/hamlet-io/engine-plugin-aws/issues/471))
+* add tests for secretstore generation
+* (db): add support for secretstore root creds
+* add extra details to secret resources
+* (ecs): add gpu support to task definitions
+* (kinesis): Finer grained partition control
+* (ecs): secret injection support
+* sesout email identity support
+* kinesis dynamic partitioning
+* mta inbound role support
+* outbound mta
+* (subscription): Add filter policy ([#447](https://github.com/hamlet-io/engine-plugin-aws/issues/447))
+* testing and fixups
+* include domain name in attributes
+* (efs): support fsx-windows
+* add route53 resolver for AD domain
+* enable cfn-lint on all test profiles
+* (directory): add aws ad connector
+* add s3 replica to account deployments
+* (lb): add support for monitoring port resource
+* add support for startup action on vpngw
+* (secretstore): secret creation
+* (s3): bucket location permissions
+* vpn inside tunnel config
+* (clientvpn): adds support for client vpns
+* (lb): support for advanced conditions
+* new components ([#413](https://github.com/hamlet-io/engine-plugin-aws/issues/413))
+* (linux): cfn-hup support for linux ([#420](https://github.com/hamlet-io/engine-plugin-aws/issues/420))
+* (av): Add config options for windefender
+* enable cfnlint for testing
+#### Fixes
+
+* (lambda): ensure layers is not null ([#490](https://github.com/hamlet-io/engine-plugin-aws/issues/490))
+* (bastion): hanlde replacement for ec2 instances
+* (apigateway): fix id lookup on waf setup
+* (apigateway): handle missing log group on creation
+* s3 versioning without lifecycle management ([#486](https://github.com/hamlet-io/engine-plugin-aws/issues/486))
+* mta rule references
+* run code join in resource
+* s3 topic queue permission checking
+* type structure
+* (cloudwatchslack): change topic priority
+* ebs volume zone lookup
+* lowercase version
+* (s3): allow for notifications to be disabled
+* secretLink setup
+* root credential link fix
+* db secret lookup
+* handle state lookup before deployment
+* Admin username condition
+* (directory): handle the rename of root to Admin
+* (network): add outputs for key vpc resources
+* (kinesis): double slash in prefixes
+* reference for secret link access
+* syntax error
+* execution role for task
+* (kinesis): minimum buffer hint ([#466](https://github.com/hamlet-io/engine-plugin-aws/issues/466))
+* email identity ([#465](https://github.com/hamlet-io/engine-plugin-aws/issues/465))
+* (ecs): support aws prefix for awsvpc
+* kinesis firehose s3 record delimiters
+* (mta): send SNS topic subscriptions
+* policy migration for outbound emails
+* default principals
+* per AZ vpc endpoints ([#458](https://github.com/hamlet-io/engine-plugin-aws/issues/458))
+* revert log stream names
+* Kinesis delivery stream S3 permissions
+* ses account deployment unit name
+* (lb): target group id lookup ([#452](https://github.com/hamlet-io/engine-plugin-aws/issues/452))
+* (ds): security group update fix ([#440](https://github.com/hamlet-io/engine-plugin-aws/issues/440))
+* (lb): handle missing alerts on lbport
+* typo in vpn config
+* handle missing startup action
+* generated secret macro
+* update function name for queuehost
+* (healthcheck): update Type property to  Engine
+* service definition
+* (mta): sns policy for notifications
+* handle change to secret store link attribute
+* (ds): icmp non-global security rule ([#438](https://github.com/hamlet-io/engine-plugin-aws/issues/438))
+* (ds): Remove redundant sg and modify sg to align with IPAddressGroups ([#428](https://github.com/hamlet-io/engine-plugin-aws/issues/428))
+* (s3): handle full access to buckets
+* include dependencies option
+* (directory): add dependency on root creds
+* various vpn gateway fixes
+* (router): handling of local transit gws
+* install engine before set
+* accountRegion access
+* segmentSeed accessor
+* revert bucket access
+* error typo
+* (av): correct unconfigure for av
+* (awswin): refactor volmount to handle cfn-hup
+* (awswin): cfn-hup support added
+* db zone handling
+* typo
+* (tags): ensure values exist before use
+* (directory): hostname configuration option
+* check for assigment type ([#415](https://github.com/hamlet-io/engine-plugin-aws/issues/415))
+#### Refactorings
+
+* align ssh_session module with new syntax
+* containerregistry source details
+* removal of implicit Enabled attribute ([#491](https://github.com/hamlet-io/engine-plugin-aws/issues/491))
+* always call invokeExtensions
+* remove plural types on attribute set
+* (mta): update send configuration for mta
+* move role to default component config
+* (topic): move sns topic policy to topic
+* delivery stream encrpytion changes ([#457](https://github.com/hamlet-io/engine-plugin-aws/issues/457))
+* align rename of component type for efs
+* rename efs to fileshare
+* split efs and fsx services
+* replace eval with eval_json
+* make transitgw routes based on CIDR
+* accessor function names
+* setContext wrapper functions (1)
+* cfn-lint configuration
+* use aws cli query for regions
+* remove dos2unix
+* (directory): attributes and ip access
+
+Full set of changes: [`8.3.0...3f5bb98`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.3.0...3f5bb98)
+
+## 8.3.0 (2021-09-17)
+
+#### New Features
+
+* (ds): New Component - Directory Services ([#392](https://github.com/hamlet-io/engine-plugin-aws/issues/392))
+* (av): Windows Defender logging to CloudWatch and definition updates ([#409](https://github.com/hamlet-io/engine-plugin-aws/issues/409))
+* (cache): handle new redis versions
+* (firewall): fix link issue for destinations
+* (firewall): destination route support ([#405](https://github.com/hamlet-io/engine-plugin-aws/issues/405))
+* (lb): add check for conditions on default
+* (cdn): include internal fqdn in state
+* (gateway): support IGW internal routing
+* add tests for hostname filter checking
+* (iam): tags ([#386](https://github.com/hamlet-io/engine-plugin-aws/issues/386))
+* add support for http backends on cdn
+* initial test cases for firewall
+* add initial firewall implementation
+* add support for resource type mocks
+* (apigateway): tags ([#371](https://github.com/hamlet-io/engine-plugin-aws/issues/371))
+* add route53resolver service
+* (network): dns query logging
+* windows based ec2 instances ([#301](https://github.com/hamlet-io/engine-plugin-aws/issues/301))
+* (SNS): tags
+* add all account units
+* (tests): add basic testing for service
+* support output suffixes on template setup
+* set larger default value for SQS MessageRetentionPeriod
+#### Fixes
+
+* (bastion): fix eip allocation
+* (firewall): align routes to AZ endpoints
+* (cache): zone config params
+* (firewall): provide occurrence for ip address
+* (firewall): missing reference for stateful rule ([#404](https://github.com/hamlet-io/engine-plugin-aws/issues/404))
+* typo
+* (igw): firewall route hanlding
+* (queuehost): reference to wrong sec group id
+* (firewall): include sid for stateful rules ([#399](https://github.com/hamlet-io/engine-plugin-aws/issues/399))
+* whatif processing ([#400](https://github.com/hamlet-io/engine-plugin-aws/issues/400))
+* API Gateway deployment tags ([#401](https://github.com/hamlet-io/engine-plugin-aws/issues/401))
+* (network): handling missing network on segments ([#398](https://github.com/hamlet-io/engine-plugin-aws/issues/398))
+* (baseline): handle aws required ssh key format
+* (firewall): s3 log type detection
+* openapi stripping ([#395](https://github.com/hamlet-io/engine-plugin-aws/issues/395))
+* handle empty domain names on api gateway
+* force certificate if required
+* (lb): allow hostname config on http and https
+* (lb): handle missing fqdn ([#377](https://github.com/hamlet-io/engine-plugin-aws/issues/377))
+* set windows instance sizes to usable defaults
+* network tests ([#382](https://github.com/hamlet-io/engine-plugin-aws/issues/382))
+* legacy VPC detection
+* vpc mock value
+* service definition details
+* handle missing domains for cert formatting
+* bastion eip
+* account cmk deployment scope
+* missing deployment unit
+* (ecs): fix profile lookup for subcomponents ([#357](https://github.com/hamlet-io/engine-plugin-aws/issues/357))
+#### Refactorings
+
+* (lb): support for default rule control
+* (network): testing updates
+* use paramters for az - cfnlint
+* move fqdn and certs to state
+#### Others
+
+* testing updates
+* (network): testing coverage
+
+Full set of changes: [`8.2.1...8.3.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.2.1...8.3.0)
+
+## 8.2.1 (2021-07-09)
+
+#### Fixes
+
+* syntax typo
+* (ci): tag push tigger
+#### Refactorings
+
+* release process tag support
+
+Full set of changes: [`8.2.0...8.2.1`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.2.0...8.2.1)
+
+## 8.2.0 (2021-07-09)
 
 #### New Features
 
@@ -57,8 +277,9 @@
 #### Others
 
 * include build details in container image
+* changelog bump ([#347](https://github.com/hamlet-io/engine-plugin-aws/issues/347))
 
-Full set of changes: [`8.1.2...2540ff0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.1.2...2540ff0)
+Full set of changes: [`8.1.2...8.2.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.1.2...8.2.0)
 
 ## 8.1.2 (2021-05-17)
 
