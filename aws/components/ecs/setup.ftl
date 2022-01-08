@@ -1314,6 +1314,7 @@
                     dependencies=dependencies
                     circuitBreaker=useCircuitBreaker
                     tags=getOccurrenceCoreTags(occurrence, serviceName )
+                    executeCommand=solution["aws:ExecuteCommand"]
                 /]
             [/#if]
         [/#if]
@@ -1354,6 +1355,24 @@
                         [#local dependencies += [policyId] ]
                     [/#if]
                 [/#list]
+
+                [#if (solution["aws:ExecuteCommand"])!false ]
+                    [@createPolicy
+                        id=formatDependentPolicyId(taskId, "ECSExecuteCommand")
+                        name="executecommand"
+                        statements=[
+                            getPolicyStatement(
+                                [
+                                    "ssmmessages:CreateControlChannel",
+                                    "ssmmessages:CreateDataChannel",
+                                    "ssmmessages:OpenControlChannel",
+                                    "ssmmessages:OpenDataChannel"
+                                ]
+                            )
+                        ]
+                        roles=roleId
+                    /]
+                [/#if]
 
                 [@createRole
                     id=roleId

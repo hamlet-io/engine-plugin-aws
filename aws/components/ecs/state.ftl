@@ -236,6 +236,9 @@
     [#local taskId = formatResourceId(AWS_ECS_TASK_RESOURCE_TYPE, core.Id) ]
     [#local taskName = core.Name]
 
+    [#local parentResources = parent.State.Resources ]
+    [#local ecsId = parentResources["cluster"].Id ]
+
     [#local lgId = formatDependentLogGroupId(taskId) ]
     [#local lgName = core.FullAbsolutePath ]
 
@@ -337,6 +340,7 @@
                 }) +
             autoScaling,
             "Attributes" : {
+                "CLUSTER_ARN" : getArn(ecsId),
                 "ARN": getArn(serviceId)
             },
             "Roles" : {
