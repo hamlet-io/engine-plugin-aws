@@ -74,6 +74,12 @@
             "Description" : "The version of the fargate platform to use",
             "Types" : STRING_TYPE,
             "Default" : "LATEST"
+        },
+        {
+            "Names" : "ExecuteCommand",
+            "Description" : "Enable Support for execute command through ECS Exec on tasks within the service",
+            "Types" : BOOLEAN_TYPE,
+            "Default" : false
         }
     ]
     provider=AWS_PROVIDER

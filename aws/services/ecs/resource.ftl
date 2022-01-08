@@ -304,6 +304,27 @@
             [#local cpuTotal += container.Cpu]
         [/#if]
 
+        [#local linuxParameters = {}]
+        [#if (container.RunCapabilities![])?has_content  ]
+            [#local linuxParameters = mergeObjects(
+                linuxParameters,
+                {
+                    "Capabilities" : {
+                        "Add" : (container.RunCapabilities)![]
+                    }
+                }
+            )]
+        [/#if]
+
+        [#if container.InitProcess ]
+            [#local linuxParameters = mergeObjects(
+                linuxParameters,
+                {
+                    "InitProcessEnabled" : container.InitProcess
+                }
+            )]
+        [/#if]
+
         [#local definitions +=
             [
                 {
@@ -339,13 +360,7 @@
                                             }
                                         ]) +
                 attributeIfContent("PortMappings", portMappings) +
-                attributeIfContent("LinuxParameters", container.RunCapabilities![],
-                                        {
-                                            "Capabilities" : {
-                                                "Add" : container.RunCapabilities![]
-                                            }
-                                        }
-                                    ) +
+                attributeIfContent("LinuxParameters", linuxParameters ) +
                 attributeIfTrue("Privileged", container.Privileged, container.Privileged!"") +
                 attributeIfContent("WorkingDirectory", container.WorkingDirectory!"") +
                 attributeIfContent("Links", container.ContainerNetworkLinks![] ) +
@@ -406,6 +421,7 @@
             serviceRegistries
             engine
             circuitBreaker
+            executeCommand
             capacityProviderStrategy={}
             platformVersion=""
             networkMode=""
@@ -560,6 +576,11 @@
                 "LaunchType",
                 ! (capacityProviderStrategy?has_content) || daemonMode,
                 engine?upper_case
+            ) +
+            attributeIfTrue(
+                "EnableExecuteCommand",
+                executeCommand,
+                executeCommand
             )
         dependencies=dependencies
         outputs=ECS_SERVICE_OUTPUT_MAPPINGS
