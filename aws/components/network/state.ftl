@@ -182,6 +182,7 @@
                 dnsQueryLoggers
             ),
             "Attributes" : {
+                "VPC_ID" : getExistingReference(legacyVpc?then(formatVPCId(), vpcId))
             },
             "Roles" : {
                 "Inbound" : {},

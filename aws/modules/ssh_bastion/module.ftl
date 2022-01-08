@@ -60,9 +60,6 @@
                                 "MinUpdateInstances": 0,
                                 "AlwaysReplaceOnUpdate": false
                             },
-                            "Permissions": {
-                                "Decrypt": true
-                            },
                             "Profiles" : {
                                 "Deployment" : [ "${tier}_${component}_active" ]
                             }
@@ -132,6 +129,123 @@
                                             },
                                             "Command" : {
                                                 "Value" : "/bin/bash"
+                                            }
+                                        }
+                                    },
+                                    "Links" : {
+                                        "bastion" : {
+                                            "Tier" : tier,
+                                            "Component" : component
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "${component}_bastion-session" : {
+                            "Description" : "Starts an ssh session with any instance in the vpc via the bastion",
+                            "Type" : "runbook",
+                            "Engine" : "hamlet",
+                            "Steps" : {
+                                "aws_login" : {
+                                    "Priority" : 5,
+                                    "Extensions" : [ "_runbook_get_provider_id" ],
+                                    "Task" : {
+                                        "Type" : "set_provider_credentials",
+                                        "Properties" : {
+                                            "AccountId" : {
+                                                "Value" : "__setting:ACCOUNT__"
+                                            }
+                                        }
+                                    }
+                                },
+                                "ssh_key_decrypt" : {
+                                    "Priority" : 10,
+                                    "Extensions" : [ "_runbook_get_region" ],
+                                    "Task" : {
+                                        "Type" : "aws_decrypt_kms_ciphertext",
+                                        "Parameters" : {
+                                            "Ciphertext" : {
+                                                "Value" : "__attribute:ssh_key:PRIVATE_KEY__"
+                                            },
+                                            "EncryptionScheme" : {
+                                                "Value" : "__attribute:ssh_key:ENCRYPTION_SCHEME__"
+                                            },
+                                            "AWSAccessKeyId" : {
+                                                "Value" : "__output:aws_login:aws_access_key_id__"
+                                            },
+                                            "AWSSecretAccessKey" : {
+                                                "Value" : "__output:aws_login:aws_secret_access_key__"
+                                            },
+                                            "AWSSessionToken" : {
+                                                "Value" : "__output:aws_login:aws_session_token__"
+                                            }
+                                        }
+                                    },
+                                    "Links" : {
+                                        "ssh_key" : {
+                                            "Tier" : "mgmt",
+                                            "Component" : "baseline",
+                                            "SubComponent" : "ssh",
+                                            "Type" : "baselinekey"
+                                        }
+                                    }
+                                },
+                                "select_instance" : {
+                                    "Priority" : 20,
+                                    "Extensions" : [ "_runbook_get_region", "_runbook_get_vpc_id" ],
+                                    "Task" : {
+                                        "Type" : "aws_ec2_select_instance",
+                                        "Parameters" : {
+                                            "AWSAccessKeyId" : {
+                                                "Value" : "__output:aws_login:aws_access_key_id__"
+                                            },
+                                            "AWSSecretAccessKey" : {
+                                                "Value" : "__output:aws_login:aws_secret_access_key__"
+                                            },
+                                            "AWSSessionToken" : {
+                                                "Value" : "__output:aws_login:aws_session_token__"
+                                            }
+                                        }
+                                    },
+                                    "Links" : {
+                                        "host" : {
+                                            "Tier" : tier,
+                                            "Component" : component
+                                        }
+                                    }
+                                },
+                                "get_instance_ip" : {
+                                    "Priority" : 30,
+                                    "Extensions" : [ "_runbook_get_ec2_ip" ],
+                                    "Task" : {
+                                        "Type" : "bash_run_command"
+                                    }
+                                },
+                                "start_ssh_shell" : {
+                                    "Priority" : 50,
+                                    "Task" : {
+                                        "Type" : "ssh_run_command",
+                                        "Parameters" : {
+                                            "Host" : {
+                                                "Value" : "__output:get_instance_ip:result__"
+                                            },
+                                            "Username" : {
+                                                "Value" : "ec2-user"
+                                            },
+                                            "SSHKey" : {
+                                                "Value" : "__output:ssh_key_decrypt:result__"
+                                            },
+                                            "Command" : {
+                                                "Value" : "/bin/bash"
+                                            },
+                                            "BastionHost" : {
+                                                "Value" : "__attribute:bastion:IP_ADDRESS__"
+                                            },
+                                            "BastionUsername" : {
+                                                "Value" : "ec2-user"
+                                            },
+                                            "BastionSSHKey" : {
+                                                "Value" : "__output:ssh_key_decrypt:result__"
                                             }
                                         }
                                     },
