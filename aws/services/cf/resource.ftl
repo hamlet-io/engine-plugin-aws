@@ -81,7 +81,8 @@
         path=""
         protocol="HTTPS"
         port=443
-        tlsProtocols=["TLSv1.2"]]
+        tlsProtocols=["TLSv1.2"]
+        originTimeout=""]
     [#return
         [
             {
@@ -102,6 +103,10 @@
                             "HTTPPort" : port?number
                         },
                         {}
+                    ) +
+                    attributeIfContent(
+                        "OriginReadTimeout",
+                        originTimeout
                     )
             } +
             attributeIfContent("OriginCustomHeaders", asArray(headers)) +
