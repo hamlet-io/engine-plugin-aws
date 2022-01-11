@@ -283,28 +283,31 @@
                             [#local replicationEnabled = true]
                             [#local versioningEnabled = true]
 
-                            [#if !replicationBucket?has_content ]
-                                [#if !linkTargetAttributes["ARN"]?has_content ]
+                            [#if deploymentSubsetRequired(S3_COMPONENT_TYPE, true) ]
+                                [#if !replicationBucket?has_content ]
+                                    [#if !linkTargetAttributes["ARN"]?has_content ]
+                                        [#-- do not validate replica sequence on delete --]
+                                        [#local deploymentMode = getDeploymentMode()]
+                                        [#local deploymentModeDetails = getDeploymentModeDetails(deploymentMode)]
+                                        [#local deploymentModeOperations = deploymentModeDetails.Operations]
 
-                                    [#-- do not validate replica sequence on delete --]
-                                    [#local deploymentMode = getDeploymentMode()]
-                                    [#local deploymentModeDetails = getDeploymentModeDetails(demploymentMode)]
-                                    [#local deploymentModeOperations = deploymentModeDetails.Operations]
+                                        [#if !(deploymentModeOperations?seq_contains("delete") ) ]
+                                            [@fatal
+                                                message="Replication destination must be deployed before source"
+                                                context=
+                                                    linkTarget
+                                            /]
+                                        [/#if]
+                                    [/#if]
+                                    [#local replicationBucket = linkTargetAttributes["ARN"]]
+                                [#else]
 
-                                    [#if !(deploymentModeOperations?seq_contains("delete") )]
                                         [@fatal
-                                            message="Replication destination must be deployed before source"
-                                            context=
-                                                linkTarget
+                                            message="Only one replication destination is supported"
+                                            context=links
                                         /]
                                     [/#if]
                                 [/#if]
-                                [#local replicationBucket = linkTargetAttributes["ARN"]]
-                            [#else]
-                                [@fatal
-                                    message="Only one replication destination is supported"
-                                    context=links
-                                /]
                             [/#if]
                             [#break]
 
