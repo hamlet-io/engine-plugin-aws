@@ -301,12 +301,10 @@
                                     [/#if]
                                     [#local replicationBucket = linkTargetAttributes["ARN"]]
                                 [#else]
-
-                                        [@fatal
-                                            message="Only one replication destination is supported"
-                                            context=links
-                                        /]
-                                    [/#if]
+                                    [@fatal
+                                        message="Only one replication destination is supported"
+                                        context=links
+                                    /]
                                 [/#if]
                             [/#if]
                             [#break]
