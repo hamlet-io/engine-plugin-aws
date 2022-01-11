@@ -321,7 +321,9 @@
                                 _context.CustomOriginHeaders,
                                 originPath,
                                 originProtocol,
-                                originPort
+                                originPort,
+                                subSolution.Origin.TLSProtocols,
+                                subSolution.Origin.ConnectionTimeout
                             )]
                 [#local origins += origin ]
 
@@ -373,7 +375,9 @@
                                 _context.CustomOriginHeaders,
                                 originPath,
                                 protocol,
-                                port
+                                port,
+                                subSolution.Origin.TLSProtocols,
+                                subSolution.Origin.ConnectionTimeout
                             )]
                 [#local origins += origin ]
 
