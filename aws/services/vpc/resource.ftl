@@ -206,7 +206,7 @@
 [#macro createSecurityGroupIngressFromNetworkRule occurrence groupId networkRule ]
 
     [#-- validate provide rule against configuration --]
-    [#local networkRule = getCompositeObject(networkRuleChildConfiguration, networkRule) ]
+    [#local networkRule = getCompositeObject(getAttributeSet(NETWORKRULE_ATTRIBUTESET_TYPE).Attributes, networkRule) ]
     [#list networkRule.Ports as port ]
         [#if (networkRule.IPAddressGroups)?has_content ]
             [#list (getGroupCIDRs(networkRule.IPAddressGroups, true, occurrence ))?filter(cidr -> cidr?has_content) as cidr ]
@@ -250,7 +250,7 @@
 [#macro createSecurityGroupEgressFromNetworkRule occurrence groupId networkRule ]
 
     [#-- validate provide rule against configuration --]
-    [#local networkRule = getCompositeObject(networkRuleChildConfiguration, networkRule) ]
+    [#local networkRule = getCompositeObject(getAttributeSet(NETWORKRULE_ATTRIBUTESET_TYPE).Attributes, networkRule) ]
 
     [#list networkRule.Ports as port ]
         [#if (networkRule.IPAddressGroups)?has_content ]
