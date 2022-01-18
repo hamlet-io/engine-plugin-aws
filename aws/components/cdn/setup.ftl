@@ -506,32 +506,34 @@
     [/#if]
 
     [#if wafPresent ]
+        [#if solution.WAF.Logging.Enabled]
+            [#local wafFirehoseStreamId =
+                formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclId)]
+
+            [@setupLoggingFirehoseStream
+                occurrence=occurrence
+                componentSubset=CDN_COMPONENT_TYPE
+                resourceDetails=wafLogStreamingResources
+                destinationLink=baselineLinks["OpsData"]
+                bucketPrefix="WAF"
+                cloudwatchEnabled=true
+                cmkKeyId=kmsKeyId
+                version=solution.WAF.Version
+            /]
+
+            [@enableWAFLogging
+                wafaclId=wafAclId
+                wafaclArn=wafAclArn
+                componentSubset=CDN_COMPONENT_TYPE
+                deliveryStreamId=wafLogStreamingResources["stream"].Id
+                deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
+                regional=false
+                version=solution.WAF.Version
+            /]
+        [/#if]
+
+
         [#if deploymentSubsetRequired(CDN_COMPONENT_TYPE, true)]
-            [#if solution.WAF.Logging.Enabled]
-                [#local wafFirehoseStreamId =
-                    formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclId)]
-
-                [@setupLoggingFirehoseStream
-                    occurrence=occurrence
-                    componentSubset=CDN_COMPONENT_TYPE
-                    resourceDetails=wafLogStreamingResources
-                    destinationLink=baselineLinks["OpsData"]
-                    bucketPrefix="WAF"
-                    cloudwatchEnabled=true
-                    cmkKeyId=kmsKeyId
-                    version=solution.WAF.Version
-                /]
-
-                [@enableWAFLogging
-                    wafaclId=wafAclId
-                    wafaclArn=wafAclArn
-                    deliveryStreamId=wafLogStreamingResources["stream"].Id
-                    deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
-                    regional=false
-                    version=solution.WAF.Version
-                /]
-            [/#if]
-
             [@createWAFAclFromSecurityProfile
                 id=wafAclId
                 name=wafAclName
