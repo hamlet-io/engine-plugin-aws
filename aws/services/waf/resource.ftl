@@ -105,7 +105,7 @@
                             [/#list]
                         [/#list]
                     [/#list]
-                [#break] 
+                [#break]
                 [#default]
                     [#local v2WkStatement += [ { "UnknownStatement": condition } ]]
                 [#break]
@@ -383,7 +383,7 @@
                 [#case "v2"]
                     [#local v2Action = (rule.Action)?lower_case?cap_first]
                     [#local v2Statement = formatV2Conditions(rule.Conditions, valueSet) ]
-                    [#local aclRules += 
+                    [#local aclRules +=
                         [
                             {
                                 "Action" : {
@@ -573,7 +573,7 @@
 [/#macro]
 
 
-[#macro enableWAFLogging wafaclId wafaclArn deliveryStreamId="" deliveryStreamArns=[] regional=false version="v1" ]
+[#macro enableWAFLogging wafaclId wafaclArn componentSubset deliveryStreamId="" deliveryStreamArns=[] regional=false version="v1" ]
 
     [#if regional ]
         [#local wafType = "regional" ]
@@ -628,7 +628,7 @@
         [#break]
 
         [#case "v2"]
-            [#if !deploymentSubsetRequired("epilogue", false) ]
+            [#if deploymentSubsetRequired(componentSubset, true) ]
                 [@cfResource
                     id=wafaclId+"Xlogconf"
                     type="AWS::WAFv2::LoggingConfiguration"

@@ -975,6 +975,7 @@
                 [@enableWAFLogging
                     wafaclId=wafAclResources.acl.Id
                     wafaclArn=wafAclResources.acl.Arn
+                    componentSubset=LB_COMPONENT_TYPE
                     deliveryStreamId=wafLogStreamingResources["stream"].Id
                     deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
                     regional=true

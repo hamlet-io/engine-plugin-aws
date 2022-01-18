@@ -822,7 +822,7 @@
 
             [@setupLoggingFirehoseStream
                 occurrence=occurrence
-                componentSubset="apigateway"
+                componentSubset=APIGATEWAY_COMPONENT_TYPE
                 resourceDetails=wafLogStreamingResources
                 destinationLink=baselineLinks["OpsData"]
                 bucketPrefix="WAF"
@@ -834,6 +834,7 @@
             [@enableWAFLogging
                 wafaclId=wafAclResources.acl.Id
                 wafaclArn=wafAclResources.acl.Arn
+                componentSubset=APIGATEWAY_COMPONENT_TYPE
                 deliveryStreamId=wafLogStreamingResources["stream"].Id
                 deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
                 regional=wafRegional
@@ -842,7 +843,7 @@
 
         [/#if]
 
-        [#if deploymentSubsetRequired("apigateway", true)]
+        [#if deploymentSubsetRequired(APIGATEWAY_COMPONENT_TYPE, true)]
             [@createWAFAclFromSecurityProfile
                 id=wafAclResources.acl.Id
                 name=wafAclResources.acl.Name
