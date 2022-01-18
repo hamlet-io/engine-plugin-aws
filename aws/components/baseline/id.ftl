@@ -16,3 +16,28 @@
             AWS_IDENTITY_SERVICE
         ]
 /]
+
+
+[@addResourceGroupAttributeValues
+    type=BASELINE_DATA_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names" : "Notifications",
+            "SubObjects" : true,
+            "AttributeSet" : AWS_S3_NOTIFICATION_ATTRIBUTESET_TYPE
+        },
+        {
+            "Names" : "Encryption",
+            "Children" : [
+                {
+                    "Names" : [ "shared:EncryptionSource", "EncryptionSource" ],
+                    "Types" : STRING_TYPE,
+                    "Description" : "The encryption service to use - LocalService = S3, EncryptionService = native encryption service (kms)",
+                    "Values" : [ "EncryptionService", "LocalService" ],
+                    "Default" : "EncryptionService"
+                }
+            ]
+        }
+    ]
+/]
