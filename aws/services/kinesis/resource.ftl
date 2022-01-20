@@ -120,6 +120,7 @@
     bucketPrefix
     componentSubset
     cloudwatchEnabled=true
+    loggingProfile={}
     processorId=""
     cmkKeyId=""
     dependencies=""
@@ -244,20 +245,23 @@
 
         [/#switch]
 
-        [#if cloudwatchEnabled &&
-                deploymentSubsetRequired("lg", true) &&
-                isPartOfCurrentDeploymentUnit(resourceDetails["lg"].Id) ]
-            [@createLogGroup
-                id=resourceDetails["lg"].Id
-                name=resourceDetails["lg"].Name
+        [#if cloudwatchEnabled ]
+            [@setupLogGroup
+                occurrence=occurrence
+                logGroupId=resourceDetails["lg"].Id
+                logGroupName=resourceDetails["lg"].Name
+                loggingProfile=loggingProfile
+                kmsKeyId=cmkKeyId
             /]
 
-            [@createLogStream
-                id=resourceDetails["lgStream"].Id
-                name=resourceDetails["lgStream"].Name
-                logGroup=resourceDetails["lg"].Name
-                dependencies=resourceDetails["lg"].Id
-            /]
+            [#if deploymentSubsetRequired("lg", true) && isPartOfCurrentDeploymentUnit(resourceDetails["lg"].Id)]
+                [@createLogStream
+                    id=resourceDetails["lgStream"].Id
+                    name=resourceDetails["lgStream"].Name
+                    logGroup=resourceDetails["lg"].Name
+                    dependencies=resourceDetails["lg"].Id
+                /]
+            [/#if]
         [/#if]
 
         [#if deploymentSubsetRequired("iam", true)  &&

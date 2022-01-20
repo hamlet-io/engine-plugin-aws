@@ -28,13 +28,16 @@
     }
 /]
 
-[#macro setupLogGroup occurrence logGroupId logGroupName loggingProfile retention=0 ]
+[#macro setupLogGroup occurrence logGroupId logGroupName loggingProfile retention=0 kmsKeyId=""]
     [#local dependencies = []]
 
-    [#if deploymentSubsetRequired("lg", true) &&
-            isPartOfCurrentDeploymentUnit(logGroupId) ]
+    [#if deploymentSubsetRequired("lg", true) && isPartOfCurrentDeploymentUnit(logGroupId) ]
         [@createLogGroup
             id=logGroupId
+            kmsKeyId=(loggingProfile.Encryption.Enabled)?then(
+                kmsKeyId,
+                ""
+            )
             name=logGroupName
             retention=retention
         /]
@@ -50,7 +53,7 @@
     /]
 [/#macro]
 
-[#macro createLogGroup id name retention=0]
+[#macro createLogGroup id name kmsKeyId retention=0 ]
     [@cfResource
         id=id
         type="AWS::Logs::LogGroup"
@@ -58,6 +61,11 @@
             {
                 "LogGroupName" : name
             } +
+            attributeIfContent(
+                "KmsKeyId",
+                kmsKeyId,
+                getArn(kmsKeyId)
+            ) +
             attributeIfTrue("RetentionInDays", retention > 0, retention) +
             attributeIfTrue("RetentionInDays", (retention <= 0) && operationsExpiration?has_content, operationsExpiration)
         outputs=LOG_GROUP_OUTPUT_MAPPINGS

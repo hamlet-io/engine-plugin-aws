@@ -355,6 +355,7 @@
             logGroupId=fnLgId
             logGroupName=fnLgName
             loggingProfile=loggingProfile
+            kmsKeyId=cmkKeyId
         /]
     [/#if]
 

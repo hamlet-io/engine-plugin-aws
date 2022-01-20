@@ -519,6 +519,7 @@
                 cloudwatchEnabled=true
                 cmkKeyId=kmsKeyId
                 version=solution.WAF.Version
+                loggingProfile=loggingProfile
             /]
 
             [@enableWAFLogging

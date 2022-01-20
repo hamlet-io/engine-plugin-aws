@@ -20,6 +20,11 @@
 
     [#local loggingProfile = getLoggingProfile(occurrence)]
 
+    [#-- Baseline component lookup --]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local kmsKeyId = baselineComponentIds["Encryption"] ]
+
     [#-- Flag that the flowlog configuration needs to be updated if enabled via flags --]
     [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true) &&
         (
@@ -73,6 +78,7 @@
                 logGroupId=flowLogLogGroupId
                 logGroupName=flowLogLogGroupName
                 loggingProfile=loggingProfile
+                kmsKeyId=kmsKeyId
                 retention=((segmentObject.Operations.FlowLogs.Expiration) !
                                 (segmentObject.Operations.Expiration) !
                                 (environmentObject.Operations.FlowLogs.Expiration) !
@@ -141,6 +147,7 @@
                 logGroupId=dnsQueryLogGroupId
                 logGroupName=dnsQueryLogGroupName
                 loggingProfile=loggingProfile
+                kmsKeyId=kmsKeyId
             /]
 
             [#local destinationArn = dnsQueryLogGroupId ]

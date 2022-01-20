@@ -42,6 +42,7 @@
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
     [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#if deploymentSubsetRequired("eip", false) || deploymentSubsetRequired("bastion", true) ]
         [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
@@ -201,6 +202,7 @@
             logGroupId=bastionLgId
             logGroupName=bastionLgName
             loggingProfile=loggingProfile
+            kmsKeyId=kmsKeyId
         /]
 
         [#if deploymentSubsetRequired("bastion", true)]

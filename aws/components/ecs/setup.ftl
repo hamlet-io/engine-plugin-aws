@@ -62,6 +62,7 @@
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
     [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
@@ -191,6 +192,7 @@
             logGroupId=ecsLogGroupId
             logGroupName=ecsLogGroupName
             loggingProfile=loggingProfile
+            kmsKeyId=kmsKeyId
         /]
     [/#if]
 
@@ -199,6 +201,7 @@
         logGroupId=ecsInstanceLogGroupId
         logGroupName=ecsInstanceLogGroupName
         loggingProfile=loggingProfile
+        kmsKeyId=kmsKeyId
     /]
 
     [#local capacityProviderScalingPolicy = { "managedScaling" : false, "managedTermination" : false } ]
@@ -1519,6 +1522,7 @@
                 logGroupId=lgId
                 logGroupName=lgName
                 loggingProfile=loggingProfile
+                kmsKeyId=kmsKeyId
             /]
         [/#if]
 
@@ -1530,6 +1534,7 @@
                         logGroupId=lgId
                         logGroupName=container.LogGroup.Name
                         loggingProfile=loggingProfile
+                        kmsKeyId=kmsKeyId
                     /]
             [/#if]
 

@@ -22,6 +22,11 @@
 
     [#local hasPlatformApp = false]
 
+    [#-- Baseline component lookup --]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local kmsKeyId = baselineComponentIds["Encryption"] ]
+
     [#list occurrence.Occurrences![] as subOccurrence]
 
         [#local core = subOccurrence.Core ]
@@ -122,6 +127,7 @@
                     logGroupId=lgId
                     logGroupName=lgName
                     loggingProfile=loggingProfile
+                    kmsKeyId=kmsKeyId
                 /]
 
                 [@setupLogGroup
@@ -129,6 +135,7 @@
                     logGroupId=lgFailureId
                     logGroupName=lgFailureName
                     loggingProfile=loggingProfile
+                    kmsKeyId=kmsKeyId
                 /]
             [/#if]
 
