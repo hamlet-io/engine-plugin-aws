@@ -5,19 +5,19 @@
     properties=[
             {
                 "Type"  : "Description",
-                "Value" : "Given an encrypted KMS ciphertext object decrypt it and return the plaintext result as a string"
+                "Value" : "Given a value return the KMS encrypted ciphertext as the result"
             }
         ]
     attributes=[
         {
-            "Names" : "Ciphertext",
-            "Description" : "The ciphertext value",
+            "Names" : "Value",
+            "Description" : "The value that needs to be encrypted",
             "Types" : STRING_TYPE,
             "Mandatory" : true
         },
         {
             "Names" : "Base64Encode",
-            "Description" : "Is the Ciphertext base64 encoded",
+            "Description" : "Return the ciphertext as a base64 encoded string",
             "Types" : BOOLEAN_TYPE,
             "Default" : true
         },
