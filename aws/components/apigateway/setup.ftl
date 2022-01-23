@@ -459,6 +459,7 @@
                 bucketPrefix="APIGatewayAccess"
                 cloudwatchEnabled=true
                 cmkKeyId=kmsKeyId
+                loggingProfile=loggingProfile
             /]
 
         [/#if]
@@ -473,6 +474,7 @@
                 logGroupId=accessLgId
                 logGroupName=accessLgName
                 loggingProfile=loggingProfile
+                kmsKeyId=kmsKeyId
             /]
         [/#if]
     [/#if]
@@ -829,6 +831,7 @@
                 cloudwatchEnabled=true
                 cmkKeyId=kmsKeyId
                 version=solution.WAF.Version
+                loggingProfile=loggingProfile
             /]
 
             [@enableWAFLogging

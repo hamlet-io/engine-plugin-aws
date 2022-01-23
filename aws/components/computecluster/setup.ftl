@@ -38,6 +38,7 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
@@ -339,6 +340,7 @@
         logGroupId=computeClusterLogGroupId
         logGroupName=computeClusterLogGroupName
         loggingProfile=loggingProfile
+        kmsKeyId=kmsKeyId
     /]
 
     [#if deploymentSubsetRequired(COMPUTECLUSTER_COMPONENT_TYPE, true)]

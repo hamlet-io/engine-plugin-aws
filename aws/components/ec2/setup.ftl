@@ -46,6 +46,7 @@
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
     [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
@@ -289,6 +290,7 @@
         logGroupId=ec2LogGroupId
         logGroupName=ec2LogGroupName
         loggingProfile=loggingProfile
+        kmsKeyId=kmsKeyId
     /]
 
     [#if deploymentSubsetRequired(EC2_COMPONENT_TYPE, true)]

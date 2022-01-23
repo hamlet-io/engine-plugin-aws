@@ -1,6 +1,6 @@
 [#ftl]
 
-[#function cwLogsProducePermission logGroupName=""]
+[#function cwLogsProducePermission logGroupName="" ]
     [#local logGroupArn = logGroupName?has_content?then(
                     formatRegionalArn(
                             "logs",
@@ -16,7 +16,8 @@
                     "logs:DescribeLogGroups",
                     "logs:DescribeLogStreams"
                 ],
-                logGroupArn)
+                logGroupArn
+            )
         ]
     ]
 [/#function]

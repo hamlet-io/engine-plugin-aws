@@ -25,6 +25,11 @@
     [#local networkLink = occurrenceNetwork.Link!{} ]
     [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
 
+    [#-- Baseline component lookup --]
+    [#local baselineLinks = getBaselineLinks(occurrence, ["Encryption" ] )]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local kmsKeyId = baselineComponentIds["Encryption"] ]
+
     [#if deploymentSubsetRequired(FIREWALL_COMPONENT_TYPE, true)]
 
         [#if ! networkLinkTarget?has_content ]
@@ -83,6 +88,7 @@
                     logGroupId=logGroupId
                     logGroupName=logGroupName
                     loggingProfile=loggingProfile
+                    kmsKeyId=kmsKeyId
                 /]
                 [#break]
 

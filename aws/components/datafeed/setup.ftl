@@ -60,6 +60,7 @@
             logGroupId=streamLgId
             logGroupName=streamLgName
             loggingProfile=loggingProfile
+            kmsKeyId=cmkKeyId
         /]
 
         [#if deploymentSubsetRequired("lg", true) && isPartOfCurrentDeploymentUnit(streamLgId) ]

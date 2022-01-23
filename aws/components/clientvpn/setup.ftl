@@ -13,6 +13,9 @@
     [#local vpnEndpointId = resources["endpoint"].Id]
     [#local vpnEndpointName = resources["endpoint"].Name]
 
+    [#-- Baseline component lookup --]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
+    [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
     [#local certificateObject = getCertificateObject( solution.Certificate ) ]
     [#local hostName = getHostName(certificateObject, occurrence) ]
@@ -65,6 +68,7 @@
             logGroupId=lgId
             logGroupName=lgName
             loggingProfile=loggingProfile
+            kmsKeyId=kmsKeyId
         /]
 
         [@createLogStream
