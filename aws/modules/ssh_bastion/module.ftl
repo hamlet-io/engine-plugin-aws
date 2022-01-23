@@ -74,7 +74,7 @@
                                     "Extensions" : [ "_runbook_get_provider_id" ],
                                     "Task" : {
                                         "Type" : "set_provider_credentials",
-                                        "Properties" : {
+                                        "Parameters" : {
                                             "AccountId" : {
                                                 "Value" : "__setting:ACCOUNT__"
                                             }
@@ -85,7 +85,7 @@
                                     "Priority" : 10,
                                     "Extensions" : [ "_runbook_get_region" ],
                                     "Task" : {
-                                        "Type" : "aws_decrypt_kms_ciphertext",
+                                        "Type" : "aws_kms_decrypt_ciphertext",
                                         "Parameters" : {
                                             "Ciphertext" : {
                                                 "Value" : "__attribute:ssh_key:PRIVATE_KEY__"
@@ -162,7 +162,7 @@
                                     "Priority" : 10,
                                     "Extensions" : [ "_runbook_get_region" ],
                                     "Task" : {
-                                        "Type" : "aws_decrypt_kms_ciphertext",
+                                        "Type" : "aws_kms_decrypt_ciphertext",
                                         "Parameters" : {
                                             "Ciphertext" : {
                                                 "Value" : "__attribute:ssh_key:PRIVATE_KEY__"
