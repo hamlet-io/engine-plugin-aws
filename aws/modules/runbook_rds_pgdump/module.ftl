@@ -57,7 +57,7 @@
                                     "Priority" : 10,
                                     "Extensions" : [ "_runbook_get_region" ],
                                     "Task" : {
-                                        "Type" : "aws_decrypt_kms_ciphertext",
+                                        "Type" : "aws_kms_decrypt_ciphertext",
                                         "Parameters" : {
                                             "Ciphertext" : {
                                                 "Value" : "__attribute:ssh_key:PRIVATE_KEY__"
@@ -89,7 +89,7 @@
                                     "Priority" : 10,
                                     "Extensions" : [ "_runbook_get_region" ],
                                     "Task" : {
-                                        "Type" : "aws_decrypt_kms_ciphertext",
+                                        "Type" : "aws_kms_decrypt_ciphertext",
                                         "Parameters" : {
                                             "Ciphertext" : {
                                                 "Value" : "__attribute:db:URL__"

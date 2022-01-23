@@ -1,7 +1,7 @@
 [#ftl]
 
 [@addTask
-    type=AWS_DECRYPT_KMS_CIPHERTEXT_TASK_TYPE
+    type=AWS_KMS_DECRYPT_CIPHERTEXT_TASK_TYPE
     properties=[
             {
                 "Type"  : "Description",
@@ -14,12 +14,6 @@
             "Description" : "The ciphertext value",
             "Types" : STRING_TYPE,
             "Mandatory" : true
-        },
-        {
-            "Names" : "Base64Encoded",
-            "Description" : "Is the Ciphertext base64 encoded",
-            "Types" : BOOLEAN_TYPE,
-            "Default" : true
         },
         {
             "Names" : "EncryptionScheme",
