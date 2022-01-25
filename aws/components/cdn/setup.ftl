@@ -28,6 +28,7 @@
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]!"") ]
 
     [#local securityProfile = getSecurityProfile(occurrence, core.Type)]
+    [#local loggingProfile = getLoggingProfile(occurrence)]
 
     [#local certificateObject = getCertificateObject(solution.Certificate) ]
     [#local hostName = getHostName(certificateObject, occurrence) ]
