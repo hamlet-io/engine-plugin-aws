@@ -208,6 +208,7 @@
     [#local rdsManualSnapshot = getExistingReference(formatDependentRDSManualSnapshotId(rdsId), NAME_ATTRIBUTE_TYPE)]
     [#local rdsLastSnapshot = getExistingReference(rdsId, LASTRESTORE_ATTRIBUTE_TYPE )]
 
+    [#local backupTags = [] ]
     [#local links = getLinkTargets(occurrence, {}, false) ]
     [#list links as linkId,linkTarget]
 
@@ -220,6 +221,24 @@
             [#case DATASET_COMPONENT_TYPE]
                 [#if linkTargetConfiguration.Solution.Engine == "rds" ]
                     [#local rdsManualSnapshot = linkTargetAttributes["SNAPSHOT_NAME"] ]
+                [/#if]
+                [#break]
+
+            [#case BACKUPSTORE_REGIME_COMPONENT_TYPE]
+                [#if linkTargetAttributes["TAG_NAME"]?has_content]
+                    [#local backupTags +=
+                        [
+                            {
+                                "Key" : linkTargetAttributes["TAG_NAME"],
+                                "Value" : linkTargetAttributes["TAG_VALUE"]
+                            }
+                        ]
+                    ]
+                [#else]
+                    [@warn
+                        message="Ignoring linked backup regime \"${linkTargetCore.SubComponent.Name}\" that does not support tag based inclusion"
+                        context=linkTargetCore
+                    /]
                 [/#if]
                 [#break]
         [/#switch]
@@ -872,7 +891,7 @@
                     deleteAutomatedBackups=solution.Backup.DeleteAutoBackups
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
-                    tags=rdsTags
+                    tags=rdsTags + backupTags
                     enhancedMonitoring=solution.Monitoring.DetailedMetrics.Enabled
                     enhancedMonitoringInterval=solution.Monitoring.DetailedMetrics.CollectionInterval
                     enhancedMonitoringRoleId=monitoringRoleId!""
