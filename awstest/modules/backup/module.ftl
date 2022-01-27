@@ -19,6 +19,9 @@
                         "backupstorebase" : {
                             "Type" : "backupstore",
                             "deployment:Unit" : "aws-backupstore-base",
+                            "Profiles" : {
+                                "Testing" : [ "backupstorebase" ]
+                            },
                             "Encryption" : {
                                 "Enabled" : true
                             },
@@ -80,12 +83,12 @@
                         "CFN" : {
                             "Resource" : {
                                 "vault" : {
-                                    "Name" : "backupvaultXdbXbackup",
+                                    "Name" : "backupvaultXdbXbackupstorebase",
                                     "Type" : "AWS::Backup::BackupVault"
                                 }
                             },
                             "Output" : [
-                                "backupvaultXdbXbackupXname"
+                                "backupvaultXdbXbackupstorebaseXname"
                             ]
                         }
                     }
@@ -102,5 +105,31 @@
                 }
             }
         }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-backupstore-base",
+                "backupvaultXdbXbackupstorebase": "mockedup-integration-database-backupstorebase"
+            },
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-backupstore-base",
+                "backupplanXdbXbackupstorebaseXdaily": "mockedup-integration-database-backupstorebase-daily"
+            },
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-backupstore-base",
+                "backupplanXdbXbackupstorebaseXmonthly": "mockedup-integration-database-backupstorebase-monthly"
+            },
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-backupstore-base",
+                "backupplanXdbXbackupstorebaseXyearly": "mockedup-integration-database-backupstorebase-yearly"
+            }
+        ]
     /]
 [/#macro]
