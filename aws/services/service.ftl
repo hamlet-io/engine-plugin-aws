@@ -10,6 +10,9 @@
 [#assign AWS_ATHENA_SERVICE = "athena"]
 [@addService provider=AWS_PROVIDER service=AWS_ATHENA_SERVICE /]
 
+[#assign AWS_BACKUP_SERVICE = "backup"]
+[@addService provider=AWS_PROVIDER service=AWS_BACKUP_SERVICE /]
+
 [#assign AWS_CERTIFICATE_MANAGER_SERVICE = "acm"]
 [@addService provider=AWS_PROVIDER service=AWS_CERTIFICATE_MANAGER_SERVICE /]
 

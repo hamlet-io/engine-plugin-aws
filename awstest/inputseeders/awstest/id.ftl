@@ -73,6 +73,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "apiuser"
                             },
+                            "backupstore" : {
+                                "Provider" : "awstest",
+                                "Name" : "backupstore"
+                            },
                             "bastion" : {
                                 "Provider" : "awstest",
                                 "Name" : "bastion"
