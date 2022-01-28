@@ -6,6 +6,9 @@
 
     [#local topicId = formatResourceId(AWS_SNS_TOPIC_RESOURCE_TYPE, core.Id)]
 
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ], true, false)]
+    [#local baselineIds = getBaselineComponentIds(baselineLinks)]
+
     [#assign componentState =
         {
             "Resources" : {
@@ -22,7 +25,8 @@
             },
             "Attributes" : {
                 "ARN" : getExistingReference(topicId, ARN_ATTRIBUTE_TYPE),
-                "NAME" : getExistingReference(topicId, NAME_ATTRIBUTE_TYPE)
+                "NAME" : getExistingReference(topicId, NAME_ATTRIBUTE_TYPE),
+                "REGION" : getExistingReference(topicId, REGION_ATTRIBUTE_TYPE)
             },
             "Roles" : {
                 "Inbound" : {
@@ -33,7 +37,15 @@
                 },
                 "Outbound" : {
                     "default" : "publish",
-                    "publish" : snsPublishPermission(topicId)
+                    "publish" : [snsPublishPermission(topicId)] +
+                                (solution.Encrypted)?then(
+                                    snsEncryptionStatement(
+                                        [ "kms:GenerateDataKey*" ],
+                                        baselineIds["Encryption"],
+                                        getExistingReference(topicId, REGION_ATTRIBUTE_TYPE)
+                                    ),
+                                    []
+                                )
                 }
             }
         }

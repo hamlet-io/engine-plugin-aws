@@ -121,3 +121,20 @@
         ]
     ]
 [/#function]
+
+[#function snsEncryptionStatement actions keyId topicRegion ]
+    [#return
+        [
+            getPolicyStatement(
+                asArray(actions),
+                getArn(keyId, false, topicRegion),
+                "",
+                {
+                    "StringEquals" : {
+                        "kms:ViaService" : formatDomainName( "sns", topicRegion, "amazonaws.com" )
+                    }
+                }
+            )
+        ]
+    ]
+[/#function]
