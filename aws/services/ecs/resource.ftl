@@ -632,7 +632,99 @@
     /]
 [/#macro]
 
-[#function getECSCapacityProviderStrategy computeProfileRule asgCapacityProviderId="" ]
+[#function getECSCapacityProviderStrategy rawId engine computeProviderPlacement ecsASGCapacityProviderId ]
+    [#local capacityProviderStrategy = []]
+
+    [#local baseCapacityProvider = computeProviderPlacement.Default ]
+    [#local additionalCapacityProviders = (computeProviderPlacement.Additional)!{} ]
+
+    [#switch engine ]
+        [#case "ec2"]
+            [#if baseCapacityProvider.Provider == "_engine" ]
+                [#local capacityProviderStrategy += [
+                    getECSCapacityProviderStrategyRule(
+                        baseCapacityProvider + { "Provider" : "_autoscalegroup" },
+                        ecsASGCapacityProviderId
+                    )
+                ]]
+            [#else]
+                [@fatal
+                    message="ECS Service engine Ec2 only supports the _engine compute provider"
+                    context={
+                        "ServiceId" : rawId,
+                        "Engine" : engine,
+                        "DefaultComputeProvider" : baseCapacityProvider
+                    }
+                /]
+            [/#if]
+
+            [#if additionalCapacityProviders?has_content ]
+                [@fatal
+                    message="ECS Service engine Ec2 doesn't support additional compute providers"
+                    context={
+                        "ServiceId" : rawId,
+                        "Engine" : engine,
+                        "AdditonalComputeProvider" : additionalCapacityProviders
+                    }
+                /]
+            [/#if]
+            [#break]
+
+        [#case "aws:fargate"]
+        [#case "fargate"]
+            [#if baseCapacityProvider.Provider == "_engine" ]
+                [#local capacityProviderStrategy += [
+                    getECSCapacityProviderStrategyRule(
+                        baseCapacityProvider + { "Provider" : "aws:fargate" }
+                    )
+                ]]
+            [#elseif baseCapacityProvider.Provider == "aws:fargate" || baseCapacityProvider.Provider == "aws:fargate_spot" ]
+                [#local capacityProviderStrategy += [
+                    getECSCapacityProviderStrategyRule(
+                        baseCapacityProvider
+                    )
+                ]]
+            [#else]
+                [@fatal
+                    message="ECS Service engine fargate only supports fargate based providers"
+                    context={
+                        "ServiceId" : rawId,
+                        "Engine" : engine,
+                        "DefaultComputeProvider" : baseCapacityProvider
+                    }
+                /]
+            [/#if]
+
+            [#list additionalCapacityProviders?values as additionalProvider]
+                [#if additionalProvider.Provider == "_engine"]
+                    [#local additionalProvider += { "Provider" : "aws:fargate" }]
+                [/#if]
+
+                [#if [ "aws:fargate", "aws:fargate_spot" ]?seq_contains(additionalProvider.Provider) ]
+                    [#local capacityProviderStrategy += [
+                        getECSCapacityProviderStrategyRule(
+                            additionalProvider
+                        )
+                    ]]
+                [#else]
+                    [@fatal
+                        message="ECS Service engine fargate only supports fargate based providers"
+                        context={
+                            "ServiceId" : rawId,
+                            "Engine" : engine,
+                            "AdditonalComputeProviders" : additionalCapacityProviders
+                        }
+                    /]
+                [/#if]
+            [/#list]
+            [#break]
+    [/#switch]
+
+    [#return capacityProviderStrategy]
+[/#function]
+
+
+[#function getECSCapacityProviderStrategyRule computeProfileRule asgCapacityProviderId="" ]
     [#local provider = "" ]
     [#switch computeProfileRule.Provider ]
         [#case "_autoscalegroup" ]

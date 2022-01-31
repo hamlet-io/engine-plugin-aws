@@ -492,13 +492,19 @@
         [/#if]
 
         [#local defaultCapacityProviderStrategies = [
-            getECSCapacityProviderStrategy(computeProviderProfile.Containers.Default, ecsASGCapacityProviderId)
+            getECSCapacityProviderStrategyRule(
+                computeProviderProfile.Containers.Default,
+                ecsASGCapacityProviderId
+            )
         ]]
 
         [#list (computeProviderProfile.Containers.Additional)?values as providerRule ]
             [#local defaultCapacityProviderStrategies +=
                 [
-                    getECSCapacityProviderStrategy(providerRule, ecsASGCapacityProviderId)
+                    getECSCapacityProviderStrategyRule(
+                        providerRule,
+                        ecsASGCapacityProviderId
+                    )
                 ]
             ]
         [/#list]
@@ -1212,94 +1218,6 @@
 
                 [/#if]
 
-                [#local capacityProviderStrategy = []]
-
-                [#local baseCapacityProvider = solution.Placement.ComputeProvider.Default ]
-                [#local additionalCapacityProviders = solution.Placement.ComputeProvider.Additional ]
-
-                [#if useCapacityProvider ]
-                    [#switch engine ]
-                        [#case "ec2"]
-                            [#if baseCapacityProvider.Provider == "_engine" ]
-                                [#local capacityProviderStrategy += [
-                                    getECSCapacityProviderStrategy(
-                                        baseCapacityProvider + { "Provider" : "_autoscalegroup" },
-                                        ecsASGCapacityProviderId
-                                    )
-                                ]]
-                            [#else]
-                                [@fatal
-                                    message="ECS Service engine Ec2 only supports the _engine compute provider"
-                                    context={
-                                        "ServiceId" : core.RawId,
-                                        "Engine" : engine,
-                                        "DefaultComputeProvider" : baseCapacityProvider
-                                    }
-                                /]
-                            [/#if]
-
-                            [#if additionalCapacityProviders?has_content ]
-                                [@fatal
-                                    message="ECS Service engine Ec2 doesn't support additional compute providers"
-                                    context={
-                                        "ServiceId" : core.RawId,
-                                        "Engine" : engine,
-                                        "AdditonalComputeProvider" : additionalCapacityProviders
-                                    }
-                                /]
-                            [/#if]
-                            [#break]
-
-                        [#case "aws:fargate"]
-                        [#case "fargate"]
-                            [#if baseCapacityProvider.Provider == "_engine" ]
-                                [#local capacityProviderStrategy += [
-                                    getECSCapacityProviderStrategy(
-                                        baseCapacityProvider + { "Provider" : "aws:fargate" }
-                                    )
-                                ]]
-                            [#elseif baseCapacityProvider.Provider == "aws:fargate" || baseCapacityProvider.Provider == "aws:fargate_spot" ]
-                                [#local capacityProviderStrategy += [
-                                    getECSCapacityProviderStrategy(
-                                        baseCapacityProvider
-                                    )
-                                ]]
-                            [#else]
-                                [@fatal
-                                    message="ECS Service engine fargate only supports fargate based providers"
-                                    context={
-                                        "ServiceId" : core.RawId,
-                                        "Engine" : engine,
-                                        "DefaultComputeProvider" : baseCapacityProvider
-                                    }
-                                /]
-                            [/#if]
-
-                            [#list additionalCapacityProviders?values as additionalProvider]
-                                [#if additionalProvider.Provider == "_engine"]
-                                    [#local additionalProvider += { "Provider" : "aws:fargate" }]
-                                [/#if]
-
-                                [#if [ "aws:fargate", "aws:fargate_spot" ]?seq_contains(additionalProvider.Provider) ]
-                                    [#local capacityProviderStrategy += [
-                                        getECSCapacityProviderStrategy(
-                                            additionalProvider
-                                        )
-                                    ]]
-                                [#else]
-                                    [@fatal
-                                        message="ECS Service engine fargate only supports fargate based providers"
-                                        context={
-                                            "ServiceId" : core.RawId,
-                                            "Engine" : engine,
-                                            "AdditonalComputeProviders" : additionalCapacityProviders
-                                        }
-                                    /]
-                                [/#if]
-                            [/#list]
-                            [#break]
-                    [/#switch]
-                [/#if]
 
                 [@createECSService
                     id=serviceId
@@ -1313,7 +1231,15 @@
                     networkConfiguration=aswVpcNetworkConfiguration!{}
                     placement=solution.Placement
                     platformVersion=solution["aws:FargatePlatform"]
-                    capacityProviderStrategy=capacityProviderStrategy
+                    capacityProviderStrategy=useCapacityProvider?then(
+                        getECSCapacityProviderStrategy(
+                            core.RawId,
+                            engine,
+                            solution.Placement.ComputeProvider,
+                            ecsASGCapacityProviderId
+                        ),
+                        []
+                    )
                     dependencies=dependencies
                     circuitBreaker=useCircuitBreaker
                     tags=getOccurrenceCoreTags(occurrence, serviceName )

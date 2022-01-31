@@ -157,6 +157,25 @@
         {
             "Names" : "NetworkMode",
             "Values" : [ "shared:awsvpc", "awsvpc" ]
+        },
+        {
+            "Names" : "Placement",
+            "Children" : [
+                {
+                    "Names" : "ComputeProvider",
+                    "Children" : [
+                        {
+                            "Names" : "Default",
+                            "Children" : [
+                                {
+                                    "Names" : "Provider",
+                                    "Values" : [ "fargate", "fargate_spot" ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ]
 /]
