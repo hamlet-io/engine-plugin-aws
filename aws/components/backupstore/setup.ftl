@@ -180,9 +180,9 @@
 
             [#-- Check if store matches are required --]
             [#local conditions = {} ]
-            [#if isPresent(subSolution.Targets.MatchesStore) ]
+            [#if isPresent(subSolution.Conditions.MatchesStore) ]
                 [#list ["Product","Environment","Segment","Tier"] as tag]
-                    [#if subSolution.Targets.MatchesStore[tag]!false]
+                    [#if subSolution.Conditions.MatchesStore[tag]!false]
                         [#local conditionValue = "HamletFatal: Unknown backup condition tag" ]
                         [#switch tag]
                             [#case "Product"]
@@ -210,8 +210,13 @@
                 [/#list]
             [/#if]
 
-            [#-- Check for any specific resources to be included --]
+            [#-- Check if all resource should be considered --]
             [#local includedResources = [] ]
+            [#if isPresent(subSolution.Targets.All) ]
+                [#local includedResources = ["*"] ]
+            [/#if]
+
+            [#-- Check for any specific resources to be included --]
             [#list subSolution.Targets.Components.Inclusions?values as link]
                 [#if link?is_hash]
 

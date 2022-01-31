@@ -205,17 +205,18 @@
 
 [#macro createBackupSelection id name planId roleId tags=[] resources=[] conditions={} exclusions=[] dependencies=""]
 
-    [#-- Treat everything as a potential target by default (likely limited by conditions) --]
-    [#local requiredResources = [ "*" ] ]
 
     [#-- If explicit targets have been provided, use those --]
-    [#if tags?has_content || resources?has_content]
-        [#local requiredResources = [] ]
-        [#list resources as resource]
+    [#local requiredResources = [] ]
+    [#list resources as resource]
+        [#if resource == "*" ]
+            [#-- If the resource wildcard, then just include everything --]
+            [#local requiredResources = [ resource ] ]
+            [#break]
+        [#else]
             [#local requiredResources += [ getArn(resource) ] ]
-        [/#list]
-    [/#if]
-
+        [/#if]
+    [/#list]
 
     [#local requiredExclusions = [] ]
     [#list exclusions as exclusion]
