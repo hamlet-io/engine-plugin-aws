@@ -390,6 +390,10 @@
     [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
     [#local networkResources = networkLinkTarget.State.Resources ]
 
+    [#local routeTableLinkTarget = getLinkTarget(occurrence, networkLink + { "RouteTable" : occurrenceNetwork.RouteTable }, false)]
+    [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
+    [#local publicRouteTable = routeTableConfiguration.Public ]
+
     [#local subnet = (getSubnets(core.Tier, networkResources))[0]]
 
     [#local networkMode = solution.NetworkMode]
@@ -445,6 +449,13 @@
         [/#list]
     [/#if]
 
+    [#local capacityProvider = getECSCapacityProviderStrategy(
+        core.RawId,
+        solution.Engine,
+        mergeObjects({"Default" : {"Weight" : 1, "RequiredCount" : 1}, "Additional" : {}}, solution.Placement.ComputeProvider),
+        parentResources["ecsASGCapacityProvider"].Id
+    )[0].CapacityProvider ]
+
     [#assign componentState =
         {
             "Resources" : {
@@ -499,23 +510,26 @@
                 }
             ),
             "Attributes" : {
-                "ECSHOST" : getExistingReference(ecsId)
-            } +
-            attributeIfTrue(
-                "DEFINITION",
-                solution.FixedName,
-                taskName
-            ) +
-            attributeIfTrue(
-                "SECURITY_GROUP",
-                networkMode == "awsvpc",
-                getExistingReference(securityGroupId)
-            ) +
-            attributeIfTrue(
-                "SUBNET",
-                networkMode == "awsvpc",
-                subnet
-            ),
+                "ECSHOST" : getExistingReference(ecsId),
+                "CAPACITY_PROVIDER" : capacityProvider,
+                "DEFINITION" : solution.FixedName?then(
+                    taskName,
+                    getArn(taskId)
+                ),
+                "SECURITY_GROUP" : (networkMode == "awsvpc")?then(
+                    getExistingReference(securityGroupId),
+                    ""
+                ),
+                "SUBNET" : (networkMode == "awsvpc")?then(
+                    subnet,
+                    ""
+                ),
+                "PUBLIC_IP" : (networkMode == "awsvpc")?then(
+                    publicRouteTable?c,
+                    ""
+                ),
+                "LOG_GROUP_NAME" : lgName
+            },
             "Roles" : {
                 "Inbound" : {
                     "logwatch" : {
