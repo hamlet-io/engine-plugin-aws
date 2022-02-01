@@ -24,7 +24,12 @@
                 "ARN" : getExistingReference(vaultId, ARN_ATTRIBUTE_TYPE)
             },
             "Roles" : {
-                "Inbound" : {},
+                "Inbound" : {
+                    "invoke" : {
+                        "Principal" : "backup.amazonaws.com",
+                        "SourceArn" : getReference(vaultId, ARN_ATTRIBUTE_TYPE)
+                    }
+                },
                 "Outbound" : {}
             }
         }
