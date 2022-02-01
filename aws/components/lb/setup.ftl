@@ -50,6 +50,7 @@
     [#local idleTimeout = solution.IdleTimeout]
 
     [#local securityProfile = getSecurityProfile(occurrence, core.Type, engine)]
+    [#local loggingProfile = getLoggingProfile(occurrence)]
 
     [#local healthCheckPort = "" ]
     [#if engine == "classic" ]
