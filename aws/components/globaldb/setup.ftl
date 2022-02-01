@@ -83,6 +83,41 @@
     [/#switch]
 
     [#if deploymentSubsetRequired(GLOBALDB_COMPONENT_TYPE, true) ]
+
+        [#list solution.Alerts?values as alert ]
+
+            [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
+            [#list monitoredResources as name,monitoredResource ]
+
+                [@debug message="Monitored resource" context=monitoredResource enabled=false /]
+                [#local resourceDimensions = getCWMetricDimensions(alert, monitoredResource, resources) ]
+
+                [#switch alert.Comparison ]
+                    [#case "Threshold" ]
+                        [@createAlarm
+                            id=formatDependentAlarmId(monitoredResource.Id, alert.Id )
+                            severity=alert.Severity
+                            resourceName=core.FullName
+                            alertName=alert.Name
+                            actions=getCWAlertActions(occurrence, solution.Profiles.Alert, alert.Severity )
+                            metric=getCWMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
+                            namespace=getCWResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
+                            description=alert.Description!alert.Name
+                            threshold=alert.Threshold
+                            statistic=alert.Statistic
+                            evaluationPeriods=alert.Periods
+                            period=alert.Time
+                            operator=alert.Operator
+                            reportOK=alert.ReportOk
+                            unit=alert.Unit
+                            missingData=alert.MissingData
+                            dimensions=resourceDimensions
+                        /]
+                    [#break]
+                [/#switch]
+            [/#list]
+        [/#list]
+
         [@createDynamoDbTable
             id=tableId
             name=tableName

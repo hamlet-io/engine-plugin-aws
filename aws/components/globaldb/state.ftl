@@ -20,6 +20,7 @@
                     "Id" : id,
                     "Name" : core.FullName,
                     "Key" : key,
+                    "Monitored": true,
                     "Type" : AWS_DYNAMODB_TABLE_RESOURCE_TYPE
                 } +
                 attributeIfContent(
