@@ -308,7 +308,7 @@
             [#if deploymentSubsetRequired("rds", true)]
                 [@createSecurityGroupRulesFromLink
                     occurrence=occurrence
-                    groupId=securityGroupId
+                    groupId=rdsSecurityGroupId
                     linkTarget=linkTarget
                     inboundPorts=[ port ]
                     networkProfile=networkProfile
