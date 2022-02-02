@@ -64,10 +64,10 @@
                     [#local script += [
                         r'# Create mount dir in EFS',
                         r'temp_dir="$(mktemp -d -t efs.XXXXXXXX)"',
-                        r'mount -t efs "${efsId}:/" ${temp_dir} || exit $?',
-                        r'if [[ ! -d "${temp_dir}/' + directory + r' ]]; then',
+                        r'mount -t efs ' + '"${efsId}:/"' + r' ${temp_dir} || exit $?',
+                        r'if [[ ! -d "${temp_dir}/' + directory + r'" ]]; then',
                         r'  mkdir -p "${temp_dir}/' + directory + r'"',
-                        r'  # Allow Full Access to volume (Allows for unkown container access )',
+                        r'  # Allow Full Access to volume (Allows for unknown container access )',
                         r'  chmod -R ugo+rwx "${temp_dir}/' + directory + r'"',
                         r'fi',
                         r'umount ${temp_dir}'
