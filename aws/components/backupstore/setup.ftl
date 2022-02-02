@@ -19,9 +19,9 @@
     [#local encryptionKeyId = "" ]
     [#if isPresent(solution.Encryption) ]
         [#-- Baseline component lookup to obtain the kms key --]
-        [#local baselineLinks = getBaselineLinks(occurrence, [ solution.Encryption.Key ]) ]
+        [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ]) ]
         [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
-        [#local encryptionKeyId = baselineComponentIds[ solution.Encryption.Key ]!""]
+        [#local encryptionKeyId = baselineComponentIds[ "Encryption" ]!""]
     [/#if]
 
     [#-- Create the IAM role for performing snapshots --]
