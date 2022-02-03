@@ -244,6 +244,10 @@
                                                 dataBucketPrefix,
                                                 solution.Buffering.Interval,
                                                 solution.Buffering.Size,
+                                                solution.Backup.Compression.Enabled?then(
+                                                    solution.Backup.Compression.Format,
+                                                    "UNCOMPRESSED"
+                                                ),
                                                 streamRoleId,
                                                 backUpEncrypt,
                                                 backUpCmkKeyId,
@@ -362,6 +366,10 @@
                                                 streamS3DestinationErrorPrefix,
                                                 solution.Buffering.Interval,
                                                 solution.Buffering.Size,
+                                                solution.Bucket.Compression.Enabled?then(
+                                                    solution.Bucket.Compression.Format,
+                                                    "UNCOMPRESSED"
+                                                ),
                                                 streamRoleId,
                                                 s3Encrypt,
                                                 s3BaselineComponentIds["Encryption"],
