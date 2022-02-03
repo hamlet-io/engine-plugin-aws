@@ -161,6 +161,7 @@
         [#local isEncrypted = false]
         [#local bufferInterval = 60]
         [#local bufferSize = 1]
+        [#local compressionFormat = "GZIP" ]
         [#local rolePolicies = []]
         [#local streamDestinationConfiguration = {}]
 
@@ -216,6 +217,7 @@
                         errorPrefix,
                         bufferInterval,
                         bufferSize,
+                        compressionFormat,
                         resourceDetails["role"].Id,
                         isEncrypted,
                         cmkKeyId,
@@ -341,6 +343,7 @@
         bucketPrefix
         bufferInterval
         bufferSize
+        compressionFormat
         roleId
         encrypted
         kmsKeyId
@@ -354,7 +357,7 @@
                 "IntervalInSeconds" : bufferInterval,
                 "SizeInMBs" : bufferSize
             },
-            "CompressionFormat" : "GZIP",
+            "CompressionFormat" : compressionFormat?upper_case,
             "Prefix" : bucketPrefix?ensure_ends_with("/"),
             "RoleARN" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
             "CloudWatchLoggingOptions" : loggingConfiguration,
@@ -414,6 +417,7 @@
         errorPrefix
         bufferInterval
         bufferSize
+        compressionFormat
         roleId
         encrypted
         kmsKeyId
@@ -453,7 +457,7 @@
                 "SizeInMBs" : valueIfTrue(bufferSize, (!dynamicPartitioningRequired) || (bufferSize > 64), 64)
             },
         "CloudWatchLoggingOptions" : loggingConfiguration,
-        "CompressionFormat" : "GZIP",
+        "CompressionFormat" : compressionFormat?upper_case,
         "RoleARN" : getReference(roleId, ARN_ATTRIBUTE_TYPE),
         "S3BackupMode" : backupEnabled?then("Enabled", "Disabled"),
         [#-- If encryption is turned on and then needs to be turned off, --]
