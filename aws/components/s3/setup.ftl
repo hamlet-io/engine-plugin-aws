@@ -38,6 +38,7 @@
     [#local replicationDestinationAccountId = "" ]
     [#local replicationExternalPolicy = []]
 
+    [#local backupTags = [] ]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "CDNOriginKey", "Encryption" ])]
@@ -314,6 +315,25 @@
                             [#break]
                     [/#switch]
                     [#break]
+
+                [#case BACKUPSTORE_REGIME_COMPONENT_TYPE]
+                    [#if linkTargetAttributes["TAG_NAME"]?has_content]
+                        [#local backupTags +=
+                            [
+                                {
+                                    "Key" : linkTargetAttributes["TAG_NAME"],
+                                    "Value" : linkTargetAttributes["TAG_VALUE"]
+                                }
+                            ]
+                        ]
+                    [#else]
+                        [@warn
+                            message="Ignoring linked backup regime \"${linkTargetCore.SubComponent.Name}\" that does not support tag based inclusion"
+                            context=linkTargetCore
+                        /]
+                    [/#if]
+                    [#break]
+
             [/#switch]
         [/#if]
     [/#list]
@@ -494,6 +514,7 @@
             kmsKeyId=kmsKeyId
             inventoryReports=inventoryReports
             dependencies=dependencies
+            tags=backupTags
         /]
     [/#if]
 [/#macro]

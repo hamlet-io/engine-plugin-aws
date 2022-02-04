@@ -376,7 +376,9 @@
                         CORSBehaviours=[]
                         inventoryReports=[]
                         dependencies=""
-                        outputId=""]
+                        outputId=""
+                        tags=[]
+                        ]
 
     [#local loggingConfiguration = {} ]
 
@@ -519,7 +521,7 @@
                 "InventoryConfigurations",
                 inventoryReports
             )
-        tags=getCfTemplateCoreTags("", tier, component, "", false, false, 7)
+        tags=getCfTemplateCoreTags() + tags
         outputs=S3_OUTPUT_MAPPINGS
         outputId=outputId
         dependencies=dependencies
