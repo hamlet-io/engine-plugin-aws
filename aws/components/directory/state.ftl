@@ -70,6 +70,22 @@
 
     [#switch solution.Engine ]
         [#case "ActiveDirectory"]
+
+            [#if solution.Logging.Enabled ]
+                [#local lgName = formatAbsolutePath("aws", "directoryservice", core.FullName)]
+                [#local resources = mergeObjects(
+                    resources,
+                    {
+                        "lg" : {
+                            "Id" : formatLogGroupId(core.Id),
+                            "Name" : lgName,
+                            "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
+                            "IncludeInDeploymentState" : false
+                        }
+                    }
+                )]
+            [/#if]
+
         [#case "Simple"]
 
             [#local id = formatResourceId(AWS_DIRECTORY_RESOURCE_TYPE, core.Id) ]

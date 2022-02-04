@@ -1404,6 +1404,11 @@
                     "deployment:Priority" : 100,
                     "GroupDeploymentUnit" : false
                 },
+                "directory" : {
+                    "deployment:Unit" : "directory",
+                    "deployment:Priority" : 100,
+                    "GroupDeploymentUnit" : false
+                },
                 "ecs" : {
                     "deployment:Unit" : "ecs",
                     "deployment:Priority" : 100,
