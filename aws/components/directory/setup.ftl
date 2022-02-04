@@ -387,7 +387,7 @@
                         [@fatal
                             message="Logging not available for this engine"
                             detail={
-                                "Id" : core.RawId
+                                "Id" : core.RawId,
                                 "Engine" : engine
                             }
                         /]
