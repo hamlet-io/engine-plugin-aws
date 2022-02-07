@@ -30,6 +30,8 @@
     [#local engine = solution.Engine]
     [#local enableSSO = solution["aws:EnableSSO"]]
 
+    [#local loggingProfile = getLoggingProfile(occurrence)]
+
     [#local networkProfile = getNetworkProfile(occurrence)]
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
 
@@ -173,6 +175,20 @@
 
         [#switch engine ]
             [#case "ActiveDirectory"]
+
+                [#if solution.Logging.Enabled ]
+                    [#local lgId = resources["lg"].Id ]
+                    [#local lgName = resources["lg"].Name ]
+
+                    [@setupLogGroup
+                        occurrence=occurrence
+                        logGroupId=lgId
+                        logGroupName=lgName
+                        loggingProfile=loggingProfile
+                        kmsKeyId=cmkKeyId
+                    /]
+                [/#if]
+
             [#case "Simple"]
                 [#if !hibernate]
 
@@ -344,6 +360,57 @@
                 [#break]
         [/#switch]
 
+        [#local directoryLoggingScript = []]
+
+        [#if solution.Logging.Enabled]
+
+            [#switch engine ]
+
+                [#case "ActiveDirectory"]
+
+                    [#local lgId = resources["lg"].Id ]
+                    [#local lgName = resources["lg"].Name ]
+
+                    [#local directoryLoggingScript = [
+                        r'case ${STACK_OPERATION} in',
+                        r'  create|update)'
+                        r'      info "enabling log forwarding"',
+                        r'      if [[ -z "$(aws --region ' + getRegion() + r' ds list-log-subscriptions --query "LogSubscriptions[?DirectoryId==' + r"'${ds_id}'" + r'].LogGroupName" --output text)" ]]; then',
+                        r'          aws --region ' + getRegion() + r' ds create-log-subscription --directory-id "${ds_id}" --log-group-name "' + lgName + '" || return $?',
+                        r'      fi',
+                        r'   ;;',
+                        r'esac'
+                    ]]
+                    [#break]
+
+                    [#default]
+                        [@fatal
+                            message="Logging not available for this engine"
+                            detail={
+                                "Id" : core.RawId,
+                                "Engine" : engine
+                            }
+                        /]
+            [/#switch]
+        [#else]
+
+            [#switch engine ]
+
+                [#case "ActiveDirectory"]
+
+                    [#local directoryLoggingScript = [
+                        r'case ${STACK_OPERATION} in',
+                        r'  create|update)'
+                        r'      info "removing log forwarding"',
+                        r'      if [[ -n "$(aws --region ' + getRegion() + r' ds list-log-subscriptions --query "LogSubscriptions[?DirectoryId==' + r"'${ds_id}'" + r'].LogGroupName" --output text)" ]]; then',
+                        r'          aws --region ' + getRegion() + r' ds delete-log-subscription --directory-id "${ds_id}" || return $?',
+                        r'      fi',
+                        r'   ;;',
+                        r'esac'
+                    ]]
+                    [#break]
+            [/#switch]
+        [/#if]
 
         [#local secgrp_lockdown=[]]
 
@@ -410,6 +477,7 @@
         [@addToDefaultBashScriptOutput
             content=
                 directoryIdScript +
+                directoryLoggingScript +
                 secgrp_lockdown
         /]
     [/#if]
