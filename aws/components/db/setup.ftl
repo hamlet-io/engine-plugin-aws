@@ -47,11 +47,10 @@
         (solution.AutoMinorVersionUpgrade!RDSAutoMinorVersionUpgrade) ]
 
     [#-- Default is that engine version = major version --]
-    [#local engineVersion = majorVersion]
+    [#local engineVersion = concatenate([majorVersion, minorVersion],".")]
 
     [#switch engine]
         [#case "mysql"]
-            [#local engineVersion = concatenate([majorVersion, minorVersion],".")]
             [#break]
 
         [#case "postgres"]
@@ -845,6 +844,7 @@
                         tags=rdsTags
                         deletionPolicy=""
                         updateReplacePolicy=""
+                        kmsKeyId=cmkKeyId
                         enhancedMonitoring=solution.Monitoring.DetailedMetrics.Enabled
                         enhancedMonitoringInterval=solution.Monitoring.DetailedMetrics.CollectionInterval
                         enhancedMonitoringRoleId=monitoringRoleId!""

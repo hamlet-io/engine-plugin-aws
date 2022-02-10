@@ -12,32 +12,24 @@
 
     [#-- Base database setup --]
     [@loadModule
-        settingSets=[
-            {
-                "Type" : "Settings",
-                "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-db-postgres-base",
-                "Settings" : {
-                    "MASTER_USERNAME" : "testUser",
-                    "MASTER_PASSWORD" : "testPassword"
-                }
-            }
-        ]
         blueprint={
             "Tiers" : {
                 "db" : {
                     "Components" : {
                         "postgresdbbase" : {
-                            "db" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-db-postgres-base"]
-                                    }
+                            "Type" : "db",
+                            "deployment:Unit" : "aws-db-postgres-base",
+                            "Engine" : "postgres",
+                            "EngineVersion" : "11",
+                            "Profiles" : {
+                                "Testing" : [ "postgresdbbase" ]
+                            },
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
                                 },
-                                "Engine" : "postgres",
-                                "EngineVersion" : "11",
-                                "Profiles" : {
-                                    "Testing" : [ "postgresdbbase" ]
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
                                 }
                             }
                         }
@@ -108,6 +100,96 @@
         }
     /]
 
+    [#-- Minor Version database setup --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "db" : {
+                    "Components" : {
+                        "postgresdbminorversion" : {
+                            "Type" : "db",
+                            "deployment:Unit" : "aws-db-postgres-minorversion",
+                            "Engine" : "postgres",
+                            "EngineVersion" : "12",
+                            "EngineMinorVersion" : "4",
+                            "Profiles" : {
+                                "Testing" : [ "postgresdbminorversion" ]
+                            },
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "postgresdbminorversion" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "rdsInstance" : {
+                                    "Name" : "rdsXdbXpostgresdbminorversion",
+                                    "Type" : "AWS::RDS::DBInstance"
+                                },
+                                "rdsOptionGroup" : {
+                                    "Name" : "rdsOptionGroupXdbXpostgresdbminorversionXpostgres12",
+                                    "Type" : "AWS::RDS::OptionGroup"
+                                },
+                                "rdsParameterGroup" : {
+                                    "Name" : "rdsParameterGroupXdbXpostgresdbminorversionXpostgres12",
+                                    "Type" : "AWS::RDS::DBParameterGroup"
+                                }
+                            },
+                            "Output" : [
+                                "rdsXdbXpostgresdbminorversionXdns",
+                                "rdsXdbXpostgresdbminorversionXport",
+                                "securityGroupXdbXpostgresdbminorversion"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "RDSEngine" : {
+                                    "Path"  : "Resources.rdsXdbXpostgresdbminorversion.Properties.Engine",
+                                    "Value" : "postgres"
+                                },
+                                "RDSEngineVersion" : {
+                                    "Path"  : "Resources.rdsXdbXpostgresdbminorversion.Properties.EngineVersion",
+                                    "Value" : "12.4"
+                                },
+                                "OptionGroupVersion" : {
+                                    "Path" : "Resources.rdsOptionGroupXdbXpostgresdbminorversionXpostgres12.Properties.MajorEngineVersion",
+                                    "Value" : "12"
+                                },
+                                "ParameterGroupVersion" : {
+                                    "Path" : "Resources.rdsParameterGroupXdbXpostgresdbminorversionXpostgres12.Properties.Family",
+                                    "Value" : "postgres12"
+                                }
+                            },
+                            "NotEmpty" : [
+                                "Resources.rdsXdbXpostgresdbminorversion.Properties.DBInstanceClass"
+                            ]
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "postgresdbminorversion" : {
+                    "db" : {
+                        "TestCases" : [ "postgresdbminorversion" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+    /]
 
     [#-- Generated creds --]
     [@loadModule
@@ -116,21 +198,16 @@
                 "db" : {
                     "Components" : {
                         "postgresdbgenerated" : {
-                            "db" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-db-postgres-generated"]
-                                    }
-                                },
-                                "Engine" : "postgres",
-                                "EngineVersion" : "11",
-                                "Profiles" : {
-                                    "Testing" : [ "postgresdbgenerated" ]
-                                },
-                                "GenerateCredentials" : {
-                                    "Enabled" : true,
-                                    "EncryptionScheme" : "kms"
-                                }
+                            "Type" : "db",
+                            "deployment:Unit" : "aws-db-postgres-generated",
+                            "Engine" : "postgres",
+                            "EngineVersion" : "11",
+                            "Profiles" : {
+                                "Testing" : [ "postgresdbgenerated" ]
+                            },
+                            "GenerateCredentials" : {
+                                "Enabled" : true,
+                                "EncryptionScheme" : "kms"
                             }
                         }
                     }
@@ -267,7 +344,6 @@
         }
     /]
 
-
     [#-- Maintenance Windows --]
     [@loadModule
         blueprint={
@@ -275,26 +351,21 @@
                 "db" : {
                     "Components" : {
                         "postgresdbmaintenance" : {
-                            "db" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-db-postgres-maintenance"]
-                                    }
-                                },
-                                "MaintenanceWindow": {
-                                    "DayOfTheWeek": "Saturday",
-                                    "TimeOfDay": "01:00",
-                                    "TimeZone": "AEST"
-                                },
-                                "Engine" : "postgres",
-                                "EngineVersion" : "11",
-                                "Profiles" : {
-                                    "Testing" : [ "postgresdbmaintenance" ]
-                                },
-                                "GenerateCredentials" : {
-                                    "Enabled" : true,
-                                    "EncryptionScheme" : "kms"
-                                }
+                            "Type" : "db",
+                            "deployment:Unit" : "aws-db-postgres-maintenance",
+                            "MaintenanceWindow": {
+                                "DayOfTheWeek": "Saturday",
+                                "TimeOfDay": "01:00",
+                                "TimeZone": "AEST"
+                            },
+                            "Engine" : "postgres",
+                            "EngineVersion" : "11",
+                            "Profiles" : {
+                                "Testing" : [ "postgresdbmaintenance" ]
+                            },
+                            "GenerateCredentials" : {
+                                "Enabled" : true,
+                                "EncryptionScheme" : "kms"
                             }
                         }
                     }
@@ -331,6 +402,129 @@
                 "postgresdbmaintenance" : {
                     "db" : {
                         "TestCases" : [ "postgresdbmaintenance" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+    /]
+
+    [#-- Base database setup --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "db" : {
+                    "Components" : {
+                        "postgresdbcluster" : {
+                            "Type" : "db",
+                            "deployment:Unit" : "aws-db-postgres-cluster",
+                            "Engine" : "aurora-postgresql",
+                            "Port": "postgresql",
+                            "EngineVersion" : "11",
+                            "Cluster" : {
+                                "Parameters": {
+                                    "tls" : {
+                                        "Name" : "rds.force_ssl",
+                                        "Value" : true
+                                    }
+                                }
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "postgresdbcluster" ],
+                                "Processor" : "postgresdbcluster"
+                            },
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Processors" : {
+                "postgresdbcluster" : {
+                    "db" : {
+                        "Processor" : "db.t3.medium",
+                        "MinCount" : 2,
+                        "MaxCount" : 2,
+                        "DesiredCount" : 2
+                    }
+                }
+            },
+            "TestCases" : {
+                "postgresdbcluster" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "rdsCluster" : {
+                                    "Name" : "rdsClusterXdbXpostgresdbcluster",
+                                    "Type" : "AWS::RDS::DBCluster"
+                                },
+                                "rdsInstanceA1" : {
+                                    "Name" : "rdsXdbXpostgresdbclusterXaX1",
+                                    "Type" : "AWS::RDS::DBInstance"
+                                },
+                                "rdsInstanceA2" : {
+                                    "Name" : "rdsXdbXpostgresdbclusterXaX2",
+                                    "Type" : "AWS::RDS::DBInstance"
+                                },
+                                "rdsOptionGroup" : {
+                                    "Name" : "rdsOptionGroupXdbXpostgresdbclusterXauroraXpostgresql11",
+                                    "Type" : "AWS::RDS::OptionGroup"
+                                },
+                                "rdsParameterGroup" : {
+                                    "Name" : "rdsParameterGroupXdbXpostgresdbclusterXauroraXpostgresql11",
+                                    "Type" : "AWS::RDS::DBParameterGroup"
+                                },
+                                "rdsClusterParameterGroup" : {
+                                    "Name" : "rdsClusterParameterGroupXdbXpostgresdbclusterXauroraXpostgresql11",
+                                    "Type" : "AWS::RDS::DBClusterParameterGroup"
+                                }
+                            },
+                            "Output" : [
+                                "rdsClusterXdbXpostgresdbclusterXreaddns",
+                                "rdsXdbXpostgresdbclusterXaX2Xdns",
+                                "securityGroupXdbXpostgresdbcluster"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "RDSEngine" : {
+                                    "Path"  : "Resources.rdsClusterXdbXpostgresdbcluster.Properties.Engine",
+                                    "Value" : "aurora-postgresql"
+                                },
+                                "RDSEngineVersion" : {
+                                    "Path"  : "Resources.rdsClusterXdbXpostgresdbcluster.Properties.EngineVersion",
+                                    "Value" : "11"
+                                },
+                                "OptionGroupVersion" : {
+                                    "Path" : "Resources.rdsOptionGroupXdbXpostgresdbclusterXauroraXpostgresql11.Properties.MajorEngineVersion",
+                                    "Value" : "11"
+                                },
+                                "ParameterGroupVersion" : {
+                                    "Path" : "Resources.rdsParameterGroupXdbXpostgresdbclusterXauroraXpostgresql11.Properties.Family",
+                                    "Value" : "aurora-postgresql11"
+                                }
+                            },
+                            "NotEmpty" : [
+                                "Resources.rdsXdbXpostgresdbclusterXaX1.Properties.DBInstanceClass",
+                                "Resources.rdsXdbXpostgresdbclusterXaX2.Properties.DBInstanceClass"
+                            ]
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "postgresdbcluster" : {
+                    "db" : {
+                        "TestCases" : [ "postgresdbcluster" ]
                     },
                     "*" : {
                         "TestCases" : [ "_cfn-lint" ]
