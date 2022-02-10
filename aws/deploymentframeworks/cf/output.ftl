@@ -30,7 +30,7 @@
 [#function getCFAWSAzReferences zoneIds]
     [#local result = []]
     [#list zoneIds as zoneId]
-        [#local result += getCFAWSAzReference(zoneId)]
+        [#local result += [ getCFAWSAzReference(zoneId) ]]
     [/#list]
     [#return result]
 [/#function]

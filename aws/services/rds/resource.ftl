@@ -170,7 +170,7 @@
         valueIfTrue(
             {
                 "StorageEncrypted" : true,
-                "KmsKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                "KmsKeyId" : getArn(kmsKeyId)
             },
             ( (!(snapshotArn?has_content) && encrypted) && !clusterMember )
         ) +
@@ -193,14 +193,14 @@
             {
                 "EnablePerformanceInsights" : performanceInsights,
                 "PerformanceInsightsRetentionPeriod" : performanceInsightsRetention,
-                "PerformanceInsightsKMSKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                "PerformanceInsightsKMSKeyId" : getArn(kmsKeyId)
             },
             {}
         ) +
         enhancedMonitoring?then(
             {
                 "MonitoringInterval" : enhancedMonitoringInterval,
-                "MonitoringRoleArn" : getReference(enhancedMonitoringRoleId, ARN_ATTRIBUTE_TYPE)
+                "MonitoringRoleArn" : getArn(enhancedMonitoringRoleId)
             },
             {}
         )
@@ -258,7 +258,7 @@
                 "DBSubnetGroupName" : subnetGroupId,
                 "Port" : port,
                 "VpcSecurityGroupIds" : asArray(securityGroupId),
-                "AvailabilityZones" : getCFAWSAzReferences(zones),
+                "AvailabilityZones" : getCFAWSAzReferences(getZones()?map(x -> x.Id)),
                 "Engine" : engine,
                 "EngineVersion" : engineVersion,
                 "BackupRetentionPeriod" : retentionPeriod
@@ -270,14 +270,14 @@
             (!(snapshotArn?has_content) && encrypted)?then(
                 {
                     "StorageEncrypted" : true,
-                    "KmsKeyId" : getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
+                    "KmsKeyId" : getArn(kmsKeyId)
                 },
                 {}
             ) +
             [#-- If restoring from a snapshot the database details will be provided by the snapshot --]
             (snapshotArn?has_content)?then(
                 {
-                    "DBSnapshotIdentifier" : snapshotArn
+                    "SnapshotIdentifier" : snapshotArn
                 },
                 {
                     "DatabaseName" : databaseName,
