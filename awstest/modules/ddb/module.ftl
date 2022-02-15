@@ -27,6 +27,14 @@
                             "GenerateCredentials": {
                                 "Enabled": true,
                                 "EncryptionScheme": "base64"
+                            },
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
+                                }
                             }
                         }
                     }
@@ -122,6 +130,14 @@
                                 "Link" : {
                                     "Tier" : "db",
                                     "Component": "docdbsecretstore-secretstore"
+                                }
+                            },
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
                                 }
                             }
                         },
@@ -222,6 +238,14 @@
                             "GenerateCredentials" : {
                                 "Enabled" : true,
                                 "EncryptionScheme" : "kms"
+                            },
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
+                                }
                             }
                         }
                     }
@@ -307,9 +331,13 @@
                             "Profiles" : {
                                 "Testing" : [ "docdbbackup" ]
                             },
-                            "GenerateCredentials" : {
-                                "Enabled" : true,
-                                "EncryptionScheme" : "kms"
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
+                                }
                             }
                         }
                     }
