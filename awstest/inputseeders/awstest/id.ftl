@@ -133,6 +133,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "db"
                             },
+                            "ddb" : {
+                                "Provider" : "awstest",
+                                "Name" : "ddb"
+                            },
                             "directory" : {
                                 "Provider" : "awstest",
                                 "Name" : "directory"

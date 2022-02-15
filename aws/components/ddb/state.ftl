@@ -62,7 +62,7 @@
             [#-- don't flag an error if credentials missing but component is not enabled --]
             [#local masterUsername = getOccurrenceSettingValue(occurrence, solution["rootCredential:Settings"].UsernameAttribute, !solution.Enabled) ]
             [#local masterPassword = getOccurrenceSettingValue(occurrence, solution["rootCredential:Settings"].PasswordAttribute, !solution.Enabled) ]
-            [#local url = scheme + "://" + masterUsername + ":" + masterPassword + "@" + fqdn + ":" + (portObject.Port)!"" + "/" + name]
+            [#local url = "mongodb://" + masterUsername + ":" + masterPassword + "@" + fqdn + ":" + (portObject.Port)!"" + "/" + name]
 
             [#local attributes = mergeObjects(
                 attributes,
@@ -70,7 +70,7 @@
                     "USERNAME" : masterUsername,
                     "PASSWORD" : masterPassword,
                     "URL" : url,
-                    "READ_URL" : scheme + "://" + masterUsername + ":" + masterPassword + "@" + readfqdn + ":" + (portObject.Port)!"" + "/" + name
+                    "READ_URL" : "mongodb://" + masterUsername + ":" + masterPassword + "@" + readfqdn + ":" + (portObject.Port)!"" + "/" + name
                 }
             )]
             [#break]

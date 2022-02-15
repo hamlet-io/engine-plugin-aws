@@ -83,7 +83,8 @@
 [/#function]
 
 [#function getAmazonDdsBackupWindow timeofDay timeZone="UTC" offsetHrs=0 ]
-    [#local startTime = convertDayOfWeek2DateTime(dayofWeek, timeofDay, timeZone) ]
+    [#-- Utiliose Monday as a dummy day to enable use of existing date functions --]
+    [#local startTime = convertDayOfWeek2DateTime("Monday", timeofDay, timeZone) ]
 
     [#local startTime = addDateTime(startTime, "hh", offsetHrs) ]
     [#local endTime = addDateTime(startTime, "mm", 30) ]
