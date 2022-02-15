@@ -494,6 +494,9 @@
             "db": {
                 "Processor": "db.t2.small"
             },
+            "ddb": {
+                "Processor": "db.t3.medium"
+            },
             "ElasticSearch": {
                 "Processor": "t2.medium.elasticsearch",
                 "CountPerZone": 1,
