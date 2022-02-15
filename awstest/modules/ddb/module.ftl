@@ -27,6 +27,14 @@
                             "GenerateCredentials": {
                                 "Enabled": true,
                                 "EncryptionScheme": "base64"
+                            },
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
+                                }
                             }
                         }
                     }
@@ -49,47 +57,44 @@
                         "CFN" : {
                             "Resource" : {
                                 "ddsCluster" : {
-                                    "Name" : "ddsClusterXdbXdocdb",
+                                    "Name" : "ddsClusterXdbXdocdbbase",
                                     "Type" : "AWS::DocDB::DBCluster"
                                 },
                                 "ddsInstanceA1" : {
-                                    "Name" : "ddsXdbXdocdbXaX1",
+                                    "Name" : "ddsXdbXdocdbbaseXaX1",
                                     "Type" : "AWS::DocDB::DBInstance"
                                 },
-                                "ddsInstanceA2" : {
-                                    "Name" : "ddsXdbXdocdbXaX2",
-                                    "Type" : "AWS::DocDB::DBInstance"
-                                },
-                                "rdsParameterGroup" : {
-                                    "Name" : "ddsClusterParameterGroupXdbXdocdbXdocdb4X0",
+                                "ddsParameterGroup" : {
+                                    "Name" : "ddsClusterParameterGroupXdbXdocdbbaseXdocdb4X0",
                                     "Type" : "AWS::DocDB::DBClusterParameterGroup"
                                 }
                             },
                             "Output" : [
-                                "ddsClusterXdbXdocdbXdns",
-                                "ddsXdbXdocdbXaX1Xport",
-                                "securityGroupXddsClusterXdbXdocdb"
+                                "ddsClusterXdbXdocdbbaseXdns",
+                                "ddsXdbXdocdbbaseXaX1Xport",
+                                "securityGroupXdbXdocdbbase"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "DocDBEngineVersion" : {
-                                    "Path"  : "Resources.ddsClusterXdbXdocdb.Properties.EngineVersion",
+                                    "Path"  : "Resources.ddsClusterXdbXdocdbbase.Properties.EngineVersion",
                                     "Value" : "4.0"
                                 },
                                 "ParameterGroupVersion" : {
-                                    "Path" : "Resources.ddsClusterParameterGroupXdbXdocdbXdocdb4X0.Properties.Family",
+                                    "Path" : "Resources.ddsClusterParameterGroupXdbXdocdbbaseXdocdb4X0.Properties.Family",
                                     "Value" : "docdb4.0"
                                 }
                             },
                             "NotEmpty" : [
-                                "Resources.rdsXdbXdocdbbase.Properties.DBInstanceClass"
+                                "Resources.ddsXdbXdocdbbaseXaX1.Properties.DBInstanceClass",
+                                "Resources.ddsClusterXdbXdocdbbase.Properties.DBClusterIdentifier"
                             ]
                         }
                     },
                     "Tools": {
                         "cfn-lint": {
-                            "IgnoreChecks": [ "E3035", "E3036" ]
+                            "IgnoreChecks": [ "E3035", "E3036", "E3003" ]
                         }
                     }
                 }
@@ -98,9 +103,6 @@
                 "docdbbase" : {
                     "ddb" : {
                         "TestCases" : [ "docdbbase" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -117,6 +119,8 @@
                             "Type" : "ddb",
                             "deployment:Unit" : "aws-docdb-secretstore",
                             "EngineVersion" : "4.0",
+                            "DeletionPolicy": "Delete",
+                            "UpdateReplacePolicy": "Delete",
                             "Port": "mongodb",
                             "Profiles" : {
                                 "Testing" : [ "docdbsecretstore" ]
@@ -126,6 +130,14 @@
                                 "Link" : {
                                     "Tier" : "db",
                                     "Component": "docdbsecretstore-secretstore"
+                                }
+                            },
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
                                 }
                             }
                         },
@@ -154,19 +166,15 @@
                         "CFN" : {
                             "Resource" : {
                                 "ddsCluster" : {
-                                    "Name" : "ddsClusterXdbXdocdb",
+                                    "Name" : "ddsClusterXdbXdocdbsecretstore",
                                     "Type" : "AWS::DocDB::DBCluster"
                                 },
                                 "ddsInstanceA1" : {
-                                    "Name" : "ddsXdbXdocdbXaX1",
-                                    "Type" : "AWS::DocDB::DBInstance"
-                                },
-                                "ddsInstanceA2" : {
-                                    "Name" : "ddsXdbXdocdbXaX2",
+                                    "Name" : "ddsXdbXdocdbsecretstoreXaX1",
                                     "Type" : "AWS::DocDB::DBInstance"
                                 },
                                 "rdsParameterGroup" : {
-                                    "Name" : "ddsClusterParameterGroupXdbXdocdbXdocdb4X0",
+                                    "Name" : "ddsClusterParameterGroupXdbXdocdbsecretstoreXdocdb4X0",
                                     "Type" : "AWS::DocDB::DBClusterParameterGroup"
                                 },
                                 "secret" : {
@@ -175,8 +183,8 @@
                                 }
                             },
                             "Output" : [
-                                "rdsXdbXdocdbsecretstoreXdns",
-                                "rdsXdbXdocdbsecretstoreXport",
+                                "ddsClusterXdbXdocdbsecretstoreXdns",
+                                "ddsClusterXdbXdocdbsecretstoreXport",
                                 "secretXdbXdocdbsecretstoreXRootCredentialsXarn"
                             ]
                         },
@@ -188,6 +196,11 @@
                                 }
                             }
                         }
+                    },
+                    "Tools": {
+                        "cfn-lint": {
+                            "IgnoreChecks": [ "E3035", "E3036", "E3003" ]
+                        }
                     }
                 }
             },
@@ -195,9 +208,6 @@
                 "docdbsecretstore" : {
                     "ddb" : {
                         "TestCases" : [ "docdbsecretstore" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -213,6 +223,8 @@
                         "docdbmaintenance" : {
                             "Type" : "ddb",
                             "deployment:Unit" : "aws-docdb-maintenance",
+                            "DeletionPolicy": "Retain",
+                            "UpdateReplacePolicy": "Retain",
                             "MaintenanceWindow": {
                                 "DayOfTheWeek": "Saturday",
                                 "TimeOfDay": "01:00",
@@ -226,6 +238,14 @@
                             "GenerateCredentials" : {
                                 "Enabled" : true,
                                 "EncryptionScheme" : "kms"
+                            },
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
+                                }
                             }
                         }
                     }
@@ -248,34 +268,35 @@
                         "CFN" : {
                             "Resource" : {
                                 "ddsCluster" : {
-                                    "Name" : "ddsClusterXdbXdocdb",
+                                    "Name" : "ddsClusterXdbXdocdbmaintenance",
                                     "Type" : "AWS::DocDB::DBCluster"
                                 },
                                 "ddsInstanceA1" : {
-                                    "Name" : "ddsXdbXdocdbXaX1",
-                                    "Type" : "AWS::DocDB::DBInstance"
-                                },
-                                "ddsInstanceA2" : {
-                                    "Name" : "ddsXdbXdocdbXaX2",
+                                    "Name" : "ddsXdbXdocdbmaintenanceXaX1",
                                     "Type" : "AWS::DocDB::DBInstance"
                                 },
                                 "rdsParameterGroup" : {
-                                    "Name" : "ddsClusterParameterGroupXdbXdocdbXdocdb4X0",
+                                    "Name" : "ddsClusterParameterGroupXdbXdocdbmaintenanceXdocdb4X0",
                                     "Type" : "AWS::DocDB::DBClusterParameterGroup"
                                 }
                             },
                             "Output" : [
-                                "rdsXdbXdocdbmaintenanceXdns",
-                                "rdsXdbXdocdbmaintenanceXport"
+                                "ddsClusterXdbXdocdbmaintenanceXdns",
+                                "ddsClusterXdbXdocdbmaintenanceXport"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "MaintenanceWindow" : {
-                                    "Path"  : "Resources.rdsXdbXdocdbmaintenance.Properties.PreferredMaintenanceWindow",
+                                    "Path"  : "Resources.ddsClusterXdbXdocdbmaintenance.Properties.PreferredMaintenanceWindow",
                                     "Value" : "Fri:15:00-Fri:15:30"
                                 }
                             }
+                        }
+                    },
+                    "Tools": {
+                        "cfn-lint": {
+                            "IgnoreChecks": [ "E3035", "E3036", "E3003" ]
                         }
                     }
                 }
@@ -284,9 +305,6 @@
                 "docdbmaintenance" : {
                     "ddb" : {
                         "TestCases" : [ "docdbmaintenance" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -311,9 +329,13 @@
                             "Profiles" : {
                                 "Testing" : [ "docdbbackup" ]
                             },
-                            "GenerateCredentials" : {
-                                "Enabled" : true,
-                                "EncryptionScheme" : "kms"
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
+                                }
                             }
                         }
                     }
@@ -336,34 +358,36 @@
                         "CFN" : {
                             "Resource" : {
                                 "ddsCluster" : {
-                                    "Name" : "ddsClusterXdbXdocdb",
+                                    "Name" : "ddsClusterXdbXdocdbbackup",
                                     "Type" : "AWS::DocDB::DBCluster"
                                 },
                                 "ddsInstanceA1" : {
-                                    "Name" : "ddsXdbXdocdbXaX1",
-                                    "Type" : "AWS::DocDB::DBInstance"
-                                },
-                                "ddsInstanceA2" : {
-                                    "Name" : "ddsXdbXdocdbXaX2",
+                                    "Name" : "ddsXdbXdocdbbackupXaX1",
                                     "Type" : "AWS::DocDB::DBInstance"
                                 },
                                 "rdsParameterGroup" : {
-                                    "Name" : "ddsClusterParameterGroupXdbXdocdbXdocdb4X0",
+                                    "Name" : "ddsClusterParameterGroupXdbXdocdbbackupXdocdb4X0",
                                     "Type" : "AWS::DocDB::DBClusterParameterGroup"
                                 }
                             },
                             "Output" : [
-                                "rdsXdbXdocdbbackupXdns",
-                                "rdsXdbXdocdbbackupXport"
+                                "ddsClusterXdbXdocdbbackupXdns",
+                                "ddsClusterXdbXdocdbbackupXport",
+                                "ddsXdbXdocdbbackupXaX1Xport"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "BackupWindow" : {
-                                    "Path"  : "Resources.rdsXdbXdocdbbackup.Properties.PreferredBackupWindow",
-                                    "Value" : "Fri:15:00-Fri:15:30"
+                                    "Path"  : "Resources.ddsClusterXdbXdocdbbackup.Properties.PreferredBackupWindow",
+                                    "Value" : "15:00-15:30"
                                 }
                             }
+                        }
+                    },
+                    "Tools": {
+                        "cfn-lint": {
+                            "IgnoreChecks": [ "E3035", "E3036", "E3003" ]
                         }
                     }
                 }
@@ -372,9 +396,6 @@
                 "docdbbackup" : {
                     "ddb" : {
                         "TestCases" : [ "docdbbackup" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
