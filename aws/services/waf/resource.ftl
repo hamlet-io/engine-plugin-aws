@@ -637,6 +637,12 @@
                         content=[
                             r' case ${STACK_OPERATION} in',
                             r'    create|update|delete)',
+                            r'       manage_waf_logging ' +
+                            r'          "' + getRegion() + r'"' +
+                            r'          "' + wafaclId + r'"' +
+                            r'          "' + wafType + r'"' +
+                            r'          "disable"' +
+                            r'          || return $?',
                             r' esac'
                         ]
                     /]
