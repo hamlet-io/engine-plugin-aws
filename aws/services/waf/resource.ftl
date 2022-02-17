@@ -56,13 +56,13 @@
     [#return retVal]
 [/#function]
 
-[#function formatV2Conditions conditions valueSet={}]
+[#function formatV2Conditions conditions valueSet={} id=""]
     [#local v2Statements = []]
     [#list conditions as condition]
         [#local v2WkStatement = []]
         [#list condition.Filters as filter]
             [#switch condition.Type]
-                [#case "SqlInjectionMatch"]
+                [#case AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#local v2WkStatement += [ {"SqliMatchStatement": {
                             "FieldToMatch": formatV2FieldMatch(field),
@@ -70,15 +70,15 @@
                             }}]]
                     [/#list]
                 [#break]
-                [#case "XssMatch"]
+                [#case AWS_WAF_XSS_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
-                    [#local v2WkStatement += [ { "XssMatchStatement": {
-                        "FieldToMatch": formatV2FieldMatch(field),
-                        "TextTransformations": formatV2TextTransformations(filter.Transformations)
-                        }}]]
+                        [#local v2WkStatement += [ { "XssMatchStatement": {
+                            "FieldToMatch": formatV2FieldMatch(field),
+                            "TextTransformations": formatV2TextTransformations(filter.Transformations)
+                            }}]]
                     [/#list]
                 [#break]
-                [#case "ByteMatch"]
+                [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#list getWAFValueList(filter.Constraints, valueSet) as constraint]
                             [#list getWAFValueList(filter.Targets, valueSet) as target]
@@ -92,7 +92,7 @@
                         [/#list]
                     [/#list]
                 [#break]
-                [#case "SizeConstraint"]
+                [#case AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#list getWAFValueList(filter.Operators, valueSet) as operator]
                             [#list getWAFValueList(filter.Sizes, valueSet) as size]
@@ -106,8 +106,26 @@
                         [/#list]
                     [/#list]
                 [#break]
+                [#case AWS_WAF_GEO_MATCH_CONDITION_TYPE]
+                    [#local v2WkGeo = []]
+                    [#list getWAFValueList(filter.Targets, valueSet) as target]
+                        [#local v2WkGeo += [ target] ]
+                    [/#list]
+                    [#local v2WkStatement += [ { "GeoMatchStatement": {
+                        "CountryCodes": v2WkGeo
+                        }}] ]
+                [#break]
+                [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
+                    [#--local result += formatWAFIPMatchTuples(filter, valueSet, version) 
+                        Also assumes that only one condition of IPAddressGroups is valid
+                    --]
+                    [#local v2WkStatement += [ { "IPSetReferenceStatement": {
+                        "Arn": { "Fn::GetAtt" : [ formatDependentWAFConditionId(condition.Type, id, "c1"), "Arn" ] }
+                        }}] ]
+                [#break]
                 [#default]
-                    [#local v2WkStatement += [ { "UnknownStatement": condition } ]]
+                    [#local v2WkStatement += [ { "HamletFatal:UnknownStatement": condition } ]]
+                    [@fatal message="Unknown WAF statement type" context=filter /]
                 [#break]
             [/#switch]
         [/#list]
@@ -167,9 +185,13 @@
                         { "Scope" : regional?then("REGIONAL","CLOUDFRONT")},
                         {}
                     )+
+                    ((type == "IPMatch") && (version == "v2"))?then(
+                        { "IPAddressVersion" : "IPV4"},
+                        {}
+                    )+
                     contentIfContent(
                         attributeIfContent(
-                            WAFConditions[type].TuplesAttributeKey!"",
+                            ((type == "IPMatch") && (version == "v2"))?then("Addresses",WAFConditions[type].TuplesAttributeKey!""),
                             result
                         ),
                         result
@@ -265,11 +287,6 @@
 [/#macro]
 
 [#macro createWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit="" version="v1"]
-    [#if version == "v2"]
-        [#-- V2 templates create rules as part of WebAcl --]
-        [#return]
-    [/#if]
-
     [#local predicates = [] ]
     [#list asArray(conditions) as condition]
         [#local rateBased = (rateKey?has_content && rateLimit?has_content)]
@@ -284,14 +301,17 @@
         [/#if]
         [#if condition.Filters?has_content]
             [#-- Condition to be created with the rule --]
-            [@createWAFCondition
-                id=conditionId
-                name=conditionName
-                type=condition.Type
-                filters=condition.Filters
-                valueSet=valueSet
-                regional=regional
-                version=version /]
+            [#if (version == "v1") || ((condition.Type) == "IPMatch") ]
+                [#-- V2 templates create rules as part of WebAcl except for IPMatch --]
+                [@createWAFCondition
+                    id=conditionId
+                    name=conditionName
+                    type=condition.Type
+                    filters=condition.Filters
+                    valueSet=valueSet
+                    regional=regional
+                    version=version /]
+            [/#if]
         [/#if]
         [#local predicates +=
             [
@@ -304,19 +324,22 @@
         ]
     [/#list]
 
-    [@cfResource
-        id=id
-        type=formatWAFResourceType(rateBased?then("RateBasedRule", "Rule"), regional)
-        properties=
-            {
-                "MetricName" : metric?replace("-","X"),
-                "Name": name
-            } +
-            attributeIfTrue("MatchPredicates", rateBased, predicates) +
-            attributeIfTrue("Predicates", (!rateBased), predicates) +
-            attributeIfContent("RateKey", rateKey) +
-            attributeIfContent("RateLimit", rateLimit)
-    /]
+    [#if version == "v1"]
+        [#-- V2 templates create rules as part of WebAcl except for IPMatch --]
+        [@cfResource
+            id=id
+            type=formatWAFResourceType(rateBased?then("RateBasedRule", "Rule"), regional)
+            properties=
+                {
+                    "MetricName" : metric?replace("-","X"),
+                    "Name": name
+                } +
+                attributeIfTrue("MatchPredicates", rateBased, predicates) +
+                attributeIfTrue("Predicates", (!rateBased), predicates) +
+                attributeIfContent("RateKey", rateKey) +
+                attributeIfContent("RateLimit", rateLimit)
+        /]
+    [/#if]
 [/#macro]
 
 [#-- Rules are grouped into bands. Bands are sorted into ascending alphabetic --]
@@ -382,7 +405,7 @@
 
                 [#case "v2"]
                     [#local v2Action = (rule.Action)?lower_case?cap_first]
-                    [#local v2Statement = formatV2Conditions(rule.Conditions, valueSet) ]
+                    [#local v2Statement = formatV2Conditions(rule.Conditions, valueSet, ruleId) ]
                     [#local aclRules +=
                         [
                             {
