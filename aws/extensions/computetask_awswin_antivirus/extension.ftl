@@ -27,7 +27,7 @@
     [#local config_av = []]
     [#local unconfig_av = []]
 
-    [#local config_av += [ 
+    [#local config_av += [
         r"if(Test-Path -Path 'c:\ProgramData\Hamlet\Scripts\unconfig_av.ps1' -PathType Leaf) { ",
         r"   invoke-expression -Command c:\ProgramData\Hamlet\Scripts\unconfig_av.ps1 ;",
         r"}"
@@ -42,33 +42,29 @@
         [#local unconfig_av += [ r' & sc.exe config WinDefend start= enabled 2>&1 | Write-Output ;' ]]
         [#local unconfig_av += [ r' & sc.exe start WinDefend 2>&1 | Write-Output ;']]
     [/#if]
-    [#if isPresent(avConfig.Exclusions)]
-        [#list avConfig.Exclusions.FilePaths as file]
-            [#local config_av += [ r'Add-MpPreference -ExclusionPath "' + file + r'" 2>&1 | Write-Output ;' ]]
-            [#local unconfig_av += [ r'Remove-MpPreference -ExclusionPath "' + file + r'" 2>&1 | Write-Output ;' ]]
-        [/#list]
-        [#list avConfig.Exclusions.Folders as path]
-            [#local config_av += [ r'Add-MpPreference -ExclusionPath "' + path + r'" 2>&1 | Write-Output ;' ]]
-            [#local unconfig_av += [ r'Remove-MpPreference -ExclusionPath "' + path + r'" 2>&1 | Write-Output ;' ]]
-        [/#list]
-        [#list avConfig.Exclusions.FileTypes as extn ]
-            [#local config_av += [ r'Add-MpPreference -ExclusionExtension "' + extn + r'" 2>&1 | Write-Output ;' ]]
-            [#local unconfig_av += [ r'Remove-MpPreference -ExclusionExtension "' + extn + r'" 2>&1 | Write-Output ;' ]]
-        [/#list]
-    [/#if]
-    [#if isPresent(avConfig.ControlledFolders)]
-        [#list avConfig.ControlledFolders.Folders as path]
-            [#local config_av += [ r'Add-MpPreference -ControlledFolderAccessProtectedFolders "' + path + r'" 2>&1 | Write-Output ;' ]]
-            [#local unconfig_av += [ r'Remove-MpPreference -ControlledFolderAccessProtectedFolders "' + path + r'" 2>&1 | Write-Output ;' ]]
-        [/#list]
-        [#list avConfig.ControlledFolders.AllowedApps as app]
-            [#local config_av += [ r'Add-MpPreference -ControlledFolderAccessAllowedApplications "' + app + r'" 2>&1 | Write-Output ;' ]]
-            [#local unconfig_av += [ r'Remove-MpPreference -ControlledFolderAccessAllowedApplications "' + app + r'" 2>&1 | Write-Output ;' ]]
-        [/#list]
-        [#local config_av += [ r'Set-MpPreference -EnableControlledFolderAccess Enabled  2>&1 | Write-Output ;' ]]
-        [#local unconfig_av += [ r'Set-MpPreference -EnableControlledFolderAccess Disabled  2>&1 | Write-Output ;' ]]
-    [/#if]
-    [#local config_av += [ 
+    [#list avConfig.Exclusions.FilePaths as file]
+        [#local config_av += [ r'Add-MpPreference -ExclusionPath "' + file + r'" 2>&1 | Write-Output ;' ]]
+        [#local unconfig_av += [ r'Remove-MpPreference -ExclusionPath "' + file + r'" 2>&1 | Write-Output ;' ]]
+    [/#list]
+    [#list avConfig.Exclusions.Folders as path]
+        [#local config_av += [ r'Add-MpPreference -ExclusionPath "' + path + r'" 2>&1 | Write-Output ;' ]]
+        [#local unconfig_av += [ r'Remove-MpPreference -ExclusionPath "' + path + r'" 2>&1 | Write-Output ;' ]]
+    [/#list]
+    [#list avConfig.Exclusions.FileTypes as extn ]
+        [#local config_av += [ r'Add-MpPreference -ExclusionExtension "' + extn + r'" 2>&1 | Write-Output ;' ]]
+        [#local unconfig_av += [ r'Remove-MpPreference -ExclusionExtension "' + extn + r'" 2>&1 | Write-Output ;' ]]
+    [/#list]
+    [#list avConfig.ControlledFolders.Folders as path]
+        [#local config_av += [ r'Add-MpPreference -ControlledFolderAccessProtectedFolders "' + path + r'" 2>&1 | Write-Output ;' ]]
+        [#local unconfig_av += [ r'Remove-MpPreference -ControlledFolderAccessProtectedFolders "' + path + r'" 2>&1 | Write-Output ;' ]]
+    [/#list]
+    [#list avConfig.ControlledFolders.AllowedApps as app]
+        [#local config_av += [ r'Add-MpPreference -ControlledFolderAccessAllowedApplications "' + app + r'" 2>&1 | Write-Output ;' ]]
+        [#local unconfig_av += [ r'Remove-MpPreference -ControlledFolderAccessAllowedApplications "' + app + r'" 2>&1 | Write-Output ;' ]]
+    [/#list]
+    [#local config_av += [ r'Set-MpPreference -EnableControlledFolderAccess Enabled  2>&1 | Write-Output ;' ]]
+    [#local unconfig_av += [ r'Set-MpPreference -EnableControlledFolderAccess Disabled  2>&1 | Write-Output ;' ]]
+    [#local config_av += [
         r"if(Test-Path -Path 'c:\ProgramData\Hamlet\Scripts\new_unconfig_av.ps1' -PathType Leaf) {",
         r"   if(Test-Path -Path 'c:\ProgramData\Hamlet\Scripts\unconfig_av.ps1' -PathType Leaf) {",
         r"      Remove-Item c:\ProgramData\Hamlet\Scripts\unconfig_av.ps1 ;",
