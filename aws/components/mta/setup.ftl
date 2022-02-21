@@ -27,9 +27,14 @@
 
             [#-- Process the rules according to the provided order --]
             [#list (occurrence.Occurrences![]) as subOccurrence]
+
                 [#local core = subOccurrence.Core ]
                 [#local solution = subOccurrence.Configuration.Solution ]
                 [#local resources = subOccurrence.State.Resources ]
+
+                [#if ! solution.Enabled]
+                    [#continue]
+                [/#if]
 
                 [#local eventTypes = solution.EventTypes ]
 
@@ -172,6 +177,10 @@
                 [#local core = subOccurrence.Core ]
                 [#local solution = subOccurrence.Configuration.Solution ]
                 [#local resources = subOccurrence.State.Resources ]
+
+                [#if ! solution.Enabled]
+                    [#continue]
+                [/#if]
 
                 [#local ruleId = resources["rule"].Id ]
                 [#local ruleName = resources["rule"].Name ]
