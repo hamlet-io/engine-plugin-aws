@@ -223,19 +223,6 @@
         [/#list]
     [/#list]
 
-    [#if  solution.Monitoring.DetailedMetrics.Enabled ]
-        [#local resources = mergeObjects(
-                resources,
-                {
-                    "monitoringRole" : {
-                        "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, core.Id, "monitoring" ),
-                        "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
-                        "IncludeInDeploymentState" : false
-                    }
-                }
-        )]
-    [/#if]
-
     [#assign componentState =
         {
             "Resources" : mergeObjects(

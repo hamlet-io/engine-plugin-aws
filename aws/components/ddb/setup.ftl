@@ -261,23 +261,6 @@
         [/#if]
     [/#list]
 
-    [#if solution.Monitoring.DetailedMetrics.Enabled ]
-        [#local monitoringRoleId = resources["monitoringRole"].Id ]
-        [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(monitoringRoleId)]
-            [@createRole
-                id=monitoringRoleId
-                trustedServices=[
-                    "dds.amazonaws.com",
-                    "monitoring.dds.amazonaws.com"
-                ]
-                managedArns=[
-                    "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
-                ]
-                tags=getOccurrenceCoreTags(occurrence)
-            /]
-        [/#if]
-    [/#if]
-
     [#if deploymentSubsetRequired("prologue", false)]
         [@addToDefaultBashScriptOutput
             content=
@@ -726,10 +709,10 @@
                         ""
                     )
                 backupWindow=
-                    solution.BackupWindow.Configured?then(
+                    solution.Backup.BackupWindow.Configured?then(
                         getAmazonDdsBackupWindow(
-                            solution.BackupWindow.TimeOfDay,
-                            solution.BackupWindow.TimeZone
+                            solution.Backup.BackupWindow.TimeOfDay,
+                            solution.Backup.BackupWindow.TimeZone
                             ),
                         ""
                     )
