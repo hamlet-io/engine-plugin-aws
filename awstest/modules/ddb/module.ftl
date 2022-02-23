@@ -27,14 +27,6 @@
                             "GenerateCredentials": {
                                 "Enabled": true,
                                 "EncryptionScheme": "base64"
-                            },
-                            "Settings" : {
-                                "MASTER_USERNAME" : {
-                                    "Value" : "testUser"
-                                },
-                                "MASTER_PASSWORD" : {
-                                    "Value" : "testPassword"
-                                }
                             }
                         }
                     }
@@ -130,14 +122,6 @@
                                 "Link" : {
                                     "Tier" : "db",
                                     "Component": "docdbsecretstore-secretstore"
-                                }
-                            },
-                            "Settings" : {
-                                "MASTER_USERNAME" : {
-                                    "Value" : "testUser"
-                                },
-                                "MASTER_PASSWORD" : {
-                                    "Value" : "testPassword"
                                 }
                             }
                         },
@@ -320,9 +304,11 @@
                         "docdbbackup" : {
                             "Type" : "ddb",
                             "deployment:Unit" : "aws-docdb-backup",
-                            "BackupWindow": {
-                                "TimeOfDay": "01:00",
-                                "TimeZone": "AEST"
+                            "Backup": {
+                                "BackupWindow": {
+                                    "TimeOfDay": "01:00",
+                                    "TimeZone": "AEST"
+                                }
                             },
                             "EngineVersion" : "4.0",
                             "Port": "mongodb",
