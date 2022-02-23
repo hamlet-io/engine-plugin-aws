@@ -528,13 +528,13 @@
     /]
 [/#macro]
 
-[#macro createBucketPolicy id bucket statements dependencies=[] ]
+[#macro createBucketPolicy id bucketId statements dependencies=[] ]
     [@cfResource
         id=id
         type="AWS::S3::BucketPolicy"
         properties=
             {
-                "Bucket" : (getExistingReference(bucket)?has_content)?then(getExistingReference(bucket),bucket)
+                "Bucket" : getReference(bucketId)
             } +
             getPolicyDocument(statements)
         outputs={}

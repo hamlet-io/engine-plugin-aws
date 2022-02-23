@@ -380,9 +380,8 @@
                 [#if bucketPolicy?has_content ]
                     [@createBucketPolicy
                         id=bucketPolicyId
-                        bucket=bucketName
+                        bucketId=bucketId
                         statements=bucketPolicy
-                        dependencies=bucketId
                     /]
                 [/#if]
             [/#if]

@@ -485,9 +485,8 @@
         [#if policyStatements?has_content ]
             [@createBucketPolicy
                 id=bucketPolicyId
-                bucket=s3Name
+                bucketId=s3Id
                 statements=policyStatements
-                dependencies=s3Id
             /]
         [/#if]
 
