@@ -27,14 +27,6 @@
                             "GenerateCredentials": {
                                 "Enabled": true,
                                 "EncryptionScheme": "base64"
-                            },
-                            "Settings" : {
-                                "MASTER_USERNAME" : {
-                                    "Value" : "testUser"
-                                },
-                                "MASTER_PASSWORD" : {
-                                    "Value" : "testPassword"
-                                }
                             }
                         }
                     }
@@ -130,14 +122,6 @@
                                 "Link" : {
                                     "Tier" : "db",
                                     "Component": "docdbsecretstore-secretstore"
-                                }
-                            },
-                            "Settings" : {
-                                "MASTER_USERNAME" : {
-                                    "Value" : "testUser"
-                                },
-                                "MASTER_PASSWORD" : {
-                                    "Value" : "testPassword"
                                 }
                             }
                         },
