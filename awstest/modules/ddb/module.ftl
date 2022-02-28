@@ -22,11 +22,16 @@
                             "EngineVersion" : "4.0",
                             "Port": "mongodb",
                             "Profiles" : {
-                                "Testing" : [ "docdbbase" ]
+                                "Testing" : [ "docdbbase" ],
+                                "Processor" : "docdbbase"
                             },
-                            "GenerateCredentials": {
-                                "Enabled": true,
-                                "EncryptionScheme": "base64"
+                            "Settings" : {
+                                "MASTER_USERNAME" : {
+                                    "Value" : "testUser"
+                                },
+                                "MASTER_PASSWORD" : {
+                                    "Value" : "testPassword"
+                                }
                             }
                         }
                     }
@@ -115,7 +120,8 @@
                             "UpdateReplacePolicy": "Delete",
                             "Port": "mongodb",
                             "Profiles" : {
-                                "Testing" : [ "docdbsecretstore" ]
+                                "Testing" : [ "docdbsecretstore" ],
+                                "Processor" : "docdbsecretstore"
                             },
                             "rootCredential:Source" : "SecretStore",
                             "rootCredential:SecretStore" : {
@@ -217,19 +223,12 @@
                             "EngineVersion" : "4.0",
                             "Port": "mongodb",
                             "Profiles" : {
-                                "Testing" : [ "docdbmaintenance" ]
+                                "Testing" : [ "docdbmaintenance" ],
+                                "Processor" : "docdbmaintenance"
                             },
                             "GenerateCredentials" : {
                                 "Enabled" : true,
                                 "EncryptionScheme" : "kms"
-                            },
-                            "Settings" : {
-                                "MASTER_USERNAME" : {
-                                    "Value" : "testUser"
-                                },
-                                "MASTER_PASSWORD" : {
-                                    "Value" : "testPassword"
-                                }
                             }
                         }
                     }
@@ -313,7 +312,8 @@
                             "EngineVersion" : "4.0",
                             "Port": "mongodb",
                             "Profiles" : {
-                                "Testing" : [ "docdbbackup" ]
+                                "Testing" : [ "docdbbackup" ],
+                                "Processor" : "docdbbackup"
                             },
                             "Settings" : {
                                 "MASTER_USERNAME" : {
