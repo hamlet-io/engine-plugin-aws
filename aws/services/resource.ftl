@@ -227,7 +227,7 @@
     [#else]
         [@fatal
             message="Namespace not mapped for this resource"
-            context=resource.Type
+            context=resourceType
         /]
     [/#if]
 [/#function]
