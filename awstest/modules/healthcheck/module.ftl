@@ -15,17 +15,12 @@
                 "elb" : {
                     "Components" : {
                         "healthchecklb" : {
-                            "lb" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-healthcheck-lb"
-                                    }
-                                },
-                                "Engine" : "application",
-                                "PortMappings" : {
-                                    "https" : {},
-                                    "http" : {}
-                                }
+                            "Type" : "lb",
+                            "deployment:Unit" : "aws-healthcheck-lb"
+                            "Engine" : "application",
+                            "PortMappings" : {
+                                "https" : {},
+                                "http" : {}
                             }
                         }
                     }
@@ -36,50 +31,13 @@
                         [#-- we can't control region through modules at the moment so can't include in testing --]
                         [#-- TODO(roleyfoley): enable when placements fully control region --]
                         "healthchecksimplebase" : {
-                            "healthcheck" : {
-                                "Enabled" : false,
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-healthcheck-simple-base"
-                                    }
-                                },
-                                "Type" : "Simple",
-                                "Type:Simple" : {
-                                    "Destination": {
-                                        "Link" : {
-                                            "Tier" : "elb",
-                                            "Component" : "healthchecklb",
-                                            "PortMapping" : "https",
-                                            "Instance" : "",
-                                            "Version" : ""
-                                        }
-                                    },
-                                    "Port" : "https"
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "healthchecksimplebase" ],
-                                    "Placement" : "healtchecksimple"
-                                }
-                            }
-                        },
-                        "healthcheckcomplexbase" : {
-                            "healthcheck" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-healthcheck-complex-base"
-                                    }
-                                },
-                                "Type" : "Complex",
-                                "Type:Complex" : {
-                                    "Image": {
-                                        "Source" : "none"
-                                    },
-                                    "Handler" : "handler",
-                                    "RunTime" : "syn-python-selenium-1.0"
-                                },
-                                "Extenions" : [ "_healthcheckcomplexbase" ],
-                                "Links" : {
-                                    "lb": {
+                            "Type" : "healthcheck",
+                            "Enabled" : false,
+                            "deployment:Unit" : "aws-healthcheck-simple-base",
+                            "Engine" : "Simple",
+                            "Engine:Simple" : {
+                                "Destination": {
+                                    "Link" : {
                                         "Tier" : "elb",
                                         "Component" : "healthchecklb",
                                         "PortMapping" : "https",
@@ -87,9 +45,36 @@
                                         "Version" : ""
                                     }
                                 },
-                                "Profiles" : {
-                                    "Testing" : [ "healthcheckcomplexbase" ]
+                                "Port" : "https"
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "healthchecksimplebase" ],
+                                "Placement" : "healtchecksimple"
+                            }
+                        },
+                        "healthcheckcomplexbase" : {
+                            "Type" : "healthcheck",
+                            "deployment:Unit" : "aws-healthcheck-complex-base"
+                            "Engine" : "Complex",
+                            "Engine:Complex" : {
+                                "Image": {
+                                    "Source" : "none"
+                                },
+                                "Handler" : "handler",
+                                "RunTime" : "syn-python-selenium-1.0"
+                            },
+                            "Extenions" : [ "_healthcheckcomplexbase" ],
+                            "Links" : {
+                                "lb": {
+                                    "Tier" : "elb",
+                                    "Component" : "healthchecklb",
+                                    "PortMapping" : "https",
+                                    "Instance" : "",
+                                    "Version" : ""
                                 }
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "healthcheckcomplexbase" ]
                             }
                         }
                     }
