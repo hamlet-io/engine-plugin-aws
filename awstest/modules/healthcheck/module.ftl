@@ -16,7 +16,7 @@
                     "Components" : {
                         "healthchecklb" : {
                             "Type" : "lb",
-                            "deployment:Unit" : "aws-healthcheck-lb"
+                            "deployment:Unit" : "aws-healthcheck-lb",
                             "Engine" : "application",
                             "PortMappings" : {
                                 "https" : {},
@@ -54,7 +54,7 @@
                         },
                         "healthcheckcomplexbase" : {
                             "Type" : "healthcheck",
-                            "deployment:Unit" : "aws-healthcheck-complex-base"
+                            "deployment:Unit" : "aws-healthcheck-complex-base",
                             "Engine" : "Complex",
                             "Engine:Complex" : {
                                 "Image": {
