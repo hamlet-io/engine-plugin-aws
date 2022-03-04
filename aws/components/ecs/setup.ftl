@@ -101,7 +101,7 @@
             "DefaultEnvironmentVariables" : true,
             "DefaultLinkVariables" : true,
             "DefaultBaselineVariables" : true,
-            "Policy" : standardPolicies(occurrence, baselineComponentIds),
+            "Policy" : iamStandardPolicies(occurrence, baselineComponentIds),
             "ManagedPolicy" : [],
             "ComputeTasks" : [],
             "Files" : {},
@@ -668,7 +668,7 @@
 
         [#local taskId = resources["task"].Id ]
         [#local taskName = resources["task"].Name ]
-        [#local containers = getTaskContainers(occurrence, subOccurrence) ]
+        [#local containers = getECSTaskContainers(occurrence, subOccurrence) ]
 
         [#local networkMode = solution.NetworkMode]
         [#if solution.NetworkMode == "aws:awsvpc"]

@@ -114,7 +114,7 @@
             "Environment" : {},
             "Links" : contextLinks,
             "BaselineLinks" : baselineLinks,
-            "Policy" : standardPolicies(occurrence, baselineComponentIds),
+            "Policy" : iamStandardPolicies(occurrence, baselineComponentIds),
             "DefaultCoreVariables" : true,
             "DefaultEnvironmentVariables" : true,
             "DefaultLinkVariables" : true,

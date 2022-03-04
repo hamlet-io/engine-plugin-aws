@@ -131,7 +131,7 @@
             "DefaultEnvironmentVariables" : true,
             "DefaultLinkVariables" : true,
             "DefaultBaselineVariables" : true,
-            "Policy" : standardPolicies(fn, baselineComponentIds),
+            "Policy" : iamStandardPolicies(fn, baselineComponentIds),
             "ManagedPolicy" : [],
             "CodeHash" : solution.FixedCodeVersion.CodeHash,
             "VersionDependencies" : [],

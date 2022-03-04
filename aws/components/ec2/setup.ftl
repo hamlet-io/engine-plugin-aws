@@ -108,7 +108,7 @@
             "DefaultEnvironmentVariables" : false,
             "DefaultLinkVariables" : true,
             "DefaultBaselineVariables" : true,
-            "Policy" : standardPolicies(occurrence, baselineComponentIds),
+            "Policy" : iamStandardPolicies(occurrence, baselineComponentIds),
             "ManagedPolicy" : [],
             "ComputeTasks" : [],
             "Files" : {},
