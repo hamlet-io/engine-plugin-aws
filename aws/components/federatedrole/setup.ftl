@@ -91,7 +91,7 @@
         [#local _context =
             {
                 "Links" : contextLinks,
-                "Policy" : standardPolicies(subOccurrence, baselineComponentIds),
+                "Policy" : iamStandardPolicies(subOccurrence, baselineComponentIds),
                 "ManagedPolicy" : [],
                 "Assignment" : subCore.SubComponent.Id,
                 "DefaultCoreVariables" : false,

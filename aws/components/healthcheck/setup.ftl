@@ -220,7 +220,7 @@
                     "DefaultEnvironmentVariables" : false,
                     "DefaultLinkVariables" : false,
                     "DefaultBaselineVariables" : false,
-                    "Policy" : standardPolicies(occurrence, baselineComponentIds),
+                    "Policy" : iamStandardPolicies(occurrence, baselineComponentIds),
                     "ManagedPolicy" : [],
                     "Script" : []
                 }

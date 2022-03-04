@@ -64,7 +64,7 @@
             "DefaultCoreVariables" : false,
             "DefaultEnvironmentVariables" : false,
             "DefaultLinkVariables" : false,
-            "Policy" : standardPolicies(occurrence, baselineComponentIds),
+            "Policy" : iamStandardPolicies(occurrence, baselineComponentIds),
             "TransferMounts" : {}
         }
     ]
