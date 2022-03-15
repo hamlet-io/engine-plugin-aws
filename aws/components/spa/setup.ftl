@@ -137,6 +137,12 @@
                     "$\{CONFIG}",
                     "config.json"
                 ) +
+                [#-- Ensure config.json is not cached for too long --]
+                [#-- as it can contain version ids that need to be --]
+                [#-- refetched when the code changes.              --]
+                [#-- Otherwise it is not obvious that new code has --]
+                [#-- been loaded becuase the version info doesn't  --]
+                [#-- change.                                       --]
                 syncFilesToBucketScript(
                     "configFiles",
                     getRegion(),
@@ -144,7 +150,10 @@
                     formatRelativePath(
                         getOccurrenceSettingValue(occurrence, "SETTINGS_PREFIX"),
                         solution.ConfigPath
-                    )
+                    ),
+                    true,
+                    [],
+                    60
                 ) /]
     [/#if]
 
