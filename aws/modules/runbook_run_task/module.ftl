@@ -24,20 +24,23 @@
             "Mandatory" : true
         },
         {
-            "Names" : "Inputs",
-            "Description" : "Inputs requred from to run the task",
+            "Names" : "inputs",
+            "Description" : "User provided inputs requred to run the task",
             "Types" : ARRAY_OF_STRING_TYPE,
-            "Values" : [ "command", "environment" ]
+            "Values" : [ "command", "environment" ],
+            "Default" : []
         },
         {
             "Names" : "command",
-            "Description" : "A fixed command to run on the container",
-            "Types" : STRING_TYPE
+            "Description" : "A fixed command to run on the container everytime the runbook is run",
+            "Types" : ARRAY_OF_STRING_TYPE,
+            "Default" : []
         },
         {
             "Names" : "environment",
             "Description" : "A fixed environment variable overrides to apply to the command",
-            "Types" : STRING_TYPE
+            "Types" : OBJECT_TYPE,
+            "Default" : {}
         }
     ]
 /]
@@ -59,7 +62,7 @@
                 taskLink.Tier : {
                     "Components" : {
                         "${componentId}-exec_command-${id}" : {
-                            "Description" : "Runs an interactive command on a service container",
+                            "Description" : "Starts a new ecs task and waits for the result",
                             "Type" : "runbook",
                             "Engine" : "hamlet",
                             "Inputs" : {} +
@@ -101,22 +104,28 @@
                                         "Type" : "aws_ecs_run_task",
                                         "Parameters" : {
                                             "ClusterArn" : {
-                                                "Value" : "__attribute:task:CLUSTER_ARN__"
+                                                "Value" : "__attribute:task:ECSHOST__"
                                             },
                                             "TaskFamily" : {
                                                 "Value" : "__attribute:task:DEFINITION__"
                                             },
-                                            "OverrideContainerName" : {
+                                            "ContainerName" : {
                                                 "Value" : containerId?split("-")[0]
                                             },
                                             "CommandOverride" : {
-                                                "Value" : command
+                                                "Value" : inputs?seq_contains("command")?then(
+                                                    "__input:command__",
+                                                    getJSON(command)
+                                                )
                                             },
                                             "EnvironmentOverrides" : {
-                                                "Value" : environment
+                                                "Value" : inputs?seq_contains("environment")?then(
+                                                    "__input:environment__",
+                                                    getJSON(environment)
+                                                )
                                             },
                                             "CapacityProvider" : {
-                                                "Value" : ""
+                                                "Value" : "__attribute:task:CAPACITY_PROVIDER__"
                                             },
                                             "SubnetIds" : {
                                                 "Value" : "__attribute:task:SUBNET__"
@@ -137,6 +146,17 @@
                                     },
                                     "Links" : {
                                         "task" : taskLink
+                                    }
+                                },
+                                "echo_task_result": {
+                                    "Priority": 20,
+                                    "Task": {
+                                        "Type": "output_echo",
+                                        "Parameters" : {
+                                            "Value" : {
+                                                "Value" : "__output:run_task:run_status__"
+                                            }
+                                        }
                                     }
                                 }
                             }
