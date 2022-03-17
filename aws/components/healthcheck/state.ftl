@@ -34,8 +34,13 @@
                 "canary" : {
                     "Id" : formatResourceId(AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE, core.Id),
                     [#-- Name must be less than 21 chars --]
-                    "Name" : concatenate([ core.Component.RawName, segmentSeed], "_")
-                                ?truncate_c(21, "")
+                    "Name" : concatenate([
+                                    segmentSeed?truncate_c(5, ""),
+                                    (core.Version.Name)?split("")?reverse?join("")?truncate_c(5, "")?split("")?reverse?join(""),
+                                    (core.Instance.Name)?split("")?reverse?join("")?truncate_c(5, "")?split("")?reverse?join(""),
+                                    (core.Component.Name)?split("")?reverse?join("")?truncate_c(5, "")?split("")?reverse?join("")
+                                ],
+                                "_")
                                 ?lower_case,
                     "TagName" : core.FullName,
                     "Type" : AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE,
