@@ -22,6 +22,12 @@
             "Mandatory" : true
         },
         {
+            "Names" : "ContainerName",
+            "Description" : "The name of the container to apply overrrides and watch for exit status",
+            "Mandatory" : true,
+            "Types" : STRING_TYPE
+        },
+        {
             "Names" : "CapacityProvider",
             "Description" : "The capacity provider used to host the task",
             "Types" : STRING_TYPE
@@ -42,25 +48,6 @@
             "Types" : [ BOOLEAN_TYPE, STRING_TYPE],
             "Values" : [ "true", "false"],
             "Default" : false
-        },
-        {
-            "Names" : "ShowStatus",
-            "Description" : "Show the status of running the task",
-            "Types" : [ BOOLEAN_TYPE, STRING_TYPE],
-            "Values" : [ "true", "false"],
-            "Default" : true
-        },
-        {
-            "Names" : "WaitToStop",
-            "Description" : "Wait for the task to stop",
-            "Types" : [ BOOLEAN_TYPE, STRING_TYPE],
-            "Values" : [ "true", "false"],
-            "Default" : true
-        },
-        {
-            "Names" : "OverrideContainerName",
-            "Description" : "The name of the container to apply overrides to",
-            "Types" : STRING_TYPE
         },
         {
             "Names" : "CommandOverride",
