@@ -325,7 +325,7 @@
             }
         ]
     [/#if]
-    [#if ((!(inRegion?has_content)) || (inRegion == region)) &&
+    [#if ((!(inRegion?has_content)) || (inRegion == getRegion())) &&
         isPartOfCurrentDeploymentUnit(resourceId)]
         [#if attributeType?has_content]
             [#local resourceType = getResourceType(resourceId) ]
