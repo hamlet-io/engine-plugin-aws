@@ -200,6 +200,10 @@
             [#-- VPC only has ref so that is ok --]
             [#local value = "vpc-123456789abcdef12" ]
             [#break]
+
+        [#case SEED_RESOURCE_TYPE ]
+            [#local value = "568132487" ]
+            [#break]
     [/#switch]
 
     [#return
