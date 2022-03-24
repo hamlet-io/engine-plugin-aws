@@ -124,7 +124,7 @@
                             "Match" : {
                                 "CanaryName" : {
                                     "Path"  : "Resources.canaryXappXhealthcheckcomplexbase.Properties.Name",
-                                    "Value" : "healthcheckcomplexbas"
+                                    "Value" : "56813_xbase"
                                 },
                                 "ArtifactS3Location" : {
                                     "Path"  : "Resources.canaryXappXhealthcheckcomplexbase.Properties.ArtifactS3Location",
