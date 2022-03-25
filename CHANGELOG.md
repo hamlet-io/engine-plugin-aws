@@ -1,6 +1,62 @@
 # Changelog
 
-## Unreleased (2022-01-03)
+## Unreleased (2022-03-24)
+
+#### New Features
+
+* add additional runbook tasks and modules
+* use local engine setup for testing
+* (spa): force max-age for config ([#530](https://github.com/hamlet-io/engine-plugin-aws/issues/530))
+* (adaptor): adaptor alert support
+* add run ecs task support for runbooks
+* (mta): add enable/disable handling on rules
+* (directory): log forwarding support ([#517](https://github.com/hamlet-io/engine-plugin-aws/issues/517))
+* (s3): backup support ([#516](https://github.com/hamlet-io/engine-plugin-aws/issues/516))
+* (kinesis): compression support for firehose
+* (globaldb): cloudwatch alarms ([#508](https://github.com/hamlet-io/engine-plugin-aws/issues/508))
+* (backup): Initial AWS implementation ([#507](https://github.com/hamlet-io/engine-plugin-aws/issues/507))
+* (logs): add support for at rest encryption of cw logs
+* add baseline encryption module
+* (ecs): support for ecs exec
+* extended runbooks for access
+* (cdn): add support for origin connection timeouts
+#### Fixes
+
+* segment seed fixture value ([#535](https://github.com/hamlet-io/engine-plugin-aws/issues/535))
+* region lookup for resources
+* (healthcheck): add more entropy to naming of health checks
+* (db): secret lookup for engine setup
+* typo in module
+* (healthceheck): testing changes from type to engine
+* remove use of isPresent for AV setup
+* ipmatch and geomatch for wafv2 ([#518](https://github.com/hamlet-io/engine-plugin-aws/issues/518))
+* (db): aurora cluster updates
+* (task): kms encrypt parameters
+* efs mount script formatting
+* (db): ingress security group id
+* (sns): add support for encrypted topics
+* (lb): logging profile for WAF logs ([#510](https://github.com/hamlet-io/engine-plugin-aws/issues/510))
+* (cdn): missing logging profile for waf logging
+* (cdn): logging script for wafv1
+* clean up old if statement
+* (s3): replication validation checking
+#### Refactorings
+
+* align the run task module to task
+* update ecs task configuration after testing
+* move to latest unicycle install process
+* update district to district type on group filter ([#534](https://github.com/hamlet-io/engine-plugin-aws/issues/534))
+* move ecs container setup to aws provider
+* update iam standard policy name
+* (iam): standard policies for app components
+* (s3): use references for bucket policy
+* backup encryption key ([#512](https://github.com/hamlet-io/engine-plugin-aws/issues/512))
+* (backup): Configuration options ([#511](https://github.com/hamlet-io/engine-plugin-aws/issues/511))
+* attribute sets for global configuration
+
+Full set of changes: [`8.4.0...590fc5b`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.4.0...590fc5b)
+
+## 8.4.0 (2022-01-06)
 
 #### New Features
 
@@ -134,8 +190,11 @@
 * use aws cli query for regions
 * remove dos2unix
 * (directory): attributes and ip access
+#### Others
 
-Full set of changes: [`8.3.0...3f5bb98`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.3.0...3f5bb98)
+* changelog bump ([#355](https://github.com/hamlet-io/engine-plugin-aws/issues/355))
+
+Full set of changes: [`8.3.0...8.4.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.3.0...8.4.0)
 
 ## 8.3.0 (2021-09-17)
 
