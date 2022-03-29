@@ -256,6 +256,82 @@
         [#local portProtocols += [ sourcePort.Protocol ] ]
         [#local portProtocols += [ destinationPort.Protocol] ]
 
+        [#-- Port Protocol Validation --]
+        [#switch engine ]
+            [#case "network" ]
+
+                [#if ! ["UDP", "TCP"]?seq_contains(sourcePort.Protocol)]
+                    [@fatal
+                        message="Invalid source port protocol - supports TCP or UDP Protocols"
+                        context={
+                            "lb": occurrence.Core.RawId,
+                            "lbport": subOccurrence.Core.RawId,
+                            "TargetType": solution.Forward.TargetType,
+                            "Protocol": sourcePort.Protocol
+                        }
+                    /]
+                [/#if]
+
+                [#if ["instance", "ip"]?seq_contains(solution.Forward.TargetType) &&
+                        ! ["HTTP", "HTTPS", "TCP"]?seq_contains(destinationPort.Protocol) ]
+
+                    [@fatal
+                        message="Invalid destination port protocol - supports HTTP,HTTPS or TCP Protocols"
+                        context={
+                            "lb": occurrence.Core.RawId,
+                            "lbport": subOccurrence.Core.RawId,
+                            "TargetType": solution.Forward.TargetType,
+                            "Protocol": destinationPort.Protocol
+                        }
+                    /]
+                [/#if]
+
+                [#if ["aws:alb"]?seq_contains(solution.Forward.TargetType) &&
+                        ! ["TCP"]?seq_contains(destinationPort.Protocol) ]
+
+                    [@fatal
+                        message="Invalid destination port protocol - supports HTTP or HTTPS Protocols"
+                        context={
+                            "lb": occurrence.Core.RawId,
+                            "lbport": subOccurrence.Core.RawId,
+                            "TargetType": solution.Forward.TargetType,
+                            "Protocol": destinationPort.Protocol
+                        }
+                    /]
+                [/#if]
+                [#break]
+
+            [#case "application" ]
+
+                [#if ! ["HTTP", "HTTPS"]?seq_contains(sourcePort.Protocol)]
+                    [@fatal
+                        message="Invalid source port protocol - supports HTTP or HTTPS Protocols"
+                        context={
+                            "lb": occurrence.Core.RawId,
+                            "lbport": subOccurrence.Core.RawId,
+                            "TargetType": solution.Forward.TargetType,
+                            "Protocol": sourcePort.Protocol
+                        }
+                    /]
+                [/#if]
+
+                [#if ["instance", "ip"]?seq_contains(solution.Forward.TargetType) &&
+                        ! ["HTTP", "HTTPS"]?seq_contains(destinationPort.Protocol) ]
+
+                    [@fatal
+                        message="Invalid destination port protocol - supports HTTP or HTTPS Protocols"
+                        context={
+                            "lb": occurrence.Core.RawId,
+                            "lbport": subOccurrence.Core.RawId,
+                            "TargetType": solution.Forward.TargetType,
+                            "Protocol": destinationPort.Protocol
+                        }
+                    /]
+                [/#if]
+
+                [#break]
+        [/#switch]
+
         [#-- forwarding attributes --]
         [#local tgAttributes = {}]
         [#local classicConnectionDrainingTimeouts += [ solution.Forward.DeregistrationTimeout ]]
@@ -299,7 +375,7 @@
                 [#break]
 
             [#default]
-                [#if isPresent(solution.Conditions) ]
+                [#if (solution.Conditions)?has_content ]
                     [@fatal
                         message="Conditions not supported for this engine type"
                         context={
@@ -725,7 +801,7 @@
                         [#local endpointCIDRS = getGroupCIDRs(
                                                         linkTargetConfiguration.Solution.IPAddressGroups,
                                                         true,
-                                                        subOccurrence)] ]
+                                                        subOccurrence)]
 
                         [#list endpointCIDRS as endpointCIDR ]
                             [#local endpointAddresses += getHostsFromNetwork(endpointCIDR) ]
@@ -734,6 +810,25 @@
                         [#list endpointAddresses as endpointAddress ]
                             [#local staticTargets += getTargetGroupTarget("ip", endpointAddress, endpointPort, true)]
                         [/#list]
+                        [#break]
+
+                    [#case LB_PORT_COMPONENT_TYPE]
+                        [#if engine != "network" || linkTarget.State.Attributes.ENGINE != "application" ]
+                            [@fatal
+                                message="Only network load balancers can use application load balancers as targets"
+                                context={
+                                    "LB" : occurrence.Core.RawId,
+                                    "Port" : subOccurrence.Core.RawId,
+                                    "Link" : linkTarget.Core.RawId
+                                }
+                            /]
+                        [/#if]
+
+                        [#local staticTargets += getTargetGroupTarget(
+                                "alb",
+                                getArn(linkTarget.State.Attributes.LB),
+                                linkTarget.State.Attributes.SOURCE_PORT
+                            )]
                         [#break]
                 [/#switch]
             [/#if]
@@ -830,10 +925,13 @@
                 [/#if]
 
             [#case "network"]
-                [#local tgAttributes +=
-                    {
-                        "deregistration_delay.timeout_seconds" : solution.Forward.DeregistrationTimeout
-                    }]
+
+                [#if solution.Forward.TargetType != "aws:alb"]
+                    [#local tgAttributes +=
+                        {
+                            "deregistration_delay.timeout_seconds" : solution.Forward.DeregistrationTimeout
+                        }]
+                [/#if]
 
                 [#if engine == "network" && deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                     [@createTargetGroup
@@ -846,6 +944,7 @@
                         targetType=solution.Forward.TargetType
                         vpcId=vpcId
                         targets=staticTargets
+                        tags=getOccurrenceCoreTags(occurrence)
                     /]
                 [/#if]
 
@@ -863,6 +962,7 @@
                         targetType=solution.Forward.TargetType
                         vpcId=vpcId
                         targets=staticTargets
+                        tags=getOccurrenceCoreTags(occurrence)
                     /]
                 [/#if]
 
@@ -929,33 +1029,6 @@
                     )
             /]
         [/#if]
-    [/#if]
-
-    [#-- Port Protocol Validation --]
-    [#local InvalidProtocol = false]
-    [#switch engine ]
-        [#case "network" ]
-            [#if portProtocols?seq_contains("HTTP") || portProtocols?seq_contains("HTTPS") ]
-                [#local InvalidProtocol = true]
-            [/#if]
-            [#break]
-        [#case "application" ]
-            [#if portProtocols?seq_contains("TCP") ]
-                [#local InvalidProtocol = true]
-            [/#if]
-            [#break]
-    [/#switch]
-
-    [#if InvalidProtocol ]
-            [@fatal
-                message="Invalid protocol found for engine type"
-                context=
-                    {
-                        "LB" : lbName,
-                        "Engine" : engine,
-                        "Protocols" : portProtocols
-                    }
-            /]
     [/#if]
 
     [#switch engine ]
@@ -1069,7 +1142,7 @@
         [#case "classic"]
 
             [#local healthCheck = {
-                "Target" : healthCheckPort.HealthCheck.Protocol!healthCheckPort.Protocol + ":"
+                "Target" : getHealthCheckProtocol(healthCheckPort)?upper_case + ":"
                             + (healthCheckPort.HealthCheck.Port!healthCheckPort.Port)?c + healthCheckPort.HealthCheck.Path!"",
                 "HealthyThreshold" : healthCheckPort.HealthCheck.HealthyThreshold,
                 "UnhealthyThreshold" : healthCheckPort.HealthCheck.UnhealthyThreshold,

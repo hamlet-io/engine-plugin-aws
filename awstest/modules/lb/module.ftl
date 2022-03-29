@@ -505,4 +505,139 @@
             }
         }
     /]
+
+    [#-- NLB -> ALB --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "elb" : {
+                    "Components" : {
+                        "nlbalb_nlb" : {
+                            "Type": "lb",
+                            "deployment:Unit" : "aws-lb-nlbalb",
+                            "Engine" : "network",
+                            "Logs" : true,
+                            "Profiles" : {
+                                "Testing" : [ "nlbalb" ]
+                            },
+                            "PortMappings" : {
+                                "http" : {
+                                    "IPAddressGroups" : ["_global"],
+                                    "Mapping" : "http-tcp",
+                                    "Forward" : {
+                                        "TargetType" : "aws:alb",
+                                        "StaticEndpoints" : {
+                                            "Links" : {
+                                                "alb": {
+                                                    "Tier" : "elb",
+                                                    "Component" : "nlbalb_alb",
+                                                    "SubComponent" : "http"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "nlbalb_alb" : {
+                            "Type": "lb",
+                            "deployment:Unit" : "aws-lb-nlbalb",
+                            "Engine" : "application",
+                            "Logs" : true,
+                            "PortMappings" : {
+                                "http" : {
+                                    "Mapping" : "http",
+                                    "IPAddressGroups" : ["_global"],
+                                    "Forward" : {}
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "PortMappings" : {
+                "http-tcp" : {
+                    "Source" : "http-tcp",
+                    "Destination" : "http-tcp"
+                }
+            },
+            "Ports" : {
+                "http-tcp": {
+                    "IPProtocol" : "tcp",
+                    "Protocol" : "TCP",
+                    "Port" : 80,
+                    "HealthCheck": {
+                        "Protocol" : "HTTP",
+                        "UnhealthyThreshold": "5",
+                        "Timeout": "5",
+                        "HealthyThreshold": "3",
+                        "Configured": true,
+                        "Interval": "30"
+                    }
+                }
+            },
+            "TestCases": {
+                "nlbalb" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "httpTargetGroup" : {
+                                    "Name" : "tgXdefaultXelbXnlbalbXnlbXhttpXtcp",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
+                                },
+                                "loadBalancer" : {
+                                    "Name" : "albXelbXnlbalbXnlb",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer"
+                                }
+                            },
+                            "Output" : [
+                                "tgXdefaultXelbXnlbalbXnlbXhttpXtcp"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "LBName": {
+                                    "Path": "Resources.albXelbXnlbalbXnlb.Properties.Name",
+                                    "Value": "mockedup-int-elb-nlbalb_nlb"
+                                },
+                                "ALBTypeTargetGroup": {
+                                    "Path": "Resources.tgXdefaultXelbXnlbalbXnlbXhttpXtcp.Properties.TargetType",
+                                    "Value": "alb"
+                                },
+                                "HealthCheckProtocol" : {
+                                    "Path" : "Resources.tgXdefaultXelbXnlbalbXnlbXhttpXtcp.Properties.HealthCheckProtocol",
+                                    "Value": "HTTP"
+                                },
+                                "Protocol" : {
+                                    "Path" : "Resources.tgXdefaultXelbXnlbalbXnlbXhttpXtcp.Properties.Protocol",
+                                    "Value": "TCP"
+                                },
+                                "ALBTarget": {
+                                    "Path": "Resources.tgXdefaultXelbXnlbalbXnlbXhttpXtcp.Properties.Targets[0].Id",
+                                    "Value": "arn:aws:iam::123456789012:mock/albXelbXnlbalbXalbXarn"
+                                }
+                            },
+                            "Length": {
+                                "listenerRuleConditions": {
+                                    "Path": "Resources.tgXdefaultXelbXnlbalbXnlbXhttpXtcp.Properties.Targets",
+                                    "Count": 1
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles": {
+                "nlbalb": {
+                    "lb": {
+                        "TestCases": [ "nlbalb" ]
+                    },
+                    "*": {
+                        "TestCases": [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+    /]
 [/#macro]

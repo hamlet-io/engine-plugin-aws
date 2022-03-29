@@ -28,3 +28,19 @@
             AWS_CERTIFICATE_MANAGER_SERVICE
         ]
 /]
+
+[@addResourceGroupAttributeValues
+    type=LB_PORT_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names" : "Forward",
+            "Children" : [
+                {
+                    "Names" : "TargetType",
+                    "Values" : [ "shared:ip", "shared:instance", "alb"]
+                }
+            ]
+        }
+    ]
+/]
