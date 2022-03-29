@@ -13,53 +13,58 @@
         [#local availablePorts += [ port.Name ]]
     [/#list]
 
-    [#list getZones() as zone ]
+    [#local zones = getZones()?filter(zone -> solution.Zones?seq_contains(zone.Id) || solution.Zones?seq_contains("_all")) ]
+
+    [#list multiAZ?then(zones, [zones[0]]) as zone ]
+
         [#local zoneResources +=
-            { zone.Id : {
-                "ec2Instance" : {
-                    "Id"   : formatResourceId(AWS_EC2_INSTANCE_RESOURCE_TYPE, core.Id, zone.Id),
-                    "Name" : formatName(tenantId, formatComponentFullName(core.Tier, core.Component), zone.Id),
-                    "Type" : AWS_EC2_INSTANCE_RESOURCE_TYPE,
-                    "ComputeTasks" : [
-                        COMPUTE_TASK_RUN_STARTUP_CONFIG,
-                        COMPUTE_TASK_AWS_CFN_SIGNAL,
-                        COMPUTE_TASK_AWS_CFN_WAIT_SIGNAL,
-                        COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
-                        COMPUTE_TASK_DATA_VOLUME_MOUNTING,
-                        COMPUTE_TASK_FILE_DIR_CREATION,
-                        COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
-                        COMPUTE_TASK_OS_SECURITY_PATCHING,
-                        COMPUTE_TASK_ANTIVIRUS_CONFIG,
-                        COMPUTE_TASK_AWS_CLI,
-                        COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
-                        COMPUTE_TASK_USER_ACCESS,
-                        COMPUTE_TASK_EFS_MOUNT,
-                        COMPUTE_TASK_USER_BOOTSTRAP,
-                        COMPUTE_TASK_AWS_LB_REGISTRATION
-                    ]
-                },
-                "ec2ENI" : {
-                    "Id" : formatResourceId(AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE, core.Id, zone.Id, "eth0"),
-                    "Type" : AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE
-                },
-                "ec2EIP" : {
-                    "Id" : formatEIPId( core.Id, zone.Id, "eth0"),
-                    "Name" : formatName(core.FullName, zone.Name),
-                    "Type" : AWS_EIP_RESOURCE_TYPE
-                },
-                "ec2EIPAssociation" : {
-                    "Id" : formatEIPAssociationId( core.Id, zone.Id, "eth0"),
-                    "Type" : AWS_EIP_ASSOCIATION_RESOURCE_TYPE
-                },
-                "waitHandle" : {
-                    "Id" : formatResourceId(AWS_CLOUDFORMATION_WAIT_HANDLE_RESOURCE_TYPE, core.Id, zone.Id),
-                    "Type" : AWS_CLOUDFORMATION_WAIT_HANDLE_RESOURCE_TYPE
-                },
-                "waitCondition" : {
-                    "Id" : formatResourceId(AWS_CLOUDFORMATION_WAIT_CONDITION_RESOURCE_TYPE, core.Id, zone.Id),
-                    "Type" : AWS_CLOUDFORMATION_WAIT_CONDITION_RESOURCE_TYPE
+            {
+                zone.Id : {
+                    "ec2Instance" : {
+                        "Id"   : formatResourceId(AWS_EC2_INSTANCE_RESOURCE_TYPE, core.Id, zone.Id),
+                        "Name" : formatName(tenantId, formatComponentFullName(core.Tier, core.Component), zone.Id),
+                        "Type" : AWS_EC2_INSTANCE_RESOURCE_TYPE,
+                        "ComputeTasks" : [
+                            COMPUTE_TASK_RUN_STARTUP_CONFIG,
+                            COMPUTE_TASK_AWS_CFN_SIGNAL,
+                            COMPUTE_TASK_AWS_CFN_WAIT_SIGNAL,
+                            COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
+                            COMPUTE_TASK_DATA_VOLUME_MOUNTING,
+                            COMPUTE_TASK_FILE_DIR_CREATION,
+                            COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
+                            COMPUTE_TASK_OS_SECURITY_PATCHING,
+                            COMPUTE_TASK_ANTIVIRUS_CONFIG,
+                            COMPUTE_TASK_AWS_CLI,
+                            COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
+                            COMPUTE_TASK_USER_ACCESS,
+                            COMPUTE_TASK_EFS_MOUNT,
+                            COMPUTE_TASK_USER_BOOTSTRAP,
+                            COMPUTE_TASK_AWS_LB_REGISTRATION
+                        ]
+                    },
+                    "ec2ENI" : {
+                        "Id" : formatResourceId(AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE, core.Id, zone.Id, "eth0"),
+                        "Type" : AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE
+                    },
+                    "ec2EIP" : {
+                        "Id" : formatEIPId( core.Id, zone.Id, "eth0"),
+                        "Name" : formatName(core.FullName, zone.Name),
+                        "Type" : AWS_EIP_RESOURCE_TYPE
+                    },
+                    "ec2EIPAssociation" : {
+                        "Id" : formatEIPAssociationId( core.Id, zone.Id, "eth0"),
+                        "Type" : AWS_EIP_ASSOCIATION_RESOURCE_TYPE
+                    },
+                    "waitHandle" : {
+                        "Id" : formatResourceId(AWS_CLOUDFORMATION_WAIT_HANDLE_RESOURCE_TYPE, core.Id, zone.Id),
+                        "Type" : AWS_CLOUDFORMATION_WAIT_HANDLE_RESOURCE_TYPE
+                    },
+                    "waitCondition" : {
+                        "Id" : formatResourceId(AWS_CLOUDFORMATION_WAIT_CONDITION_RESOURCE_TYPE, core.Id, zone.Id),
+                        "Type" : AWS_CLOUDFORMATION_WAIT_CONDITION_RESOURCE_TYPE
+                    }
                 }
-            }}
+            }
         ]
     [/#list]
 
