@@ -508,6 +508,17 @@
 
     [#if wafPresent ]
         [#if solution.WAF.Logging.Enabled]
+
+            [#if getRegion() != "us-east-1" ]
+                [@fatal
+                    message="To enable fireshose based logging for WAF on CDN the deployment must be run from us-east-1"
+                    context={
+                        "CDNId" : occurrence.Core.Id,
+                        "Region" : getRegion()
+                    }
+                /]
+            [/#if]
+
             [#local wafFirehoseStreamId =
                 formatResourceId(AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE, wafAclId)]
 
