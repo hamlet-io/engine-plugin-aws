@@ -380,7 +380,13 @@
                         getOccurrenceCoreTags(
                             occurrence,
                             formatComponentFullName(core.Tier, core.Component, zone),
-                            zone)
+                            zone
+                        ) +
+                        valueIfContent(
+                            [{"Key": "cot:role", "Value": solution.Role }],
+                            solution.Role,
+                            []
+                        )
                     outputs={}
                     dependencies=[zoneEc2ENIId] +
                         componentDependencies +
