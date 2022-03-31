@@ -45,9 +45,7 @@
 
                     [#case "application"]
                     [#case "network"]
-                        [#local configSets += getInitConfigLBTargetRegistration(linkTargetCore.Id, linkTargetAttributes["TARGET_GROUP_ARN"])]
-
-                        [#local portid = linkTargetCore.Id ]
+                        [#local portId = linkTargetCore.Id ]
                         [#local targetGroupArn = linkTargetAttributes["TARGET_GROUP_ARN"]]
 
                         [#local scriptName = "register_targetgroup_${portId}" ]
