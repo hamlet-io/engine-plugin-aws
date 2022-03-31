@@ -269,7 +269,7 @@
         }]
     [/#if]
 
-    [#if targetType == "ip" || targetType == "instance" ]
+    [#if targetType == "ip" || targetType == "instance" || targetType == "alb" ]
         [#local target += {
             "Port" : port
         }]
@@ -278,9 +278,9 @@
     [#return [ target ]]
 [/#function]
 
-[#macro createTargetGroup id name tier component destination attributes vpcId targetType="" targets=[] ]
+[#macro createTargetGroup id name tier component destination attributes vpcId targetType="" targets=[] tags=[] ]
 
-    [#local healthCheckProtocol = ((destination.HealthCheck.Protocol)!destination.Protocol)?upper_case]
+    [#local healthCheckProtocol = getHealthCheckProtocol(destination)?upper_case]
 
     [#local targetGroupAttributes = [] ]
     [#list attributes as key,value ]
@@ -296,20 +296,29 @@
             ]]
     [/#list]
 
+    [#switch targetType ]
+        [#case "aws:alb"]
+        [#case "alb"]
+            [#local targetType = "alb"]
+            [#break]
+    [/#switch]
+
     [@cfResource
         id=id
         type="AWS::ElasticLoadBalancingV2::TargetGroup"
         properties=
             {
                 "HealthCheckPort" : (destination.HealthCheck.Port)!"traffic-port",
-                "HealthCheckProtocol" : healthCheckProtocol,
-                "HealthCheckIntervalSeconds" : destination.HealthCheck.Interval?number,
+                "HealthCheckProtocol": healthCheckProtocol,
                 "HealthyThresholdCount" : destination.HealthCheck.HealthyThreshold?number,
                 "Port" : destination.Port,
-                "Protocol" : (destination.Protocol)?upper_case,
-                "VpcId": getReference(vpcId),
-                "TargetGroupAttributes" : targetGroupAttributes
+                "Protocol" : protocol!((destination.Protocol)?upper_case),
+                "VpcId": getReference(vpcId)
             } +
+            attributeIfContent(
+                "TargetGroupAttributes",
+                targetGroupAttributes
+            ) +
             valueIfContent(
                 {
                     "Matcher" : { "HttpCode" : (destination.HealthCheck.SuccessCodes)!"" }
@@ -319,7 +328,7 @@
                 {
                     "TargetType" : targetType
                 },
-                targetType == "ip"
+                targetType == "ip" || targetType == "alb"
             ) +
             valueIfContent(
                 {
@@ -327,8 +336,9 @@
                 },
                 (destination.HealthCheck.Path)!""
             ) +
-            (healthCheckProtocol != "TCP")?then(
+            (destination.Protocol != "TCP")?then(
                 {
+                    "HealthCheckIntervalSeconds" : destination.HealthCheck.Interval?number,
                     "HealthCheckTimeoutSeconds" : destination.HealthCheck.Timeout?number,
                     "UnhealthyThresholdCount" : destination.HealthCheck.UnhealthyThreshold?number
                 },
@@ -341,7 +351,7 @@
                 "Targets",
                 targets
             )
-        tags= getCfTemplateCoreTags(name, tier, component)
+        tags=tags
         outputs=ALB_TARGET_GROUP_OUTPUT_MAPPINGS
     /]
 [/#macro]
