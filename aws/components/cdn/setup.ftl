@@ -511,7 +511,7 @@
 
             [#if getRegion() != "us-east-1" ]
                 [@fatal
-                    message="To enable fireshose based logging for WAF on CDN the deployment must be run from us-east-1"
+                    message="To enable firehose based logging for WAF on CDN the deployment must be run from us-east-1"
                     context={
                         "CDNId" : occurrence.Core.Id,
                         "Region" : getRegion()
