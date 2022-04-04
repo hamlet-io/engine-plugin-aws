@@ -8,3 +8,5 @@
 [#assign AWS_KMS_ENCRYPT_VALUE_TASK_TYPE = "aws_kms_encrypt_value" ]
 [#assign AWS_KMS_DECRYPT_CIPHERTEXT_TASK_TYPE = "aws_kms_decrypt_ciphertext" ]
 [#assign AWS_LAMBDA_INVOKE_FUNCTION_TASK_TYPE = "aws_lambda_invoke_function"]
+[#assign AWS_S3_DOWNLOAD_BUCKET_TASK_TYPE = "aws_s3_download_bucket"]
+[#assign AWS_S3_EMPTY_BUCKET_TASK_TYPE = "aws_s3_empty_bucket"]
