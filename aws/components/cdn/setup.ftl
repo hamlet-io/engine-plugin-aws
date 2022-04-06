@@ -139,7 +139,7 @@
         [/#if]
 
         [#local eventHandlerLinks += subSolution.EventHandlers ]
-        [#list eventHandlerLinks?values as eventHandler]
+        [#list eventHandlerLinks?values?filter(x -> x.Enabled) as eventHandler]
 
             [#local eventHandlerTarget = getLinkTarget(occurrence, eventHandler) ]
 
