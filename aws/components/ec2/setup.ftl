@@ -74,7 +74,6 @@
 
     [#local efsMountPoints = {}]
 
-    [#local componentDependencies = []]
     [#local ingressRules = []]
 
     [#list solution.Ports?values as port ]
@@ -387,12 +386,11 @@
                             solution.Role,
                             []
                         )
-                    outputs={}
-                    dependencies=[zoneEc2ENIId] +
-                        componentDependencies +
-                        (fixedIP || publicRouteTable)?then(
+                    outputs=AWS_EC2_INSTANCE_OUTPUT_MAPPINGS
+                    dependencies=(fixedIP || publicRouteTable)?then(
                             [zoneEc2EIPAssociationId],
-                            [])
+                            []
+                        )
                     creationPolicy={
                         "ResourceSignal" : {
                             "Count" : 1,
@@ -401,57 +399,50 @@
                     }
                 /]
 
-                [@cfResource
-                    id=zoneEc2ENIId
-                    type="AWS::EC2::NetworkInterface"
-                    properties=
-                        {
-                            "Description" : "eth0",
-                            "SubnetId" : getSubnets(core.Tier, networkResources, zone)[0],
-                            "SourceDestCheck" : true,
-                            "GroupSet" :
-                                [getReference(ec2SecurityGroupId)] +
-                                getSshFromProxySecurityGroup()?has_content?then(
-                                    [getSshFromProxySecurityGroup()],
-                                    []
-                                )
-                        }
-                    tags=
-                        getOccurrenceCoreTags(
-                            occurrence,
-                            formatComponentFullName(core.Tier, core.Component, zone, "eth0"),
-                            zone)
-                    outputs={}
-                /]
             [/#if]
+
+            [@cfResource
+                id=zoneEc2ENIId
+                type="AWS::EC2::NetworkInterface"
+                properties=
+                    {
+                        "Description" : "eth0",
+                        "SubnetId" : getSubnets(core.Tier, networkResources, zone)[0],
+                        "SourceDestCheck" : true,
+                        "GroupSet" :
+                            [getReference(ec2SecurityGroupId)] +
+                            getSshFromProxySecurityGroup()?has_content?then(
+                                [getSshFromProxySecurityGroup()],
+                                []
+                            )
+                    }
+                tags=
+                    getOccurrenceCoreTags(
+                        occurrence,
+                        formatComponentFullName(core.Tier, core.Component, zone, "eth0"),
+                        zone)
+                outputs={}
+            /]
 
             [#if fixedIP || publicRouteTable]
                 [@createEIP
                     id=zoneEc2EIPId
-                    dependencies=(! ( getCLODeploymentUnitAlternative() == "replace1" ))?then(
-                                        [zoneEc2ENIId],
-                                        []
-                                )
                     tags=getOccurrenceCoreTags(
                         occurrence,
                         zoneEc2EIPName
                     )
                 /]
 
-                [#if ! ( getCLODeploymentUnitAlternative() == "replace1" ) ]
-
-                    [@cfResource
-                        id=zoneEc2EIPAssociationId
-                        type="AWS::EC2::EIPAssociation"
-                        properties=
-                            {
-                                "AllocationId" : getReference(zoneEc2EIPId, ALLOCATION_ATTRIBUTE_TYPE),
-                                "NetworkInterfaceId" : getReference(zoneEc2ENIId)
-                            }
-                        dependencies=[zoneEc2EIPId]
-                        outputs={}
-                    /]
-                [/#if]
+                [@cfResource
+                    id=zoneEc2EIPAssociationId
+                    type="AWS::EC2::EIPAssociation"
+                    properties=
+                        {
+                            "AllocationId" : getReference(zoneEc2EIPId, ALLOCATION_ATTRIBUTE_TYPE),
+                            "NetworkInterfaceId" : getReference(zoneEc2ENIId)
+                        }
+                    outputs={}
+                /]
             [/#if]
         [/#list]
     [/#if]

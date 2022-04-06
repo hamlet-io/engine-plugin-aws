@@ -28,6 +28,20 @@
     mappings=AWS_EC2_EBS_VOLUME_OUTPUT_MAPPINGS
 /]
 
+[#assign AWS_EC2_INSTANCE_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_EC2_INSTANCE_RESOURCE_TYPE
+    mappings=AWS_EC2_INSTANCE_OUTPUT_MAPPINGS
+/]
+
 [#function getCFNInitFromComputeTasks computeTaskConfig ]
 
     [#local configSetName = ""]
