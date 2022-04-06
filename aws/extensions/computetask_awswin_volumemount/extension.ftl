@@ -32,41 +32,50 @@
 
         [#-- These volumes are provided through DataVolumes which are an indepdent component --]
         [#-- These are attached to instances through links and VolumeMount macro which applies the extra configuration required --]
-        [#local zoneResources = occurrence.State.Resources.Zones]
-        [#list getZones() as zone]
-            [#if multiAZ || (getZones()[0].Id = zone.Id)]
-                [#local zoneEc2InstanceId = zoneResources[zone.Id]["ec2Instance"].Id ]
-                [#list (_context.VolumeMounts)![] as mountId,volumeMount ]
-                    [#local dataVolume = _context.DataVolumes[mountId]!{} ]
-                    [#if dataVolume?has_content ]
-                        [#local zoneVolume = (dataVolume[zone.Id].VolumeId)!"" ]
-                        [#if zoneVolume?has_content ]
-                            [#if ! ( getCLODeploymentUnitAlternative() == "replace1" ) ]
-                                [@createEBSVolumeAttachment
-                                    id=formatDependentResourceId(
-                                        AWS_EC2_EBS_ATTACHMENT_RESOURCE_TYPE,
-                                        zoneEc2InstanceId,
-                                        mountId
-                                    )
-                                    device=volumeMount.DeviceId
-                                    instanceId=zoneEc2InstanceId
-                                    volumeId=zoneVolume
-                                /]
-                            [/#if]
 
-                            [#local volumes += {
-                                mountId : {
-                                    "Enabled" : true,
-                                    "MountPath" : volumeMount.MountPath,
-                                    "Device" : volumeMount.DeviceId,
-                                    "DataVolume" : true
-                                }
-                            }]
+        [#list occurrence.State.Resources.Zones as zone, resources]
+            [#local instanceId = resources["ec2Instance"].Id]
 
-                        [/#if]
+            [#list (_context.VolumeMounts)![] as mountId,volumeMount ]
+
+                [#local dataVolume = _context.DataVolumes[mountId]!{} ]
+                [#if dataVolume?has_content]
+
+                    [#if ! ((dataVolume[zone].VolumeId)!"")?has_content ]
+
+                        [@fatal
+                            message="Data Volume missing for Zone ${zone}"
+                            context={
+                                "Component" : occurrence.Core.RawName,
+                                "DataVolume" : dataVolume
+                            }
+                        /]
+                        [#continue]
                     [/#if]
-                [/#list]
-            [/#if]
+
+                    [#if ( getCLODeploymentUnitAlternative() != "replace1" ) ]
+                        [@createEBSVolumeAttachment
+                            id=formatDependentResourceId(
+                                AWS_EC2_EBS_ATTACHMENT_RESOURCE_TYPE,
+                                zoneEc2InstanceId,
+                                dataVolume.Id
+                            )
+                            device=volumeMount.DeviceId
+                            instanceId=zoneEc2InstanceId
+                            volumeId=zoneVolume
+                        /]
+                    [/#if]
+
+                    [#local volumes += {
+                        dataVolume.Id : {
+                            "Enabled" : true,
+                            "MountPath" : volumeMount.MountPath,
+                            "Device" : volumeMount.DeviceId,
+                            "DataVolume" : true
+                        }
+                    }]
+                [/#if]
+            [/#list]
         [/#list]
     [/#if]
 
@@ -100,8 +109,8 @@
             '   echo "Disk already formatted - ${osMount}" ;'
             '} else { ;'
             '   Initialize-Disk -Number ${diskId} -PartitionStyle MBR 2>&1 | Write-Output ;'
-            '   new-partition -disknumber ${diskId} -usemaximumsize | format-volume -filesystem NTFS -newfilesystemlabel vol-${deviceId} 2>&1 | Write-Output ;',
-            '   get-partition -disknumber ${diskId} | set-partition -newdriveletter ${osMount} 2>&1 | Write-Output',
+            '   New-Partition -disknumber ${diskId} -UseMaximumSize | Format-Volume -filesystem NTFS -NewFileSystemLabel vol-${deviceId} 2>&1 | Write-Output ;',
+            '   Get-Partition -disknumber ${diskId} | Set-Partition -NewDriveLetter ${osMount} 2>&1 | Write-Output',
             '}'
         ]]
 
