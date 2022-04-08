@@ -132,4 +132,104 @@
             }
         ]
     /]
+
+
+    [#-- Tag Condition selection --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "mgmt" : {
+                    "Components" : {
+                        "backupstoretags" : {
+                            "Type" : "backupstore",
+                            "deployment:Unit" : "aws-backupstore-tags",
+                            "Profiles" : {
+                                "Testing" : [ "backupstoretags" ]
+                            },
+                            "Regimes": {
+                                "dailysegment": {
+                                    "Targets": {
+                                        "All": {
+                                            "Enabled": true
+                                        }
+                                    },
+                                    "Rules": {
+                                        "daily": {
+                                            "PointInTimeSupport": true,
+                                            "Expression": "rate(1 day)"
+                                        }
+                                    },
+                                    "Conditions": {
+                                        "MatchesStore": {
+                                            "Tier": false,
+                                            "Enabled": true,
+                                            "Product": true,
+                                            "Environment": true,
+                                            "Segment": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "backupstoretags" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "vault" : {
+                                    "Name" : "backupvaultXmgmtXbackupstoretags",
+                                    "Type" : "AWS::Backup::BackupVault"
+                                }
+                            },
+                            "Output" : [
+                                "backupvaultXmgmtXbackupstoretagsXname"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "ConditionTagNaming" : {
+                                    "Path"  : "Resources.backupselectionXmgmtXbackupstoretagsXdailysegment.Properties.BackupSelection.Conditions.StringEquals[0].ConditionKey",
+                                    "Value" : "aws:ResourceTag/cot:product"
+                                }
+                            },
+                            "Length" : {
+                                "TagConditions" : {
+                                    "Path": "Resources.backupselectionXmgmtXbackupstoretagsXdailysegment.Properties.BackupSelection.Conditions.StringEquals",
+                                    "Count": 3
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "backupstoretags" : {
+                    "backupstore" : {
+                        "TestCases" : [ "backupstoretags" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-backupstore-tags",
+                "backupvaultXmgmtXbackupstoretags": "mockedup-integration-management-backupstoretags"
+            },
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-backupstore-tags",
+                "backupplanXmgmtXbackupstoretagsXdailysegment": "mockedup-integration-management-backupstoretags-dailysegment"
+            }
+        ]
+    /]
 [/#macro]

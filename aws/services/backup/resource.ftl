@@ -255,7 +255,14 @@
     /]
 [/#macro]
 
-[#function addBackupSelectionCondition conditions key value type="StringEquals" ]
+[#function addBackupSelectionCondition conditions key value keyType type="StringEquals" ]
+
+    [#switch keyType ]
+        [#case "tag"]
+            [#local key = key?ensure_starts_with("aws:ResourceTag/")]
+            [#break]
+    [/#switch]
+
     [#return
         combineEntities(
             conditions,
