@@ -181,20 +181,26 @@
             [#-- Check if store matches are required --]
             [#local conditions = {} ]
             [#if isPresent(subSolution.Conditions.MatchesStore) ]
+
                 [#list ["Product","Environment","Segment","Tier"] as tag]
                     [#if subSolution.Conditions.MatchesStore[tag]!false]
                         [#local conditionValue = "HamletFatal: Unknown backup condition tag" ]
+                        [#local tagValue = "HamletFatal: Unknown backup condition tag"]
                         [#switch tag]
                             [#case "Product"]
+                                [#local tagValue = "cot:product" ]
                                 [#local conditionValue = productName ]
                                 [#break]
                             [#case "Environment"]
+                                [#local tagValue = "cot:environment" ]
                                 [#local conditionValue = environmentName ]
                                 [#break]
                             [#case "Segment"]
+                                [#local tagValue = "cot:segment" ]
                                 [#local conditionValue = segmentName ]
                                 [#break]
                             [#case "Tier"]
+                                [#local tagValue = "cot:tier" ]
                                 [#local conditionValue = getTierName(core.Tier) ]
                                 [#break]
                         [/#switch]
@@ -202,8 +208,9 @@
                         [#local conditions =
                             addBackupSelectionCondition(
                                 conditions,
-                                tag,
-                                conditionValue
+                                tagValue,
+                                conditionValue,
+                                "tag"
                             )
                         ]
                     [/#if]
