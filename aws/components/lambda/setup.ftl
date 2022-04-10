@@ -291,24 +291,53 @@
     [/#if]
 
     [#local roleId = formatDependentRoleId(fnId)]
-    [#local managedPolicies =
-        (vpcAccess)?then(
-            ["arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"],
-            ["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"]
-        ) +
-        (isPresent(solution.Tracing))?then(
-            ["arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"],
-            []
-        ) +
-        _context.ManagedPolicy ]
 
-    [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
-
-    [#-- Ensure policies are ignored as dependencies unless created as part of this template --]
-    [#local policyId = ""]
-    [#local linkPolicyId = ""]
+    [#local policySet = {} ]
 
     [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(roleId)]
+        [#-- Gather the set of applicable policies --]
+        [#-- Managed policies --]
+        [#local policySet =
+            addAWSManagedPoliciesToSet(
+                policySet,
+                (vpcAccess)?then(
+                    ["arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"],
+                    ["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"]
+                ) +
+                (isPresent(solution.Tracing))?then(
+                    ["arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"],
+                    []
+                ) +
+                _context.ManagedPolicy
+            )
+        ]
+
+        [#-- Any permissions added via extensions --]
+        [#local policySet =
+            addInlinePolicyToSet(
+                policySet,
+                formatDependentPolicyId(fnId),
+                _context.Name,
+                _context.Policy
+            )
+        ]
+
+        [#-- Any permissions granted via links --]
+        [#local policySet =
+            addInlinePolicyToSet(
+                policySet,
+                formatDependentPolicyId(fnId, "links"),
+                "links",
+                getLinkTargetsOutboundRoles(_context.Links)
+            )
+        ]
+
+        [#-- Ensure we don't blow any limits as far as possible --]
+        [#local policySet = adjustPolicySetForRole(policySet) ]
+
+        [#-- Create any required managed policies --]
+        [#-- They may result when policies are split to keep below AWS limits --]
+        [@createCustomerManagedPoliciesFromSet policySet /]
 
         [#-- Create a role under which the function will run and attach required policies --]
         [#-- The role is mandatory though there may be no policies attached to it --]
@@ -323,29 +352,12 @@
                 ],
                 []
             )
-            managedArns=managedPolicies
+            managedArns=getManagedPoliciesFromSet(policySet)
             tags=getOccurrenceCoreTags(fn)
         /]
 
-        [#if _context.Policy?has_content]
-            [#local policyId = formatDependentPolicyId(fnId)]
-            [@createPolicy
-                id=policyId
-                name=_context.Name
-                statements=_context.Policy
-                roles=roleId
-            /]
-        [/#if]
-
-        [#if linkPolicies?has_content]
-            [#local linkPolicyId = formatDependentPolicyId(fnId, "links")]
-            [@createPolicy
-                id=linkPolicyId
-                name="links"
-                statements=linkPolicies
-                roles=roleId
-            /]
-        [/#if]
+        [#-- Create any inline policies that attach to the role --]
+        [@createInlinePoliciesFromSet policySet /]
     [/#if]
 
     [#if deploymentType == "REGIONAL" &&
@@ -446,7 +458,8 @@
                     []
                 )
             dependencies=
-                [roleId, policyId, linkPolicyId] +
+                [roleId] +
+                getPolicyDependenciesFromSet(policySet) +
                 valueIfTrue([fnLgId], solution.PredefineLogGroup, [])
         /]
 
