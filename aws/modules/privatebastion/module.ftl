@@ -44,11 +44,9 @@
                 tier : {
                     "Components" : {
                         component: {
-                            "DeploymentUnits": [
-                                deploymentUnit
-                            ],
-                            "MultiAZ": multiAZ,
                             "bastion": {
+                                "deployment:Unit": deploymentUnit,
+                                "MultiAZ": multiAZ,
                                 "AutoScaling": {
                                     "DetailedMetrics": false,
                                     "ActivityCooldown": 180,

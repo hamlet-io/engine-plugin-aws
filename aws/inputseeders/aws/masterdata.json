@@ -70,9 +70,6 @@
             }
         },
         "prod": {
-            "RDS": {
-                "AutoMinorVersionUpgrade": false
-            },
             "Operations": {
                 "FlowLogs": {
                     "Expiration": 7
@@ -185,9 +182,9 @@
                     }
                 },
                 "ssh": {
-                    "MultiAZ": true,
                     "bastion": {
                         "deployment:Unit": "ssh",
+                        "MultiAZ": true,
                         "AutoScaling": {
                             "DetailedMetrics": false,
                             "ActivityCooldown": 180,
@@ -197,7 +194,6 @@
                     }
                 },
                 "vpc": {
-                    "MultiAZ": true,
                     "network": {
                         "deployment:Unit": "vpc",
                         "deployment:Priority": 40,

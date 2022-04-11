@@ -12,6 +12,7 @@
     [#local zoneResources = (occurrence.State.Resources.Zones)!{}]
 
     [#local engine = solution.Engine ]
+    [#local multiAZ = solution.MultiAZ]
 
     [#local networkLink = (getOccurrenceNetwork(occurrence).Link)!{} ]
     [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]

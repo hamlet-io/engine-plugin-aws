@@ -1163,6 +1163,7 @@
                     networkResources=networkResources
                     publicEndpoint=publicRouteTable
                     logs=lbLogs
+                    multiAZ=solution.MultiAZ
                     bucket=operationsBucket
                     idleTimeout=idleTimeout
                     deregistrationTimeout=(classicConnectionDrainingTimeouts?reverse)[0]

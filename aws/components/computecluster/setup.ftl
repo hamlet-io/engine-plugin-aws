@@ -33,6 +33,8 @@
 
     [#local autoScalingConfig = solution.AutoScaling ]
 
+    [#local multiAZ = solution.MultiAZ]
+
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]

@@ -39,12 +39,14 @@
     [#local engine = solution.Engine]
     [#local majorVersion = solution.EngineVersion]
 
+    [#local multiAZ = solution.MultiAZ]
+
     [#-- If a minor version is provided, assume engine version is the major version --]
     [#-- Also disable minor version upgrades --]
     [#local minorVersion = solution.EngineMinorVersion!""]
     [#local autoMinorVersionUpgrade =
         (!minorVersion?has_content) &&
-        (solution.AutoMinorVersionUpgrade!RDSAutoMinorVersionUpgrade) ]
+        solution.AutoMinorVersionUpgrade ]
 
     [#-- Default is that engine version = major version --]
     [#local engineVersion = concatenate([majorVersion, minorVersion],".")]

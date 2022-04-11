@@ -15,6 +15,8 @@
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
 
+    [#local multiAZ = gwSolution.MultiAZ]
+
     [#local networkProfile = getNetworkProfile(occurrence)]
 
     [#local securityGroupEnabled = false]

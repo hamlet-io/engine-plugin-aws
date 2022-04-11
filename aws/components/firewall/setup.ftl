@@ -41,7 +41,7 @@
         [#local networkResources = networkLinkTarget.State.Resources ]
 
         [#local subnets = []]
-        [#if multiAZ ]
+        [#if solution.MultiAZ ]
             [#local subnets = getSubnets(core.Tier, networkResources)]
         [#else]
             [#local subnets = getSubnets(core.Tier, networkResources, getZones()[0].Id )]

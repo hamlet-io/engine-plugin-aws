@@ -39,6 +39,8 @@
     [#local networkProfile = getNetworkProfile(occurrence)]
     [#local processorProfile = getProcessor(occurrence, CACHE_COMPONENT_TYPE)]
 
+    [#local multiAZ = solution.MultiAZ]
+
     [#if (ports[port].Port)?has_content]
         [#local portObject = ports[port] ]
     [#else]

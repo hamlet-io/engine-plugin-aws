@@ -7,6 +7,8 @@
     [#local engine = solution.Engine]
     [#local engineVersion = solution.EngineVersion]
 
+    [#local multiAZ = solution.MultiAZ]
+
     [#local auroraCluster = false ]
 
     [#local resources = {}]
