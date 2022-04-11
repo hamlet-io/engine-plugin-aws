@@ -10,7 +10,7 @@
     [#local networkInboundAclRules = {}]
     [#local zoneResources = {}]
 
-    [#if multiAZ!false ]
+    [#if solution.MultiAZ ]
         [#local resourceZones = getZones() ]
     [#else]
         [#local resourceZones = [ getZones()[0] ]]
@@ -315,7 +315,7 @@
     [#local parentSolution = parent.Configuration.Solution ]
     [#local engine = parentSolution.Engine ]
 
-    [#if (multiAZ!false) || ( engine == "vpcendpoint" || engine == "privateservice" ) ]
+    [#if parentSolution.MultiAZ || ( engine == "vpcendpoint" || engine == "privateservice" ) ]
         [#local resourceZones = getZones() ]
     [#else]
         [#local resourceZones = [getZones()[0]] ]

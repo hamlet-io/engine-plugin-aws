@@ -93,7 +93,7 @@
         [#local maxSize = processorProfile.MaxCount ]
     [#else]
         [#local maxSize = processorProfile.MaxPerZone]
-        [#if multiAZ]
+        [#if solution.MultiAZ]
             [#local maxSize = maxSize * getZones()?size]
         [/#if]
     [/#if]

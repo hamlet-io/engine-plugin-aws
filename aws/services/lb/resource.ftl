@@ -525,6 +525,7 @@
             deregistrationTimeout
             networkResources
             publicEndpoint
+            multiAZ
             policies=[]
             stickinessPolicies=[]
             logs=false

@@ -21,6 +21,8 @@
 
     [#local logRoleId = resources["logRole"].Id ]
 
+    [#local multiAZ = solution.MultiAZ]
+
     [#local networkProfile = getNetworkProfile(occurrence)]
     [#local loggingProfile = getLoggingProfile(occurrence)]
     [#local securityProfile = getSecurityProfile(occurrence, core.Type)]

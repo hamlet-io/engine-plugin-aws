@@ -38,6 +38,8 @@
     [#local engine = solution.Engine]
     [#local engineVersion = solution.EngineVersion ]
 
+    [#local multiAZ = solution.MultiAZ]
+
     [#local networkProfile = getNetworkProfile(occurrence)]
 
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]

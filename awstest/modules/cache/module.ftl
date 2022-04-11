@@ -16,7 +16,7 @@
                 "app" : {
                     "Components" : {
                         "queue": {
-                            "MultiAZ": false,
+
                             "cache": {
                                 "Instances": {
                                     "default": {
@@ -99,7 +99,6 @@
                 "app" : {
                     "Components" : {
                         "queue": {
-                            "MultiAZ": false,
                             "cache": {
                                 "Instances": {
                                     "default": {

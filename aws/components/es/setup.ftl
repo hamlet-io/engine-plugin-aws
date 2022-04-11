@@ -21,6 +21,8 @@
 
     [#local vpcAccess = solution.VPCAccess]
 
+    [#local multiAZ = solution.MultiAZ]
+
     [#local networkConfiguration = {} ]
     [#if vpcAccess ]
         [#local networkLink = getOccurrenceNetwork(occurrence).Link!{} ]

@@ -45,6 +45,8 @@
 
     [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
 
+    [#local multiAZ = solution.MultiAZ ]
+
     [#local processorProfile        = getProcessor(occurrence, ECS_COMPONENT_TYPE)]
     [#local storageProfile          = getStorage(occurrence, ECS_COMPONENT_TYPE)]
     [#local logFileProfile          = getLogFileProfile(occurrence, ECS_COMPONENT_TYPE)]
@@ -710,9 +712,9 @@
             /]
         [/#if]
 
-        [#local subnets = multiAZ?then(
+        [#local subnets = solution.MultiAZ?then(
                 getSubnets(core.Tier, networkResources),
-                getSubnets(core.Tier, networkResources)[0..0]
+                getSubnets(core.Tier, networkResources)[0]
             )]
 
         [#local networkProfile = getNetworkProfile(subOccurrence)]

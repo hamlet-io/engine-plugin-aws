@@ -32,7 +32,7 @@
         [#local publicRouteTable = routeTableConfiguration.Public ]
 
         [#if publicRouteTable ]
-            [#if multiAZ!false ]
+            [#if solution.multiAZ!false ]
                 [#local resourceZones = getZones() ]
             [#else]
                 [#local resourceZones = [ getZones()[0] ]]

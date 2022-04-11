@@ -15,7 +15,7 @@
 
     [#local zones = getZones()?filter(zone -> solution.Zones?seq_contains(zone.Id) || solution.Zones?seq_contains("_all")) ]
 
-    [#list multiAZ?then(zones, [zones[0]]) as zone ]
+    [#list solution.MultiAZ?then(zones, [zones[0]]) as zone ]
 
         [#local zoneResources +=
             {
