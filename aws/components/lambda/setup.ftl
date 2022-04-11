@@ -337,7 +337,7 @@
 
         [#-- Create any required managed policies --]
         [#-- They may result when policies are split to keep below AWS limits --]
-        [@createCustomerManagedPoliciesFromSet policySet /]
+        [@createCustomerManagedPoliciesFromSet policies=policySet /]
 
         [#-- Create a role under which the function will run and attach required policies --]
         [#-- The role is mandatory though there may be no policies attached to it --]
@@ -357,7 +357,7 @@
         /]
 
         [#-- Create any inline policies that attach to the role --]
-        [@createInlinePoliciesFromSet policySet /]
+        [@createInlinePoliciesFromSet policies=policySet roles=roleId /]
     [/#if]
 
     [#if deploymentType == "REGIONAL" &&

@@ -199,30 +199,30 @@
     [#return policies]
 [/#function]
 
-[#macro createInlinePoliciesFromSet policies ]
+[#macro createInlinePoliciesFromSet policies roles="" users="" groups="" dependencies=[] ]
     [#list policies.Inline![] as entry]
         [@createPolicy
             id=entry.Id
             name=entry.Name
             statements=entry.Statements
-            roles=entry.Roles
-            users=entry.Users
-            groups=entry.Groups
-            dependencies=entry.Dependencies
+            roles=roles
+            users=users
+            groups=groups
+            dependencies=dependencies
         /]
     [/#list]
 [/#macro]
 
-[#macro createCustomerManagedPoliciesFromSet policies ]
+[#macro createCustomerManagedPoliciesFromSet policies roles="" users="" groups="" dependencies=[] ]
     [#list policies.CustomerManaged![] as entry]
         [@createManagedPolicy
             id=entry.Id
             name=entry.Name
             statements=entry.Statements
-            roles=entry.Roles
-            users=entry.Users
-            groups=entry.Groups
-            dependencies=entry.Dependencies
+            roles=roles
+            users=users
+            groups=groups
+            dependencies=dependencies
         /]
     [/#list]
 [/#macro]
