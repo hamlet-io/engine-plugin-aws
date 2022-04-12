@@ -124,9 +124,11 @@
 
 [#function adjustPolicySetForRole policies context="" ]
 
-    [#local aggregateHardLimit = 10240 ]
+    [#-- Leave a bit of room for uncertainty in how AWS calculates the limits --]
+    [#local aggregateHardLimit = (10240 * 0.95)?floor ]
+    [#local managedPolicySizeLimit = (6144 * 0.95)?floor ]
+
     [#local aggregateWarnLimit = (aggregateHardLimit * 0.9)?floor ]
-    [#local managedPolicySizeLimit = 6144 ]
 
     [#local inlineEntries = policies.Inline![] ]
     [#local managedEntries = policies.CustomerManaged![] ]
@@ -138,7 +140,7 @@
 
     [#if totalSize > aggregateHardLimit]
         [@warn
-            message="Role inline policy size of " + totalSize + " exceeds the AWS limit of " + aggregateHardLimit
+            message="Role inline policy size of " + totalSize + " exceeds the adjusted AWS limit of " + aggregateHardLimit
             context=context
             detail="Inline policies will be converted to managed policies and also split where they exceed the managed policy size limit of " + managedPolicySizeLimit
         /]
@@ -191,7 +193,7 @@
 
     [#if totalSize > aggregateWarnLimit]
         [@warn
-            message="Role inline policy size of " + totalSize + " is close to the AWS limit of " + aggregateHardLimit
+            message="Role inline policy size of " + totalSize + " is close to the adjusted AWS limit of " + aggregateHardLimit
             context=context
             detail=detail
         /]
