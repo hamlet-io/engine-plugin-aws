@@ -405,6 +405,11 @@ created in either case.
                 "DOCS_URL",
                 docsPrimaryFqdn != "",
                 "http://" + docsPrimaryFqdn
+            ) +
+            attributeIfTrue(
+                "TLS_MUTUAL",
+                (solution.MutualTLS.Enabled)!false,
+                true
             ),
             "Roles" : {
                 "Inbound" : {
