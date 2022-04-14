@@ -89,6 +89,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "cdn"
                             },
+                            "certificateauthority": {
+                                "Provider": "awstest",
+                                "Name": "certificateauthority"
+                            },
                             "computecluster" : {
                                 "Provider" : "awstest",
                                 "Name" : "computecluster"
