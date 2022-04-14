@@ -16,6 +16,9 @@
 [#assign AWS_CERTIFICATE_MANAGER_SERVICE = "acm"]
 [@addService provider=AWS_PROVIDER service=AWS_CERTIFICATE_MANAGER_SERVICE /]
 
+[#assign AWS_CERTIFICATE_MANAGER_PRIVATE_CA_SERVICE = "acmpca"]
+[@addService provider=AWS_PROVIDER service=AWS_CERTIFICATE_MANAGER_PRIVATE_CA_SERVICE /]
+
 [#assign AWS_CLIENTVPN_SERVICE = "clientvpn"]
 [@addService provider=AWS_PROVIDER service=AWS_CLIENTVPN_SERVICE /]
 
