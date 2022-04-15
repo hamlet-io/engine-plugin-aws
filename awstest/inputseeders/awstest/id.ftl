@@ -59,7 +59,7 @@
                             ]
                         }
                     },
-                    "Solution" : {
+                    "Product" : {
                         "Modules" : {
                             "apigateway" : {
                                 "Provider" : "awstest",
