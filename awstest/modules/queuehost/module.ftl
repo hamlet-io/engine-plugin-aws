@@ -16,39 +16,29 @@
                 "app" : {
                     "Components" : {
                         "queuehostbase" : {
-                            "queuehost" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-queuehost-base"
-                                    }
-                                },
-                                "Engine" : "rabbitmq",
-                                "EngineVersion" : "1.0.0",
-                                "Processor" : {
-                                    "Type" : "mq.t3.micro"
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "queuehostbase" ]
-                                },
-                                "RootCredentials" : {
-                                    "SecretStore" : {
-                                        "Tier" : "app",
-                                        "Component" : "queuehostsecretstore",
-                                        "Instance" : "",
-                                        "Version" :""
-                                    }
+                            "Type": "queuehost",
+                            "deployment:Unit" : "aws-queuehost",
+                            "Engine" : "rabbitmq",
+                            "EngineVersion" : "1.0.0",
+                            "Processor" : {
+                                "Type" : "mq.t3.micro"
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "queuehostbase" ]
+                            },
+                            "RootCredentials" : {
+                                "SecretStore" : {
+                                    "Tier" : "app",
+                                    "Component" : "queuehostbase_secretstore",
+                                    "Instance" : "",
+                                    "Version" :""
                                 }
                             }
                         },
-                        "queuehostsecretstore" : {
-                            "secretstore" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-queuehost-secretstore"
-                                    }
-                                },
-                                "Engine" : "aws:secretsmanager"
-                            }
+                        "queuehostbase_secretstore" : {
+                            "Type": "secretstore",
+                            "deployment:Unit" : "aws-queuehost",
+                            "Engine" : "aws:secretsmanager"
                         }
                     }
                 }
@@ -101,44 +91,34 @@
                 "app" : {
                     "Components" : {
                         "queuehostmaintenance" : {
-                            "queuehost" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-queuehost-maintenance"
-                                    }
-                                },
-                                "MaintenanceWindow": {
-                                    "DayOfTheWeek": "Saturday",
-                                    "TimeOfDay": "01:00",
-                                    "TimeZone": "AEST"
-                                },
-                                "Engine" : "rabbitmq",
-                                "EngineVersion" : "1.0.0",
-                                "Processor" : {
-                                    "Type" : "mq.t3.micro"
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "queuehostmaintenance" ]
-                                },
-                                "RootCredentials" : {
-                                    "SecretStore" : {
-                                        "Tier" : "app",
-                                        "Component" : "queuehostsecretstore",
-                                        "Instance" : "",
-                                        "Version" :""
-                                    }
+                            "Type": "queuehost",
+                            "deployment:Unit" : "aws-queuehost",
+                            "MaintenanceWindow": {
+                                "DayOfTheWeek": "Saturday",
+                                "TimeOfDay": "01:00",
+                                "TimeZone": "AEST"
+                            },
+                            "Engine" : "rabbitmq",
+                            "EngineVersion" : "1.0.0",
+                            "Processor" : {
+                                "Type" : "mq.t3.micro"
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "queuehostmaintenance" ]
+                            },
+                            "RootCredentials" : {
+                                "SecretStore" : {
+                                    "Tier" : "app",
+                                    "Component" : "queuehostmaintenance_secretstore",
+                                    "Instance" : "",
+                                    "Version" :""
                                 }
                             }
                         },
-                        "queuehostsecretstore" : {
-                            "secretstore" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-queuehost-secretstore"
-                                    }
-                                },
-                                "Engine" : "aws:secretsmanager"
-                            }
+                        "queuehostmaintenance_secretstore" : {
+                            "Type": "secretstore",
+                            "deployment:Unit" : "aws-queuehost",
+                            "Engine" : "aws:secretsmanager"
                         }
                     }
                 }
@@ -178,9 +158,6 @@
                 "queuehostmaintenance" : {
                     "queuehost" : {
                         "TestCases" : [ "queuehostmaintenance" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

@@ -11,7 +11,7 @@
 
     [#-- ! TODO(roleyfoley): Testing not performed as we can't tests scripts at the moment --]
 
-    [#-- Mobile App --]
+    [#-- Base --]
     [@loadModule
         settingSets=[
             {
@@ -30,7 +30,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-contentnode-base",
+                "Namespace" : "mockedup-integration-app-contentnodebase",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : [ "contentnode" ]
@@ -41,32 +41,22 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "contentnodebasecontenthub" : {
-                            "contenthub" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-contentnode-base-contenthub"
-                                    }
-                                },
-                                "Prefix" : "/"
-                            }
-                        },
                         "contentnodebase" : {
-                            "contentnode" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-contentnode-base"
-                                    }
-                                },
-                                "Links" : {
-                                    "contenthub" : {
-                                        "Tier" : "app",
-                                        "Component" : "contentnodebasecontenthub",
-                                        "Instance" : "",
-                                        "Version" : ""
-                                    }
+                            "Type": "contentnode",
+                            "deployment:Unit": "aws-contentnode",
+                            "Links" : {
+                                "contenthub" : {
+                                    "Tier" : "app",
+                                    "Component" : "contentnodebase_contenthub",
+                                    "Instance" : "",
+                                    "Version" : ""
                                 }
                             }
+                        },
+                        "contentnodebase_contenthub" : {
+                            "Type" : "contenthub",
+                            "deployment:Unit": "aws-contentnode",
+                            "Prefix" : "/"
                         }
                     }
                 }

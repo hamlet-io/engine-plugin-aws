@@ -15,55 +15,55 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "filesharenfsbase" : {
+                        "filesharebase_nfs" : {
                             "Type" : "fileshare",
-                            "deployment:Unit" : "aws-fileshare-nfs-base",
+                            "deployment:Unit" : "aws-fileshare",
                             "Engine" : "NFS",
                             "Profiles" : {
-                                "Testing" : [ "filesharenfsbase" ]
+                                "Testing" : [ "filesharebase_nfs" ]
                             }
                         }
                     }
                 }
             },
             "TestCases" : {
-                "filesharenfsbase" : {
+                "filesharebase_nfs" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                      "Structural" : {
                         "CFN" : {
                             "Resource" : {
                                 "fileSystem" : {
-                                    "Name" : "efsXappXfilesharenfsbase",
+                                    "Name" : "efsXappXfilesharebaseXnfs",
                                     "Type" : "AWS::EFS::FileSystem"
                                 },
                                 "securityGroup" : {
-                                    "Name" : "securityGroupXefsXappXfilesharenfsbase",
+                                    "Name" : "securityGroupXefsXappXfilesharebaseXnfs",
                                     "Type" : "AWS::EC2::SecurityGroup"
                                 },
                                 "mountTargetA" : {
-                                    "Name" : "efsMountTargetXefsXappXfilesharenfsbaseXa",
+                                    "Name" : "efsMountTargetXefsXappXfilesharebaseXnfsXa",
                                     "Type" : "AWS::EFS::MountTarget"
                                 },
                                 "mountTargetB" : {
-                                    "Name" : "efsMountTargetXefsXappXfilesharenfsbaseXb",
+                                    "Name" : "efsMountTargetXefsXappXfilesharebaseXnfsXb",
                                     "Type" : "AWS::EFS::MountTarget"
                                 }
                             },
                             "Output" : [
-                                "efsXappXfilesharenfsbase",
-                                "securityGroupXefsXappXfilesharenfsbase"
+                                "efsXappXfilesharebaseXnfs",
+                                "securityGroupXefsXappXfilesharebaseXnfs"
                             ]
                         }
                     }
                 }
             },
             "TestProfiles" : {
-                "filesharenfsbase" : {
+                "filesharebase_nfs" : {
                     "fileshare" : {
-                        "TestCases" : [ "filesharenfsbase" ]
+                        "TestCases" : [ "filesharebase_nfs" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -76,9 +76,9 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "filesharesmbbase" : {
+                        "filesharebase_smb" : {
                             "Type" : "fileshare",
-                            "deployment:Unit" : "aws-fileshare-smb-base",
+                            "deployment:Unit" : "aws-fileshare",
                             "Engine" : "SMB",
                             "Size" : 100,
                             "MaintenanceWindow" : {
@@ -87,18 +87,18 @@
                                 "TimeZone" : "UTC"
                             },
                             "Profiles" : {
-                                "Testing" : [ "filesharesmbbase" ]
+                                "Testing" : [ "filesharebase_smb" ]
                             },
                             "Links" : {
                                 "directory" : {
                                     "Tier" : "app",
-                                    "Component" : "filesharesmbbasedirectory"
+                                    "Component" : "filesharebase_smb_directory"
                                 }
                             }
                         },
-                        "filesharesmbbasedirectory": {
+                        "filesharebase_smb_directory": {
                             "Type" : "directory",
-                            "deployment:Unit": "aws-fileshare-smb-base-directory",
+                            "deployment:Unit": "aws-fileshare",
                             "Engine": "ActiveDirectory",
                             "Size": "Small",
                             "Hostname" : {
@@ -110,23 +110,23 @@
                             "RootCredentials" : {
                                 "SecretStore" : {
                                     "Tier" : "app",
-                                    "Component" : "filesharesmbbasesecretstore"
+                                    "Component" : "filesharebase_smb_secretstore"
                                 },
                                 "Secret" : {
                                     "Source" : "generated"
                                 }
                             }
                         },
-                        "filesharesmbbasesecretstore" : {
+                        "filesharebase_smb_secretstore" : {
                             "Type" : "secretstore",
-                            "deployment:Unit" : "aws-fileshare-smb-base-secretstore",
+                            "deployment:Unit" : "aws-fileshare",
                             "Engine" : "aws:secretsmanager"
                         }
                     }
                 }
             },
             "TestCases" : {
-                "filesharesmbbase" : {
+                "filesharebase_smb" : {
                     "OutputSuffix" : "template.json",
                     "Tools" : {
                        "cfn-lint" : {}
@@ -135,30 +135,38 @@
                         "CFN" : {
                             "Resource" : {
                                 "fileSystem" : {
-                                    "Name" : "fsxfilesystemXappXfilesharesmbbase",
+                                    "Name" : "fsxfilesystemXappXfilesharebaseXsmb",
                                     "Type" : "AWS::FSx::FileSystem"
                                 },
                                 "securityGroup" : {
-                                    "Name" : "securityGroupXfsxfilesystemXappXfilesharesmbbase",
+                                    "Name" : "securityGroupXfsxfilesystemXappXfilesharebaseXsmb",
                                     "Type" : "AWS::EC2::SecurityGroup"
                                 }
                             },
                             "Output" : [
-                                "fsxfilesystemXappXfilesharesmbbaseXdns",
-                                "fsxfilesystemXappXfilesharesmbbase"
+                                "fsxfilesystemXappXfilesharebaseXsmbXdns",
+                                "fsxfilesystemXappXfilesharebaseXsmb"
                             ]
                         }
                     }
                 }
             },
             "TestProfiles" : {
-                "filesharesmbbase" : {
+                "filesharebase_smb" : {
                     "fileshare" : {
-                        "TestCases" : [ "filesharesmbbase" ]
+                        "TestCases" : [ "filesharebase_smb" ]
                     }
                 }
             }
         }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-fileshare",
+                "directoryXappXfilesharebaseXsmbXdirectory": "d-1234567a"
+            }
+        ]
     /]
 
 [/#macro]

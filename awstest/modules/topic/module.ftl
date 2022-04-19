@@ -16,15 +16,10 @@
                 "app" : {
                     "Components" : {
                         "topicbase" : {
-                            "topic" : {
-                                "Instances": {
-                                    "default": {
-                                        "DeploymentUnits": [ "aws-topic-base" ]
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "topicbase" ]
-                                }
+                            "Type": "topic",
+                            "deployment:Unit": "aws-topic",
+                            "Profiles" : {
+                                "Testing" : [ "topicbase" ]
                             }
                         }
                     }

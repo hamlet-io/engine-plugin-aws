@@ -9,7 +9,7 @@
 
 [#macro awstest_module_apigateway ]
 
-    [#-- Base apigateway setup - No solution parameters --]
+    [#-- Base setup - No solution parameters --]
     [@loadModule
         definitions={
             "appXapigatewaybase" : {
@@ -50,7 +50,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-apigateway-base",
+                "Namespace" : "mockedup-integration-app-apigatewaybase-apigateway",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["openapi"]
@@ -59,7 +59,7 @@
             {
                 "Type" : "Settings",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-apigateway-base",
+                "Namespace" : "mockedup-integration-app-apigatewaybase-apigateway",
                 "Settings" : {
                     "apigw": {
                         "Internal": true,
@@ -79,20 +79,15 @@
                 "app" : {
                     "Components" : {
                         "apigatewaybase" : {
-                            "apigateway" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-apigateway-base"]
-                                    }
-                                },
-                                "Certificate": {},
-                                "Image" : {
-                                    "Source" : "none"
-                                },
-                                "IPAddressGroups" : [ "_global" ],
-                                "Profiles" : {
-                                    "Testing" : [ "apigatewaybase" ]
-                                }
+                            "deployment:Unit": "aws-apigateway",
+                            "Type": "apigateway",
+                            "Certificate": {},
+                            "Image" : {
+                                "Source" : "none"
+                            },
+                            "IPAddressGroups" : [ "_global" ],
+                            "Profiles" : {
+                                "Testing" : [ "apigatewaybase" ]
                             }
                         }
                     }
@@ -115,7 +110,7 @@
                         "CFN" : {
                             "Resource" : {
                                 "RestApi" : {
-                                    "Name" : "apiXappXapigatewaybase",
+                                    "Name" : "apigatewayXappXapigatewaybase",
                                     "Type" : "AWS::ApiGateway::RestApi"
                                 },
                                 "Deployment" : {
@@ -124,15 +119,15 @@
                                 }
                             },
                             "Output" : [
-                                "apiXappXapigatewaybase",
-                                "apiXappXapigatewaybaseXroot",
-                                "apiXappXapigatewaybaseXregion"
+                                "apigatewayXappXapigatewaybase",
+                                "apigatewayXappXapigatewaybaseXroot",
+                                "apigatewayXappXapigatewaybaseXregion"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "RestAPITagName" : {
-                                    "Path"  : "Resources.apiXappXapigatewaybase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.apigatewayXappXapigatewaybase.Properties.Tags[10].Value",
                                     "Value" : "mockedup-integration-application-apigatewaybase"
                                 },
                                 "StageTagName" : {
@@ -188,7 +183,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-apigateway-domain",
+                "Namespace" : "mockedup-integration-app-apigatewaydomain-apigateway",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["openapi"]
@@ -197,7 +192,7 @@
             {
                 "Type" : "Settings",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-apigateway-domain",
+                "Namespace" : "mockedup-integration-app-apigatewaydomain-apigateway",
                 "Settings" : {
                     "apigw": {
                         "Internal": true,
@@ -217,33 +212,28 @@
                 "app" : {
                     "Components" : {
                         "apigatewaydomain" : {
-                            "apigateway" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-apigateway-domain"]
-                                    }
-                                },
-                                "Certificate": {
-                                    "IncludeInHost" : {
-                                        "Product" : false,
-                                        "Environment" : false,
-                                        "Tier" : false,
-                                        "Component" : true,
-                                        "Instance" : true,
-                                        "Version" : false,
-                                        "Host" : false
-                                    }
-                                },
-                                "Mapping" : {
-                                    "IncludeStage" : true
-                                },
-                                "Image" : {
-                                    "Source" : "none"
-                                },
-                                "IPAddressGroups" : [ "_global" ],
-                                "Profiles" : {
-                                    "Testing" : [ "apigatewaydomain" ]
+                            "deployment:Unit": "aws-apigateway",
+                            "Type": "apigateway",
+                            "Certificate": {
+                                "IncludeInHost" : {
+                                    "Product" : false,
+                                    "Environment" : false,
+                                    "Tier" : false,
+                                    "Component" : true,
+                                    "Instance" : true,
+                                    "Version" : false,
+                                    "Host" : false
                                 }
+                            },
+                            "Mapping" : {
+                                "IncludeStage" : true
+                            },
+                            "Image" : {
+                                "Source" : "none"
+                            },
+                            "IPAddressGroups" : [ "_global" ],
+                            "Profiles" : {
+                                "Testing" : [ "apigatewaydomain" ]
                             }
                         }
                     }
@@ -260,9 +250,6 @@
                 "apigatewaydomain" : {
                     "apigateway" : {
                         "TestCases" : [ "apigatewaydomain" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             },
@@ -273,7 +260,7 @@
                         "CFN" : {
                             "Resource" : {
                                 "RestApi" : {
-                                    "Name" : "apiXappXapigatewaydomain",
+                                    "Name" : "apigatewayXappXapigatewaydomain",
                                     "Type" : "AWS::ApiGateway::RestApi"
                                 },
                                 "Domain" : {
@@ -341,7 +328,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-apigateway-cfdistro",
+                "Namespace" : "mockedup-integration-app-apigatewaycfdistro-apigateway",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["openapi"]
@@ -350,7 +337,7 @@
             {
                 "Type" : "Settings",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-apigateway-cfdistro",
+                "Namespace" : "mockedup-integration-app-apigatewaycfdistro-apigateway",
                 "Settings" : {
                     "API_ACCESSKEY": "1234567890#MockAPIKey",
                     "apigw": {
@@ -371,21 +358,16 @@
                 "app" : {
                     "Components" : {
                         "apigatewaycfdistro" : {
-                            "apigateway" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-apigateway-cfdistro"]
-                                    }
-                                },
-                                "Certificate": {},
-                                "CloudFront": {},
-                                "Image" : {
-                                    "Source" : "none"
-                                },
-                                "IPAddressGroups" : [ "_global" ],
-                                "Profiles" : {
-                                    "Testing" : [ "apigatewaycfdistro" ]
-                                }
+                            "Type": "apigateway",
+                            "deployment:Unit": "aws-apigateway",
+                            "Certificate": {},
+                            "CloudFront": {},
+                            "Image" : {
+                                "Source" : "none"
+                            },
+                            "IPAddressGroups" : [ "_global" ],
+                            "Profiles" : {
+                                "Testing" : [ "apigatewaycfdistro" ]
                             }
                         }
                     }
@@ -395,9 +377,6 @@
                 "apigatewaycfdistro" : {
                     "apigateway" : {
                         "TestCases" : [ "apigatewaycfdistro" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             },
@@ -408,7 +387,7 @@
                         "CFN" : {
                             "Resource" : {
                                 "RestApi" : {
-                                    "Name" : "apiXappXapigatewaycfdistro",
+                                    "Name" : "apigatewayXappXapigatewaycfdistro",
                                     "Type" : "AWS::ApiGateway::RestApi"
                                 },
                                 "Deployment" : {
@@ -416,20 +395,20 @@
                                     "Type" : "AWS::ApiGateway::Deployment"
                                 },
                                 "CFDeployment" : {
-                                    "Name" : "cfXapiXappXapigatewaycfdistro",
+                                    "Name" : "cfXapigatewayXappXapigatewaycfdistro",
                                     "Type" : "AWS::CloudFront::Distribution"
                                 }
                             },
                             "Output" : [
-                                "apiXappXapigatewaycfdistro",
-                                "apiXappXapigatewaycfdistroXroot",
-                                "apiXappXapigatewaycfdistroXregion"
+                                "apigatewayXappXapigatewaycfdistro",
+                                "apigatewayXappXapigatewaycfdistroXroot",
+                                "apigatewayXappXapigatewaycfdistroXregion"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "CFTags" : {
-                                    "Path"  : "Resources.cfXapiXappXapigatewaycfdistro.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.cfXapigatewayXappXapigatewaycfdistro.Properties.Tags[10].Value",
                                     "Value" : "mockedup-integration-application-apigatewaycfdistro"
                                 }
                             }

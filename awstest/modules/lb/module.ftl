@@ -16,54 +16,49 @@
                 "elb" : {
                     "Components" : {
                         "httpslb" : {
-                            "LB" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-lb-app-https"]
-                                    }
-                                },
-                                "Engine" : "application",
-                                "Logs" : true,
-                                "Profiles" : {
-                                    "Testing" : [ "httpslb" ]
-                                },
-                                "PortMappings" : {
-                                    "https" : {
-                                        "IPAddressGroups" : ["_global"],
-                                        "Priority" : 500,
-                                        "HostFilter" : true,
-                                        "Hostname" : {
-                                            "IncludeInHost" : {
-                                                "Product" : false,
-                                                "Environment" : true,
-                                                "Segment" : false,
-                                                "Tier" : false,
-                                                "Component" : false,
-                                                "Instance" : true,
-                                                "Version" : false,
-                                                "Host" : true
-                                            },
-                                            "Host" : "test"
-                                        }
-                                    },
-                                    "httpredirect" : {
-                                        "IPAddressGroups" : ["_global"],
-                                        "Hostname" : {
-                                            "IncludeInHost" : {
-                                                "Product" : false,
-                                                "Environment" : true,
-                                                "Segment" : false,
-                                                "Tier" : false,
-                                                "Component" : false,
-                                                "Instance" : true,
-                                                "Version" : false,
-                                                "Host" : true
-                                            },
-                                            "Host" : "test"
+                            "Type": "lb",
+                            "deployment:Unit": "aws-lb",
+                            "Engine" : "application",
+                            "Logs" : true,
+                            "Profiles" : {
+                                "Testing" : [ "httpslb" ]
+                            },
+                            "PortMappings" : {
+                                "https" : {
+                                    "IPAddressGroups" : ["_global"],
+                                    "Priority" : 500,
+                                    "HostFilter" : true,
+                                    "Hostname" : {
+                                        "IncludeInHost" : {
+                                            "Product" : false,
+                                            "Environment" : true,
+                                            "Segment" : false,
+                                            "Tier" : false,
+                                            "Component" : false,
+                                            "Instance" : true,
+                                            "Version" : false,
+                                            "Host" : true
                                         },
-                                        "HostFilter" : true,
-                                        "Redirect" : {}
+                                        "Host" : "test"
                                     }
+                                },
+                                "httpredirect" : {
+                                    "IPAddressGroups" : ["_global"],
+                                    "Hostname" : {
+                                        "IncludeInHost" : {
+                                            "Product" : false,
+                                            "Environment" : true,
+                                            "Segment" : false,
+                                            "Tier" : false,
+                                            "Component" : false,
+                                            "Instance" : true,
+                                            "Version" : false,
+                                            "Host" : true
+                                        },
+                                        "Host" : "test"
+                                    },
+                                    "HostFilter" : true,
+                                    "Redirect" : {}
                                 }
                             }
                         }
@@ -85,7 +80,7 @@
                                     "Type" : "AWS::ElasticLoadBalancingV2::Listener"
                                 },
                                 "loadBalancer" : {
-                                    "Name" : "albXelbXhttpslb",
+                                    "Name" : "lbXelbXhttpslb",
                                     "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer"
                                 }
                             },
@@ -98,7 +93,7 @@
                         "JSON" : {
                             "Match" : {
                                 "LBName" : {
-                                    "Path"  : "Resources.albXelbXhttpslb.Properties.Name",
+                                    "Path"  : "Resources.lbXelbXhttpslb.Properties.Name",
                                     "Value" : "mockedup-int-elb-httpslb"
                                 },
                                 "HTTPCondition" : {
@@ -173,46 +168,41 @@
                 "elb" : {
                     "Components" : {
                         "httplb" : {
-                            "LB" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-lb-app-http"]
-                                    }
-                                },
-                                "Engine" : "application",
-                                "Logs" : true,
-                                "Profiles" : {
-                                    "Testing" : [ "httplb" ]
-                                },
-                                "PortMappings" : {
-                                    "http" : {
-                                        "IPAddressGroups" : ["_global"],
-                                        "Hostname" : {
-                                            "IncludeInHost" : {
-                                                "Product" : false,
-                                                "Environment" : true,
-                                                "Segment" : false,
-                                                "Tier" : false,
-                                                "Component" : false,
-                                                "Instance" : true,
-                                                "Version" : false,
-                                                "Host" : true
-                                            },
-                                            "Host" : "test"
+                            "Type": "lb",
+                            "deployment:Unit": "aws-lb",
+                            "Engine" : "application",
+                            "Logs" : true,
+                            "Profiles" : {
+                                "Testing" : [ "httplb" ]
+                            },
+                            "PortMappings" : {
+                                "http" : {
+                                    "IPAddressGroups" : ["_global"],
+                                    "Hostname" : {
+                                        "IncludeInHost" : {
+                                            "Product" : false,
+                                            "Environment" : true,
+                                            "Segment" : false,
+                                            "Tier" : false,
+                                            "Component" : false,
+                                            "Instance" : true,
+                                            "Version" : false,
+                                            "Host" : true
                                         },
-                                        "Priority" : 100,
-                                        "HostFilter" : true,
-                                        "Forward" : {}
+                                        "Host" : "test"
                                     },
-                                    "httpfixeddefault": {
-                                        "IPAddressGroups" : ["_global"],
-                                        "Mapping" : "http",
-                                        "Priority" : "default",
-                                        "Fixed" : {
-                                            "Message" : "Fixed Response",
-                                            "StatusCode" : "200",
-                                            "ContentType" : "text/plain"
-                                        }
+                                    "Priority" : 100,
+                                    "HostFilter" : true,
+                                    "Forward" : {}
+                                },
+                                "httpfixeddefault": {
+                                    "IPAddressGroups" : ["_global"],
+                                    "Mapping" : "http",
+                                    "Priority" : "default",
+                                    "Fixed" : {
+                                        "Message" : "Fixed Response",
+                                        "StatusCode" : "200",
+                                        "ContentType" : "text/plain"
                                     }
                                 }
                             }
@@ -235,7 +225,7 @@
                                     "Type" : "AWS::ElasticLoadBalancingV2::Listener"
                                 },
                                 "loadBalancer" : {
-                                    "Name" : "albXelbXhttplb",
+                                    "Name" : "lbXelbXhttplb",
                                     "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer"
                                 }
                             },
@@ -248,7 +238,7 @@
                         "JSON" : {
                             "Match" : {
                                 "LBName" : {
-                                    "Path"  : "Resources.albXelbXhttplb.Properties.Name",
+                                    "Path"  : "Resources.lbXelbXhttplb.Properties.Name",
                                     "Value" : "mockedup-int-elb-httplb"
                                 },
                                 "HTTPCondition" : {
@@ -266,7 +256,9 @@
                                     "Path" : "Resources.listenerRuleXelbXhttplbXhttpX100.Properties.Actions[0]",
                                     "Value" : {
                                         "Type": "forward",
-                                        "TargetGroupArn": "arn:aws:iam::123456789012:mock/tgXelbXhttplbXhttpXarn"
+                                        "TargetGroupArn": {
+                                            "Ref": "tgXelbXhttplbXhttp"
+                                        }
                                     }
                                 }
                             },
@@ -292,7 +284,7 @@
                                     "Type" : "AWS::ElasticLoadBalancingV2::Listener"
                                 },
                                 "loadBalancer" : {
-                                    "Name" : "albXelbXhttplb",
+                                    "Name" : "lbXelbXhttplb",
                                     "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer"
                                 }
                             }
@@ -311,8 +303,8 @@
                                     }
                                 },
                                 "LoadBalancerLink" : {
-                                    "Path" : "Resources.listenerXelbXhttplbXhttp.Properties.LoadBalancerArn",
-                                    "Value" : "##MockOutputXalbXelbXhttplbX##"
+                                    "Path" : "Resources.listenerXelbXhttplbXhttp.Properties.LoadBalancerArn.Ref",
+                                    "Value" : "lbXelbXhttplb"
                                 }
                             },
                             "Length" : {
@@ -329,9 +321,6 @@
                 "httplb" : {
                     "lb" : {
                         "TestCases" : [ "httplb", "httplbfixeddefault" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -345,52 +334,47 @@
                 "elb" : {
                     "Components" : {
                         "conditionapplb" : {
-                            "LB" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-lb-app-condition"]
-                                    }
-                                },
-                                "Engine" : "application",
-                                "Logs" : true,
-                                "Profiles" : {
-                                    "Testing" : [ "conditionapplb" ]
-                                },
-                                "PortMappings" : {
-                                    "http" : {
-                                        "IPAddressGroups" : ["_global"],
-                                        "Conditions" : {
-                                            "httpHeader" : {
-                                                "Type" : "httpHeader",
-                                                "type:httpHeader" : {
-                                                    "HeaderName" : "TestHeader",
-                                                    "HeaderValues" : [ "testValue1" ]
-                                                }
-                                            },
-                                            "httpRequestMethod" : {
-                                                "Type" : "httpRequestMethod",
-                                                "type:httpRequestMethod" : {
-                                                    "Methods" : [ "GET", "HEAD" ]
-                                                }
-                                            },
-                                            "httpQueryString" : {
-                                                "Type" : "httpQueryString",
-                                                "type:httpQueryString" : {
-                                                    "query" : {
-                                                        "Key" : "query",
-                                                        "Value" : "queryValue1"
-                                                    }
-                                                }
-                                            },
-                                            "SourceIP" : {
-                                                "Type" : "SourceIP",
-                                                "type:SourceIP" : {
-                                                    "IPAddressGroups" : [ "_localnet" ]
+                            "Type": "lb",
+                            "deployment:Unit": "aws-lb",
+                            "Engine" : "application",
+                            "Logs" : true,
+                            "Profiles" : {
+                                "Testing" : [ "conditionapplb" ]
+                            },
+                            "PortMappings" : {
+                                "http" : {
+                                    "IPAddressGroups" : ["_global"],
+                                    "Conditions" : {
+                                        "httpHeader" : {
+                                            "Type" : "httpHeader",
+                                            "type:httpHeader" : {
+                                                "HeaderName" : "TestHeader",
+                                                "HeaderValues" : [ "testValue1" ]
+                                            }
+                                        },
+                                        "httpRequestMethod" : {
+                                            "Type" : "httpRequestMethod",
+                                            "type:httpRequestMethod" : {
+                                                "Methods" : [ "GET", "HEAD" ]
+                                            }
+                                        },
+                                        "httpQueryString" : {
+                                            "Type" : "httpQueryString",
+                                            "type:httpQueryString" : {
+                                                "query" : {
+                                                    "Key" : "query",
+                                                    "Value" : "queryValue1"
                                                 }
                                             }
                                         },
-                                        "Forward" : {}
-                                    }
+                                        "SourceIP" : {
+                                            "Type" : "SourceIP",
+                                            "type:SourceIP" : {
+                                                "IPAddressGroups" : [ "_localnet" ]
+                                            }
+                                        }
+                                    },
+                                    "Forward" : {}
                                 }
                             }
                         }
@@ -412,7 +396,7 @@
                                     "Type" : "AWS::ElasticLoadBalancingV2::Listener"
                                 },
                                 "loadBalancer" : {
-                                    "Name" : "albXelbXconditionapplb",
+                                    "Name" : "lbXelbXconditionapplb",
                                     "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer"
                                 }
                             },
@@ -423,7 +407,7 @@
                         "JSON" : {
                             "Match" : {
                                 "LBName" : {
-                                    "Path"  : "Resources.albXelbXconditionapplb.Properties.Name",
+                                    "Path"  : "Resources.lbXelbXconditionapplb.Properties.Name",
                                     "Value" : "mockedup-int-elb-conditionapplb"
                                 },
                                 "HTTPConditionDefaultPath" : {
@@ -476,7 +460,9 @@
                                     "Path" : "Resources.listenerRuleXelbXconditionapplbXhttpX100.Properties.Actions[0]",
                                     "Value" : {
                                         "Type": "forward",
-                                        "TargetGroupArn": "arn:aws:iam::123456789012:mock/tgXelbXconditionapplbXhttpXarn"
+                                        "TargetGroupArn": {
+                                            "Ref": "tgXelbXconditionapplbXhttp"
+                                        }
                                     }
                                 }
                             },
@@ -497,9 +483,6 @@
                 "conditionapplb" : {
                     "lb" : {
                         "TestCases" : [ "conditionapplb" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -514,7 +497,7 @@
                     "Components" : {
                         "nlbalb_nlb" : {
                             "Type": "lb",
-                            "deployment:Unit" : "aws-lb-nlbalb",
+                            "deployment:Unit" : "aws-lb",
                             "Engine" : "network",
                             "Logs" : true,
                             "Profiles" : {
@@ -541,7 +524,7 @@
                         },
                         "nlbalb_alb" : {
                             "Type": "lb",
-                            "deployment:Unit" : "aws-lb-nlbalb",
+                            "deployment:Unit" : "aws-lb",
                             "Engine" : "application",
                             "Logs" : true,
                             "PortMappings" : {
@@ -587,7 +570,7 @@
                                     "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
                                 },
                                 "loadBalancer" : {
-                                    "Name" : "albXelbXnlbalbXnlb",
+                                    "Name" : "lbXelbXnlbalbXnlb",
                                     "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer"
                                 }
                             },
@@ -598,7 +581,7 @@
                         "JSON" : {
                             "Match" : {
                                 "LBName": {
-                                    "Path": "Resources.albXelbXnlbalbXnlb.Properties.Name",
+                                    "Path": "Resources.lbXelbXnlbalbXnlb.Properties.Name",
                                     "Value": "mockedup-int-elb-nlbalb_nlb"
                                 },
                                 "ALBTypeTargetGroup": {
@@ -614,8 +597,8 @@
                                     "Value": "TCP"
                                 },
                                 "ALBTarget": {
-                                    "Path": "Resources.tgXdefaultXelbXnlbalbXnlbXhttpXtcp.Properties.Targets[0].Id",
-                                    "Value": "arn:aws:iam::123456789012:mock/albXelbXnlbalbXalbXarn"
+                                    "Path": "Resources.tgXdefaultXelbXnlbalbXnlbXhttpXtcp.Properties.Targets[0].Id.Ref",
+                                    "Value": "lbXelbXnlbalbXalb"
                                 }
                             },
                             "Length": {
@@ -632,12 +615,17 @@
                 "nlbalb": {
                     "lb": {
                         "TestCases": [ "nlbalb" ]
-                    },
-                    "*": {
-                        "TestCases": [ "_cfn-lint" ]
                     }
                 }
             }
         }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-lb",
+                "lbXelbXnlbalbXalb" : "lbXelbXnlbalbXalb"
+            }
+        ]
     /]
 [/#macro]

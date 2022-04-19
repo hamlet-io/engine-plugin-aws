@@ -28,7 +28,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-datapipeline-base",
+                "Namespace" : "mockedup-integration-app-datapipelinebase",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["pipeline"]
@@ -40,15 +40,10 @@
                 "app" : {
                     "Components" : {
                         "datapipelinebase" : {
-                            "datapipeline" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-datapipeline-base"]
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "datapipelinebase" ]
-                                }
+                            "Type": "datapipeline",
+                            "deployment:Unit": "aws-datapipeline",
+                            "Profiles" : {
+                                "Testing" : [ "datapipelinebase" ]
                             }
                         }
                     }

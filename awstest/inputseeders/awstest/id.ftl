@@ -61,6 +61,10 @@
                     },
                     "Product" : {
                         "Modules" : {
+                            "_segment": {
+                                "Provider" : "awstest",
+                                "Name": "segment"
+                            },
                             "apigateway" : {
                                 "Provider" : "awstest",
                                 "Name" : "apigateway"

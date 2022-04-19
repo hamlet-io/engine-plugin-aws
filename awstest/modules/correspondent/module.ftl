@@ -16,17 +16,12 @@
                 "mgmt" : {
                     "Components" : {
                         "correspondentbase" : {
-                            "correspondent" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-correspondent-base"
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : ["correspondentbase"]
-                                },
-                                "Name" : "pinpoint"
-                            }
+                            "Type": "correspondent",
+                            "deployment:Unit": "aws-correspondent",
+                            "Profiles" : {
+                                "Testing" : ["correspondentbase"]
+                            },
+                            "Name" : "pinpoint"
                         }
                     }
                 }

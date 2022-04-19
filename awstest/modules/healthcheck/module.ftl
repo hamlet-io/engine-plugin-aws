@@ -14,9 +14,9 @@
             "Tiers" : {
                 "elb" : {
                     "Components" : {
-                        "healthchecklb" : {
+                        "healthcheck_lb" : {
                             "Type" : "lb",
-                            "deployment:Unit" : "aws-healthcheck-lb",
+                            "deployment:Unit" : "aws-healthcheck",
                             "Engine" : "application",
                             "PortMappings" : {
                                 "https" : {},
@@ -30,10 +30,10 @@
                         [#-- simple health checks must be in us-east-1 --]
                         [#-- we can't control region through modules at the moment so can't include in testing --]
                         [#-- TODO(roleyfoley): enable when placements fully control region --]
-                        "healthchecksimplebase" : {
+                        "healthcheckbase_simple" : {
                             "Type" : "healthcheck",
                             "Enabled" : false,
-                            "deployment:Unit" : "aws-healthcheck-simple-base",
+                            "deployment:Unit" : "aws-healthcheck",
                             "Engine" : "Simple",
                             "Engine:Simple" : {
                                 "Destination": {
@@ -52,9 +52,9 @@
                                 "Placement" : "healtchecksimple"
                             }
                         },
-                        "healthcheckcomplexbase" : {
+                        "healthcheckbase_complex" : {
                             "Type" : "healthcheck",
-                            "deployment:Unit" : "aws-healthcheck-complex-base",
+                            "deployment:Unit" : "aws-healthcheck",
                             "Engine" : "Complex",
                             "Engine:Complex" : {
                                 "Image": {
@@ -63,18 +63,18 @@
                                 "Handler" : "handler",
                                 "RunTime" : "syn-python-selenium-1.0"
                             },
-                            "Extenions" : [ "_healthcheckcomplexbase" ],
+                            "Extensions" : [ "_healthcheckbasecomplex" ],
                             "Links" : {
                                 "lb": {
                                     "Tier" : "elb",
-                                    "Component" : "healthchecklb",
+                                    "Component" : "healthcheck_lb",
                                     "PortMapping" : "https",
                                     "Instance" : "",
                                     "Version" : ""
                                 }
                             },
                             "Profiles" : {
-                                "Testing" : [ "healthcheckcomplexbase" ]
+                                "Testing" : [ "healthcheckbase_complex" ]
                             }
                         }
                     }
@@ -90,49 +90,49 @@
                 }
             },
             "TestCases" : {
-                "healthchecksimplebase" : {
+                "healthcheckbase_simple" : {
                     "OutputSuffix" : "template.json",
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
                                 "healthCheck" : {
-                                    "Name" : "route53HealthCheckXappXhealthchecksimplebase",
+                                    "Name" : "route53HealthCheckXappXhealthcheckbaseXsimple",
                                     "Type" : "AWS::Route53::HealthCheck"
                                 }
                             },
                             "Output" : [
-                                "route53HealthCheckXappXhealthchecksimplebase"
+                                "route53HealthCheckXappXhealthcheckbaseXsimple"
                             ]
                         }
                     }
                 },
-                "healthcheckcomplexbase" : {
+                "healthcheckbase_complex" : {
                     "OutputSuffix" : "template.json",
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
                                 "canary" : {
-                                    "Name" : "canaryXappXhealthcheckcomplexbase",
+                                    "Name" : "canaryXappXhealthcheckbaseXcomplex",
                                     "Type" : "AWS::Synthetics::Canary"
                                 }
                             },
                             "Output" : [
-                                "canaryXappXhealthcheckcomplexbase"
+                                "canaryXappXhealthcheckbaseXcomplex"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "CanaryName" : {
-                                    "Path"  : "Resources.canaryXappXhealthcheckcomplexbase.Properties.Name",
-                                    "Value" : "56813_xbase"
+                                    "Path"  : "Resources.canaryXappXhealthcheckbaseXcomplex.Properties.Name",
+                                    "Value" : "56813_mplex"
                                 },
                                 "ArtifactS3Location" : {
-                                    "Path"  : "Resources.canaryXappXhealthcheckcomplexbase.Properties.ArtifactS3Location",
-                                    "Value" : "s3://##MockOutputXs3XsegmentXapplicationX##/appdata/mockedup/integration/application/healthcheckcomplexbase"
+                                    "Path"  : "Resources.canaryXappXhealthcheckbaseXcomplex.Properties.ArtifactS3Location",
+                                    "Value" : "s3://segment-baseline-appdata/appdata/mockedup/integration/application/healthcheckbase_complex"
                                 },
                                 "EnvVars" : {
-                                    "Path" : "Resources.canaryXappXhealthcheckcomplexbase.Properties.RunConfig.EnvironmentVariables.LB_FQDN",
-                                    "Value" : "healthchecklb-integration.mock.local"
+                                    "Path" : "Resources.canaryXappXhealthcheckbaseXcomplex.Properties.RunConfig.EnvironmentVariables.LB_FQDN",
+                                    "Value" : "healthcheck_lb-integration.mock.local"
                                 }
                             }
                         }
@@ -140,20 +140,17 @@
                 }
             },
             "TestProfiles" : {
-                "healthchecksimplebase" : {
+                "healthcheckbase_simple" : {
                     "healthcheck" : {
-                        "TestCases" : [ "healthchecksimplebase" ]
+                        "TestCases" : [ "healthcheckbase_simple" ]
                     },
                     "*" : {
                         "TestCases" : [ "_cfn-lint" ]
                     }
                 },
-                "healthcheckcomplexbase" : {
+                "healthcheckbase_complex" : {
                     "healthcheck" : {
-                        "TestCases" : [ "healthcheckcomplexbase" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
+                        "TestCases" : [ "healthcheckbase_complex" ]
                     }
                 }
             }

@@ -16,15 +16,10 @@
                 "app" : {
                     "Components" : {
                         "ec2base" : {
-                            "ec2" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-ec2-base"
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "ec2base" ]
-                                }
+                            "Type": "ec2",
+                            "deployment:Unit": "aws-ec2",
+                            "Profiles" : {
+                                "Testing" : [ "ec2base" ]
                             }
                         }
                     }
@@ -57,11 +52,13 @@
                             "Match" : {
                                 "NetworkInterfaceAttached" : {
                                     "Path" : "Resources.ec2InstanceXappXec2baseXa.Properties.NetworkInterfaces[0].NetworkInterfaceId",
-                                    "Value" : "##MockOutputXeniXappXec2baseXaXeth0X##"
+                                    "Value" : {
+                                        "Ref": "eniXappXec2baseXaXeth0"
+                                    }
                                 },
                                 "NetworkInterfaceSubnet" : {
                                     "Path" : "Resources.eniXappXec2baseXaXeth0.Properties.SubnetId",
-                                    "Value" : "##MockOutputXsubnetXappXaX##"
+                                    "Value" : "subnet-123456789abcdef13"
                                 }
                             },
                             "NotEmpty" : [
