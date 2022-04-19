@@ -16,11 +16,11 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "mtaoutbase" : {
+                        "mtabase_out" : {
                             "Type": "mta",
-                            "deployment:Unit" : "aws-mta-out-base",
+                            "deployment:Unit" : "aws-mta",
                             "Profiles" : {
-                                "Testing" : [ "mtaoutbase" ]
+                                "Testing" : [ "mtabase_out" ]
                             },
                             "Hostname" : {},
                             "Direction" : "send",
@@ -36,7 +36,7 @@
                                     "Links" : {
                                         "topic": {
                                             "Tier": "app",
-                                            "Component": "mtatopic",
+                                            "Component": "mtaout_topic",
                                             "Instance": "",
                                             "Version": ""
                                         }
@@ -44,9 +44,9 @@
                                 }
                             }
                         },
-                        "mtatopic" : {
+                        "mtaout_topic" : {
                             "Type" : "topic",
-                            "deployment:Unit" : "aws-mta-topic",
+                            "deployment:Unit" : "aws-mta",
                             "Subscriptions" : {
                                 "landingqueue" : {
                                     "Links" : {
@@ -61,27 +61,27 @@
                 }
             },
             "TestCases" : {
-                "mtaoutbase" : {
+                "mtabase_out" : {
                     "OutputSuffix" : "template.json",
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
                                 "ConfigurationSet" : {
-                                    "Name" : "sesconfigsetXappXmtaoutbaseXtransmissions",
+                                    "Name" : "sesconfigsetXappXmtabaseXoutXtransmissions",
                                     "Type" : "AWS::SES::ConfigurationSet"
                                 }
                             },
                             "Output" : [
-                                "sesconfigsetXappXmtaoutbaseXtransmissionsXname"
+                                "sesconfigsetXappXmtabaseXoutXtransmissionsXname"
                             ]
                         }
                     }
                 }
             },
             "TestProfiles" : {
-                "mtaoutbase" : {
+                "mtabase_out" : {
                     "mta" : {
-                        "TestCases" : [ "mtaoutbase" ]
+                        "TestCases" : [ "mtabase_out" ]
                     },
                     "*" : {
                         "TestCases" : [ "_cfn-lint" ]

@@ -28,19 +28,10 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-cdn-spa-base",
+                "Namespace" : "mockedup-integration-web-cdnbase_spa",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : [ "spa" ]
-                }
-            },
-            {
-                "Type" : "Settings",
-                "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-cdn-base",
-                "Settings" : {
-                    "MASTER_USERNAME" : "testUser",
-                    "MASTER_PASSWORD" : "testPassword"
                 }
             }
         ]
@@ -49,42 +40,32 @@
                 "web" : {
                     "Components" : {
                         "cdnbase": {
-                            "cdn": {
-                                "Instances": {
-                                    "default": {
-                                        "DeploymentUnits": [ "aws-cdn-base" ]
-                                    }
-                                },
-                                "Routes" : {
-                                    "default" : {
-                                        "PathPattern" : "_default",
-                                        "Origin" : {
-                                            "Link" : {
-                                                "Tier" : "web",
-                                                "Component" : "cdnspabase"
-                                            }
+                            "Type": "cdn",
+                            "deployment:Unit": "aws-cdn",
+                            "Routes" : {
+                                "default" : {
+                                    "PathPattern" : "_default",
+                                    "Origin" : {
+                                        "Link" : {
+                                            "Tier" : "web",
+                                            "Component" : "cdnbase_spa"
                                         }
                                     }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "cdnbase" ]
                                 }
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "cdnbase" ]
                             }
                         },
-                        "cdnspabase": {
-                            "spa": {
-                                "Instances": {
-                                    "default": {
-                                        "DeploymentUnits": [ "aws-cdn-spa-base" ]
-                                    }
-                                },
-                                "Links": {
-                                    "cdn": {
-                                        "Tier": "web",
-                                        "Component": "cdnbase",
-                                        "Route": "default",
-                                        "Direction": "inbound"
-                                    }
+                        "cdnbase_spa": {
+                            "Type": "spa",
+                            "deployment:Unit": "aws-cdn",
+                            "Links": {
+                                "cdn": {
+                                    "Tier": "web",
+                                    "Component": "cdnbase",
+                                    "Route": "default",
+                                    "Direction": "inbound"
                                 }
                             }
                         }
@@ -133,8 +114,8 @@
             {
                 "Account" : "0123456789",
                 "Region" : "mock-region-1",
-                "DeploymentUnit" : "aws-cdn-spa-base",
-                "cfXwebXcdnspabase": "hamlet:empty"
+                "DeploymentUnit" : "aws-cdn",
+                "cfXwebXcdnbase": "abc123def"
             }
         ]
     /]

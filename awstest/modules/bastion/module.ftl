@@ -17,15 +17,10 @@
                 "mgmt" : {
                     "Components" : {
                         "bastionbase" : {
-                            "bastion" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-bastion-base"
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "bastionbase" ]
-                                }
+                            "Type": "bastion",
+                            "deployment:Unit" : "aws-bastion",
+                            "Profiles" : {
+                                "Testing" : [ "bastionbase" ]
                             }
                         }
                     }

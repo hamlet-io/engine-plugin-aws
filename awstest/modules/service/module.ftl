@@ -27,7 +27,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-service-base",
+                "Namespace" : "mockedup-integration-app-servicebase_ecs-servicebase",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["docker"]
@@ -39,27 +39,21 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "serviceecsbase" : {
-                            "ecs" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-service-ecs"
-                                    }
-                                },
-                                "Services" : {
-                                    "servicebase" : {
-                                        "Instances" : {
-                                            "default" : {
-                                                "deployment:Unit" : "aws-service-base"
-                                            }
-                                        },
-                                        "Profiles" : {
-                                            "Testing" : [ "servicebase" ]
-                                        },
-                                        "Containers" : {
-                                            "containerbase" : {
-                                                "MemoryReservation" : 512
-                                            }
+                        "servicebase_ecs" : {
+                            "Type": "ecs",
+                            "deployment:Unit": "aws-service",
+                            "Profiles" : {
+                                "Deployment": ["_awslinux2"]
+                            },
+                            "Services" : {
+                                "servicebase" : {
+                                    "deployment:Unit" : "aws-service",
+                                    "Profiles" : {
+                                        "Testing" : [ "servicebase" ]
+                                    },
+                                    "Containers" : {
+                                        "containerbase" : {
+                                            "MemoryReservation" : 512
                                         }
                                     }
                                 }
@@ -75,21 +69,21 @@
                         "CFN" : {
                             "Resource" : {
                                 "service" : {
-                                    "Name" : "ecsServiceXappXserviceecsbaseXservicebase",
+                                    "Name" : "ecsServiceXappXservicebaseXecsXservicebase",
                                     "Type" : "AWS::ECS::Service"
                                 }
                             },
                             "Output" : [
-                                "ecsServiceXappXserviceecsbaseXservicebaseXname",
-                                "ecsServiceXappXserviceecsbaseXservicebase",
-                                "ecsTaskXappXserviceecsbaseXservicebaseXarn"
+                                "ecsServiceXappXservicebaseXecsXservicebaseXname",
+                                "ecsServiceXappXservicebaseXecsXservicebase",
+                                "ecsTaskXappXservicebaseXecsXservicebaseXarn"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "TagName" : {
-                                    "Path"  : "Resources.ecsServiceXappXserviceecsbaseXservicebase.Properties.Tags[10].Value",
-                                    "Value" : "mockedup-integration-application-serviceecsbase-servicebase"
+                                    "Path"  : "Resources.ecsServiceXappXservicebaseXecsXservicebase.Properties.Tags[10].Value",
+                                    "Value" : "mockedup-integration-application-servicebase_ecs-servicebase"
                                 }
                             }
                         }
@@ -107,6 +101,18 @@
                 }
             }
         }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-s3",
+
+                "ecsXappXservicebaseXecs": "mockedup-integration-application-serviceecsbase",
+                "ecsXappXservicebaseXecsXarn": "arn:aws:ecs:mock-region-1:0123456789:cluster/mockedup-integration-application-serviceecsbase",
+                "ecsCapacityProviderXappXservicebaseXecsXasg": "mockedup-integration-application-serviceecsbase",
+                "ecsCapacityProviderAssocXappXservicebaseXecs": "mockedup-integration-application-serviceecsbase"
+            }
+        ]
     /]
 
 [/#macro]

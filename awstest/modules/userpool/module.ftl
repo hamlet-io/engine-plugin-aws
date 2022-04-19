@@ -17,20 +17,15 @@
                 "app" : {
                     "Components" : {
                         "userpoolbase" : {
-                            "userpool" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-userpool-base"
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "userpoolbase" ]
-                                },
-                                "DefaultClient" : false,
-                                "Schema" : {
-                                    "email" : {
-                                        "Required" : true
-                                    }
+                            "Type": "userpool",
+                            "deployment:Unit" : "aws-userpool",
+                            "Profiles" : {
+                                "Testing" : [ "userpoolbase" ]
+                            },
+                            "DefaultClient" : false,
+                            "Schema" : {
+                                "email" : {
+                                    "Required" : true
                                 }
                             }
                         }

@@ -28,7 +28,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-mobileapp-base",
+                "Namespace" : "mockedup-integration-app-mobileappbase",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["scripts"]
@@ -40,15 +40,10 @@
                 "app" : {
                     "Components" : {
                         "mobileappbase" : {
-                            "mobileapp" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-mobileapp-base"]
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "mobileappbase" ]
-                                }
+                            "Type": "mobileapp",
+                            "deployment:Unit": "aws-mobileapp",
+                            "Profiles" : {
+                                "Testing" : [ "mobileappbase" ]
                             }
                         }
                     }

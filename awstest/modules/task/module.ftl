@@ -28,7 +28,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-task-base",
+                "Namespace" : "mockedup-integration-app-taskbase_ecs-taskbase",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["docker"]
@@ -40,27 +40,21 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "taskecsbase" : {
-                            "ecs" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-task-ecs"
-                                    }
-                                },
-                                "Tasks" : {
-                                    "taskbase" : {
-                                        "Instances" : {
-                                            "default" : {
-                                                "deployment:Unit" : "aws-task-base"
-                                            }
-                                        },
-                                        "Profiles" : {
-                                            "Testing" : [ "taskbase" ]
-                                        },
-                                        "Containers" : {
-                                            "containerbase" : {
-                                                "MemoryReservation" : 512
-                                            }
+                        "taskbase_ecs" : {
+                            "Type": "ecs",
+                            "deployment:Unit" : "aws-task",
+                            "Profiles": {
+                                "Deployment": ["_awslinux2"]
+                            },
+                            "Tasks" : {
+                                "taskbase" : {
+                                    "deployment:Unit" : "aws-task",
+                                    "Profiles" : {
+                                        "Testing" : [ "taskbase" ]
+                                    },
+                                    "Containers" : {
+                                        "containerbase" : {
+                                            "MemoryReservation" : 512
                                         }
                                     }
                                 }
@@ -76,20 +70,20 @@
                         "CFN" : {
                             "Resource" : {
                                 "task" : {
-                                    "Name" : "ecsTaskXappXtaskecsbaseXtaskbase",
+                                    "Name" : "ecsTaskXappXtaskbaseXecsXtaskbase",
                                     "Type" : "AWS::ECS::TaskDefinition"
                                 }
                             },
                             "Output" : [
-                                "ecsTaskXappXtaskecsbaseXtaskbase",
-                                "ecsTaskXappXtaskecsbaseXtaskbaseXarn"
+                                "ecsTaskXappXtaskbaseXecsXtaskbase",
+                                "ecsTaskXappXtaskbaseXecsXtaskbaseXarn"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "TagName" : {
-                                    "Path"  : "Resources.ecsTaskXappXtaskecsbaseXtaskbase.Properties.Tags[10].Value",
-                                    "Value" : "application-taskecsbase-taskbase"
+                                    "Path"  : "Resources.ecsTaskXappXtaskbaseXecsXtaskbase.Properties.Tags[10].Value",
+                                    "Value" : "application-taskbase_ecs-taskbase"
                                 }
                             }
                         }
@@ -107,6 +101,18 @@
                 }
             }
         }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-s3",
+
+                "ecsXappXtaskbaseXecs": "mockedup-integration-application-taskecsbase",
+                "ecsXappXtaskbaseXecsXarn": "arn:aws:ecs:mock-region-1:0123456789:cluster/mockedup-integration-application-taskecsbase",
+                "ecsCapacityProviderXappXtaskbaseXecsXasg": "mockedup-integration-application-taskecsbase",
+                "ecsCapacityProviderAssocXappXtaskbaseXecs": "mockedup-integration-application-taskecsbase"
+            }
+        ]
     /]
 
 [/#macro]

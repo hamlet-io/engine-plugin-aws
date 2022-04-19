@@ -29,7 +29,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-dataset-base",
+                "Namespace" : "mockedup-integration-app-datasetbase_s3",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["dataset"]
@@ -40,16 +40,11 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "datasetbases3" : {
-                            "dataset" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-dataset-base-s3"]
-                                    }
-                                },
-                                "Engine" : "s3",
-                                "BuildEnvironment" : [ "integration" ]
-                            }
+                        "datasetbase_s3" : {
+                            "Type": "dataset",
+                            "deployment:Unit": "aws-dataset",
+                            "Engine" : "s3",
+                            "BuildEnvironment" : [ "integration" ]
                         }
                     }
                 }

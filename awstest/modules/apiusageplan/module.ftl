@@ -12,7 +12,7 @@
     [#-- Base apiusageplan setup - No solution parameters --]
     [@loadModule
         definitions={
-            "appXapiusageplanbase" : {
+            "appXapiusageplanbaseXapigw" : {
                 "swagger": "2.0",
                 "info": {
                     "version": "v1.0.0",
@@ -50,7 +50,7 @@
             {
                 "Type" : "Builds",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-apiusageplan-base",
+                "Namespace" : "mockedup-integration-app-apiusageplanbase_apigw-apigateway",
                 "Settings" : {
                     "COMMIT" : "123456789#MockCommit#",
                     "FORMATS" : ["openapi"]
@@ -59,7 +59,7 @@
             {
                 "Type" : "Settings",
                 "Scope" : "Products",
-                "Namespace" : "mockedup-integration-aws-apiusageplan-base",
+                "Namespace" : "mockedup-integration-app-apiusageplanbase_apigw-apigateway",
                 "Settings" : {
                     "apigw": {
                         "Internal": true,
@@ -78,64 +78,34 @@
             "Tiers" : {
                 "app" : {
                     "Components" : {
-                        "apigatewaybase" : {
-                            "apigateway" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-apiusageplan-base-gw"]
-                                    }
-                                },
-                                "Image" : {
-                                    "Source" : "none"
-                                },
-                                "IPAddressGroups" : [ "_global" ]
-                            }
-                        },
-                        "plan": {
-                            "APIUsagePlan": {
-                                "Instances": {
-                                    "default": {
-                                        "DeploymentUnits": [
-                                            "aws-apiusageplan-base"
-                                        ],
-                                        "Links": {
-                                            "apigatewaybase": {
-                                                "Tier": "app",
-                                                "Component": "apigatewaybase"
-                                            }
-                                        }
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "apiusageplanbase" ]
+                        "apiusageplanbase_usageplan": {
+                            "Type": "apiusageplan",
+                            "deployment:Unit" : "aws-apiusageplan",
+                            "Links": {
+                                "apigatewaybase": {
+                                    "Tier": "app",
+                                    "Component": "apiusageplanbase_apigw"
                                 }
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "apiusageplanbase" ]
                             }
                         },
-                        "user": {
-                            "user": {
-                                "Instances": {
-                                    "default": {
-                                        "DeploymentUnits": [
-                                            "aws-apiusageplan-base-usr"
-                                        ]
-                                    }
-                                },
-                                "GenerateCredentials": {
-                                    "Formats": [
-                                        "system"
-                                    ]
-                                },
-                                "Links": {
-                                    "plan": {
-                                        "Tier": "app",
-                                        "Component": "plan"
-                                    }
-                                },
-                                "Permissions": {
-                                    "Decrypt": false,
-                                    "AsFile": false,
-                                    "AppData": false,
-                                    "AppPublic": false
+                        "apiusageplanbase_apigw" : {
+                            "Type": "apigateway",
+                            "deployment:Unit": "aws-apiusageplan",
+                            "Image" : {
+                                "Source" : "none"
+                            },
+                            "IPAddressGroups": ["_global"]
+                        },
+                        "apiusageplanbase_user": {
+                            "Type": "user",
+                            "deployment:Unit": "aws-apiusageplan",
+                            "Links": {
+                                "uageplan": {
+                                    "Tier": "app",
+                                    "Component": "apiusageplanbase_usageplan"
                                 }
                             }
                         }
@@ -159,27 +129,49 @@
                         "CFN" : {
                             "Resource" : {
                                 "Plan" : {
-                                    "Name" : "apiUsagePlanXappXplan",
+                                    "Name" : "apiUsagePlanXappXapiusageplanbaseXusageplan",
                                     "Type" : "AWS::ApiGateway::UsagePlan"
+                                },
+                                "User" : {
+                                    "Name" : "userXappXapiusageplanbaseXuser",
+                                    "Type" : "AWS::IAM::User"
+                                },
+                                "PlanKey" : {
+                                    "Name" : "apiUsagePlanMemberXapiKeyXuserXappXapiusageplanbaseXuserXuageplan",
+                                    "Type" : "AWS::ApiGateway::UsagePlanKey"
+                                },
+                                "ApiKey" : {
+                                    "Name" : "apiKeyXuserXappXapiusageplanbaseXuser",
+                                    "Type" : "AWS::ApiGateway::ApiKey"
                                 }
                             },
                             "Output" : [
-                                "apiUsagePlanXappXplan"
+                                "apiUsagePlanXappXapiusageplanbaseXusageplan",
+                                "apiKeyXuserXappXapiusageplanbaseXuser",
+                                "userXappXapiusageplanbaseXuser"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "PlanName" : {
-                                    "Path"  : "Resources.apiUsagePlanXappXplan.Properties.UsagePlanName",
-                                    "Value" : "mockedup-integration-application-plan"
+                                    "Path"  : "Resources.apiUsagePlanXappXapiusageplanbaseXusageplan.Properties.UsagePlanName",
+                                    "Value" : "mockedup-integration-application-apiusageplanbase_usageplan"
                                 },
                                 "PlanTagName" : {
-                                    "Path"  : "Resources.apiUsagePlanXappXplan.Properties.Tags[8].Value",
-                                    "Value" : "mockedup-integration-application-plan"
+                                    "Path"  : "Resources.apiUsagePlanXappXapiusageplanbaseXusageplan.Properties.Tags[8].Value",
+                                    "Value" : "mockedup-integration-application-apiusageplanbase_usageplan"
                                 },
                                 "ApiStageId" : {
-                                    "Path"  : "Resources.apiUsagePlanXappXplan.Properties.ApiStages[0].ApiId",
-                                    "Value" : "##MockOutputXapiXappXapigatewaybaseX##"
+                                    "Path"  : "Resources.apiUsagePlanXappXapiusageplanbaseXusageplan.Properties.ApiStages[0].ApiId",
+                                    "Value" : "api-abc123def"
+                                },
+                                "UsagePlanAssignedToKey" : {
+                                    "Path"  : "Resources.apiUsagePlanMemberXapiKeyXuserXappXapiusageplanbaseXuserXuageplan.Properties.KeyId",
+                                    "Value" : "key-1234def"
+                                },
+                                "ApiUserName" : {
+                                    "Path"  : "Resources.apiKeyXuserXappXapiusageplanbaseXuser.Properties.Tags[8].Value",
+                                    "Value" : "mockedup-integration-application-apiusageplanbase_user"
                                 }
                             }
                         }
@@ -187,5 +179,16 @@
                 }
             }
         }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-cdn",
+                "apigatewayXappXapiusageplanbaseXapigw": "api-abc123def",
+                "apiKeyXuserXappXapiusageplanbaseXuser": "key-1234def",
+                "apiKeyXuserXappXapiusageplanbaseXuserXname": "mockedup-integration-application-apiusageplanbase_user",
+                "apiUsagePlanXappXapiusageplanbaseXusageplan": "abc123"
+            }
+        ]
     /]
 [/#macro]

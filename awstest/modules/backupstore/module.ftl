@@ -18,7 +18,7 @@
                     "Components" : {
                         "backupstorebase" : {
                             "Type" : "backupstore",
-                            "deployment:Unit" : "aws-backupstore-base",
+                            "deployment:Unit" : "aws-backupstore",
                             "Profiles" : {
                                 "Testing" : [ "backupstorebase" ]
                             },
@@ -109,25 +109,25 @@
             {
                 "Account" : "0123456789",
                 "Region" : "mock-region-1",
-                "DeploymentUnit" : "aws-backupstore-base",
+                "DeploymentUnit" : "aws-backupstore",
                 "backupvaultXdbXbackupstorebase": "mockedup-integration-database-backupstorebase"
             },
             {
                 "Account" : "0123456789",
                 "Region" : "mock-region-1",
-                "DeploymentUnit" : "aws-backupstore-base",
+                "DeploymentUnit" : "aws-backupstore",
                 "backupplanXdbXbackupstorebaseXdaily": "mockedup-integration-database-backupstorebase-daily"
             },
             {
                 "Account" : "0123456789",
                 "Region" : "mock-region-1",
-                "DeploymentUnit" : "aws-backupstore-base",
+                "DeploymentUnit" : "aws-backupstore",
                 "backupplanXdbXbackupstorebaseXmonthly": "mockedup-integration-database-backupstorebase-monthly"
             },
             {
                 "Account" : "0123456789",
                 "Region" : "mock-region-1",
-                "DeploymentUnit" : "aws-backupstore-base",
+                "DeploymentUnit" : "aws-backupstore",
                 "backupplanXdbXbackupstorebaseXyearly": "mockedup-integration-database-backupstorebase-yearly"
             }
         ]
@@ -142,7 +142,7 @@
                     "Components" : {
                         "backupstoretags" : {
                             "Type" : "backupstore",
-                            "deployment:Unit" : "aws-backupstore-tags",
+                            "deployment:Unit" : "aws-backupstore",
                             "Profiles" : {
                                 "Testing" : [ "backupstoretags" ]
                             },
@@ -210,9 +210,6 @@
                 "backupstoretags" : {
                     "backupstore" : {
                         "TestCases" : [ "backupstoretags" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -221,13 +218,13 @@
             {
                 "Account" : "0123456789",
                 "Region" : "mock-region-1",
-                "DeploymentUnit" : "aws-backupstore-tags",
+                "DeploymentUnit" : "aws-backupstore",
                 "backupvaultXmgmtXbackupstoretags": "mockedup-integration-management-backupstoretags"
             },
             {
                 "Account" : "0123456789",
                 "Region" : "mock-region-1",
-                "DeploymentUnit" : "aws-backupstore-tags",
+                "DeploymentUnit" : "aws-backupstore",
                 "backupplanXmgmtXbackupstoretagsXdailysegment": "mockedup-integration-management-backupstoretags-dailysegment"
             }
         ]

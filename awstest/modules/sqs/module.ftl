@@ -16,14 +16,10 @@
                 "app" : {
                     "Components" : {
                         "sqsbase" : {
-                            "sqs" : {
-                                "Profiles" : {
-                                    "Testing" : [ "sqsbase" ]
-                                },
-                                "deployment:Unit" : "aws-sqs-base",
-                                "Instances" : {
-                                    "default" : {}
-                                }
+                            "Type": "sqs",
+                            "deployment:Unit" : "aws-sqs",
+                            "Profiles" : {
+                                "Testing" : [ "sqsbase" ]
                             }
                         }
                     }

@@ -16,15 +16,10 @@
                 "mgmt" : {
                     "Components" : {
                         "networkbase" : {
-                            "network" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-network-base"]
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "networkbase" ]
-                                }
+                            "Type": "network",
+                            "deployment:Unit": "aws-network",
+                            "Profiles" : {
+                                "Testing" : [ "networkbase" ]
                             }
                         }
                     }
@@ -70,70 +65,63 @@
                         "RouteTable" : "internal"
                     },
                     "Components" : {
-                        "networksubnetec2" : {
-                            "ec2" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-network-subnet-ec2"
-                                    }
-                                }
-                            }
+                        "networksubnet_ec2" : {
+                            "Type": "ec2",
+                            "Profiles": {
+                                "Deployment": "_awslinux2"
+                            },
+                            "deployment:Unit" : "aws-network"
                         }
                     }
                 },
                 "mgmt" : {
                     "Components" : {
                         "networksubnet" : {
-                            "network" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-network-subnet"
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "networksubnet" ]
-                                },
-                                "RouteTables": {
-                                    "internal": {},
-                                    "external": {
-                                        "Public": true
-                                    }
-                                },
-                                "NetworkACLs": {
-                                    "open": {
-                                        "Rules": {
-                                            "in": {
-                                                "Priority": 200,
-                                                "Action": "allow",
-                                                "Source": {
-                                                    "IPAddressGroups": [
-                                                        "_global"
-                                                    ]
-                                                },
-                                                "Destination": {
-                                                    "IPAddressGroups": [
-                                                        "_localnet"
-                                                    ],
-                                                    "Port": "any"
-                                                },
-                                                "ReturnTraffic": false
+                            "Type": "network",
+                            "deployment:Unit" : "aws-network",
+                            "Profiles" : {
+                                "Testing" : [ "networksubnet" ]
+                            },
+                            "RouteTables": {
+                                "internal": {},
+                                "external": {
+                                    "Public": true
+                                }
+                            },
+                            "NetworkACLs": {
+                                "open": {
+                                    "Rules": {
+                                        "in": {
+                                            "Priority": 200,
+                                            "Action": "allow",
+                                            "Source": {
+                                                "IPAddressGroups": [
+                                                    "_global"
+                                                ]
                                             },
-                                            "out": {
-                                                "Priority": 200,
-                                                "Action": "allow",
-                                                "Source": {
-                                                    "IPAddressGroups": [
-                                                        "_localnet"
-                                                    ]
-                                                },
-                                                "Destination": {
-                                                    "IPAddressGroups": [
-                                                        "_global"
-                                                    ],
-                                                    "Port": "any"
-                                                },
-                                                "ReturnTraffic": false
-                                            }
+                                            "Destination": {
+                                                "IPAddressGroups": [
+                                                    "_localnet"
+                                                ],
+                                                "Port": "any"
+                                            },
+                                            "ReturnTraffic": false
+                                        },
+                                        "out": {
+                                            "Priority": 200,
+                                            "Action": "allow",
+                                            "Source": {
+                                                "IPAddressGroups": [
+                                                    "_localnet"
+                                                ]
+                                            },
+                                            "Destination": {
+                                                "IPAddressGroups": [
+                                                    "_global"
+                                                ],
+                                                "Port": "any"
+                                            },
+                                            "ReturnTraffic": false
                                         }
                                     }
                                 }
@@ -217,13 +205,29 @@
                 "networksubnet" : {
                     "network" : {
                         "TestCases" : [ "networksubnet" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
         }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-network",
+
+                "vpcXmgmtXnetworksubnet": "vpc-123456789abcdef12",
+
+                "routeTableXmgmtXnetworksubnetXinternalXa": "rtb-123456789abcdef11",
+                "routeTableXmgmtXnetworksubnetXinternalXb": "rtb-21fedcba987654321",
+
+                "routeTableXmgmtXnetworksubnetXexternalXa": "rtb-123456789abcdef12",
+                "routeTableXmgmtXnetworksubnetXexternalXb": "rtb-21fedcba987654322",
+
+                "subnetListXmgmtXnetworksubnetXmgmt": "subnet-123456789abcdef19,subnet-21fedcba987654329",
+                "subnetXmgmtXnetworksubnetXmgmtXa": "subnet-123456789abcdef19",
+                "subnetXmgmtXnetworksubnetXmgmtXb": "subnet-21fedcba987654329"
+            }
+        ]
     /]
 
     [#-- logging --]
@@ -233,26 +237,21 @@
                 "mgmt" : {
                     "Components" : {
                         "networklogging" : {
-                            "network" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-network-logging"
+                            "Type": "network",
+                            "deployment:Unit" : "aws-network",
+                            "Profiles" : {
+                                "Testing" : [ "networklogging" ]
+                            },
+                            "Logging" : {
+                                "FlowLogs" : {
+                                    "logall" : {
+                                        "Action" : "any",
+                                        "DestinationType" : "log"
                                     }
                                 },
-                                "Profiles" : {
-                                    "Testing" : [ "networklogging" ]
-                                },
-                                "Logging" : {
-                                    "FlowLogs" : {
-                                        "logall" : {
-                                            "Action" : "any",
-                                            "DestinationType" : "log"
-                                        }
-                                    },
-                                    "DNSQuery" : {
-                                        "log" : {
-                                            "DestinationType" : "log"
-                                        }
+                                "DNSQuery" : {
+                                    "log" : {
+                                        "DestinationType" : "log"
                                     }
                                 }
                             }
@@ -292,11 +291,15 @@
                                 },
                                 "FlowLogVPC" : {
                                     "Path" : "Resources.vpcflowlogsXmgmtXnetworkloggingXlogall.Properties.ResourceId",
-                                    "Value" : "vpc-123456789abcdef12"
+                                    "Value" : {
+                                        "Ref" : "vpcXmgmtXnetworklogging"
+                                    }
                                 },
                                 "DNSQueryAssocVPC" : {
                                     "Path" : "Resources.resolverQueryLoggingAsccociationXmgmtXnetworkloggingXlog.Properties.ResourceId",
-                                    "Value" : "vpc-123456789abcdef12"
+                                    "Value" : {
+                                        "Ref": "vpcXmgmtXnetworklogging"
+                                    }
                                 }
                             }
                         }
@@ -307,9 +310,6 @@
                 "networklogging" : {
                     "network" : {
                         "TestCases" : [ "networklogging" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

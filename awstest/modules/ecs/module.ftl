@@ -17,15 +17,10 @@
                 "app" : {
                     "Components" : {
                         "ecsbase" : {
-                            "ecs" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-ecs-base"
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "ecsbase" ]
-                                }
+                            "Type": "ecs",
+                            "deployment:Unit" : "aws-ecs",
+                            "Profiles" : {
+                                "Testing" : [ "ecsbase" ]
                             }
                         }
                     }
@@ -84,7 +79,9 @@
                                     "Value" : [
                                         "FARGATE",
                                         "FARGATE_SPOT",
-                                        "##MockOutputXecsCapacityProviderXappXecsbaseXasgX##"
+                                        {
+                                            "Ref": "ecsCapacityProviderXappXecsbaseXasg"
+                                        }
                                     ]
                                 }
                             },

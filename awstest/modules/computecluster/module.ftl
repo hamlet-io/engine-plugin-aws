@@ -16,18 +16,13 @@
                 "app" : {
                     "Components" : {
                         "computeclusterbase" : {
-                            "computecluster" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-computecluster-base"
-                                    }
-                                },
-                                "Image" : {
-                                    "Source" : "none"
-                                },
-                                "Profiles" : {
-                                    "Testing" : [ "computeclusterbase" ]
-                                }
+                            "Type": "computecluster",
+                            "deployment:Unit" : "aws-computecluster",
+                            "Image" : {
+                                "Source" : "none"
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "computeclusterbase" ]
                             }
                         }
                     }

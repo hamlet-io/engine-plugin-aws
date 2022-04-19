@@ -16,22 +16,17 @@
                 "mgmt" : {
                     "Components" : {
                         "firewallbase" : {
-                            "firewall" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-firewall-base"
-                                    }
-                                },
-                                "Profiles" : {
-                                    "Testing" : ["firewallbase"]
-                                },
-                                "Engine" : "network",
-                                "Rules" : {
-                                    "default" : {
-                                        "Action" : "drop",
-                                        "Priority" : "default",
-                                        "Inspection" : "Stateless"
-                                    }
+                            "Type": "firewall",
+                            "deployment:Unit" : "aws-firewall",
+                            "Profiles" : {
+                                "Testing" : ["firewallbase"]
+                            },
+                            "Engine" : "network",
+                            "Rules" : {
+                                "default" : {
+                                    "Action" : "drop",
+                                    "Priority" : "default",
+                                    "Inspection" : "Stateless"
                                 }
                             }
                         }
@@ -86,41 +81,39 @@
                 "mgmt" : {
                     "Components" : {
                         "firewallsimplenet" : {
-                            "firewall" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-firewall-simplenet"
+                            "Type": "firewall",
+                            "deployment:Unit" : "aws-firewall",
+                            "Engine" : "network",
+                            "Profiles" : {
+                                "Testing": [ "firewallsimplenet"]
+                            },
+                            "Rules" : {
+                                "tcpinspect" : {
+                                    "Action" : "inspect",
+                                    "Inspection" : "Stateless",
+                                    "Priority" : 50,
+                                    "NetworkTuple" : {
+                                        "Destination" : {
+                                            "Port" : "anytcp",
+                                            "IPAddressGroups" : [ "_global" ]
+                                        }
                                     }
                                 },
-                                "Engine" : "network",
-                                "Rules" : {
-                                    "tcpinspect" : {
-                                        "Action" : "inspect",
-                                        "Inspection" : "Stateless",
-                                        "Priority" : 50,
-                                        "NetworkTuple" : {
-                                            "Destination" : {
-                                                "Port" : "anytcp",
-                                                "IPAddressGroups" : [ "_global" ]
-                                            }
+                                "tcpallow" : {
+                                    "Action" : "pass",
+                                    "Inspection" : "Stateful",
+                                    "Priority" : 100,
+                                    "NetworkTuple" : {
+                                        "Destination" : {
+                                            "Port" : "anytcp",
+                                            "IPAddressGroups" : [ "_global" ]
                                         }
-                                    },
-                                    "tcpallow" : {
-                                        "Action" : "pass",
-                                        "Inspection" : "Stateful",
-                                        "Priority" : 100,
-                                        "NetworkTuple" : {
-                                            "Destination" : {
-                                                "Port" : "anytcp",
-                                                "IPAddressGroups" : [ "_global" ]
-                                            }
-                                        }
-                                    },
-                                    "default" : {
-                                        "Action" : "drop",
-                                        "Priority" : "default",
-                                        "Inspection" : "Stateless"
                                     }
+                                },
+                                "default" : {
+                                    "Action" : "drop",
+                                    "Priority" : "default",
+                                    "Inspection" : "Stateless"
                                 }
                             }
                         }
@@ -167,9 +160,6 @@
                 "firewallsimplenet" : {
                     "firewall" : {
                         "TestCases" : [ "firewallsimplenet" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -183,42 +173,40 @@
                 "mgmt" : {
                     "Components" : {
                         "firewalldomainfilter" : {
-                            "firewall" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "deployment:Unit" : "aws-firewall-domainfilter"
+                            "Type": "firewall",
+                            "deployment:Unit" : "aws-firewall",
+                            "Engine" : "network",
+                            "Profiles" : {
+                                "Testing": [ "firewalldomainfilter" ]
+                            },
+                            "Rules" : {
+                                "tcpinspect" : {
+                                    "Action" : "inspect",
+                                    "Inspection" : "Stateless",
+                                    "Priority" : 50,
+                                    "NetworkTuple" : {
+                                        "Destination" : {
+                                            "Port" : "anytcp",
+                                            "IPAddressGroups" : [ "_global" ]
+                                        }
                                     }
                                 },
-                                "Engine" : "network",
-                                "Rules" : {
-                                    "tcpinspect" : {
-                                        "Action" : "inspect",
-                                        "Inspection" : "Stateless",
-                                        "Priority" : 50,
-                                        "NetworkTuple" : {
-                                            "Destination" : {
-                                                "Port" : "anytcp",
-                                                "IPAddressGroups" : [ "_global" ]
-                                            }
-                                        }
-                                    },
-                                    "hostblock" : {
-                                        "Action" : "drop",
-                                        "Inspection" : "Stateful",
-                                        "Priority" : 100,
-                                        "Type" : "HostFilter",
-                                        "HostFilter" : {
-                                            "Hosts" : [
-                                                "*.baddomain.com",
-                                                "badhost.somewhere.com"
-                                            ]
-                                        }
-                                    },
-                                    "default" : {
-                                        "Action" : "drop",
-                                        "Priority" : "default",
-                                        "Inspection" : "Stateless"
+                                "hostblock" : {
+                                    "Action" : "drop",
+                                    "Inspection" : "Stateful",
+                                    "Priority" : 100,
+                                    "RuleType" : "HostFilter",
+                                    "HostFilter" : {
+                                        "Hosts" : [
+                                            "*.baddomain.com",
+                                            "badhost.somewhere.com"
+                                        ]
                                     }
+                                },
+                                "default" : {
+                                    "Action" : "drop",
+                                    "Priority" : "default",
+                                    "Inspection" : "Stateless"
                                 }
                             }
                         }
@@ -265,9 +253,6 @@
                 "firewalldomainfilter" : {
                     "firewall" : {
                         "TestCases" : [ "firewalldomainfilter" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

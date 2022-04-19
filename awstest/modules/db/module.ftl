@@ -18,7 +18,7 @@
                     "Components" : {
                         "postgresdbbase" : {
                             "Type" : "db",
-                            "deployment:Unit" : "aws-db-postgres-base",
+                            "deployment:Unit" : "aws-db",
                             "Engine" : "postgres",
                             "EngineVersion" : "11",
                             "Profiles" : {
@@ -58,7 +58,7 @@
                             "Output" : [
                                 "rdsXdbXpostgresdbbaseXdns",
                                 "rdsXdbXpostgresdbbaseXport",
-                                "securityGroupXdbXpostgresdbbase"
+                                "securityGroupXrdsXdbXpostgresdbbase"
                             ]
                         },
                         "JSON" : {
@@ -108,7 +108,7 @@
                     "Components" : {
                         "postgresdbminorversion" : {
                             "Type" : "db",
-                            "deployment:Unit" : "aws-db-postgres-minorversion",
+                            "deployment:Unit" : "aws-db",
                             "Engine" : "postgres",
                             "EngineVersion" : "12",
                             "EngineMinorVersion" : "4",
@@ -149,7 +149,7 @@
                             "Output" : [
                                 "rdsXdbXpostgresdbminorversionXdns",
                                 "rdsXdbXpostgresdbminorversionXport",
-                                "securityGroupXdbXpostgresdbminorversion"
+                                "securityGroupXrdsXdbXpostgresdbminorversion"
                             ]
                         },
                         "JSON" : {
@@ -182,9 +182,6 @@
                 "postgresdbminorversion" : {
                     "db" : {
                         "TestCases" : [ "postgresdbminorversion" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -199,7 +196,7 @@
                     "Components" : {
                         "postgresdbgenerated" : {
                             "Type" : "db",
-                            "deployment:Unit" : "aws-db-postgres-generated",
+                            "deployment:Unit" : "aws-db",
                             "Engine" : "postgres",
                             "EngineVersion" : "11",
                             "Profiles" : {
@@ -232,7 +229,7 @@
                         "JSON" : {
                             "Match" : {
                                 "SecurityGroupTagName" : {
-                                    "Path"  : "Resources.securityGroupXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.securityGroupXrdsXdbXpostgresdbgenerated.Properties.Tags[10].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 },
                                 "SubnetGroupTagName" : {
@@ -260,9 +257,6 @@
                 "postgresdbgenerated" : {
                     "db" : {
                         "TestCases" : [ "postgresdbgenerated" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -277,7 +271,7 @@
                     "Components" : {
                         "postgresdbsecretstore" : {
                             "Type" : "db",
-                            "deployment:Unit" : "aws-db-postgres-secretstore",
+                            "deployment:Unit" : "aws-db",
                             "Engine" : "postgres",
                             "EngineVersion" : "11",
                             "Profiles" : {
@@ -293,7 +287,7 @@
                         },
                         "postgresdbsecretstore-secretstore" : {
                             "Type" : "secretstore",
-                            "deployment:Unit" : "aws-db-postgres-secretstore",
+                            "deployment:Unit" : "aws-db",
                             "Engine" : "aws:secretsmanager"
                         }
                     }
@@ -335,9 +329,6 @@
                 "postgresdbsecretstore" : {
                     "db" : {
                         "TestCases" : [ "postgresdbsecretstore" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
@@ -352,7 +343,7 @@
                     "Components" : {
                         "postgresdbmaintenance" : {
                             "Type" : "db",
-                            "deployment:Unit" : "aws-db-postgres-maintenance",
+                            "deployment:Unit" : "aws-db",
                             "MaintenanceWindow": {
                                 "DayOfTheWeek": "Saturday",
                                 "TimeOfDay": "01:00",
@@ -402,16 +393,13 @@
                 "postgresdbmaintenance" : {
                     "db" : {
                         "TestCases" : [ "postgresdbmaintenance" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }
         }
     /]
 
-    [#-- Base database setup --]
+    [#-- cluster database setup --]
     [@loadModule
         blueprint={
             "Tiers" : {
@@ -419,7 +407,7 @@
                     "Components" : {
                         "postgresdbcluster" : {
                             "Type" : "db",
-                            "deployment:Unit" : "aws-db-postgres-cluster",
+                            "deployment:Unit" : "aws-db",
                             "Engine" : "aurora-postgresql",
                             "Port": "postgresql",
                             "EngineVersion" : "11",
@@ -491,7 +479,7 @@
                             "Output" : [
                                 "rdsClusterXdbXpostgresdbclusterXreaddns",
                                 "rdsXdbXpostgresdbclusterXaX2Xdns",
-                                "securityGroupXdbXpostgresdbcluster"
+                                "securityGroupXrdsClusterXdbXpostgresdbcluster"
                             ]
                         },
                         "JSON" : {
@@ -525,9 +513,6 @@
                 "postgresdbcluster" : {
                     "db" : {
                         "TestCases" : [ "postgresdbcluster" ]
-                    },
-                    "*" : {
-                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

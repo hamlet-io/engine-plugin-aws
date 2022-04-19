@@ -1,9 +1,9 @@
 [#ftl]
 
 [@addExtension
-    id="healthcheckcomplexbase"
+    id="healthcheckbasecomplex"
     aliases=[
-        "_healthcheckcomplexbase"
+        "_healthcheckbasecomplex"
     ]
     description=[
         "Base script content for healthcheck"
@@ -13,7 +13,7 @@
     ]
 /]
 
-[#macro shared_extension_healthcheckcomplexbase_deployment_setup occurrence ]
+[#macro shared_extension_healthcheckbasecomplex_deployment_setup occurrence ]
 
     [@Settings
         "LB_FQDN"

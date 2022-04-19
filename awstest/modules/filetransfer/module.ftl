@@ -16,16 +16,11 @@
                 "app" : {
                     "Components" : {
                         "filetransferbase" : {
-                            "filetransfer" : {
-                                "Instances" : {
-                                    "default" : {
-                                        "DeploymentUnits" : ["aws-filetransfer-base"]
-                                    }
-                                },
-                                "Protocols" : [ "sftp" ],
-                                "Profiles" : {
-                                    "Testing" : [ "filetransferbase" ]
-                                }
+                            "Type": "filetransfer",
+                            "deployment:Unit": "aws-filetransfer",
+                            "Protocols" : [ "sftp" ],
+                            "Profiles" : {
+                                "Testing" : [ "filetransferbase" ]
                             }
                         }
                     }
