@@ -195,7 +195,7 @@
                     [#case "Stateful"]
                         [#local statefulRuleGroupIds = combineEntities(statefulRuleGroupIds, [ruleGroupId], UNIQUE_COMBINE_BEHAVIOUR ) ]
 
-                        [#switch subSolution.Type ]
+                        [#switch subSolution.RuleType ]
                             [#case "NetworkTuple" ]
                                 [#local ruleGroupArgs += {
                                     "statefulSimpleRules" : ruleGroupArgs.statefulSimpleRules + getNetworkFirewallRuleGroupSimpleStatefulRules(
@@ -260,14 +260,14 @@
                                     context={
                                         "FirewallId" : core.RawId,
                                         "RuleId" : subCore.RawId,
-                                        "Type" : subSolution.Type
+                                        "Type" : subSolution.RuleType
                                     }
                                 /]
                         [/#switch]
                         [#break]
 
                     [#case "Stateless"]
-                        [#switch subSolution.Type]
+                        [#switch subSolution.RuleType]
                             [#case "NetworkTuple"]
 
                                 [#local statelessAction = ""]

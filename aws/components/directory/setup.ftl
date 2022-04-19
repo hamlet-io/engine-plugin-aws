@@ -210,9 +210,6 @@
                         shortName=shortName
                         size=size
                         vpcSettings=vpcSettings
-                        dependencies=[
-                            secretId
-                        ]
                     /]
 
                     [#if networkConfiguration.DNS.UseProvider ]

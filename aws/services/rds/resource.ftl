@@ -69,6 +69,28 @@
     }
 /]
 
+[#assign DB_MASTER_PASSWORD_PARAMETER_TYPE = "DBMasterPassword"]
+
+[#function getDbMasterPasswordRef dbId source password ]
+    [#switch source ]
+        [#case "cfnparam"]
+            [#local passwordParamId = formatId(DB_MASTER_PASSWORD_PARAMETER_TYPE, dbId)]
+            [@cfParameter
+                id=passwordParamId
+                type="String"
+                default=password
+                noEcho=true
+            /]
+            [#local masterPasswordRef = getReference(passwordParamId)]
+            [#break]
+        [#case "ssm"]
+            [#local masterPasswordRef = password ]
+            [#break]
+    [/#switch]
+
+    [#return masterPasswordRef!"HamletFatal: invalid DB Master password source ${source}"]
+[/#function]
+
 [#function getAmazonRdsMaintenanceWindow dayofWeek timeofDay timeZone="UTC" offsetHrs=0 ]
     [#local startTime = convertDayOfWeek2DateTime(dayofWeek, timeofDay, timeZone) ]
 
@@ -102,6 +124,7 @@
     kmsKeyId=""
     masterUsername=""
     masterPassword=""
+    masterPasswordSource=""
     databaseName=""
     port=""
     retentionPeriod=""
@@ -184,7 +207,7 @@
                 {
                     "DBName" : databaseName,
                     "MasterUsername": masterUsername,
-                    "MasterUserPassword": masterPassword
+                    "MasterUserPassword": getDbMasterPasswordRef(id, masterPasswordSource, masterPassword)
                 }
             ),
             !clusterMember
@@ -232,6 +255,7 @@
     kmsKeyId
     masterUsername
     masterPassword
+    masterPasswordSource
     databaseName
     retentionPeriod
     subnetGroupId
@@ -282,7 +306,7 @@
                 {
                     "DatabaseName" : databaseName,
                     "MasterUsername": masterUsername,
-                    "MasterUserPassword": masterPassword
+                    "MasterUserPassword": getDbMasterPasswordRef(id, masterPasswordSource, masterPassword)
                 }
             )
         tags=tags

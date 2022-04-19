@@ -189,7 +189,7 @@
                 [#local policyId = formatDependentPolicyId(pipelineId)]
                 [@createPolicy
                     id=policyId
-                    name=_context.Name
+                    name="base"
                     statements=_context.Policy
                     roles=resourceRoleId
                 /]

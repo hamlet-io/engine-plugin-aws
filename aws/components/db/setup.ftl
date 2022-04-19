@@ -804,6 +804,7 @@
                     kmsKeyId=cmkKeyId
                     masterUsername=rdsUsernameRef
                     masterPassword=rdsPasswordRef
+                    masterPasswordSource=(credentialSource == "SecretStore")?then("ssm", "cfnparam")
                     databaseName=rdsDatabaseName
                     retentionPeriod=solution.Backup.RetentionPeriod
                     subnetGroupId=getReference(rdsSubnetGroupId)
@@ -881,6 +882,7 @@
                     caCertificate=requiredRDSCA
                     masterUsername=rdsUsernameRef
                     masterPassword=rdsPasswordRef
+                    masterPasswordSource=(credentialSource == "SecretStore")?then("ssm", "cfnparam")
                     databaseName=rdsDatabaseName
                     retentionPeriod=solution.Backup.RetentionPeriod
                     snapshotArn=snapshotArn
