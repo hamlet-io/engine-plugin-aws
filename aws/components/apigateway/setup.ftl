@@ -33,7 +33,6 @@
     [#local deployName = resources["apideploy"].Name]
     [#local stageId    = resources["apistage"].Id]
     [#local stageName  = resources["apistage"].Name]
-    [#local stageDependencies = [deployId]]
     [#local stageLogTarget = accessLgId]
 
     [#-- Determine the stage variables required --]
@@ -191,7 +190,9 @@
     [#if (!(wafAclResources?has_content)) && (!(apiPolicyCidr?has_content)) ]
         [@fatal
             message="No IP Address Groups provided for API Gateway"
-            context=occurrence
+            context={
+                "Id": occurrence.Core.RawId
+            }
         /]
         [#return]
     [/#if]
@@ -544,7 +545,6 @@
                     "StageName": "default"
                 }
             outputs={}
-            dependencies=apiId
         /]
 
         [#-- Throttling Configuration --]
@@ -613,7 +613,6 @@
                     solution.Tracing.Configured && solution.Tracing.Enabled && ((solution.Tracing.Mode!"") == "active"),
                     true)
             outputs={}
-            dependencies=stageDependencies
             tags=
                 getOccurrenceCoreTags(
                     occurrence,

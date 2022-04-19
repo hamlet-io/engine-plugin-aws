@@ -308,6 +308,7 @@
             maxValue=""
             minLength=""
             minValue=""
+            noEcho=false
     ]
 
     [@mergeWithJsonOutput
@@ -352,6 +353,11 @@
                 attributeIfContent(
                     "MinValue",
                     minValue
+                ) +
+                attributeIfTrue(
+                    "NoEcho",
+                    noEcho,
+                    "true"
                 )
             }
     /]

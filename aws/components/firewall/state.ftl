@@ -82,7 +82,7 @@
 
     [#switch parentSolution.Engine ]
         [#case "network"]
-            [#switch solution.Type]
+            [#switch solution.RuleType]
                 [#case "NetworkTuple"]
                 [#case "HostFilter"]
                 [#case "Complex"]

@@ -110,12 +110,12 @@
     [/#if]
 
     [#if _context.ManagedPolicy?has_content]
-        [#local managedPolicyArns += _context.ManagedPolicy ]
+        [#local managedPolicyArns = combineEntities(managedPolicyArns, _context.ManagedPolicy, UNIQUE_COMBINE_BEHAVIOUR) ]
     [/#if]
 
     [#if _context.Policy?has_content]
         [#local policyId = formatDependentManagedPolicyId(userId)]
-        [#local managedPolicyArns += [ getReference(policyId, ARN_ATTRIBUTE_TYPE) ]]
+        [#local managedPolicyArns = combineEntities(managedPolicyArns, [ getReference(policyId, ARN_ATTRIBUTE_TYPE) ], UNIQUE_COMBINE_BEHAVIOUR) ]
         [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(policyId)]
             [@createManagedPolicy
                 id=policyId
@@ -129,7 +129,7 @@
 
     [#if linkPolicies?has_content]
         [#local linkPolicyId = formatDependentManagedPolicyId(userId, "links")]
-        [#local managedPolicyArns += [ getReference(linkPolicyId, ARN_ATTRIBUTE_TYPE) ]]
+        [#local managedPolicyArns = combineEntities(managedPolicyArns, [ getReference(linkPolicyId, ARN_ATTRIBUTE_TYPE) ], UNIQUE_COMBINE_BEHAVIOUR) ]
         [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(linkPolicyId)]
             [@createManagedPolicy
                 id=linkPolicyId

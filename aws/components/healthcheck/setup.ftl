@@ -379,7 +379,6 @@
                 [/#if]
             [/#if]
 
-
             [#if deploymentSubsetRequired(HEALTHCHECK_COMPONENT_TYPE, true)]
 
                 [#if vpcAccess ]

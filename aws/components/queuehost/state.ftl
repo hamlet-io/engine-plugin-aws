@@ -15,16 +15,20 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
     [#local cmkKeyId = baselineComponentIds["Encryption" ]]
-    [#local secretLink = getLinkTarget(occurrence, solution.RootCredentials.SecretStore, false)]
+    [#local secretLink = getLinkTarget(occurrence, solution.RootCredentials.SecretStore)]
 
-    [#local rootCredentialResources = getComponentSecretResources(
-                                        occurrence,
-                                        "root",
-                                        "root",
-                                        cmkKeyId,
-                                        secretLink.Configuration.Solution.Engine,
-                                        "Root credentials for broker"
-                                    )]
+    [#if secretLink?has_content ]
+        [#local rootCredentialResources = getComponentSecretResources(
+                                            occurrence,
+                                            "root",
+                                            "root",
+                                            cmkKeyId,
+                                            secretLink.Configuration.Solution.Engine,
+                                            "Root credentials for broker"
+                                        )]
+    [#else]
+        [#local rootCredentialResources = {}]
+    [/#if]
 
     [#assign componentState =
         {
@@ -49,8 +53,8 @@
                 "URL" : getExistingReference(id, URL_ATTRIBUTE_TYPE)?ensure_starts_with(solution.RootCredentials.EncryptionScheme),
                 "ENDPOINT" : getExistingReference(id, DNS_ATTRIBUTE_TYPE),
                 "USERNAME" : solution.RootCredentials.Username,
-                "PASSWORD" : getExistingReference(rootCredentialResources["secret"].Id, GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(solution.RootCredentials.EncryptionScheme),
-                "SECRET" : getExistingReference(rootCredentialResources["secret"].Id )
+                "PASSWORD" : getExistingReference((rootCredentialResources["secret"].Id)!"", GENERATEDPASSWORD_ATTRIBUTE_TYPE)?ensure_starts_with(solution.RootCredentials.EncryptionScheme),
+                "SECRET" : getExistingReference((rootCredentialResources["secret"].Id)!"")
             },
             "Roles" : {
                 "Inbound" : {
