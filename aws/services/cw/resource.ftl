@@ -224,6 +224,33 @@
     [/#if]
 [/#macro]
 
+[#assign AWS_CLOUDWATCH_LOG_RESOURCE_POLICY_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_CLOUDWATCH_LOG_RESOURCE_POLICY_RESOURCE_TYPE
+    mappings=AWS_CLOUDWATCH_LOG_RESOURCE_POLICY_OUTPUT_MAPPINGS
+/]
+
+[#macro createLogResourcePolicy id name policyDocument dependencies=[]]
+    [@cfResource
+        id=id
+        type="AWS::Logs::ResourcePolicy"
+        properties={
+            "PolicyName": name,
+            "PolicyDocument": policyDocument
+        }
+        outputs=AWS_CLOUDWATCH_LOG_RESOURCE_POLICY_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]
+
 [#assign DASHBOARD_OUTPUT_MAPPINGS =
     {
         REFERENCE_ATTRIBUTE_TYPE : {

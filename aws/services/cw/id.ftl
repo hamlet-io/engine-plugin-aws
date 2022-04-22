@@ -31,6 +31,14 @@
     service=AWS_CLOUDWATCH_SERVICE
     resource=AWS_CLOUDWATCH_LOG_SUBSCRIPTION_RESOURCE_TYPE
 /]
+
+[#assign AWS_CLOUDWATCH_LOG_RESOURCE_POLICY_RESOURCE_TYPE = "logpolicy"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_CLOUDWATCH_SERVICE
+    resource=AWS_CLOUDWATCH_LOG_RESOURCE_POLICY_RESOURCE_TYPE
+/]
+
 [#assign AWS_CLOUDWATCH_ALARM_RESOURCE_TYPE = "alarm" ]
 [@addServiceResource
     provider=AWS_PROVIDER
