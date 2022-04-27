@@ -79,7 +79,9 @@
                 {
                     "Outbound" : {
                         "default" : "read",
-                        "read" : secretsManagerReadPermission(secretId, cmkKeyId)
+                        "read" : secretsManagerReadPermission(secretId, cmkKeyId),
+                        "readwrite" : secretsManagerWritePermission(secretId, cmkKeyId)+
+                                        secretsManagerReadPermission(secretId, cmkKeyId)
                     }
                 }
             )]
