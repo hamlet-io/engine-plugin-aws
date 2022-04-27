@@ -109,12 +109,9 @@
                     "ssmmessages:CreateControlChannel",
                     "ssmmessages:CreateDataChannel",
                     "ssmmessages:OpenControlChannel",
-                    "ssmmessages:OpenDataChannel"
-                ] +
-                ( os == "windows" )?then(
-                    [ "ec2messages:GetMessages" ],
-                    []
-                )
+                    "ssmmessages:OpenDataChannel",
+                    "ec2messages:GetMessages"
+                ]
             )
         ]
     ]
