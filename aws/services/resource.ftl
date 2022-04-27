@@ -325,7 +325,7 @@
             }
         ]
     [/#if]
-    [#if ((!(inRegion?has_content)) || (inRegion == getRegion())) &&
+    [#if ((!(inRegion?has_content)) || (inRegion?is_hash) || (inRegion == getRegion())) &&
         isPartOfCurrentDeploymentUnit(resourceId)]
         [#if attributeType?has_content]
             [#local resourceType = getResourceType(resourceId) ]
@@ -336,6 +336,10 @@
                         "Fn::GetAtt" : [resourceId, mapping.Attribute]
                     }
                 ]
+
+            [#elseif (mapping.Value)?has_content]
+                [#return mapping.Value ]
+
             [#elseif !(mapping.UseRef)!false ]
                 [#return
                     {
