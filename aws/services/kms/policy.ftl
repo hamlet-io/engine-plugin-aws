@@ -86,3 +86,26 @@
         ]
     ]
 [/#function]
+
+[#function secretsManagerKMSStatement actions keyId secretId secretRegion ]
+
+    [#-- Handle empty region value if attribute is not set --]
+    [#if ! secretRegion?has_content ]
+        [#local secretRegion = getRegion()]
+    [/#if]
+
+    [#return
+        [
+            getPolicyStatement(
+                asArray(actions),
+                getArn(keyId, false, secretRegion),
+                "",
+                {
+                    "StringEquals" : {
+                        "kms:ViaService" : { "Fn::Join" : [ ".", [ "secretsmanager", secretRegion, "amazonaws.com"] ] }
+                    }
+                }
+            )
+        ]
+    ]
+[/#function]
