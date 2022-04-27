@@ -115,7 +115,9 @@
                 [#continue]
             [/#if]
             [#local links += lbLink]
-        [#else]
+        [/#if]
+
+        [#if port.IPAddressGroups?has_content ]
             [#local ingressRules +=
                 [{
                     "Ports" : port.Name,
@@ -171,6 +173,7 @@
 
     [#-- Add in extension specifics including override of defaults --]
     [#local _context = invokeExtensions( occurrence, _context )]
+    [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
     [#local environmentVariables += getFinalEnvironment(occurrence, _context ).Environment ]
 
@@ -178,66 +181,6 @@
     [#local userComputeTasks = solution.ComputeInstance.ComputeTasks.UserTasksRequired ]
     [#local computeTaskExtensions = solution.ComputeInstance.ComputeTasks.Extensions ]
     [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, computeClusterAutoScaleGroupId, _context, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
-
-    [#if deploymentSubsetRequired("iam", true) &&
-            isPartOfCurrentDeploymentUnit(computeClusterRoleId)]
-        [@createRole
-            id=computeClusterRoleId
-            trustedServices=["ec2.amazonaws.com" ]
-            policies=
-                [
-                    getPolicyDocument(
-                        ec2AutoScaleGroupLifecyclePermission(
-                            computeClusterAutoScaleGroupName
-                        ) +
-                        ec2ReadTagsPermission() +
-                        s3ReadPermission(
-                            formatRelativePath(
-                                getRegistryEndPoint("scripts", occurrence),
-                                getRegistryPrefix("scripts", occurrence)
-                            )
-                        ) +
-                        s3AccountEncryptionReadPermission(
-                            getRegistryBucket(),
-                            getRegistryPrefix("scripts", occurrence),
-                            getRegistryBucketRegion()
-                        ) +
-                        s3ListPermission(getCodeBucket()) +
-                        s3ReadPermission(getCodeBucket()) +
-                        s3AccountEncryptionReadPermission(
-                            getCodeBucket(),
-                            "*",
-                            getCodeBucketRegion()
-                        ) +
-                        s3ListPermission(operationsBucket) +
-                        s3WritePermission(operationsBucket, "DOCKERLogs") +
-                        s3WritePermission(operationsBucket, "Backups") +
-                        cwMetricsProducePermission("CWAgent") +
-                        cwLogsProducePermission(computeClusterLogGroupName),
-                        "basic"
-                    ),
-                    getPolicyDocument(
-                        ssmSessionManagerPermission(computeClusterOS),
-                        "ssm"
-                    )
-                ] +
-                targetGroupPermission?then(
-                    [
-                        getPolicyDocument(
-                            lbRegisterTargetPermission(),
-                            "loadbalancing")
-                    ],
-                    []
-                ) +
-                arrayIfContent(
-                    [getPolicyDocument(_context.Policy, "extension")],
-                    _context.Policy)
-            managedArns=
-                _context.ManagedPolicy
-            tags=getOccurrenceCoreTags(occurrence)
-        /]
-
-    [/#if]
 
     [#list links?values as link]
         [#local linkTarget = getLinkTarget(occurrence, link) ]
@@ -344,6 +287,71 @@
         loggingProfile=loggingProfile
         kmsKeyId=kmsKeyId
     /]
+
+    [#if deploymentSubsetRequired("iam", true) &&
+            isPartOfCurrentDeploymentUnit(computeClusterRoleId)]
+
+        [@createRole
+            id=computeClusterRoleId
+            trustedServices=["ec2.amazonaws.com" ]
+            policies=
+                [
+                    getPolicyDocument(
+                        ec2AutoScaleGroupLifecyclePermission(
+                            computeClusterAutoScaleGroupName
+                        ) +
+                        ec2ReadTagsPermission() +
+                        s3ReadPermission(
+                            formatRelativePath(
+                                getRegistryEndPoint("scripts", occurrence),
+                                getRegistryPrefix("scripts", occurrence)
+                            )
+                        ) +
+                        s3AccountEncryptionReadPermission(
+                            getRegistryBucket(),
+                            getRegistryPrefix("scripts", occurrence),
+                            getRegistryBucketRegion()
+                        ) +
+                        s3ListPermission(getCodeBucket()) +
+                        s3ReadPermission(getCodeBucket()) +
+                        s3AccountEncryptionReadPermission(
+                            getCodeBucket(),
+                            "*",
+                            getCodeBucketRegion()
+                        ) +
+                        s3ListPermission(operationsBucket) +
+                        s3WritePermission(operationsBucket, "DOCKERLogs") +
+                        s3WritePermission(operationsBucket, "Backups") +
+                        cwMetricsProducePermission("CWAgent") +
+                        cwLogsProducePermission(computeClusterLogGroupName),
+                        "basic"
+                    ),
+                    getPolicyDocument(
+                        ssmSessionManagerPermission(computeClusterOS),
+                        "ssm"
+                    )
+                ] +
+                targetGroupPermission?then(
+                    [
+                        getPolicyDocument(
+                            lbRegisterTargetPermission(),
+                            "loadbalancing")
+                    ],
+                    []
+                ) +
+                arrayIfContent(
+                    [getPolicyDocument(_context.Policy, "extension")],
+                    _context.Policy
+                ) +
+                arrayIfContent(
+                    [getPolicyDocument(linkPolicies, "links")],
+                    linkPolicies)
+            managedArns=
+                _context.ManagedPolicy
+            tags=getOccurrenceCoreTags(occurrence)
+        /]
+
+    [/#if]
 
     [#if deploymentSubsetRequired(COMPUTECLUSTER_COMPONENT_TYPE, true)]
 

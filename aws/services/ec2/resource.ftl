@@ -61,7 +61,7 @@
 
             [#if ((cfnInitTask.Content)!{})?has_content ]
 
-                [#local configSetId = "${cfnInitTask.Priorty}_${id}" ]
+                [#local configSetId = "${(cfnInitTask.Priorty)?c}_${id}" ]
                 [#local configSetTaskList += [ configSetId ] ]
                 [#local cfnInitTasks += {
                     configSetId : cfnInitTask.Content
