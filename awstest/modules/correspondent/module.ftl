@@ -48,7 +48,7 @@
             "TestProfiles" : {
                 "correspondentbase" : {
                     "correspondent" : {
-                        "TestCases" : [ "correspondent" ]
+                        "TestCases" : [ "correspondentbase" ]
                     },
                     "*" : {
                         "TestCases" : [ "_cfn-lint" ]

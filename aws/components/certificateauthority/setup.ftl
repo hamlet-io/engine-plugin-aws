@@ -68,7 +68,7 @@
         [@createACMPCACAActivation
             id=resources["activation"].Id
             certificate=getReference(certificateId, CERTIFICATE_ATTRIBUTE_TYPE)
-            certificateAuthorityId=authorityId
+            certificateAuthorityId=activiationAuthorityId
             certificateChain=activationCertificateChain
         /]
 

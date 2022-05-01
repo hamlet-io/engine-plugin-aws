@@ -134,7 +134,7 @@
                                 },
                                 "SubSignedByRoot" : {
                                     "Path": "Resources.ACMPCACertificateXdirXcertificateauthorityrootsubXsub.Properties.CertificateAuthorityArn",
-                                    "Value": "arn:aws:iam::123456789012:mock/##MockOutputXACMPCAAuthorityXdirXcertificateauthorityrootsubXrootX##Xarn"
+                                    "Value": "arn:aws:acm-pca:mock-region-1:0123456789:certificate-authority/12345678-1234-1234-1234-123456789012"
                                 }
                             }
                         }
@@ -149,5 +149,13 @@
                 }
             }
         }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "aws-certificateauthority",
+                "ACMPCAAuthorityXdirXcertificateauthorityrootsubXroot": "arn:aws:acm-pca:mock-region-1:0123456789:certificate-authority/12345678-1234-1234-1234-123456789012"
+            }
+        ]
     /]
 [/#macro]
