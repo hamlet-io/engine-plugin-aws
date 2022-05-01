@@ -34,3 +34,31 @@
             AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
         ]
 /]
+
+
+[#function getSubnets tier networkResources zoneFilter="" asReferences=true includeZone=false]
+    [#local result = [] ]
+    [#list networkResources.subnets[tier.Id] as zone, resources]
+
+        [#local subnetId = resources["subnet"].Id ]
+
+        [#local subnetId = asReferences?then(
+                                getReference(subnetId),
+                                subnetId)]
+
+        [#if (zoneFilter?has_content && zoneFilter == zone) || !zoneFilter?has_content ]
+            [#local result +=
+                [
+                    includeZone?then(
+                        {
+                            "subnetId" : subnetId,
+                            "zone" : zone
+                        },
+                        subnetId
+                    )
+                ]
+            ]
+        [/#if]
+    [/#list]
+    [#return result]
+[/#function]
