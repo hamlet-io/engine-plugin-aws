@@ -27,7 +27,7 @@
 
         [#switch (solution.Level)?lower_case ]
             [#case "root"]
-                [#local activiationAuthorityId = authorityId]
+                [#local activationAuthorityId = authorityId]
                 [#local activationCertificateChain = ""]
                 [#local certificateTemplateArn = "arn:aws:acm-pca:::template/RootCACertificate/V1"]
                 [#break]
@@ -36,7 +36,7 @@
 
                 [#local parentAuthorityLink = getLinkTarget(occurrence, solution["level:Subordinate"].ParentAuthority.Link, true, true)]
 
-                [#local activiationAuthorityId = (parentAuthorityLink.State.Attributes.ARN)!"" ]
+                [#local activationAuthorityId = (parentAuthorityLink.State.Attributes.ARN)!"" ]
                 [#local activationCertificateChain = (parentAuthorityLink.State.Attributes.CERTIFICATE_CHAIN)!"" ]
                 [#local certificateTemplateArn = "arn:aws:acm-pca:::template/SubordinateCACertificate_PathLen${solution['level:Subordinate'].MaxLevels}/V1" ]
                 [#break]
@@ -62,13 +62,13 @@
             signingAlgorithm=solution.SigningAlgorithm
             validityDays=solution.Validity.Length
             templateArn=certificateTemplateArn
-            certificateAuthorityId=activiationAuthorityId
+            certificateAuthorityId=activationAuthorityId
         /]
 
         [@createACMPCACAActivation
             id=resources["activation"].Id
             certificate=getReference(certificateId, CERTIFICATE_ATTRIBUTE_TYPE)
-            certificateAuthorityId=activiationAuthorityId
+            certificateAuthorityId=activationAuthorityId
             certificateChain=activationCertificateChain
         /]
 
