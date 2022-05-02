@@ -8,11 +8,4 @@
     services=[
         AWS_ROUTE53_SERVICE
     ]
-    locations={
-        DEFAULT_RESOURCE_GROUP : {
-            "TargetComponentTypes" : [
-                SUBSCRIPTION_COMPONENT_TYPE
-            ]
-        }
-    }
 /]

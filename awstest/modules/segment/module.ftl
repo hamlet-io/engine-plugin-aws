@@ -47,6 +47,7 @@
                 "DeploymentUnit" : "vpc",
 
                 "vpcXmgmtXvpc": "vpc-123456789abcdef12",
+                "vpcXmgmtXvpcXregion": "mock-region-1",
 
                 "routeTableXmgmtXvpcXinternalXa": "rtb-123456789abcdef11",
                 "routeTableXmgmtXvpcXinternalXb": "rtb-21fedcba987654321",
