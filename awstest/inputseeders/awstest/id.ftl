@@ -117,6 +117,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "dataset"
                             },
+                            "dnszone" : {
+                                "Provider" : "awstest",
+                                "Name" : "dnszone"
+                            },
                             "ec2" : {
                                 "Provider" : "awstest",
                                 "Name" : "ec2"

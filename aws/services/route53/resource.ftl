@@ -321,3 +321,62 @@
         dependencies=dependencies
     /]
 [/#macro]
+
+
+[#-- Route53 Hosted Zone --]
+[#assign AWS_ROUTE53_HOSTED_ZONE_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef": true
+        },
+        REGION_ATTRIBUTE_TYPE: {
+            "Value" : { "Ref" : "AWS::Region" }
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_ROUTE53_HOSTED_ZONE_RESOURCE_TYPE
+    mappings=AWS_ROUTE53_HOSTED_ZONE_OUTPUT_MAPPINGS
+/]
+
+[#function getRoute53HostedZoneVPC vpcId ]
+    [#return
+        {
+            "VPCId": getReference(vpcId),
+            "VPCRegion": getReference(vpcId, REGION_ATTRIBUTE_TYPE)
+        }
+    ]
+[/#function]
+
+[#macro createRoute53HostedZone
+        id
+        name
+        vpcIds=[]
+        tags=[]
+        dependencies=[]
+    ]
+    [#local vpcs = []]
+    [#list vpcIds as vpcId ]
+        [#local vpcs += [ getRoute53HostedZoneVPC(vpcId) ]]
+    [/#list]
+
+    [@cfResource
+        id=id
+        type="AWS::Route53::HostedZone"
+        properties={
+            "Name" : name
+        } +
+        attributeIfContent(
+            "HostedZoneTags",
+            tags
+        ) +
+        attributeIfContent(
+            "VPCs",
+            vpcs
+        )
+        dependencies=dependencies
+        outputs=AWS_ROUTE53_HOSTED_ZONE_OUTPUT_MAPPINGS
+    /]
+[/#macro]

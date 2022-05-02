@@ -431,6 +431,9 @@
         REFERENCE_ATTRIBUTE_TYPE : {
             "UseRef" : true,
             "Export" : true
+        },
+        REGION_ATTRIBUTE_TYPE : {
+            "Value" : { "Ref" : "AWS::Region" }
         }
     }
 ]
