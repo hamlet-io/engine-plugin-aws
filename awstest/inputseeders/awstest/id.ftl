@@ -133,9 +133,9 @@
                                 "Provider" : "awstest",
                                 "Name" : "db"
                             },
-                            "ddb" : {
+                            "docdb" : {
                                 "Provider" : "awstest",
-                                "Name" : "ddb"
+                                "Name" : "docdb"
                             },
                             "directory" : {
                                 "Provider" : "awstest",

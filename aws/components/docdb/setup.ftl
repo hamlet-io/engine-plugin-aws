@@ -1,5 +1,5 @@
 [#ftl]
-[#macro aws_ddb_cf_deployment_generationcontract_solution occurrence ]
+[#macro aws_docdb_cf_deployment_generationcontract_solution occurrence ]
     [@addDefaultGenerationContract
         subsets=["prologue", "template", "epilogue"]
         alternatives=[
@@ -10,7 +10,7 @@
     /]
 [/#macro]
 
-[#macro aws_ddb_cf_deployment_solution occurrence ]
+[#macro aws_docdb_cf_deployment_solution occurrence ]
     [@debug message="Entering" context=occurrence enabled=false /]
 
     [#local core = occurrence.Core ]
@@ -161,12 +161,6 @@
         [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
         [#switch linkTargetCore.Type]
-            [#case DATASET_COMPONENT_TYPE]
-                [#if linkTargetConfiguration.Solution.Engine == "dds" ]
-                    [#local ddsManualSnapshot = linkTargetAttributes["SNAPSHOT_NAME"] ]
-                [/#if]
-                [#break]
-
             [#case BACKUPSTORE_REGIME_COMPONENT_TYPE]
                 [#if linkTargetAttributes["TAG_NAME"]?has_content]
                     [#local backupTags +=
@@ -248,7 +242,7 @@
             [#local linkTargetResources = linkTarget.State.Resources ]
             [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
-            [#if deploymentSubsetRequired("ddb", true)]
+            [#if deploymentSubsetRequired(DOCDB_COMPONENT_TYPE, true)]
                 [@createSecurityGroupRulesFromLink
                     occurrence=occurrence
                     groupId=ddsSecurityGroupId
@@ -330,7 +324,7 @@
         /]
     [/#if]
 
-    [#if deploymentSubsetRequired("ddb", true)]
+    [#if deploymentSubsetRequired(DOCDB_COMPONENT_TYPE, true)]
 
         [@createSecurityGroup
             id=ddsSecurityGroupId

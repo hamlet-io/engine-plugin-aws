@@ -494,7 +494,7 @@
             "db": {
                 "Processor": "db.t2.small"
             },
-            "ddb": {
+            "docdb": {
                 "Processor": "db.t3.medium",
                 "MinPerZone": 1,
                 "MaxPerZone": 1,

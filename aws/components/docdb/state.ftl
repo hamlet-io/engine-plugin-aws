@@ -1,6 +1,6 @@
 [#ftl]
 
-[#macro aws_ddb_cf_state occurrence parent={} ]
+[#macro aws_docdb_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
 

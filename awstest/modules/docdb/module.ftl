@@ -1,8 +1,8 @@
 [#ftl]
 
 [@addModule
-    name="ddb"
-    description="Testing module for the aws ddb component"
+    name="docdb"
+    description="Testing module for the aws docdb component"
     provider=AWSTEST_PROVIDER
     properties=[]
 /]
@@ -17,7 +17,7 @@
                 "db" : {
                     "Components" : {
                         "docdbbase" : {
-                            "Type" : "ddb",
+                            "Type" : "docdb",
                             "deployment:Unit" : "aws-docdb-base",
                             "EngineVersion" : "4.0",
                             "Port": "mongodb",
@@ -39,7 +39,7 @@
             },
             "Processors" : {
                 "docdbbase" : {
-                    "ddb" : {
+                    "docdb" : {
                         "Processor" : "db.t3.medium",
                         "MinCount" : 2,
                         "MaxCount" : 2,
@@ -98,7 +98,7 @@
             },
             "TestProfiles" : {
                 "docdbbase" : {
-                    "ddb" : {
+                    "docdb" : {
                         "TestCases" : [ "docdbbase" ]
                     }
                 }
@@ -113,7 +113,7 @@
                 "db" : {
                     "Components" : {
                         "docdbsecretstore" : {
-                            "Type" : "ddb",
+                            "Type" : "docdb",
                             "deployment:Unit" : "aws-docdb-secretstore",
                             "EngineVersion" : "4.0",
                             "DeletionPolicy": "Delete",
@@ -141,7 +141,7 @@
             },
             "Processors" : {
                 "docdbsecretstore" : {
-                    "ddb" : {
+                    "docdb" : {
                         "Processor" : "db.t3.medium",
                         "MinCount" : 2,
                         "MaxCount" : 2,
@@ -196,7 +196,7 @@
             },
             "TestProfiles" : {
                 "docdbsecretstore" : {
-                    "ddb" : {
+                    "docdb" : {
                         "TestCases" : [ "docdbsecretstore" ]
                     }
                 }
@@ -211,7 +211,7 @@
                 "db" : {
                     "Components" : {
                         "docdbmaintenance" : {
-                            "Type" : "ddb",
+                            "Type" : "docdb",
                             "deployment:Unit" : "aws-docdb-maintenance",
                             "DeletionPolicy": "Retain",
                             "UpdateReplacePolicy": "Retain",
@@ -236,7 +236,7 @@
             },
             "Processors" : {
                 "docdbmaintenance" : {
-                    "ddb" : {
+                    "docdb" : {
                         "Processor" : "db.t3.medium",
                         "MinCount" : 2,
                         "MaxCount" : 2,
@@ -286,7 +286,7 @@
             },
             "TestProfiles" : {
                 "docdbmaintenance" : {
-                    "ddb" : {
+                    "docdb" : {
                         "TestCases" : [ "docdbmaintenance" ]
                     }
                 }
@@ -301,7 +301,7 @@
                 "db" : {
                     "Components" : {
                         "docdbbackup" : {
-                            "Type" : "ddb",
+                            "Type" : "docdb",
                             "deployment:Unit" : "aws-docdb-backup",
                             "Backup": {
                                 "BackupWindow": {
@@ -329,7 +329,7 @@
             },
             "Processors" : {
                 "docdbbackup" : {
-                    "ddb" : {
+                    "docdb" : {
                         "Processor" : "db.t3.medium",
                         "MinCount" : 2,
                         "MaxCount" : 2,
@@ -380,7 +380,7 @@
             },
             "TestProfiles" : {
                 "docdbbackup" : {
-                    "ddb" : {
+                    "docdb" : {
                         "TestCases" : [ "docdbbackup" ]
                     }
                 }
