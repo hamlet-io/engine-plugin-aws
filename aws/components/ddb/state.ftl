@@ -152,7 +152,7 @@
     )]
 
     [#-- Calcuate the number of fixed instances required --]
-    [#if multiAZ!false ]
+    [#if solution.MultiAZ ]
         [#local resourceZones = getZones() ]
     [#else]
         [#local resourceZones = [getZones()[0]] ]
