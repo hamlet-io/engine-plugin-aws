@@ -393,6 +393,7 @@
                     "Retain",
                     ""
                 )
+                provisionedExecutions=solution.ProvisionedExecutions
             /]
         [/#if]
     [/#if]
