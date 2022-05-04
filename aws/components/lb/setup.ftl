@@ -769,7 +769,7 @@
 
         [#list solution.Forward.StaticEndpoints.Links as id,link ]
             [#if link?is_hash]
-                [#local linkTarget = getLinkTarget(occurrence, link) ]
+                [#local linkTarget = getLinkTarget(subOccurrence, link) ]
 
                 [@debug message="Link Target" context=linkTarget enabled=false /]
 
@@ -808,7 +808,7 @@
                         [/#list]
 
                         [#list endpointAddresses as endpointAddress ]
-                            [#local staticTargets += getTargetGroupTarget("ip", endpointAddress, endpointPort, true)]
+                            [#local staticTargets += getTargetGroupTarget("ip", endpointAddress, endpointPort, solution.Forward.StaticEndpoints.External)]
                         [/#list]
                         [#break]
 
