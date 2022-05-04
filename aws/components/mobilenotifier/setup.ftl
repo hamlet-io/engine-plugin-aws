@@ -27,7 +27,7 @@
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local kmsKeyId = baselineComponentIds["Encryption"] ]
 
-    [#list occurrence.Occurrences![] as subOccurrence]
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled ) as subOccurrence]
 
         [#local core = subOccurrence.Core ]
         [#local solution = subOccurrence.Configuration.Solution ]
