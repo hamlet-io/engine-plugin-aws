@@ -145,7 +145,8 @@
             dependencies=""
             outputId=""
             deletionPolicy=""
-            updateReplacePolicy="" ]
+            updateReplacePolicy=""
+            provisionedExecutions=-1 ]
     [@cfResource
         id=id
         type="AWS::Lambda::Version"
@@ -160,6 +161,13 @@
             attributeIfContent(
                 "CodeSha256",
                 codeHash
+            ) +
+            attributeIfTrue(
+                "ProvisionedConcurrencyConfig",
+                provisionedExecutions >= 1,
+                {
+                    "ProvisionedConcurrentExecutions" : provisionedExecutions
+                }
             )
         outputs=LAMBDA_VERSION_OUTPUT_MAPPINGS
         outputId=outputId
