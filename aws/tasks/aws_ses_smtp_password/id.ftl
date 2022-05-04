@@ -17,7 +17,7 @@
         },
         {
             "Names" : "AWSSecretAccessKey",
-            "Description" : "The secret key of the access key pair that will be used to send emails via SMPT",
+            "Description" : "The secret key of the access key pair that will be used to send emails via SMTP",
             "Types" : STRING_TYPE,
             "Mandatory" : true
         }
