@@ -87,7 +87,9 @@
                 [#continue]
             [/#if]
             [#local links += lbLink]
-        [#else]
+        [/#if]
+
+        [#if port.IPAddressGroups?has_content ]
             [#local ingressRules +=
                 [{
                     "Ports" : port.Name,
