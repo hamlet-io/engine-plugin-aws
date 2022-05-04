@@ -26,7 +26,7 @@
         [#case "send"]
 
             [#-- Process the rules according to the provided order --]
-            [#list (occurrence.Occurrences![]) as subOccurrence]
+            [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled ) as subOccurrence]
 
                 [#local core = subOccurrence.Core ]
                 [#local solution = subOccurrence.Configuration.Solution ]
@@ -172,7 +172,7 @@
             [#local lastRuleName = getOccurrenceSettingValue(occurrence, ["AFTER","RULE","NAME"], true)]
 
             [#-- Process the rules according to the provided order --]
-            [#list (occurrence.Occurrences![])?sort_by(['Configuration', 'Solution', 'Order']) as subOccurrence]
+            [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled )?sort_by(['Configuration', 'Solution', 'Order']) as subOccurrence]
 
                 [#local core = subOccurrence.Core ]
                 [#local solution = subOccurrence.Configuration.Solution ]

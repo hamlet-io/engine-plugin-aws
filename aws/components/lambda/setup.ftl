@@ -2,7 +2,7 @@
 [#macro aws_lambda_cf_deployment_generationcontract_application occurrence ]
 
     [#local converters = []]
-    [#list occurrence.Occurrences as subOccurrence ]
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled ) as subOccurrence]
         [#if subOccurrence.Configuration.Solution.Environment.FileFormat == "yaml" ]
             [#local converters = [ { "subset" : "config", "converter" : "config_yaml" }]]
         [/#if]
@@ -14,7 +14,7 @@
 [#macro aws_lambda_cf_deployment_application occurrence ]
     [@debug message="Entering" context=occurrence enabled=false /]
 
-    [#list occurrence.Occurrences as fn]
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled ) as fn]
         [@internalProcessFunction fn /]
     [/#list]
 [/#macro]

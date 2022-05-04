@@ -44,7 +44,7 @@
         /]
     [/#if]
 
-    [#list occurrence.Occurrences![] as subOccurrence]
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled ) as subOccurrence]
 
         [#local core = subOccurrence.Core ]
         [#local solution = subOccurrence.Configuration.Solution ]
