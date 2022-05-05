@@ -21,7 +21,7 @@
     [#local loggingProfile = getLoggingProfile(occurrence)]
 
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local kmsKeyId = baselineComponentIds["Encryption"] ]
 
