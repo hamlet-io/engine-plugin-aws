@@ -743,7 +743,7 @@
                 {
                     "AwsvpcConfiguration" : {
                         "SecurityGroups" : getReferences(ecsSecurityGroupId),
-                        "Subnets" : subnets,
+                        "Subnets" : asArray(subnets),
                         "AssignPublicIp" : publicRouteTable?then("ENABLED", "DISABLED" )
                     }
                 }

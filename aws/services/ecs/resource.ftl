@@ -750,7 +750,7 @@
     [#return
         {
             "CapacityProvider" : provider,
-            "Weight" : computeProfileRule.Weight
+            "Weight" : (computeProfileRule.Weight)?number?c
         } +
         attributeIfContent(
             "Base",
