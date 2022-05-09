@@ -1,6 +1,6 @@
 [#ftl]
 [@addResourceGroupInformation
-    type=DDB_COMPONENT_TYPE
+    type=DOCDB_COMPONENT_TYPE
     attributes=[]
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP

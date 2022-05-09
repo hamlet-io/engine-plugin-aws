@@ -19,8 +19,7 @@
     [/#if]
 
     [#local id = formatResourceId(AWS_DDS_CLUSTER_RESOURCE_TYPE, core.Id) ]
-
-    [#local securityGroupId = formatDependentComponentSecurityGroupId(core.Tier, core.Component, id)]
+    [#local securityGroupId = formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id)]
 
     [#local fqdn = getExistingReference(id, DNS_ATTRIBUTE_TYPE)]
     [#local name = getExistingReference(id, DATABASENAME_ATTRIBUTE_TYPE)]
@@ -158,7 +157,7 @@
         [#local resourceZones = [getZones()[0]] ]
     [/#if]
 
-    [#local processor = getProcessor(occurrence, DDB_COMPONENT_TYPE, solution.ProcessorProfile)]
+    [#local processor = getProcessor(occurrence, core.Type, solution.ProcessorProfile)]
     [#if processor.DesiredPerZone?has_content ]
         [#local instancesPerZone = processor.DesiredPerZone ]
     [#else]

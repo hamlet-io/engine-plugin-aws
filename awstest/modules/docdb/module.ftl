@@ -18,7 +18,7 @@
                     "Components" : {
                         "docdbbase" : {
                             "Type" : "docdb",
-                            "deployment:Unit" : "aws-docdb-base",
+                            "deployment:Unit" : "aws-docdb",
                             "EngineVersion" : "4.0",
                             "Port": "mongodb",
                             "Profiles" : {
@@ -88,11 +88,6 @@
                                 "Resources.ddsClusterXdbXdocdbbase.Properties.DBClusterIdentifier"
                             ]
                         }
-                    },
-                    "Tools": {
-                        "cfn-lint": {
-                            "IgnoreChecks": [ "E3035", "E3036", "E3003" ]
-                        }
                     }
                 }
             },
@@ -114,7 +109,7 @@
                     "Components" : {
                         "docdbsecretstore" : {
                             "Type" : "docdb",
-                            "deployment:Unit" : "aws-docdb-secretstore",
+                            "deployment:Unit" : "aws-docdb",
                             "EngineVersion" : "4.0",
                             "DeletionPolicy": "Delete",
                             "UpdateReplacePolicy": "Delete",
@@ -133,7 +128,7 @@
                         },
                         "docdbsecretstore-secretstore" : {
                             "Type" : "secretstore",
-                            "deployment:Unit" : "aws-docdb-secretstore",
+                            "deployment:Unit" : "aws-docdb",
                             "Engine" : "aws:secretsmanager"
                         }
                     }
@@ -186,11 +181,6 @@
                                 }
                             }
                         }
-                    },
-                    "Tools": {
-                        "cfn-lint": {
-                            "IgnoreChecks": [ "E3035", "E3036", "E3003" ]
-                        }
                     }
                 }
             },
@@ -212,7 +202,7 @@
                     "Components" : {
                         "docdbmaintenance" : {
                             "Type" : "docdb",
-                            "deployment:Unit" : "aws-docdb-maintenance",
+                            "deployment:Unit" : "aws-docdb",
                             "DeletionPolicy": "Retain",
                             "UpdateReplacePolicy": "Retain",
                             "MaintenanceWindow": {
@@ -276,11 +266,6 @@
                                 }
                             }
                         }
-                    },
-                    "Tools": {
-                        "cfn-lint": {
-                            "IgnoreChecks": [ "E3035", "E3036", "E3003" ]
-                        }
                     }
                 }
             },
@@ -302,7 +287,7 @@
                     "Components" : {
                         "docdbbackup" : {
                             "Type" : "docdb",
-                            "deployment:Unit" : "aws-docdb-backup",
+                            "deployment:Unit" : "aws-docdb",
                             "Backup": {
                                 "BackupWindow": {
                                     "TimeOfDay": "01:00",
@@ -369,11 +354,6 @@
                                     "Value" : "15:00-15:30"
                                 }
                             }
-                        }
-                    },
-                    "Tools": {
-                        "cfn-lint": {
-                            "IgnoreChecks": [ "E3035", "E3036", "E3003" ]
                         }
                     }
                 }

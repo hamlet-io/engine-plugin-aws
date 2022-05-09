@@ -479,7 +479,7 @@
 
                 [#local processor = getProcessor(
                                         occurrence,
-                                        DDB_COMPONENT_TYPE,
+                                        core.Type,
                                         solution.ProcessorProfile)]
                 [#local processorCounts = getProcessorCounts(processor, multiAZ ) ]
 
@@ -646,7 +646,7 @@
 
                             [#local scheduleProcessor = getProcessor(
                                                             occurrence,
-                                                            DDB_COMPONENT_TYPE,
+                                                            core.Type,
                                                             scalingPolicy.Scheduled.ProcessorProfile)]
                             [#local scheduleProcessorCounts = getProcessorCounts(scheduleProcessor, multiAZ ) ]
                             [#local scheduledActions += [
