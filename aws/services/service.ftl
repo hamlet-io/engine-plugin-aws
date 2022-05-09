@@ -43,6 +43,9 @@
 [#assign AWS_DIRECTORY_SERVICE = "ds"]
 [@addService provider=AWS_PROVIDER service=AWS_DIRECTORY_SERVICE /]
 
+[#assign AWS_DOCUMENT_DATABASE_SERVICE = "dds"]
+[@addService provider=AWS_PROVIDER service=AWS_DOCUMENT_DATABASE_SERVICE /]
+
 [#assign AWS_DYNAMODB_SERVICE = "dynamodb"]
 [@addService provider=AWS_PROVIDER service=AWS_DYNAMODB_SERVICE /]
 

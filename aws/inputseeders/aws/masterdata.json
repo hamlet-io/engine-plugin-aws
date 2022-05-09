@@ -494,6 +494,12 @@
             "db": {
                 "Processor": "db.t2.small"
             },
+            "docdb": {
+                "Processor": "db.t3.medium",
+                "MinPerZone": 1,
+                "MaxPerZone": 1,
+                "DesiredPerZone": 1
+            },
             "ElasticSearch": {
                 "Processor": "t2.medium.elasticsearch",
                 "CountPerZone": 1,
