@@ -40,9 +40,6 @@
 [#assign AWS_COGNITO_SERVICE = "cognito"]
 [@addService provider=AWS_PROVIDER service=AWS_COGNITO_SERVICE /]
 
-[#assign AWS_DATA_PIPELINE_SERVICE = "datapipeline"]
-[@addService provider=AWS_PROVIDER service=AWS_DATA_PIPELINE_SERVICE /]
-
 [#assign AWS_DIRECTORY_SERVICE = "ds"]
 [@addService provider=AWS_PROVIDER service=AWS_DIRECTORY_SERVICE /]
 

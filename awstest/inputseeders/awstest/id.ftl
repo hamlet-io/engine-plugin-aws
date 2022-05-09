@@ -117,10 +117,6 @@
                                 "Provider" : "awstest",
                                 "Name" : "datafeed"
                             },
-                            "datapipeline" : {
-                                "Provider" : "awstest",
-                                "Name" : "datapipeline"
-                            },
                             "dataset" : {
                                 "Provider" : "awstest",
                                 "Name" : "dataset"
