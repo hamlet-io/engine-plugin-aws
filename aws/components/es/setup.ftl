@@ -340,7 +340,7 @@
     [#-- "DomainName" : "${productName}-${segmentId}-${tierId}-${componentId}", --]
     [#if deploymentSubsetRequired("es", true)]
 
-        [#list solution.Alerts?values as alert ]
+        [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
             [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
             [#list monitoredResources as name,monitoredResource ]
