@@ -22,6 +22,19 @@
     mappings=RDS_OUTPUT_MAPPINGS
 /]
 
+[#assign RDS_EVENT_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_RDS_EVENT_RESOURCE_TYPE
+    mappings=RDS_EVENT_OUTPUT_MAPPINGS
+/]
+
 [#assign RDS_CLUSTER_OUTPUT_MAPPINGS =
     {
         REFERENCE_ATTRIBUTE_TYPE : {
@@ -114,6 +127,8 @@
     performanceInsights
     performanceInsightsRetention
     tags
+    occurrence
+    links
     caCertificate
     engineVersion=""
     clusterMember=false
@@ -245,6 +260,49 @@
             }
         )
     /]
+
+    [#list links as linkId, link ]
+        [#if link?is_hash]
+            [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+
+            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+            [#if !linkTarget?has_content]
+                [#continue]
+            [/#if]
+
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetConfiguration = linkTarget.Configuration ]
+            [#local linkTargetResources = linkTarget.State.Resources ]
+            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+            [#local linkTargetSolution = linkTargetConfiguration.Solution]
+
+            [#if (link.Role+" ")?lower_case?starts_with("publish ") ]
+                [#local linkRole = (link.Role+" ")?lower_case?keep_after("publish ")?trim ]
+                [#if linkRole?has_content]
+                    [#local linkRoles = (linkRole?split(","))![] ]
+                [#else]
+                    [#local linkRoles = [] ]
+                [/#if]
+                [@cfResource
+                    id=formatId(id, "instance", linkId)
+                    type="AWS::RDS::EventSubscription"
+                    properties=
+                        {
+                            "Enabled" : true,
+                            "SnsTopicArn" : linkTargetAttributes["ARN"],
+                            "SourceIds" : [ getReference(id) ],
+                            "SourceType" : "db-instance"
+                        } +
+                        attributeIfContent(
+                            "EventCategories",
+                            linkRoles
+                        )
+                    outputs=RDS_EVENT_OUTPUT_MAPPINGS
+                /]
+            [/#if]
+        [/#if]
+    [/#list]
 [/#macro]
 
 [#macro createRDSCluster id name
@@ -263,6 +321,8 @@
     snapshotArn
     securityGroupId
     tags
+    occurrence
+    links
     dependencies=""
     outputId=""
     deletionPolicy="Snapshot"
@@ -324,4 +384,46 @@
             }
         )
     /]
+
+    [#list links as linkId, link ]
+        [#if link?is_hash]
+            [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+            [#if !linkTarget?has_content]
+                [#continue]
+            [/#if]
+
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetConfiguration = linkTarget.Configuration ]
+            [#local linkTargetResources = linkTarget.State.Resources ]
+            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+            [#local linkTargetSolution = linkTargetConfiguration.Solution]
+
+            [#if (link.Role+" ")?lower_case?starts_with("publish ") ]
+                [#local linkRole = (link.Role+" ")?lower_case?keep_after("publish ")?trim ]
+                [#if linkRole?has_content]
+                    [#local linkRoles = (linkRole?split(","))![] ]
+                [#else]
+                    [#local linkRoles = [] ]
+                [/#if]
+                [@cfResource
+                    id=formatId(id, "cluster", linkId)
+                    type="AWS::RDS::EventSubscription"
+                    properties=
+                        {
+                            "Enabled" : true,
+                            "SnsTopicArn" : linkTargetAttributes["ARN"],
+                            "SourceIds" : [ getReference(id) ],
+                            "SourceType" : "db-cluster"
+                        } +
+                        attributeIfContent(
+                            "EventCategories",
+                            linkRoles
+                        )
+                    outputs=RDS_EVENT_OUTPUT_MAPPINGS
+                /]
+            [/#if]
+        [/#if]
+    [/#list]
 [/#macro]

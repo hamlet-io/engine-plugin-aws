@@ -812,6 +812,8 @@
                     snapshotArn=snapshotArn
                     securityGroupId=getReference(rdsSecurityGroupId)
                     tags=rdsTags
+                    occurrence=occurrence
+                    links=solution.Links
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
                     maintenanceWindow=
@@ -845,6 +847,8 @@
                         clusterId=rdsId
                         clusterPromotionTier=dbInstance?index
                         tags=rdsTags
+                        occurrence=occurrence
+                        links=solution.Links
                         deletionPolicy=""
                         updateReplacePolicy=""
                         kmsKeyId=cmkKeyId
@@ -896,6 +900,8 @@
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
                     tags=rdsTags + backupTags
+                    occurrence=occurrence
+                    links=solution.Links
                     enhancedMonitoring=solution.Monitoring.DetailedMetrics.Enabled
                     enhancedMonitoringInterval=solution.Monitoring.DetailedMetrics.CollectionInterval
                     enhancedMonitoringRoleId=monitoringRoleId!""
