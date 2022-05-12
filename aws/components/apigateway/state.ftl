@@ -298,24 +298,28 @@ created in either case.
     [#local customDomainResources = {} ]
     [#list customDomains as domain]
         [#local customFqdn = formatDomainName(customHostName, domain) ]
-        [#local customFqdnParts = splitDomainName(customFqdn) ]
-        [#local customFqdnId = formatResourceId(AWS_APIGATEWAY_DOMAIN_RESOURCE_TYPE, customFqdnParts) ]
-        [#local customDomainResources +=
-            {
-                customFqdn : {
-                    "domain" : {
-                        "Id" : customFqdnId,
-                        "Name" : customFqdn,
-                        "CertificateId" : certificateId,
-                        "Type" : AWS_APIGATEWAY_DOMAIN_RESOURCE_TYPE
-                    },
-                    "basepathmapping" : {
-                        "Id" : formatDependentResourceId(AWS_APIGATEWAY_BASEPATHMAPPING_RESOURCE_TYPE, customFqdnId),
-                        "Stage" : mappingStage,
-                        "Type" : AWS_APIGATEWAY_BASEPATHMAPPING_RESOURCE_TYPE
+        [#if !customFqdn?contains(".") ]
+            [@fatal message="Missing domain name for API gateway" context=solution /]
+        [#else]
+            [#local customFqdnParts = splitDomainName(customFqdn) ]
+            [#local customFqdnId = formatResourceId(AWS_APIGATEWAY_DOMAIN_RESOURCE_TYPE, customFqdnParts) ]
+            [#local customDomainResources +=
+                {
+                    customFqdn : {
+                        "domain" : {
+                            "Id" : customFqdnId,
+                            "Name" : customFqdn,
+                            "CertificateId" : certificateId,
+                            "Type" : AWS_APIGATEWAY_DOMAIN_RESOURCE_TYPE
+                        },
+                        "basepathmapping" : {
+                            "Id" : formatDependentResourceId(AWS_APIGATEWAY_BASEPATHMAPPING_RESOURCE_TYPE, customFqdnId),
+                            "Stage" : mappingStage,
+                            "Type" : AWS_APIGATEWAY_BASEPATHMAPPING_RESOURCE_TYPE
+                        }
                     }
-                }
-            } ]
+                } ]
+        [/#if]
     [/#list]
 
     [#-- API documentation if required --]
@@ -335,19 +339,23 @@ created in either case.
                     docsHostName,
                     domain) ]
 
-            [#local docsFqdnParts = splitDomainName(docsFqdn) ]
-            [#local docsId = formatS3Id(docsFqdnParts) ]
+            [#if !docsFqdn?contains(".") ]
+                [@fatal message="Missing domain name for API docs" context=solution /]
+            [#else]
+                [#local docsFqdnParts = splitDomainName(docsFqdn) ]
+                [#local docsId = formatS3Id(docsFqdnParts) ]
 
-            [#local docsResources +=
-                {
-                    docsFqdn : {
-                        "bucket" : {
-                            "Id" : docsId,
-                            "Name" : docsFqdn,
-                            "Type" : AWS_S3_RESOURCE_TYPE
+                [#local docsResources +=
+                    {
+                        docsFqdn : {
+                            "bucket" : {
+                                "Id" : docsId,
+                                "Name" : docsFqdn,
+                                "Type" : AWS_S3_RESOURCE_TYPE
+                            }
                         }
-                    }
-                } ]
+                    } ]
+            [/#if]
          [/#list]
     [/#if]
 

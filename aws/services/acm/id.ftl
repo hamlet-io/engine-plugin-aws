@@ -32,6 +32,10 @@
 [#function formatDomainCertificateId certificateObject, hostName=""]
     [#local primaryDomain = getCertificatePrimaryDomain(certificateObject) ]
     [#if primaryDomain.Name?has_content ]
+        [#if !primaryDomain.Name?contains(".") ]
+            [@fatal message="Missing domain name for ACM primary domain" context=solution /]
+            [#return ""]
+        [/#if]
         [#return
             formatResourceId(
                 AWS_CERTIFICATE_RESOURCE_TYPE,
