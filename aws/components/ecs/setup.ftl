@@ -714,7 +714,7 @@
 
         [#local subnets = solution.MultiAZ?then(
                 getSubnets(core.Tier, networkResources),
-                getSubnets(core.Tier, networkResources)[0]
+                [ getSubnets(core.Tier, networkResources)[0] ]
             )]
 
         [#local networkProfile = getNetworkProfile(subOccurrence)]
@@ -743,7 +743,7 @@
                 {
                     "AwsvpcConfiguration" : {
                         "SecurityGroups" : getReferences(ecsSecurityGroupId),
-                        "Subnets" : asArray(subnets),
+                        "Subnets" : subnets,
                         "AssignPublicIp" : publicRouteTable?then("ENABLED", "DISABLED" )
                     }
                 }
