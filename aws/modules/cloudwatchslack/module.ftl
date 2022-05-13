@@ -48,6 +48,16 @@
             "Default" : "8f194db4f6ed2b826387112df144f188451ba6db"
         },
         {
+            "Names" : "lambdaRuntime",
+            "Type" : STRING_TYPE,
+            "Description" : "runtime engine for lambda",
+            "Values" : [
+                "python3.6",
+                "python3.9"
+            ],
+            "Default" : "python3.6"
+        },
+        {
             "Names" : "namePrefix",
             "Type" : STRING_TYPE,
             "Description" : "A prefix appended to component names and deployment units to ensure uniquness",
@@ -68,6 +78,7 @@
             kmsPrefix
             lambdaSourceUrl
             lambdaSourceHash
+            lambdaRuntime
             namePrefix
             tier
             alertSeverity
@@ -123,7 +134,7 @@
                             "Functions" : {
                                 "send" : {
                                     "Handler" : "cloudwatch-slack/lambda_function.lambda_handler",
-                                    "RunTime" : "python3.6",
+                                    "RunTime" : lambdaRuntime,
                                     "MemorySize" : 128,
                                     "Timeout" : 15,
                                     "VPCAccess" : false,
