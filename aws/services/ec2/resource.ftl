@@ -88,8 +88,20 @@
             {
                 "AWS::CloudFormation::Init" : {
                     "configSets" : {
-                        configSetName : configSetTaskList?sort,
-                        formatName(configSetName, "wait") : waitConfigSetTaskList?sort
+                        configSetName : configSetTaskList?map(
+                            x -> { "priority" : x?keep_before("_")?number, "value": x }
+                        )?sort_by(
+                            "priority"
+                        )?map(
+                            x -> x["value"]
+                        ),
+                        formatName(configSetName, "wait") : waitConfigSetTaskList?map(
+                            x -> { "priority" : x?keep_before("_")?number, "value": x }
+                        )?sort_by(
+                            "priority"
+                        )?map(
+                            x -> x["value"]
+                        )
                     }
                 } + cfnInitTasks
             }]
