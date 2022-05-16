@@ -165,6 +165,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "lb"
                             },
+                            "logstore" : {
+                                "Provider" : "awstest",
+                                "Name": "logstore"
+                            },
                             "mobileapp" : {
                                 "Provider" : "awstest",
                                 "Name" : "mobileapp"

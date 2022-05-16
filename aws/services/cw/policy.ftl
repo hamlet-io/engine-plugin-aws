@@ -1,25 +1,51 @@
 [#ftl]
 
-[#function cwLogsProducePermission logGroupName="" ]
+[#function cwLogsPolicy actions logGroupName=""]
     [#local logGroupArn = logGroupName?has_content?then(
                     formatRegionalArn(
                             "logs",
                             "log-group:" + logGroupName + "*"),
-                    "*")]
+                    "*"
+                )]
     [#return
         [
             getPolicyStatement(
-                [
-                    "logs:CreateLogGroup",
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                    "logs:DescribeLogGroups",
-                    "logs:DescribeLogStreams"
-                ],
+                actions,
                 logGroupArn
             )
         ]
     ]
+
+[/#function]
+
+[#function cwLogsReadPermission logGroupName=""]
+    [#return cwLogsPolicy(
+        [
+            "logs:GetLogEvents",
+            "logs:GetLogGroupFields",
+            "logs:GetLogRecord",
+            "logs:StartQuery",
+            "logs:FilterLogEvents",
+            "logs:DescribeLogGroups",
+            "logs:DescribeLogStreams",
+            "logs:DescribeQueries"
+        ],
+        logGroupName
+    )]
+[/#function]
+
+
+[#function cwLogsProducePermission logGroupName="" ]
+    [#return cwLogsPolicy(
+        [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:DescribeLogGroups",
+            "logs:DescribeLogStreams"
+        ],
+        logGroupName
+    )]
 [/#function]
 
 [#function cwMetricsProducePermission namespace="*"]
