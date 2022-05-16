@@ -117,6 +117,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "dataset"
                             },
+                            "datastream" : {
+                                "Provider" : "awstest",
+                                "Name" : "datastream"
+                            },
                             "dnszone" : {
                                 "Provider" : "awstest",
                                 "Name" : "dnszone"

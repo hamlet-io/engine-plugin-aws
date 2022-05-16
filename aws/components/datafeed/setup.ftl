@@ -219,7 +219,7 @@
                 name="local"
                 statements=
                             (solution.LogWatchers?has_content)?then(
-                                firehoseStreamCloudwatchPermission(streamId)  +
+                                kinesisFirehoseStreamCloudwatchPermission(streamId)  +
                                     iamPassRolePermission(
                                         getReference(streamSubscriptionRoleId, ARN_ATTRIBUTE_TYPE)
                                 ),
