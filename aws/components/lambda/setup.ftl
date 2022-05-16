@@ -390,7 +390,7 @@
                 codeHash=_context.CodeHash!""
                 outputId=versionId
                 deletionPolicy=(solution.FixedCodeVersion.NewVersionOnDeploy)?then(
-                    "Retain",
+                    solution.FixedCodeVersion.DeletionPolicy,
                     ""
                 )
                 provisionedExecutions=solution.ProvisionedExecutions
