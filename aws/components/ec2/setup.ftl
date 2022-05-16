@@ -240,6 +240,29 @@
 
         [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
+        [#-- Add policies for external log group access --]
+        [#list ((logFileProfile.LogFileGroups)![])?map(
+                    x -> (getReferenceData(LOGFILEGROUP_REFERENCE_TYPE)[x])!{}
+                )?filter(
+                    x -> x?has_content && x.LogStore.Destination == "link" ) as logFileGroup ]
+
+            [#local linkPolicies = combineEntities(
+                linkPolicies,
+                getLinkTargetsOutboundRoles(
+                    getLinkTargets(
+                        occurrence,
+                        {
+                            "logstore": mergeObjects(
+                                {"Name" : "logstore", "Id": "logstore"},
+                                logFileGroup.LogStore.Link
+                            )
+                        }
+                    )
+                ),
+                APPEND_COMBINE_BEHAVIOUR
+            )]
+        [/#list]
+
         [@createRole
             id=ec2RoleId
             trustedServices=["ec2.amazonaws.com" ]
@@ -268,7 +291,8 @@
                         ssmSessionManagerPermission(ec2OS),
                         "ssm"
                     )
-                ] + targetGroupPermission?then(
+                ] +
+                targetGroupPermission?then(
                     [
                         getPolicyDocument(
                             lbRegisterTargetPermission(),
@@ -278,10 +302,12 @@
                 ) +
                 arrayIfContent(
                     [getPolicyDocument(linkPolicies, "links")],
-                    linkPolicies) +
+                    linkPolicies
+                ) +
                 arrayIfContent(
                     [getPolicyDocument(_context.Policy, "extension")],
-                    _context.Policy)
+                    _context.Policy
+                )
             tags=getOccurrenceCoreTags(occurrence)
         /]
     [/#if]

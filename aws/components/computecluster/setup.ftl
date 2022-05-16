@@ -175,6 +175,29 @@
     [#local _context = invokeExtensions( occurrence, _context )]
     [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
+    [#-- Add policies for external log group access --]
+    [#list ((logFileProfile.LogFileGroups)![])?map(
+                x -> (getReferenceData(LOGFILEGROUP_REFERENCE_TYPE)[x])!{}
+            )?filter(
+                x -> x?has_content && x.LogStore.Destination == "link" ) as logFileGroup ]
+
+        [#local linkPolicies = combineEntities(
+            linkPolicies,
+            getLinkTargetsOutboundRoles(
+                getLinkTargets(
+                    occurrence,
+                    {
+                        "logstore": mergeObjects(
+                            {"Name" : "logstore", "Id": "logstore"},
+                            logFileGroup.LogStore.Link
+                        )
+                    }
+                )
+            ),
+            APPEND_COMBINE_BEHAVIOUR
+        )]
+    [/#list]
+
     [#local environmentVariables += getFinalEnvironment(occurrence, _context ).Environment ]
 
     [#local componentComputeTasks = resources["autoScaleGroup"].ComputeTasks]
