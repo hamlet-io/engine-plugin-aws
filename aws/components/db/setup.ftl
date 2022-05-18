@@ -812,8 +812,6 @@
                     snapshotArn=snapshotArn
                     securityGroupId=getReference(rdsSecurityGroupId)
                     tags=rdsTags
-                    occurrence=occurrence
-                    links=solution.Links
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
                     maintenanceWindow=
@@ -827,6 +825,39 @@
                         )
                 /]
 
+                [#list solution.SystemNotifications as eventId, event ]
+                    [#list solution.Links as linkId, link ]
+                        [#if link?is_hash]
+                            [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+                            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                            [#if !linkTarget?has_content]
+                                [#continue]
+                            [/#if]
+
+                            [#local linkTargetCore = linkTarget.Core ]
+                            [#local linkTargetConfiguration = linkTarget.Configuration ]
+                            [#local linkTargetResources = linkTarget.State.Resources ]
+                            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+                            [#local linkTargetSolution = linkTargetConfiguration.Solution]
+
+                            [#if (link.Role+" ")?lower_case?starts_with("publish ") ]
+                                [#if (event.Categories)?has_content]
+                                    [#local linkRoles = event.Categories ]
+                                [#else]
+                                    [#local linkRoles = [] ]
+                                [/#if]
+                                [@createRDSEvent 
+                                    id=formatId(rdsId, eventId, linkId)
+                                    rdsId=rdsId
+                                    linkArn=linkTargetAttributes["ARN"]
+                                    linkRoles=linkRoles
+                                    sourceType="db-cluster"
+                                /]
+                            [/#if]
+                        [/#if]
+                    [/#list]
+                [/#list]
                 [#list resources["dbInstances"]?values as dbInstance ]
                     [@createRDSInstance
                         id=dbInstance.Id
@@ -900,8 +931,6 @@
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
                     tags=rdsTags + backupTags
-                    occurrence=occurrence
-                    links=solution.Links
                     enhancedMonitoring=solution.Monitoring.DetailedMetrics.Enabled
                     enhancedMonitoringInterval=solution.Monitoring.DetailedMetrics.CollectionInterval
                     enhancedMonitoringRoleId=monitoringRoleId!""
@@ -917,6 +946,40 @@
                             ""
                         )
                     /]
+                [#list solution.SystemNotifications as eventId, event ]
+                    [#list event.Links as linkId, link ]
+                        [#if link?is_hash]
+                            [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+
+                            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                            [#if !linkTarget?has_content]
+                                [#continue]
+                            [/#if]
+
+                            [#local linkTargetCore = linkTarget.Core ]
+                            [#local linkTargetConfiguration = linkTarget.Configuration ]
+                            [#local linkTargetResources = linkTarget.State.Resources ]
+                            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+                            [#local linkTargetSolution = linkTargetConfiguration.Solution]
+
+                            [#if (link.Role+" ")?lower_case?starts_with("publish ") ]
+                                [#if (event.Categories)?has_content]
+                                    [#local linkRoles = event.Categories ]
+                                [#else]
+                                    [#local linkRoles = [] ]
+                                [/#if]
+                                [@createRDSEvent 
+                                    id=formatId(rdsId, eventId, linkId)
+                                    rdsId=rdsId
+                                    linkArn=linkTargetAttributes["ARN"]
+                                    linkRoles=linkRoles
+                                    sourceType="db-instance"
+                                /]
+                            [/#if]
+                        [/#if]
+                    [/#list]
+                [/#list]
             [/#if]
         [/#if]
     [/#if]
