@@ -21,16 +21,29 @@
 
     [#local cmkKeyId = baselineComponentIds["Encryption" ]]
 
-    [@setupLogGroup
-        occurrence=occurrence
-        logGroupId=lg.Id
-        logGroupName=lg.Name
-        loggingProfile=loggingProfile
-        kmsKeyId=cmkKeyId
-        retention=( (solution.Lifecycle.Expiration)?is_string && solution.Lifecycle.Expiration == "_operations")?then(
-            operationsExpiration,
-            solution.Lifecycle.Expiration
-        )
-    /]
+    [#switch solution.Engine ]
+        [#case "aws:cloudwatchlogs"]
+            [@setupLogGroup
+                occurrence=occurrence
+                logGroupId=lg.Id
+                logGroupName=lg.Name
+                loggingProfile=loggingProfile
+                kmsKeyId=cmkKeyId
+                retention=( (solution.Lifecycle.Expiration)?is_string && solution.Lifecycle.Expiration == "_operations")?then(
+                    operationsExpiration,
+                    solution.Lifecycle.Expiration
+                )
+            /]
+            [#break]
 
+        [#default]
+            [@fatal
+                message="Unsupported engine for aws logstore"
+                context={
+                    "Name" : occurrence.Core.FullRawName,
+                    "Engine": solution.Engine
+                }
+
+            /]
+    [/#switch]
 [/#macro]
