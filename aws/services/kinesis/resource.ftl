@@ -48,10 +48,10 @@
 /]
 
 [#macro createKinesisDataStream id name streamMode retentionHours="" shardCount=1 keyId="" dependencies="" tags=[]]
-    [#local encrpytionConfig = {}]
+    [#local encryptionConfig = {}]
 
     [#if keyId?has_content]
-        [#local encrpytionConfig =
+        [#local encryptionConfig =
             {
                 "EncryptionType" : "KMS",
                 "KeyId" : getArn(keyId)
@@ -91,7 +91,7 @@
             } +
             attributeIfContent("RetentionPeriodHours", retentionHours) +
             attributeIfContent("ShardCount", shardCount) +
-            attributeIfContent("StreamEncryption", encrpytionConfig)+
+            attributeIfContent("StreamEncryption", encryptionConfig)+
             attributeIfContent("Tags", tags)
         outputs=AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS
         dependencies=dependencies
