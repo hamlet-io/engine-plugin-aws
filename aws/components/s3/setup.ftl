@@ -51,91 +51,109 @@
 
     [#local notifications = []]
 
-    [#list solution.Notifications as id,notification ]
-        [#if notification?is_hash && notification.Enabled ]
-            [#list notification.Links?values as link]
-                [#if link?is_hash]
-                    [#local linkTarget = getLinkTarget(occurrence, link, false) ]
-                    [@debug message="Link Target" context=linkTarget enabled=false /]
-                    [#if !linkTarget?has_content]
+    [#list solution.Notifications?values?filter(x -> x?is_hash && x.Enabled) as notification ]
+        [#list notification.Links?values as link]
+            [#if link?is_hash]
+                [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+                [@debug message="Link Target" context=linkTarget enabled=false /]
+                [#if !linkTarget?has_content]
+                    [#continue]
+                [/#if]
+
+                [#local linkTargetResources = linkTarget.State.Resources ]
+
+                [#if isLinkTargetActive(linkTarget) ]
+
+                    [#if ! getExistingReference(s3Id)?has_content ]
+                        [@warn
+                            message="Notification persmissions requried before enabling notifications"
+                            detail="Update the notificaton destination and rerun this deployment"
+                            context={
+                                "S3_Bucket" : {
+                                    "Id": occurrence.Core.RawId,
+                                    "Tier": occurrence.Core.Tier.Id,
+                                    "deployment:Unit": getOccurrenceDeploymentUnit(occurrence)
+                                },
+                                "Notification_Destination" : {
+                                    "Id" : linkTarget.Core.RawId,
+                                    "Tier" : linkTarget.Core.Tier.Id,
+                                    "deployment:Unit" : getOccurrenceDeploymentUnit(linkTarget)
+                                }
+                            }
+                        /]
                         [#continue]
                     [/#if]
 
-                    [#local linkTargetResources = linkTarget.State.Resources ]
+                    [#local resourceId = "" ]
+                    [#local resourceType = ""]
 
-                    [#if isLinkTargetActive(linkTarget) ]
-
-                        [#local resourceId = "" ]
-                        [#local resourceType = ""]
-
-                        [#switch linkTarget.Core.Type]
-                            [#case SQS_COMPONENT_TYPE ]
-                                [#local resourceId = linkTargetResources["queue"].Id ]
-                                [#local resourceType = linkTargetResources["queue"].Type ]
-                                [#if ! (notification["aws:QueuePermissionMigration"]) ]
-                                    [#if deploymentSubsetRequired(S3_COMPONENT_TYPE, true)]
-                                        [@fatal
-                                            message="Queue Permissions update required"
-                                            detail=[
-                                                "SQS policies have been migrated to the queue component",
-                                                "For each S3 bucket add an inbound-invoke link from the Queue to the bucket",
-                                                "When this is completed update the configuration of this notification to aws:QueuePermissionMigration : true"
-                                            ]
-                                            context=notification
-                                        /]
-                                    [/#if]
-                                [/#if]
-                                [#break]
-
-                            [#case LAMBDA_FUNCTION_COMPONENT_TYPE ]
-                                [#local resourceId = linkTargetResources["function"].Id ]
-                                [#local resourceType = linkTargetResources["function"].Type ]
-
-                                [#local policyId =
-                                    formatS3NotificationPolicyId(
-                                        s3Id,
-                                        resourceId) ]
-
-                                [#local dependencies += [policyId] ]
-
-                                [#if deploymentSubsetRequired("s3", true)]
-                                    [@createLambdaPermission
-                                        id=policyId
-                                        targetId=resourceId
-                                        sourceId=formatGlobalArn("s3", s3Name, "")
-                                        sourcePrincipal="s3.amazonaws.com"
+                    [#switch linkTarget.Core.Type]
+                        [#case SQS_COMPONENT_TYPE ]
+                            [#local resourceId = linkTargetResources["queue"].Id ]
+                            [#local resourceType = linkTargetResources["queue"].Type ]
+                            [#if ! (notification["aws:QueuePermissionMigration"]) ]
+                                [#if deploymentSubsetRequired(S3_COMPONENT_TYPE, true)]
+                                    [@fatal
+                                        message="Queue Permissions update required"
+                                        detail=[
+                                            "SQS policies have been migrated to the queue component",
+                                            "For each S3 bucket add an inbound-invoke link from the Queue to the bucket",
+                                            "When this is completed update the configuration of this notification to aws:QueuePermissionMigration : true"
+                                        ]
+                                        context=notification
                                     /]
                                 [/#if]
+                            [/#if]
+                            [#break]
 
-                                [#break]
+                        [#case LAMBDA_FUNCTION_COMPONENT_TYPE ]
+                            [#local resourceId = linkTargetResources["function"].Id ]
+                            [#local resourceType = linkTargetResources["function"].Type ]
 
-                            [#case TOPIC_COMPONENT_TYPE]
-                                [#local resourceId = linkTargetResources["topic"].Id ]
-                                [#local resourceType = linkTargetResources["topic"].Type ]
+                            [#local policyId =
+                                formatS3NotificationPolicyId(
+                                    s3Id,
+                                    resourceId) ]
 
-                                [#if ! (notification["aws:TopicPermissionMigration"]) ]
-                                    [#if deploymentSubsetRequired(S3_COMPONENT_TYPE, true)]
-                                        [@fatal
-                                            message="Topic Permissions update required"
-                                            detail=[
-                                                "SNS policies have been migrated to the topic component",
-                                                "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
-                                                "When this is completed update the configuration of this notification to aws:TopicPermissionMigration : true"
-                                            ]
-                                            context=occurrence.Core.RawId
-                                        /]
-                                    [/#if]
+                            [#local dependencies += [policyId] ]
+
+                            [#if deploymentSubsetRequired("s3", true)]
+                                [@createLambdaPermission
+                                    id=policyId
+                                    targetId=resourceId
+                                    sourceId=formatGlobalArn("s3", s3Name, "")
+                                    sourcePrincipal="s3.amazonaws.com"
+                                /]
+                            [/#if]
+
+                            [#break]
+
+                        [#case TOPIC_COMPONENT_TYPE]
+                            [#local resourceId = linkTargetResources["topic"].Id ]
+                            [#local resourceType = linkTargetResources["topic"].Type ]
+
+                            [#if ! (notification["aws:TopicPermissionMigration"]) ]
+                                [#if deploymentSubsetRequired(S3_COMPONENT_TYPE, true)]
+                                    [@fatal
+                                        message="Topic Permissions update required"
+                                        detail=[
+                                            "SNS policies have been migrated to the topic component",
+                                            "For each S3 bucket add an inbound-invoke link from the Topic to the bucket",
+                                            "When this is completed update the configuration of this notification to aws:TopicPermissionMigration : true"
+                                        ]
+                                        context=occurrence.Core.RawId
+                                    /]
                                 [/#if]
-                        [/#switch]
+                            [/#if]
+                    [/#switch]
 
-                        [#list notification.Events as event ]
-                            [#local notifications +=
-                                    getS3Notification(resourceId, resourceType, event, notification.Prefix, notification.Suffix) ]
-                        [/#list]
-                    [/#if]
+                    [#list notification.Events as event ]
+                        [#local notifications +=
+                                getS3Notification(resourceId, resourceType, event, notification.Prefix, notification.Suffix) ]
+                    [/#list]
                 [/#if]
-            [/#list]
-        [/#if]
+            [/#if]
+        [/#list]
     [/#list]
 
     [#local policyStatements = [] ]
