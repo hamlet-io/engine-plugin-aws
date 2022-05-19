@@ -225,7 +225,12 @@
                                             id=formatLambdaEventSourceId(fn, "link", linkName)
                                             targetId=fnId
                                             source=linkTargetAttributes["ARN"]
-                                            batchSize=1
+                                            batchSize=solution["aws:EventSources"].SQS.BatchSize
+                                            functionResponseTypes=(solution["aws:EventSources"].SQS.ReportBatchItemFailures)?then(
+                                                ["ReportBatchItemFailures"],
+                                                []
+                                            )
+                                            maximumBatchingWindow=solution["aws:EventSources"].SQS.MaximumBatchingWindow
                                         /]
                                     [/#if]
                                     [#break]

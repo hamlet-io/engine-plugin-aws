@@ -199,7 +199,16 @@
     /]
 [/#macro]
 
-[#macro createLambdaEventSource id targetId source enabled=true batchSize="" startingPosition="" dependencies=""]
+[#macro createLambdaEventSource
+        id
+        targetId
+        source
+        enabled=true
+        batchSize=""
+        startingPosition=""
+        functionResponseTypes=[]
+        maximumBatchingWindow=0
+        dependencies=[]]
 
     [@cfResource
         id=id
@@ -211,7 +220,9 @@
                 "FunctionName" : getReference(targetId)
             } +
             attributeIfContent("BatchSize", batchSize) +
-            attributeIfContent("StartingPosition", startingPosition)
+            attributeIfContent("StartingPosition", startingPosition) +
+            attributeIfContent("FunctionResponseTypes", asArray(functionResponseTypes)) +
+            attributeIfTrue("MaximumBatchingWindowInSeconds", maximumBatchingWindow > 0, maximumBatchingWindow)
         outputs=LAMBDA_EVENT_SOURCE_MAPPINGS
         dependencies=dependencies
     /]
