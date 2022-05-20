@@ -285,13 +285,22 @@
                                 "Enabled" : true,
                                 "EncryptionScheme" : "kms"
                             },
-                            "Links": {
-                                "rds_events": {
-                                    "Tier": "db",
-                                    "Component": "postgresdbevent-topic",
-                                    "Instance": "default",
-                                    "Version": "",
-                                    "Role": "publish configuration change,failure,deletion"
+                            "SystemNotifications": {
+                                "BadNotify": {
+                                    "Categories": [
+                                        "configuration change",
+                                        "failure",
+                                        "deletion"
+                                    ],
+                                    "Links": {
+                                        "rds_events": {
+                                            "Tier": "db",
+                                            "Component": "postgresdbevent-topic",
+                                            "Instance": "default",
+                                            "Version": "",
+                                            "Role": "publish"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -305,30 +314,30 @@
                         "CFN" : {
                             "Resource" : {
                                 "rdsInstanceEvent" : {
-                                    "Name" : "rdsXdbXpostgresdbeventXinstanceXrdsXevents",
+                                    "Name" : "rdsXdbXpostgresdbeventXBadNotifyXrdsXevents",
                                     "Type" : "AWS::RDS::EventSubscription"
                                 }
                             },
                             "Output" : [
-                                "rdsXdbXpostgresdbeventXinstanceXrdsXevents"
+                                "rdsXdbXpostgresdbeventXBadNotifyXrdsXevents"
                             ]
                         },
                         "JSON" : {
                             "Match" : {
                                 "EventTypeName" : {
-                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXinstanceXrdsXevents.Properties.SourceType",
+                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXBadNotifyXrdsXevents.Properties.SourceType",
                                     "Value" : "db-instance"
                                 },
                                 "EventCategories0" : {
-                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXinstanceXrdsXevents.Properties.EventCategories[0]",
+                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXBadNotifyXrdsXevents.Properties.EventCategories[0]",
                                     "Value" : "configuration change"
                                 },
                                 "EventCategories1" : {
-                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXinstanceXrdsXevents.Properties.EventCategories[1]",
+                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXBadNotifyXrdsXevents.Properties.EventCategories[1]",
                                     "Value" : "failure"
                                 },
                                 "EventCategories2" : {
-                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXinstanceXrdsXevents.Properties.EventCategories[2]",
+                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXBadNotifyXrdsXevents.Properties.EventCategories[2]",
                                     "Value" : "deletion"
                                 }
                             }
@@ -518,13 +527,17 @@
                                     "Value" : "testPassword"
                                 }
                             },
-                            "Links": {
-                                "rds_events": {
-                                    "Tier": "db",
-                                    "Component": "postgresdbcluster-topic",
-                                    "Instance": "default",
-                                    "Version": "",
-                                    "Role": "publish"
+                            "SystemNotifications": {
+                                "AllNotify": {
+                                    "Links": {
+                                        "rds_events": {
+                                            "Tier": "db",
+                                            "Component": "postgresdbcluster-topic",
+                                            "Instance": "default",
+                                            "Version": "",
+                                            "Role": "publish"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -572,11 +585,7 @@
                                     "Type" : "AWS::RDS::DBClusterParameterGroup"
                                 },
                                 "rdsClusterEvent" : {
-                                    "Name" : "rdsClusterXdbXpostgresdbclusterXclusterXrdsXevents",
-                                    "Type" : "AWS::RDS::EventSubscription"
-                                },
-                                "rdsClusterInstanceEvent" : {
-                                    "Name" : "rdsXdbXpostgresdbclusterXaX1XinstanceXrdsXevents",
+                                    "Name" : "rdsClusterXdbXpostgresdbclusterXAllNotifyXrdsXevents",
                                     "Type" : "AWS::RDS::EventSubscription"
                                 }
                             },
@@ -584,7 +593,7 @@
                                 "rdsClusterXdbXpostgresdbclusterXreaddns",
                                 "rdsXdbXpostgresdbclusterXaX2Xdns",
                                 "securityGroupXrdsClusterXdbXpostgresdbcluster",
-                                "rdsClusterXdbXpostgresdbclusterXclusterXrdsXevents"
+                                "rdsClusterXdbXpostgresdbclusterXAllNotifyXrdsXevents"
                             ]
                         },
                         "JSON" : {
@@ -606,12 +615,8 @@
                                     "Value" : "aurora-postgresql11"
                                 },
                                 "EventTypeNameC" : {
-                                    "Path"  : "Resources.rdsClusterXdbXpostgresdbclusterXclusterXrdsXevents.Properties.SourceType",
+                                    "Path"  : "Resources.rdsClusterXdbXpostgresdbclusterXAllNotifyXrdsXevents.Properties.SourceType",
                                     "Value" : "db-cluster"
-                                },
-                                "EventTypeNameI" : {
-                                    "Path"  : "Resources.rdsXdbXpostgresdbclusterXaX1XinstanceXrdsXevents.Properties.SourceType",
-                                    "Value" : "db-instance"
                                 }
                             },
                             "NotEmpty" : [

@@ -826,7 +826,7 @@
                 /]
 
                 [#list solution.SystemNotifications as eventId, event ]
-                    [#list solution.Links as linkId, link ]
+                    [#list event.Links as linkId, link ]
                         [#if link?is_hash]
                             [#local linkTarget = getLinkTarget(occurrence, link, false) ]
                             [@debug message="Link Target" context=linkTarget enabled=false /]
@@ -878,8 +878,6 @@
                         clusterId=rdsId
                         clusterPromotionTier=dbInstance?index
                         tags=rdsTags
-                        occurrence=occurrence
-                        links=solution.Links
                         deletionPolicy=""
                         updateReplacePolicy=""
                         kmsKeyId=cmkKeyId
