@@ -1,6 +1,6 @@
 [#ftl]
 
-[#function firehoseStreamProducePermission id]
+[#function kinesisFirehoseStreamProducePermission id]
     [#return
         [
             getPolicyStatement(
@@ -14,7 +14,7 @@
     ]
 [/#function]
 
-[#function firehoseStreamCloudwatchPermission id]
+[#function kinesisFirehoseStreamCloudwatchPermission id]
     [#return
         [
             getPolicyStatement(
@@ -24,22 +24,39 @@
                     "firehose:PutRecordBatch",
                     "firehose:UpdateDestination"
                 ],
-                getReference(id, ARN_ATTRIBUTE_TYPE)
+                getArn(id)
             )
         ]
     ]
 [/#function]
 
-[#function firehoseKinesisDataStreamPermssion id]
+[#function kinesisDataStreamConsumePermssion id]
     [#return [
         getPolicyStatement(
             [
                 "kinesis:DescribeStream",
+                "kinesis:DescribeStreamSummary",
                 "kinesis:GetShardIterator",
                 "kinesis:GetRecords",
                 "kinesis:ListShards"
             ],
-            getReference(id, ARN_ATTRIBUTE_TYPE)
+            getArn(id)
+        )
+    ]]
+[/#function]
+
+
+[#function kinesisDataStreamProducePermssion id]
+    [#return [
+        getPolicyStatement(
+            [
+                "kinesis:DescribeStream",
+                "kinesis:DescribeStreamSummary",
+                "kinesis:GetShardIterator",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+            ],
+            getArn(id)
         )
     ]]
 [/#function]
