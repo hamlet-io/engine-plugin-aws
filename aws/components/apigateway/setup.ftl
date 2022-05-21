@@ -184,7 +184,7 @@
     [#local customDomainResources  = resources["customDomains"]!{} ]
 
     [#local apiPolicyStatements    = _context.Policy ]
-    [#local apiPolicyAuth          = solution.Authentication?upper_case ]
+    [#local apiPolicyAuth          = solution.AuthorisationModel?upper_case ]
 
     [#local apiPolicyCidr          = getGroupCIDRs(solution.IPAddressGroups) ]
     [#if (!(wafAclResources?has_content)) && (!(apiPolicyCidr?has_content)) ]
@@ -199,6 +199,10 @@
 
     [#-- Determine the resource policy                                                --]
     [#--                                                                              --]
+    [#-- The way policy evaluation works for various configuration options is now     --]
+    [#-- documented at                                                                --]
+    [#-- https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-authorization-flow.html --]
+    [#--                                                                              --]
     [#-- For SIG4 variants, AWS_IAM must be enabled in the openAPI specification      --]
     [#-- If AWS_IAM is enabled, it's IAM policy is evaluated in the usual fashion     --]
     [#-- with the resource policy. However if NOT defined, there is no explicit ALLOW --]
@@ -206,8 +210,18 @@
     [#-- If an "AWS_ALLOW" were introduced in the openAPI spec to provide the ALLOW,  --]
     [#-- then the switch below could be simplified.                                   --]
     [#--                                                                              --]
-    [#-- NOTE: the format of the resource arn is non-standard and undocumented at the --]
-    [#-- time of writing. It seems like a workaround to the fact that cloud formation --]
+    [#-- NOTE: for the SIG4 and Authorizer OR variants, a valid IAM identity/token    --]
+    [#-- must STILL be provided but it does not need to provide an explicit ALLOW on  --]
+    [#-- the resource if an explicit ALLOW is provided via the IP Address.            --]
+    [#--                                                                              --]
+    [#-- NOTE: for Cognito Authorizer, the authorizer and IP must both provide an     --]
+    [#-- explicit ALLOW so can effectively be configured separately. Thus the model   --]
+    [#-- should be the "IP" default.                                                  --]
+    [#--                                                                              --]
+    [#-- NOTE: the format of the resource arn is non-standard, and differs slightly   --]
+    [#-- from that documented at                                                      --]
+    [#-- https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html#api-gateway-iam-policy-resource-format-for-executing-api --]
+    [#-- It seems like a workaround to the fact that cloud formation                  --]
     [#-- reports a circular reference if the policy references the apiId via the arn. --]
     [#-- (see case 5398420851)                                                        --]
     [#--                                                                              --]
@@ -224,17 +238,36 @@
             )
         ] ]
     [#if apiPolicyCidr?has_content ]
+        [#-- If lambda authorizers are in use, and the default AuthorisationModel is --]
+        [#-- effect, warn and force the model to a valid value                       --]
+        [#if lambdaAuthorizers?has_content && !apiPolicyAuth?starts_with("AUTHORI") ]
+            [@warn
+                message="Authorization model of \"" + apiPolicyAuth + "\" is not compatible with the use of lambda authorizers. Forcing to \"AUTHORISER_AND_IP\"."
+            /]
+            [#local apiPolicyAuth = "AUTHORISER_AND_IP" ]
+        [/#if]
+
+        [#-- If cognito authorizers are in use, the AuthorisationModel must be IP --]
+        [#if cognitoPools?has_content && (apiPolicyAuth != "IP") ]
+            [@warn
+                message="Authorization model of \"" + apiPolicyAuth + "\" is not compatible with the use of cognito authorizers. Forcing to \"IP\"."
+            /]
+            [#local apiPolicyAuth = "IP" ]
+        [/#if]
+
         [#-- Ensure the stage(s) used for deployments can't be accessed externally --]
         [#switch apiPolicyAuth ]
             [#case "IP" ]
-                [#-- No explicit ALLOW so provide one in the resource policy --]
+                [#-- Resource policy MUST provide explicit ALLOW --]
                 [#local apiPolicyStatements +=
                     [
+                        [#-- Explicit ALLOW by default --]
                         getPolicyStatement(
                             "execute-api:Invoke",
                             "execute-api:/*",
                             "*"
                         ),
+                        [#-- DENY if not the expected IP --]
                         getPolicyStatement(
                             "execute-api:Invoke",
                             "execute-api:/*",
@@ -246,8 +279,13 @@
                 [#break]
 
             [#case "SIG4ORIP" ]
+            [#case "SIG4_OR_IP" ]
+            [#case "AUTHORIZER_OR_IP" ]
+            [#case "AUTHORISER_OR_IP" ]
                 [#-- Resource policy provides ALLOW on IP --]
                 [#-- AWS_IAM provides ALLOW on SIG4       --]
+                [#-- If IP doesn't match, IAM policy MUST --]
+                [#-- provide explicit ALLOW               --]
                 [#local apiPolicyStatements +=
                     [
                         getPolicyStatement(
@@ -260,7 +298,12 @@
                 [#break]
 
             [#case "SIG4ANDIP" ]
-                [#-- Rely on AWS_IAM to provide the explicit ALLOW to avoid the implicit DENY --]
+            [#case "SIG4_AND_IP" ]
+            [#case "AUTHORIZER_AND_IP" ]
+            [#case "AUTHORISER_AND_IP" ]
+                [#-- If IP doesn't match, EXPLICIT DENY regardless of SIG4 --]
+                [#-- If IP matches, then IAM policy MUST provide the       --]
+                [#-- explicit ALLOW.                                       --]
                 [#local apiPolicyStatements +=
                     [
                         getPolicyStatement(
@@ -274,7 +317,10 @@
                 [#break]
         [/#switch]
     [#else]
-        [#-- No IP filtering required so add explicit ALLOW in the resource policy --]
+        [#-- No IP filtering required                                           --]
+        [#-- Because we must have a resource policy to block the default stage, --]
+        [#-- the policy also needs to provide an explicit ALLOW to satisfy the  --]
+        [#-- "API Gateway resource policy only" workflow                        --]
         [#local apiPolicyStatements +=
             [
                 getPolicyStatement(
