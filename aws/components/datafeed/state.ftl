@@ -68,10 +68,10 @@
             "Roles" : {
                 "Outbound" : {
                     "default" : "produce",
-                    "produce" : firehoseStreamProducePermission(streamId),
+                    "produce" : kinesisFirehoseStreamProducePermission(streamId),
                     "logwatcher" : {
                         "Destination" : getArn(streamId),
-                        "Policy" : firehoseStreamCloudwatchPermission(streamId)
+                        "Policy" : kinesisFirehoseStreamCloudwatchPermission(streamId)
                     }
                 },
                 "Inbound" : {

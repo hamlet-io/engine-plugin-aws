@@ -11,6 +11,13 @@
     }
 ]
 
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE
+    mappings=KINESIS_FIREHOSE_STREAM_OUTPUT_MAPPINGS
+/]
+
+
 [#assign AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS =
     {
         REFERENCE_ATTRIBUTE_TYPE : {
@@ -21,12 +28,6 @@
         }
     }
 ]
-
-[@addOutputMapping
-    provider=AWS_PROVIDER
-    resourceType=AWS_KINESIS_FIREHOSE_STREAM_RESOURCE_TYPE
-    mappings=KINESIS_FIREHOSE_STREAM_OUTPUT_MAPPINGS
-/]
 
 [@addOutputMapping
     provider=AWS_PROVIDER
@@ -46,24 +47,52 @@
     }
 /]
 
-[#macro createKinesisDataStream id name retentionHours="" shardCount=1 keyId="" dependencies=""]
-    [#local encrpytionConfig = {}]
+[#macro createKinesisDataStream id name streamMode retentionHours="" shardCount=1 keyId="" dependencies="" tags=[]]
+    [#local encryptionConfig = {}]
+
     [#if keyId?has_content]
-        [#local encrpytionConfig = {
-            "EncryptionType" : "KMS",
-            "KeyId" : keyId }]
+        [#local encryptionConfig =
+            {
+                "EncryptionType" : "KMS",
+                "KeyId" : getArn(keyId)
+            }
+        ]
     [/#if]
+
+    [#switch streamMode?lower_case ]
+        [#case "on-demand"]
+        [#case "on_demand"]
+            [#local streamMode = "ON_DEMAND"]
+            [#break]
+        [#case "provisioned"]
+            [#local streamMode = "PROVISIONED"]
+            [#break]
+
+        [#default]
+            [@fatal
+                message="Invalid stream provisioning mode for data stream"
+                context={
+                    "Id": id,
+                    "name": name,
+                    "StreamingMode" : streamMode
+                }
+            /]
+    [/#switch]
 
     [@cfResource
         id=id
         type="AWS::Kinesis::Stream"
         properties=
             {
-                "Name" : name
+                "Name" : name,
+                "StreamModeDetails" : {
+                    "StreamMode" : streamMode
+                }
             } +
             attributeIfContent("RetentionPeriodHours", retentionHours) +
             attributeIfContent("ShardCount", shardCount) +
-            attributeIfContent("StreamEncryption", encrpytionConfig)
+            attributeIfContent("StreamEncryption", encryptionConfig)+
+            attributeIfContent("Tags", tags)
         outputs=AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]
