@@ -66,7 +66,7 @@
 
                     [#if ! getExistingReference(s3Id)?has_content ]
                         [@warn
-                            message="Notification persmissions requried before enabling notifications"
+                            message="Notification permissions required before enabling notifications"
                             detail="Update the notificaton destination and rerun this deployment"
                             context={
                                 "S3_Bucket" : {
