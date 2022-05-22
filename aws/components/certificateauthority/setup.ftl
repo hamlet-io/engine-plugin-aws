@@ -48,7 +48,7 @@
             keyAlgorithm=solution.KeyAlgorithm
             signingAlgorithm=solution.SigningAlgorithm
             subject=certificateSubject
-            tags=getOccurrenceCoreTags(occurrence, authorityName)
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createACMPCACertificate

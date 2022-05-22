@@ -42,7 +42,6 @@
                                 ],
                                 "_")
                                 ?lower_case,
-                    "TagName" : core.FullName,
                     "Type" : AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE,
                     "Monitored" : true
                 },

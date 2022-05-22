@@ -50,7 +50,7 @@
     schedule
     durationHours
     cutoffHours
-    tags=[]
+    tags={}
     scheduleTimezone="Etc/UTC"
     dependencies=""
 ]
@@ -94,7 +94,7 @@
     /]
 [/#macro]
 
-[#function getSSMWindowTargets tags=[] instanceIds=[] usePlaceholderInstance=false ]
+[#function getSSMWindowTargets tags={} instanceIds=[] usePlaceholderInstance=false ]
     [#local targets = [] ]
     [#if usePlaceholderInstance ]
         [#local targets += [

@@ -81,7 +81,7 @@
 
                 [@createEIP
                     id=eipId
-                    tags=getOccurrenceCoreTags(occurrence, eipName)
+                    tags=getOccurrenceTags(occurrence, {"zone": zone}, [zone])
                 /]
 
             [/#if]
@@ -99,7 +99,7 @@
                     "logging"
                 )
             ]
-            tags=getOccurrenceCoreTags(occurrence)
+            tags=getOccurrenceTags(occurrence)
         /]
     [/#if]
 
@@ -138,7 +138,7 @@
             id=securityGroupId
             name=securityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -198,7 +198,7 @@
             logRoleId=logRoleId
             certificateId=certificateId
             securityPolicy=securityProfile.EncryptionPolicy
-            tags=getOccurrenceCoreTags(occurrence, transferServerName, "", false)
+            tags=getOccurrenceTags(occurrence)
         /]
 
     [/#if]

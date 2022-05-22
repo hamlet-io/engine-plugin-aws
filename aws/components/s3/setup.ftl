@@ -38,7 +38,7 @@
     [#local replicationDestinationAccountId = "" ]
     [#local replicationExternalPolicy = []]
 
-    [#local backupTags = [] ]
+    [#local backupTags = {} ]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "CDNOriginKey", "Encryption" ])]
@@ -318,14 +318,10 @@
 
                 [#case BACKUPSTORE_REGIME_COMPONENT_TYPE]
                     [#if linkTargetAttributes["TAG_NAME"]?has_content]
-                        [#local backupTags +=
-                            [
-                                {
-                                    "Key" : linkTargetAttributes["TAG_NAME"],
-                                    "Value" : linkTargetAttributes["TAG_VALUE"]
-                                }
-                            ]
-                        ]
+                        [#local backupTags = mergeObjects(
+                                backupTags,
+                                {linkTargetAttributes["TAG_NAME"], linkTargetAttributes["TAG_VALUE"]}
+                            )]
                     [#else]
                         [@warn
                             message="Ignoring linked backup regime \"${linkTargetCore.SubComponent.Name}\" that does not support tag based inclusion"
@@ -407,7 +403,7 @@
                 id=roleId
                 trustedServices=["s3.amazonaws.com"]
                 policies=rolePolicies
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [/#if]
@@ -513,7 +509,7 @@
             kmsKeyId=kmsKeyId
             inventoryReports=inventoryReports
             dependencies=dependencies
-            tags=backupTags
+            tags=mergeObjects(getOccurrenceTags(occurrence), backupTags)
         /]
     [/#if]
 [/#macro]

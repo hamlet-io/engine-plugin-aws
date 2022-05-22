@@ -90,7 +90,7 @@
             id=cacheSecurityGroupId
             name=cacheSecurityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -213,7 +213,7 @@
                         }
                     ) +
                     attributeIfContent("SnapshotRetentionLimit", solution.Backup.RetentionPeriod)
-                tags=getOccurrenceCoreTags(occurrence, cacheFullName)
+                tags=getOccurrenceTags(occurrence)
                 outputs=engine?switch(
                     "memcached", MEMCACHED_OUTPUT_MAPPINGS,
                     "redis", REDIS_OUTPUT_MAPPINGS,

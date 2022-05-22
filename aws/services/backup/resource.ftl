@@ -48,7 +48,7 @@
             ) +
             attributeIfContent(
                 "BackupVaultTags",
-                tags
+                getCFResourceTags(tags, true)
             )
         outputs=AWS_BACKUP_VAULT_OUTPUT_MAPPINGS
         dependencies=dependencies
@@ -114,7 +114,7 @@
             } +
             attributeIfContent(
                 "BackupPlanTags",
-                tags
+                getCFResourceTags(tags, true)
             )
         outputs=AWS_BACKUP_PLAN_OUTPUT_MAPPINGS
         dependencies=dependencies
@@ -203,7 +203,7 @@
     mappings=AWS_BACKUP_SELECTION_OUTPUT_MAPPINGS
 /]
 
-[#macro createBackupSelection id name planId roleId tags=[] resources=[] conditions={} exclusions=[] dependencies=""]
+[#macro createBackupSelection id name planId roleId tags={} resources=[] conditions={} exclusions=[] dependencies=""]
 
 
     [#-- If explicit targets have been provided, use those --]

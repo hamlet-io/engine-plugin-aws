@@ -63,7 +63,7 @@
                         "JSON" : {
                             "Match" : {
                                 "TagName" : {
-                                    "Path"  : "Resources.ecsXappXecsbase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.ecsXappXecsbase.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-ecsbase"
                                 },
                                 "ASGWaitForCFNSignals" : {

@@ -209,7 +209,7 @@
     [#local rdsManualSnapshot = getExistingReference(formatDependentRDSManualSnapshotId(rdsId), NAME_ATTRIBUTE_TYPE)]
     [#local rdsLastSnapshot = getExistingReference(rdsId, LASTRESTORE_ATTRIBUTE_TYPE )]
 
-    [#local backupTags = [] ]
+    [#local backupTags = {} ]
     [#local links = getLinkTargets(occurrence, {}, false) ]
     [#list links as linkId,linkTarget]
 
@@ -227,14 +227,13 @@
 
             [#case BACKUPSTORE_REGIME_COMPONENT_TYPE]
                 [#if linkTargetAttributes["TAG_NAME"]?has_content]
-                    [#local backupTags +=
-                        [
+                    [#local backupTags =
+                        mergeObjects(
+                            backupTags,
                             {
-                                "Key" : linkTargetAttributes["TAG_NAME"],
-                                "Value" : linkTargetAttributes["TAG_VALUE"]
+                                linkTargetAttributes["TAG_NAME"] : linkTargetAttributes["TAG_VALUE"]
                             }
-                        ]
-                    ]
+                        )]
                 [#else]
                     [@warn
                         message="Ignoring linked backup regime \"${linkTargetCore.SubComponent.Name}\" that does not support tag based inclusion"
@@ -253,7 +252,7 @@
                                         (getCLORunId())?split('')?reverse?join(''),
                                         "pre-deploy")]
 
-    [#local rdsTags = getOccurrenceCoreTags(occurrence, rdsFullName)]
+    [#local rdsTags = getOccurrenceTags(occurrence)]
 
     [#local restoreSnapshotName = "" ]
 
@@ -331,7 +330,7 @@
                 managedArns=[
                     "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
                 ]
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [/#if]
@@ -413,7 +412,7 @@
             id=rdsSecurityGroupId
             name=rdsSecurityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -895,7 +894,7 @@
                     deleteAutomatedBackups=solution.Backup.DeleteAutoBackups
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
-                    tags=rdsTags + backupTags
+                    tags=mergeObjects(rdsTags, backupTags)
                     enhancedMonitoring=solution.Monitoring.DetailedMetrics.Enabled
                     enhancedMonitoringInterval=solution.Monitoring.DetailedMetrics.CollectionInterval
                     enhancedMonitoringRoleId=monitoringRoleId!""

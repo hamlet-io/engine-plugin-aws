@@ -133,6 +133,7 @@
             globalSecondaryIndexes=globalSecondaryIndexes
             streamEnabled=solution.ChangeStream.Enabled
             streamViewType=streamViewType
+            tags=getOccurrenceTags()
         /]
     [/#if]
 [/#macro]

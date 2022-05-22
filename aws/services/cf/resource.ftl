@@ -361,7 +361,7 @@
     priceClass=""
     restrictions={}
     wafAclId=""
-    tags=[]
+    tags={}
 ]
     [#local wafAclLink = (wafAclId?is_string)?then(getReference(wafAclId), wafAclId)]
     [@cfResource

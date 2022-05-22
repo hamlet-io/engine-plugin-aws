@@ -56,7 +56,6 @@
 
         [#if dlqRequired ]
             [#local dlqId = resources["dlq"].Id ]
-            [#local dlqName = resources["dlq"].Name ]
 
             [#-- override the Id ane Name for replacement --]
             [#if getCLODeploymentUnitAlternative() == "replace1" ]
@@ -71,10 +70,7 @@
                 name=dlqName
                 retention=1209600
                 receiveWait=20
-                tags=
-                    getOccurrenceCoreTags(
-                        occurrence,
-                        dlqName)
+                tags=getOccurrenceTags(occurrence, {}, ["dlq"])
                 fifoQueue=fifoQueue
             /]
         [/#if]
@@ -93,10 +89,7 @@
                 solution.DeadLetterQueue.MaxReceives,
                 solution.DeadLetterQueue.MaxReceives > 0,
                 (environmentObject.Operations.DeadLetterQueue.MaxReceives)!3)
-            tags=
-                getOccurrenceCoreTags(
-                    occurrence,
-                    sqsName)
+            tags=getOccurrenceTags(occurrence)
             fifoQueue=fifoQueue
         /]
 

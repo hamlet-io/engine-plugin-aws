@@ -124,7 +124,7 @@
         [@createClientVPNEndpoint
             id=vpnEndpointId
             name=vpnEndpointName
-            tags=getOccurrenceCoreTags(occurrence, vpnEndpointName)
+            tags=getOccurrenceTags(occurrence)
             authenticationOptions=authOptions
             clientCidrBlock=solution.Network.ClientCIDR
             connectionLogging=solution.Logging

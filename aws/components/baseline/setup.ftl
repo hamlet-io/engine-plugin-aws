@@ -10,7 +10,7 @@
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources ]
 
-    [#-- make sure we only have one occurence --]
+    [#-- make sure we only have one occurrence --]
     [#if  ! ( core.Tier.Id == "mgmt" &&
             core.Component.Id == "baseline" &&
             core.Version.Id == "" &&
@@ -293,7 +293,7 @@
                                 id=replicationRoleId
                                 trustedServices=["s3.amazonaws.com"]
                                 policies=replicationRolePolicies
-                                tags=getOccurrenceCoreTags(occurrence)
+                                tags=getOccurrenceTags(subOccurrence)
                             /]
                         [/#if]
 
@@ -311,6 +311,7 @@
                     replicationConfiguration=replicationConfiguration
                     kmsKeyId=cmkId
                     dependencies=bucketDependencies
+                    tags=getOccurrenceTags(subOccurrence)
                 /]
 
                 [#-- role based bucket policies --]

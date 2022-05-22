@@ -82,7 +82,7 @@
             encryptionKeyId=encryptionKeyId
             notifications=notifications
             lockConfiguration=lockConfiguration
-            tags=getOccurrenceCoreTags(occurrence, occurrence.Core.FullName, "", false, true)
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [#-- Create the regimes associated with the vault --]
@@ -175,7 +175,7 @@
                 id=planId
                 name=planName
                 rules=rules
-                tags=getOccurrenceCoreTags(subOccurrence, subOccurrence.Core.FullName, "", false, true)
+                tags=getOccurrenceTags(subOccurrence)
             /]
 
             [#-- Check if store matches are required --]

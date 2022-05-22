@@ -288,7 +288,7 @@
                     id=esServiceRoleId
                     trustedServices=["es.amazonaws.com"]
                     managedArns=["arn:aws:iam::aws:policy/AmazonESCognitoAccess"]
-                    tags=getOccurrenceCoreTags(occurrence)
+                    tags=getOccurrenceTags(occurrence)
                 /]
         [/#if]
 
@@ -331,7 +331,7 @@
                         "ESSnapshot"
                     )
                 ]
-            tags=getOccurrenceCoreTags(occurrence)
+            tags=getOccurrenceTags(occurrence)
         /]
     [/#if]
 
@@ -378,7 +378,7 @@
                 id=sgId
                 name=sgName
                 vpcId=vpcId
-                occurrence=occurrence
+                tags=getOccurrenceTags(occurrence)
             /]
 
             [@createSecurityGroupRulesFromNetworkProfile
@@ -481,7 +481,7 @@
                     vpcAccess,
                     networkConfiguration
                 )
-            tags=getOccurrenceCoreTags(occurrence, "")
+            tags=getOccurrenceTags(occurrence)
             outputs=ES_OUTPUT_MAPPINGS
             updatePolicy={
                 "EnableVersionUpgrade" : solution.AllowMajorVersionUpdates

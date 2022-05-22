@@ -65,116 +65,28 @@
     ]
 [/#function]
 
-[#function getCfTemplateCoreTags name="" tier="" component="" zone="" propagate=false flatten=false maxTagCount=-1]
-    [#local result = [] +
-        getCLORequestReference()?has_content?then(
-            [
-                { "Key" : "cot:request", "Value" : getCLORequestReference() }
-            ],
-            []
-        ) +
-        accountObject.CostCentre?has_content?then(
-            [
-                { "Key" : "cot:costcentre", "Value" : accountObject.CostCentre }
-            ],
-            []
-        ) +
-        getCLOConfigurationReference()?has_content?then(
-            [
-                { "Key" : "cot:configuration", "Value" : getCLOConfigurationReference() }
-            ],
-            []
-        ) +
-        tenantName?has_content?then(
-            [
-                { "Key" : "cot:tenant", "Value" : tenantName }
-            ],
-            []
-        ) +
-        accountName?has_content?then(
-            [
-                { "Key" : "cot:account", "Value" : accountName }
-            ],
-            []
-        ) +
-        productId?has_content?then(
-            [
-                { "Key" : "cot:product", "Value" : productName }
-            ],
-            []
-        ) +
-        environmentId?has_content?then(
-            [
-                { "Key" : "cot:environment", "Value" : environmentName }
-            ],
-            []
-        ) +
-        categoryName?has_content?then(
-            [
-                { "Key" : "cot:category", "Value" : categoryName }
-            ],
-            []
-        ) +
-        segmentId?has_content?then(
-            [
-                { "Key" : "cot:segment", "Value" : segmentName }
-            ],
-            []
-        ) +
-        tier?has_content?then(
-            [
-                { "Key" : "cot:tier", "Value" : getTierName(tier) }
-            ],
-            []
-        ) +
-        component?has_content?then(
-            [
-                { "Key" : "cot:component", "Value" : getComponentName(component) }
-            ],
-            []
-        ) +
-        zone?has_content?then(
-            [
-                { "Key" : "cot:zone", "Value" : getZoneName(zone) }
-            ],
-            []
-        ) +
-        name?has_content?then(
-            [
-                { "Key" : "Name", "Value" : name }
-            ],
-            []
-        )
-    ]
-    [#if propagate]
-        [#local returnValue = []]
-        [#list result as entry]
-            [#local returnValue +=
-                [
-                    entry + {"PropagateAtLaunch" : true }
-                ]
-            ]
-        [/#list]
-        [#local result=returnValue]
-    [/#if]
-    [#if flatten ]
-        [#local returnValue = {} ]
-        [#list result as entry ]
-            [#local returnValue +=
-                {
-                    entry.Key, entry.Value
-                }
-            ]
-        [/#list]
-        [#local result=returnValue]
-    [/#if]
+[#function getCFResourceTags tags={} flatten=false maxTagCount=50]
 
-    [#if maxTagCount gte 0 ]
-        [#local maxTagCount = ( maxTagCount -1 lt result?size )?then(
-                                    maxTagCount,
-                                    result?size
+    [#local maxTagCount = ( maxTagCount -1 lt tags?keys?size )?then(
+                                maxTagCount,
+                                tags?keys?size
+    )]
+
+    [#if flatten ]
+
+        [#local tags=tags?keys[0..( maxTagCount -1 )]?map(x -> { x: tags[x]})]
+
+        [#local result = {}]
+        [#list tags as tag]
+            [#local result = mergeObjects(result, tag)]
+        [/#list]
+
+    [#else]
+        [#local result = tags?keys?map(
+            x -> {"Key": x, "Value": tags[x] }
         )]
-        [#local result=result[0..( maxTagCount -1 )]]
+
+        [#local result = result[0..( maxTagCount -1 )]]
     [/#if]
     [#return result]
 [/#function]
@@ -207,7 +119,7 @@
             id
             type
             properties={}
-            tags=[]
+            tags={}
             outputs=getCfTemplateDefaultOutputs()
             outputId=""
             dependencies=[]
@@ -237,7 +149,11 @@
                     attributeIfTrue(
                         "Properties",
                         properties?has_content || tags?has_content,
-                        properties + attributeIfContent("Tags", tags)) +
+                        properties + attributeIfContent(
+                            "Tags",
+                            tags?is_sequence?then(tags, getCFResourceTags(tags))
+                        )
+                    ) +
                     attributeIfContent("DependsOn", localDependencies) +
                     attributeIfContent("DeletionPolicy", deletionPolicy) +
                     attributeIfContent("UpdateReplacePolicy", updateReplacePolicy) +

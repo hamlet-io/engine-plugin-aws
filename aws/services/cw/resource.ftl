@@ -192,7 +192,7 @@
                         id=forwardingRoleId
                         trustedServices=[  "logs." + getRegion() + ".amazonaws.com" ]
                         policies=[]
-                        tags=getCfTemplateCoreTags()
+                        tags=getOccurrenceTags()
                     /]
 
                     [@createPolicy
@@ -647,7 +647,7 @@
     securityGroupIds=[]
     subnets=[]
     vpcId=""
-    tags=[]
+    tags={}
     dependencies=[] ]
 
     [@cfResource

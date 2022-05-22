@@ -274,7 +274,7 @@
             managedArns=[]
             policies=[]
             dependencies=[]
-            tags=[]
+            tags={}
             ]
 
     [#local trustedAccountArns = [] ]
@@ -285,11 +285,6 @@
             ]
         ]
     [/#list]
-
-    [#-- Handle legacy account --]
-    [#if tags?size = 0]
-        [#local tags=getCfTemplateCoreTags(name) ]
-    [/#if]
 
     [@cfResource
         id=id
@@ -379,4 +374,3 @@
     [/#list]
     [#return deployed]
 [/#function]
-

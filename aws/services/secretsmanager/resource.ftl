@@ -242,7 +242,7 @@
                     [@createSecretsManagerSecret
                         id=secretId
                         name=secretName
-                        tags=getOccurrenceCoreTags(occurrence, secretName)
+                        tags=getOccurrenceTags(occurrence)
                         kmsKeyId=kmsKeyId
                         description=secretDescription
                         generateSecret=true

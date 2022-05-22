@@ -23,16 +23,10 @@
         [#local volumeId = zoneResources["ebsVolume"].Id ]
         [#local volumeName = zoneResources["ebsVolume"].Name ]
 
-        [#local volumeTags = getOccurrenceCoreTags(
-                                    occurrence,
-                                    volumeName,
-                                    "",
-                                    false)]
-
         [#if deploymentSubsetRequired(DATAVOLUME_COMPONENT_TYPE, true)]
             [@createEBSVolume
                 id=volumeId
-                tags=volumeTags
+                tags=getOccurrenceTags(occurrence, {"zone": zoneId}, [zoneId])
                 size=solution.Size
                 volumeType=solution.VolumeType?remove_beginning("aws:")
                 encrypted=solution.Encrypted

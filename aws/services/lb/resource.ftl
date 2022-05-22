@@ -140,7 +140,8 @@
     publicEndpoint
     networkResources
     logs=false
-    bucket=""]
+    bucket=""
+    tags={}]
 
     [#assign loadBalancerAttributes =
         ( type == "application" )?then(
@@ -201,7 +202,7 @@
                 getReferences(securityGroups)
             )
 
-        tags=getCfTemplateCoreTags(name, tier, component)
+        tags=tags
         outputs=LB_OUTPUT_MAPPINGS
     /]
 [/#macro]
@@ -278,7 +279,7 @@
     [#return [ target ]]
 [/#function]
 
-[#macro createTargetGroup id name tier component destination attributes vpcId targetType="" targets=[] tags=[] ]
+[#macro createTargetGroup id name tier component destination attributes vpcId targetType="" targets=[] tags={} ]
 
     [#local healthCheckProtocol = getHealthCheckProtocol(destination)?upper_case]
 
@@ -530,7 +531,8 @@
             stickinessPolicies=[]
             logs=false
             bucket=""
-            dependencies="" ]
+            dependencies=""
+            tags={} ]
         [@cfResource
         id=id
         type="AWS::ElasticLoadBalancing::LoadBalancer"
@@ -585,11 +587,7 @@
                 "Policies",
                 policies
             )
-        tags=
-            getCfTemplateCoreTags(
-                name,
-                tier,
-                component)
+        tags=tags
         outputs=LB_OUTPUT_MAPPINGS +
                     {
                         NAME_ATTRIBUTE_TYPE : {

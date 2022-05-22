@@ -186,7 +186,7 @@
                     arrayIfContent(
                         [getPolicyDocument(linkPolicies, "links")],
                         linkPolicies)
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
 
@@ -196,7 +196,7 @@
             [@createRole
                 id=streamSubscriptionRoleId
                 trustedServices=[ formatDomainName("logs", getRegion(), "amazonaws.com") ]
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [/#if]
