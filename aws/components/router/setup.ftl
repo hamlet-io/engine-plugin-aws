@@ -56,6 +56,7 @@
                 allowNonOrgPrincipals=solution["aws:ResourceSharing"].AllowExternalPrincipals
                 principals=solution["aws:ResourceSharing"].AccountPrincipals
                 resourceArns=[ transitGatewayArn ]
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [/#if]

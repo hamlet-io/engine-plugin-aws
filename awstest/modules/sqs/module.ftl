@@ -45,7 +45,7 @@
                         "JSON" : {
                             "Match" : {
                                 "TagName" : {
-                                    "Path"  : "Resources.sqsXappXsqsbase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.sqsXappXsqsbase.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-sqsbase"
                                 }
                             }

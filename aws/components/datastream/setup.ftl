@@ -34,7 +34,7 @@
                 ""
             )
             keyId=cmkKeyId
-            tags=getOccurrenceCoreTags(occurrence, streamName)
+            tags=getOccurrenceTags(occurrence)
         /]
     [/#if]
 [/#macro]

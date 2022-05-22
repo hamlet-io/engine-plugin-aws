@@ -82,8 +82,8 @@
                         "JSON" : {
                             "Match" : {
                                 "TagName" : {
-                                    "Path"  : "Resources.ecsTaskXappXtaskbaseXecsXtaskbase.Properties.Tags[10].Value",
-                                    "Value" : "application-taskbase_ecs-taskbase"
+                                    "Path"  : "Resources.ecsTaskXappXtaskbaseXecsXtaskbase.Properties.Tags[0].Value",
+                                    "Value" : "mockedup-integration-application-taskbase_ecs-taskbase"
                                 }
                             }
                         }

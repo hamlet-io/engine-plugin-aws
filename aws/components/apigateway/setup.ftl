@@ -530,10 +530,7 @@
                     true
                 )
             outputs=APIGATEWAY_OUTPUT_MAPPINGS
-            tags=
-                getOccurrenceCoreTags(
-                    occurrence,
-                    apiName)
+            tags=getOccurrenceTags(occurrence, {"Name": apiName})
         /]
 
         [@cfResource
@@ -613,10 +610,7 @@
                     solution.Tracing.Configured && solution.Tracing.Enabled && ((solution.Tracing.Mode!"") == "active"),
                     true)
             outputs={}
-            tags=
-                getOccurrenceCoreTags(
-                    occurrence,
-                    stageName)
+            tags=getOccurrenceTags(occurrence, {"Name": stageName})
         /]
 
         [#-- Create a CloudFront distribution if required --]
@@ -689,7 +683,7 @@
                 origins=origin
                 restrictions=restrictions
                 wafAclId=(wafAclResources.acl.Id)!""
-                tags=getOccurrenceCoreTags(occurrence,cfResources["distribution"].Name)
+                tags=getOccurrenceTags(occurrence)
             /]
 
             [@createAPIUsagePlan
@@ -702,6 +696,7 @@
                     }
                 ]
                 dependencies=stageId
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
 
@@ -745,10 +740,7 @@
                     )
                 outputs={}
                 dependencies=apiId
-                tags=
-                    getOccurrenceCoreTags(
-                        occurrence,
-                        value["domain"].Name)
+                tags=getOccurrenceTags(occurrence, {"Name": value["domain"].Name})
             /]
             [@cfResource
                 id=value["basepathmapping"].Id
@@ -1104,7 +1096,7 @@
                             id=openapiRoleId
                             trustedServices="apigateway.amazonaws.com"
                             policies=policies
-                            tags=getOccurrenceCoreTags(occurrence)
+                            tags=getOccurrenceTags(occurrence)
                         /]
                     [/#if]
                     [#local openapiContext +=

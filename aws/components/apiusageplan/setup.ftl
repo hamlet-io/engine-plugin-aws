@@ -52,6 +52,7 @@
             id=planId
             name=planName
             stages=stages
+            tags=getOccurrenceTags(occurrence)
         /]
     [/#if]
 [/#macro]

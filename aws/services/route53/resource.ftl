@@ -38,6 +38,7 @@
         regions=[]
         searchString=""
         dependencies=[]
+        tags={}
     ]
 
     [#local availableRegions = [
@@ -143,7 +144,7 @@
         properties=
             {
                 "HealthCheckConfig" : healthCheckConfig,
-                "HealthCheckTags" : getCfTemplateCoreTags(name)
+                "HealthCheckTags" : getCFResourceTags(tags)
             }
         outputs=AWS_ROUTE53_HEALTHCHECK_OUTPUT_MAPPINGS
         dependencies=dependencies
@@ -194,7 +195,7 @@
         direction
         resolverIPAddresses
         securityGroupIds
-        tags=[]
+        tags={}
         dependencies=[] ]
 
     [@cfResource
@@ -206,11 +207,8 @@
             "Name" : name,
             "SecurityGroupIds" : getReferences(securityGroupIds),
             "Tags" : tags
-        } +
-        attributeIfContent(
-            "Tags",
-            tags
-        )
+        }
+        tags=tags
         outputs=AWS_ROUTE53_RESOLVER_ENDPOINT_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]
@@ -255,7 +253,7 @@
         domainName
         resolverEndpointId
         ruleType
-        tags=[]
+        tags={}
         targetIps=[]
         dependencies=[]
     ]
@@ -270,15 +268,12 @@
             "RuleType" : ruleType
         } +
         attributeIfContent(
-            "Tags",
-            tags
-        ) +
-        attributeIfContent(
             "TargetIps"
             targetIps
         )
         outputs=AWS_ROUTE53_RESOLVER_RULE_OUTPUT_MAPPINGS
         dependencies=dependencies
+        tags=tags
     /]
 [/#macro]
 
@@ -354,8 +349,8 @@
         id
         name
         vpcIds=[]
-        tags=[]
         dependencies=[]
+        tags={}
     ]
     [#local vpcs = []]
     [#list vpcIds as vpcId ]
@@ -370,7 +365,7 @@
         } +
         attributeIfContent(
             "HostedZoneTags",
-            tags
+            getCFResourceTags(tags)
         ) +
         attributeIfContent(
             "VPCs",

@@ -53,9 +53,9 @@
 
 [#macro createVPNCustomerGateway
             id
-            name
             custSideAsn
             custVPNIP
+            tags
     ]
 
     [@cfResource
@@ -67,15 +67,15 @@
                 "IpAddress" : custVPNIP,
                 "Type" : "ipsec.1"
             }
-        tags=getCfTemplateCoreTags(name)
+        tags=tags
     /]
 [/#macro]
 
 [#macro createVPNVirtualGateway
             id
-            name
             bgpEnabled
             amznSideAsn=""
+            tags={}
     ]
 
     [@cfResource
@@ -90,7 +90,7 @@
                 bgpEnabled,
                 amznSideAsn
             )
-        tags=getCfTemplateCoreTags(name)
+        tags=tags
     /]
 [/#macro]
 
@@ -112,12 +112,12 @@
 
 [#macro createVPNConnection
             id
-            name
             staticRoutesOnly
             customerGateway
             preSharedKey=""
             transitGateway=""
             vpnGateway=""
+            tags={}
     ]
 
     [@cfResource
@@ -137,7 +137,7 @@
                 "VpnGatewayId",
                 vpnGateway
             )
-        tags=getCfTemplateCoreTags(name)
+        tags=tags
     /]
 [/#macro]
 

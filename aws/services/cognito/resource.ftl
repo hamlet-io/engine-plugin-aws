@@ -328,10 +328,10 @@
     ]
 [/#function]
 
-[#macro createUserPool id name
+[#macro createUserPool id
+    name
     mfa
     adminCreatesUser
-    tags
     userDeviceTracking={}
     userActivityTracking=""
     userAccountRecovery=true
@@ -346,8 +346,6 @@
     emailInviteSubject=""
     smsAuthenticationMessage=""
     mfaMethods=[]
-    tier=""
-    component=""
     loginAliases=[]
     autoVerify=[]
     schema=[]
@@ -356,15 +354,8 @@
     lambdaTriggers={}
     dependencies=""
     outputId=""
+    tags={}
 ]
-
-    [#-- Convert Tag Array to String Map --]
-    [#local tagMap={}]
-    [#list tags as tag]
-        [#local tagMap = tagMap +
-            { tag.Key, tag.Value }
-        ]
-    [/#list]
 
     [#local enabledMfas = []]
     [#list mfaMethods as mfaMethod ]
@@ -423,7 +414,6 @@
         properties=
             {
                 "UserPoolName" : name,
-                "UserPoolTags" : tagMap,
                 "MfaConfiguration" : mfa,
                 "AdminCreateUserConfig" :
                     getUserPoolAdminCreateUserConfig(
@@ -510,6 +500,11 @@
              attributeIfContent(
                  "VerificationMessageTemplate",
                  verificationMessageTemplate
+             ) +
+             attributeIfContent(
+                "UserPoolTags",
+                tags,
+                getCFResourceTags(tags, true)
              )
         outputs=USERPOOL_OUTPUT_MAPPINGS
         outputId=outputId

@@ -46,7 +46,7 @@
                     [@createSecretsManagerSecret
                         id=secret.Id
                         name=secret.Name
-                        tags=getOccurrenceCoreTags(subOccurrence, secret.Name)
+                        tags=getOccurrenceTags(subOccurrence)
                         kmsKeyId=cmkKeyId
                         description=""
                         generateSecret=(solution.Source == "generated")

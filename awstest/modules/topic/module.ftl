@@ -40,7 +40,7 @@
                         "JSON": {
                             "Match" : {
                                 "TagName" : {
-                                    "Path"  : "Resources.snstopicXappXtopicbase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.snstopicXappXtopicbase.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-topicbase"
                                 }
                             }

@@ -189,7 +189,7 @@
                                         (getCLORunId())?split('')?reverse?join(''),
                                         "pre-deploy")]
 
-    [#local ddsTags = getOccurrenceCoreTags(occurrence, ddsFullName)]
+    [#local ddsTags = getOccurrenceTags(occurrence)]
 
     [#local restoreSnapshotName = "" ]
 
@@ -330,7 +330,7 @@
             id=ddsSecurityGroupId
             name=ddsSecurityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile

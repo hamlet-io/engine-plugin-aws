@@ -346,7 +346,7 @@
                                 "smsVerification"
                             )
                         ]
-                    tags=getOccurrenceCoreTags(occurrence)
+                    tags=getOccurrenceTags(occurrence)
                 /]
         [/#if]
     [/#if]
@@ -798,11 +798,9 @@
 
     [#if deploymentSubsetRequired(USERPOOL_COMPONENT_TYPE, true) ]
         [@createUserPool
-            component=core.Component
-            tier=core.Tier
             id=userPoolId
             name=userPoolName
-            tags=getOccurrenceCoreTags(occurrence, userPoolName)
+            tags=getOccurrenceTags(occurrence)
             mfa=mfaConfig
             mfaMethods=solution.MFAMethods
             usernameConfig=solution.Username

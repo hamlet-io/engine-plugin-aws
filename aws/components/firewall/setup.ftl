@@ -53,7 +53,7 @@
             vpcId=networkResources["vpc"].Id
             subnets=subnets
             firewallPolicyId=firewallPolicyId
-            tags=getOccurrenceCoreTags(occurrence, core.FullName)
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@cfOutput
@@ -328,7 +328,7 @@
                         type=subSolution.Inspection
                         capacity=100
                         ruleGroup=getNetworkFirewallRuleGroup?with_args(ruleGroupArgs?values)()
-                        tags=getOccurrenceCoreTags(subOccurrence, subCore.FullName)
+                        tags=getOccurrenceTags(subOccurrence)
                     /]
                 [/#if]
             [/#if]
@@ -418,7 +418,7 @@
                     statelessFragmentDefaultActions,
                     statelessDefaultActions
                 )
-            tags=getOccurrenceCoreTags(occurrence, core.FullName)
+            tags=getOccurrenceTags(occurrence)
         /]
 
     [/#if]

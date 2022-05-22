@@ -158,7 +158,7 @@
                                     "Value" : "mockedup-integration-application-apiusageplanbase_usageplan"
                                 },
                                 "PlanTagName" : {
-                                    "Path"  : "Resources.apiUsagePlanXappXapiusageplanbaseXusageplan.Properties.Tags[8].Value",
+                                    "Path"  : "Resources.apiUsagePlanXappXapiusageplanbaseXusageplan.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-apiusageplanbase_usageplan"
                                 },
                                 "ApiStageId" : {
@@ -170,7 +170,7 @@
                                     "Value" : "key-1234def"
                                 },
                                 "ApiUserName" : {
-                                    "Path"  : "Resources.apiKeyXuserXappXapiusageplanbaseXuser.Properties.Tags[8].Value",
+                                    "Path"  : "Resources.apiKeyXuserXappXapiusageplanbaseXuser.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-apiusageplanbase_user"
                                 }
                             }

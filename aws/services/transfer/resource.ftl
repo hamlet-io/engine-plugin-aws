@@ -57,7 +57,7 @@
             securityPolicy
             certificateId=""
             dependencies=[]
-            tags=[]
+            tags={}
     ]
     [@cfResource
         id=id
@@ -101,7 +101,7 @@
             sshPublicKeys
             transferUserPolicy=""
             dependencies=[]
-            tags=[]
+            tags={}
     ]
 
     [@cfResource

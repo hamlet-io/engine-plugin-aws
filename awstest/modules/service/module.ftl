@@ -82,7 +82,7 @@
                         "JSON" : {
                             "Match" : {
                                 "TagName" : {
-                                    "Path"  : "Resources.ecsServiceXappXservicebaseXecsXservicebase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.ecsServiceXappXservicebaseXecsXservicebase.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-servicebase_ecs-servicebase"
                                 }
                             }

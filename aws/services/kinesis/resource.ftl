@@ -47,7 +47,7 @@
     }
 /]
 
-[#macro createKinesisDataStream id name streamMode retentionHours="" shardCount=1 keyId="" dependencies="" tags=[]]
+[#macro createKinesisDataStream id name streamMode retentionHours="" shardCount=1 keyId="" dependencies="" tags={}]
     [#local encryptionConfig = {}]
 
     [#if keyId?has_content]
@@ -91,8 +91,8 @@
             } +
             attributeIfContent("RetentionPeriodHours", retentionHours) +
             attributeIfContent("ShardCount", shardCount) +
-            attributeIfContent("StreamEncryption", encryptionConfig)+
-            attributeIfContent("Tags", tags)
+            attributeIfContent("StreamEncryption", encryptionConfig)
+        tags=tags
         outputs=AWS_KINESIS_DATA_STREAM_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]
@@ -301,7 +301,7 @@
                 id=resourceDetails["role"].Id
                 trustedServices=["firehose.amazonaws.com"]
                 policies=rolePolicies
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
 

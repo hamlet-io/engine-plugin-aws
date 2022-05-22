@@ -227,7 +227,7 @@
                             direction="OUTBOUND"
                             resolverIPAddresses=resolverEndpointIPAddresses
                             securityGroupIds=resolverSecurityGroup.Id
-                            tags=getOccurrenceCoreTags(occurrence, resolverEndpoint.Name)
+                            tags=getOccurrenceTags(occurrence)
                         /]
 
                         [#local targetIps = []]
@@ -257,7 +257,7 @@
                             domainName=directory.Name
                             resolverEndpointId=resolverEndpoint.Id
                             ruleType="FORWARD"
-                            tags=getOccurrenceCoreTags(occurrence, resolverRule.Name)
+                            tags=getOccurrenceTags(occurrence)
                             targetIps=targetIps
                         /]
 
@@ -273,7 +273,7 @@
                             name=resolverSecurityGroup.Name
                             vpcId=vpcId
                             description="Directory DNS Resolver integration with private network"
-                            occurrence=occurrence
+                            tags=getOccurrenceTags(occurrence)
                         /]
 
                         [#list solution.Links?values as link]
@@ -353,7 +353,7 @@
                                     getSubnets(core.Tier, networkResources),
                                     directory.DomainName,
                                     (solution["aws:engine:ADConnector"].ADIPAddresses)![],
-                                    getOccurrenceCoreTags(occurrence, core.FullName))]
+                                    getOccurrenceTags(occurrence))]
                 [#break]
         [/#switch]
 

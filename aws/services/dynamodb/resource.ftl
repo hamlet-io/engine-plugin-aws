@@ -165,6 +165,7 @@
         writeCapacity=1
         readCapacity=1
         globalSecondaryIndexes=[]
+        tags={}
 ]
 
     [#switch billingMode?lower_case ]
@@ -184,8 +185,7 @@
             {
                 "AttributeDefinitions" : asArray(attributes),
                 "BillingMode" : billingMode,
-                "KeySchema" : asArray(keys),
-                "Tags" : getCfTemplateCoreTags(name)
+                "KeySchema" : asArray(keys)
             } +
             attributeIfContent(
                 "TableName",
@@ -234,6 +234,7 @@
                 "GlobalSecondaryIndexes",
                 globalSecondaryIndexes
             )
+        tags=tags
         outputs=DYNAMODB_OUTPUT_MAPPINGS +
                     attributeIfTrue(
                         EVENTSTREAM_ATTRIBUTE_TYPE,

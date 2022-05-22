@@ -108,7 +108,7 @@
             id=securityGroupId
             name=securityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -183,7 +183,7 @@
                 kmsKeyId=cmkKeyId
                 subnets=getSubnets(core.Tier, networkResources )
                 securityGroupId=securityGroupId
-                tags=getOccurrenceCoreTags(occurrence, brokerFullName)
+                tags=getOccurrenceTags(occurrence)
                 users=[
                     getAmazonMqUser(
                         getSecretManagerSecretRef(resources["rootCredentials"]["secret"].Id, "username"),

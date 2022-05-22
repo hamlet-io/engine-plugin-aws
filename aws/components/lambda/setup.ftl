@@ -358,7 +358,7 @@
                 []
             )
             managedArns=getManagedPoliciesFromSet(policySet)
-            tags=getOccurrenceCoreTags(fn)
+            tags=getOccurrenceTags(fn)
         /]
 
         [#-- Create any inline policies that attach to the role --]
@@ -410,7 +410,7 @@
                 id=securityGroupId
                 name=securityGroupName
                 vpcId=vpcId
-                occurrence=fn
+                tags=getOccurrenceTags(fn)
             /]
 
             [@createSecurityGroupRulesFromNetworkProfile

@@ -377,7 +377,7 @@
                         inventoryReports=[]
                         dependencies=""
                         outputId=""
-                        tags=[]
+                        tags={}
                         ]
 
     [#local loggingConfiguration = {} ]
@@ -521,7 +521,7 @@
                 "InventoryConfigurations",
                 inventoryReports
             )
-        tags=getCfTemplateCoreTags() + tags
+        tags=tags
         outputs=S3_OUTPUT_MAPPINGS
         outputId=outputId
         dependencies=dependencies
