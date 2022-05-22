@@ -151,7 +151,7 @@
     [#local ddsManualSnapshot = getExistingReference(formatDependentRDSManualSnapshotId(ddsId), NAME_ATTRIBUTE_TYPE)]
     [#local ddsLastSnapshot = getExistingReference(ddsId, LASTRESTORE_ATTRIBUTE_TYPE )]
 
-    [#local backupTags = [] ]
+    [#local backupTags = {} ]
     [#local links = getLinkTargets(occurrence, {}, false) ]
     [#list links as linkId,linkTarget]
 
@@ -163,14 +163,13 @@
         [#switch linkTargetCore.Type]
             [#case BACKUPSTORE_REGIME_COMPONENT_TYPE]
                 [#if linkTargetAttributes["TAG_NAME"]?has_content]
-                    [#local backupTags +=
-                        [
+                    [#local backupTags =
+                        mergeObjects(
+                            backupTags,
                             {
-                                "Key" : linkTargetAttributes["TAG_NAME"],
-                                "Value" : linkTargetAttributes["TAG_VALUE"]
+                                linkTargetAttributes["TAG_NAME"] : linkTargetAttributes["TAG_VALUE"]
                             }
-                        ]
-                    ]
+                        )]
                 [#else]
                     [@warn
                         message="Ignoring linked backup regime \"${linkTargetCore.SubComponent.Name}\" that does not support tag based inclusion"
@@ -690,7 +689,7 @@
                 parameterGroupId=getReference(ddsClusterParameterGroupId)
                 snapshotArn=snapshotArn
                 securityGroupId=getReference(ddsSecurityGroupId)
-                tags=ddsTags
+                tags=mergeObjects(ddsTags, backupTags)
                 deletionPolicy=deletionPolicy
                 updateReplacePolicy=updateReplacePolicy
                 maintenanceWindow=
