@@ -67,6 +67,10 @@
 
 [#function getCFResourceTags tags={} flatten=false maxTagCount=50]
 
+    [#if ! tags?has_content]
+        [#return flatten?then({}, [])]
+    [/#if]
+
     [#local maxTagCount = ( maxTagCount -1 lt tags?keys?size )?then(
                                 maxTagCount,
                                 tags?keys?size
@@ -149,8 +153,10 @@
                     attributeIfTrue(
                         "Properties",
                         properties?has_content || tags?has_content,
-                        properties + attributeIfContent(
+                        properties +
+                        attributeIfContent(
                             "Tags",
+                            tags,
                             tags?is_sequence?then(tags, getCFResourceTags(tags))
                         )
                     ) +
