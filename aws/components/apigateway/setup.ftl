@@ -241,16 +241,18 @@
         [#-- If lambda authorizers are in use, and the default AuthorisationModel is --]
         [#-- effect, warn and force the model to a valid value                       --]
         [#if lambdaAuthorizers?has_content && !apiPolicyAuth?starts_with("AUTHORI") ]
-            [@warn
-                message="Authorization model of \"" + apiPolicyAuth + "\" is not compatible with the use of lambda authorizers. Forcing to \"AUTHORISER_AND_IP\"."
+            [@fatal
+                message="Authorization model of \"" + apiPolicyAuth + "\" is not compatible with the use of lambda authorizers"
+                detail="Use one of the AUTHORISER models"
             /]
             [#local apiPolicyAuth = "AUTHORISER_AND_IP" ]
         [/#if]
 
         [#-- If cognito authorizers are in use, the AuthorisationModel must be IP --]
         [#if cognitoPools?has_content && (apiPolicyAuth != "IP") ]
-            [@warn
-                message="Authorization model of \"" + apiPolicyAuth + "\" is not compatible with the use of cognito authorizers. Forcing to \"IP\"."
+            [@fatal
+                message="Authorization model of \"" + apiPolicyAuth + "\" is not compatible with the use of cognito authorizers"
+                detail="Use the IP model"
             /]
             [#local apiPolicyAuth = "IP" ]
         [/#if]
