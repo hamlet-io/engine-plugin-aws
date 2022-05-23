@@ -28,9 +28,7 @@
             encrypted=solution.Encrypted
             kmsKeyId=cmkKeyId
             fixedName=solution.FixedName
-            tags=getOccurrenceCoreTags(
-                    occurrence,
-                    topicName)
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [#--  Alerts --]

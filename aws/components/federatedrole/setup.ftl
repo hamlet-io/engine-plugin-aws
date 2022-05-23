@@ -193,7 +193,7 @@
                     }
                 )
                 managedArns=managedPolicies
-                tags=getOccurrenceCoreTags(subOccurrence)
+                tags=getOccurrenceTags(subOccurrence)
             /]
 
             [#if _context.Policy?has_content]

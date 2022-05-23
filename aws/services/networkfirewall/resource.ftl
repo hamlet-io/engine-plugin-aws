@@ -484,7 +484,7 @@
         capacity
         ruleGroup={}
         description=""
-        tags=[]
+        tags={}
         dependencies=[] ]
 
     [@cfResource

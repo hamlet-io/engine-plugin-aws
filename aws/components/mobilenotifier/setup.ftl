@@ -287,7 +287,7 @@
                                 cwLogsConfigurePermission(),
                             "logging")
                     ]
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [/#if]

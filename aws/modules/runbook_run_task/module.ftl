@@ -153,6 +153,9 @@
                                     "Task": {
                                         "Type": "output_echo",
                                         "Parameters" : {
+                                            "Format": {
+                                                "Value" : "json"
+                                            },
                                             "Value" : {
                                                 "Value" : "__output:run_task:run_status__"
                                             }

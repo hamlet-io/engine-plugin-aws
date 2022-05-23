@@ -229,23 +229,23 @@
                         "JSON" : {
                             "Match" : {
                                 "SecurityGroupTagName" : {
-                                    "Path"  : "Resources.securityGroupXrdsXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.securityGroupXrdsXdbXpostgresdbgenerated.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 },
                                 "SubnetGroupTagName" : {
-                                    "Path"  : "Resources.rdsSubnetGroupXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.rdsSubnetGroupXdbXpostgresdbgenerated.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 },
                                 "DbTagName" : {
-                                    "Path"  : "Resources.rdsXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.rdsXdbXpostgresdbgenerated.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 },
                                 "OptionGroupTagName" : {
-                                    "Path"  : "Resources.rdsOptionGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.rdsOptionGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 },
                                 "ParameterGroupTagName" : {
-                                    "Path"  : "Resources.rdsParameterGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.rdsParameterGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 }
                             }
@@ -263,7 +263,99 @@
         }
     /]
 
-    [#-- Generated creds --]
+    [#-- RDS instance events --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "db" : {
+                    "Components" : {
+                        "postgresdbevent-topic": {
+                            "Type" : "topic",
+                            "deployment:Unit" : "aws-db"
+                        },
+                        "postgresdbevent" : {
+                            "Type" : "db",
+                            "deployment:Unit" : "aws-db",
+                            "Engine" : "postgres",
+                            "EngineVersion" : "11",
+                            "Profiles" : {
+                                "Testing" : [ "postgresdbevent" ]
+                            },
+                            "GenerateCredentials" : {
+                                "Enabled" : true,
+                                "EncryptionScheme" : "kms"
+                            },
+                            "SystemNotifications": {
+                                "BadNotify": {
+                                    "Categories": [
+                                        "configuration change",
+                                        "failure",
+                                        "deletion"
+                                    ],
+                                    "Links": {
+                                        "rds_events": {
+                                            "Tier": "db",
+                                            "Component": "postgresdbevent-topic",
+                                            "Instance": "default",
+                                            "Version": "",
+                                            "Role": "publish"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "postgresdbevent" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "rdsInstanceEvent" : {
+                                    "Name" : "rdsXdbXpostgresdbeventXBadNotifyXrdsXevents",
+                                    "Type" : "AWS::RDS::EventSubscription"
+                                }
+                            },
+                            "Output" : [
+                                "rdsXdbXpostgresdbeventXBadNotifyXrdsXevents"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "EventTypeName" : {
+                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXBadNotifyXrdsXevents.Properties.SourceType",
+                                    "Value" : "db-instance"
+                                },
+                                "EventCategories0" : {
+                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXBadNotifyXrdsXevents.Properties.EventCategories[0]",
+                                    "Value" : "configuration change"
+                                },
+                                "EventCategories1" : {
+                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXBadNotifyXrdsXevents.Properties.EventCategories[1]",
+                                    "Value" : "failure"
+                                },
+                                "EventCategories2" : {
+                                    "Path"  : "Resources.rdsXdbXpostgresdbeventXBadNotifyXrdsXevents.Properties.EventCategories[2]",
+                                    "Value" : "deletion"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "postgresdbevent" : {
+                    "db" : {
+                        "TestCases" : [ "postgresdbevent" ]
+                    }
+                }
+            }
+        }
+    /]
+
+    [#-- Secret store creds --]
     [@loadModule
         blueprint={
             "Tiers" : {
@@ -405,6 +497,10 @@
             "Tiers" : {
                 "db" : {
                     "Components" : {
+                        "postgresdbcluster-topic": {
+                            "Type" : "topic",
+                            "deployment:Unit" : "aws-db"
+                        },
                         "postgresdbcluster" : {
                             "Type" : "db",
                             "deployment:Unit" : "aws-db",
@@ -429,6 +525,22 @@
                                 },
                                 "MASTER_PASSWORD" : {
                                     "Value" : "testPassword"
+                                }
+                            },
+                            "SystemNotifications": {
+                                "AllNotify": {
+                                    "Categories": [
+                                        "_all"
+                                    ],
+                                    "Links": {
+                                        "rds_events": {
+                                            "Tier": "db",
+                                            "Component": "postgresdbcluster-topic",
+                                            "Instance": "default",
+                                            "Version": "",
+                                            "Role": "publish"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -474,12 +586,17 @@
                                 "rdsClusterParameterGroup" : {
                                     "Name" : "rdsClusterParameterGroupXdbXpostgresdbclusterXauroraXpostgresql11",
                                     "Type" : "AWS::RDS::DBClusterParameterGroup"
+                                },
+                                "rdsClusterEvent" : {
+                                    "Name" : "rdsClusterXdbXpostgresdbclusterXAllNotifyXrdsXevents",
+                                    "Type" : "AWS::RDS::EventSubscription"
                                 }
                             },
                             "Output" : [
                                 "rdsClusterXdbXpostgresdbclusterXreaddns",
                                 "rdsXdbXpostgresdbclusterXaX2Xdns",
-                                "securityGroupXrdsClusterXdbXpostgresdbcluster"
+                                "securityGroupXrdsClusterXdbXpostgresdbcluster",
+                                "rdsClusterXdbXpostgresdbclusterXAllNotifyXrdsXevents"
                             ]
                         },
                         "JSON" : {
@@ -499,6 +616,10 @@
                                 "ParameterGroupVersion" : {
                                     "Path" : "Resources.rdsParameterGroupXdbXpostgresdbclusterXauroraXpostgresql11.Properties.Family",
                                     "Value" : "aurora-postgresql11"
+                                },
+                                "EventTypeNameC" : {
+                                    "Path"  : "Resources.rdsClusterXdbXpostgresdbclusterXAllNotifyXrdsXevents.Properties.SourceType",
+                                    "Value" : "db-cluster"
                                 }
                             },
                             "NotEmpty" : [

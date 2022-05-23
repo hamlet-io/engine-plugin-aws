@@ -10,7 +10,7 @@
     [#local gwSolution = occurrence.Configuration.Solution ]
     [#local gwResources = occurrence.State.Resources ]
 
-    [#local tags = getOccurrenceCoreTags(occurrence, gwCore.FullName, "", true)]
+    [#local tags = getOccurrenceTags(occurrence)]
 
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
@@ -81,7 +81,7 @@
 
                     [@createEIP
                         id=eipId
-                        tags=[]
+                        tags={}
                     /]
 
                 [/#if]
@@ -93,22 +93,16 @@
             [#case "natgw"]
                 [#list gwResources["Zones"] as zone, zoneResources ]
                     [#local natGatewayId = zoneResources["natGateway"].Id ]
-                    [#local natGatewayName = zoneResources["natGateway"].Name ]
                     [#local eipId = zoneResources["eip"].Id]
 
                     [#local subnetId = (networkResources["subnets"][gwCore.Tier.Id][zone])["subnet"].Id]
 
-                    [#local natGwTags = getOccurrenceCoreTags(
-                                                occurrence,
-                                                natGatewayName,
-                                                "",
-                                                false)]
                     [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                         [@createNATGateway
                             id=natGatewayId
                             subnetId=subnetId
                             eipId=eipId
-                            tags=natGwTags
+                            tags=getOccurrenceTags(occurrence, {"zone": zone}, [zone])
                         /]
                     [/#if]
 
@@ -131,7 +125,7 @@
                     [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                         [@createIGW
                             id=IGWId
-                            name=IGWName
+                            tags=getOccurrenceTags(occurrence)
                         /]
                         [@createIGWAttachment
                             id=IGWAttachmentId
@@ -141,9 +135,8 @@
 
                         [@createRouteTable
                             id=IGWRouteTableId
-                            name=IGWName
                             vpcId=vpcId
-                            tags=getOccurrenceCoreTags(occurrence, IGWName)
+                            tags=getOccurrenceTags(occurrence)
                         /]
 
                         [@createRouteTableGatewayAssociation
@@ -189,9 +182,9 @@
                 [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                     [@createVPNVirtualGateway
                         id=privateGatewayId
-                        name=privateGatewayName
                         bgpEnabled=gwSolution.BGP.Enabled
                         amznSideAsn=gwSolution.BGP.ASN
+                        tags=getOccurrenceTags(occurrence)
                     /]
 
                     [@createVPNGatewayAttachment
@@ -224,7 +217,7 @@
                         id=securityGroupId
                         name=securityGroupName
                         vpcId=vpcId
-                        occurrence=occurrence
+                        tags=getOccurrenceTags(occurrence)
                     /]
 
                     [@createSecurityGroupRulesFromNetworkProfile
@@ -434,10 +427,10 @@
                                     [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
                                         [@createVPNConnection
                                             id=vpnConnectionId
-                                            name=formatName(core.FullName, linkTargetCore.Name)
                                             staticRoutesOnly=( ! BGPEnabled )
                                             customerGateway=customerGateway
                                             vpnGateway=getReference(privateGatewayId)
+                                            tags=getOccurrenceTags(occurrence, {}, [linkTargetCore.Name])
                                         /]
 
 

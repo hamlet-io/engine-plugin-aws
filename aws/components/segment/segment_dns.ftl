@@ -15,7 +15,7 @@
                     "HostedZoneConfig" : {
                         "Comment" : formatSegmentFullName()
                     },
-                    "HostedZoneTags" : getOccurrenceCoreTags(),
+                    "HostedZoneTags" : getOccurrenceTags(occurrence),
                     "Name" : concatenate(fullNamePrefixes?reverse + ["internal"], "."),
                     "VPCs" : [
                         {

@@ -91,7 +91,7 @@
                         "JSON" : {
                             "Match" : {
                                 "CDNtags" : {
-                                    "Path"  : "Resources.cfXwebXcdnbase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.cfXwebXcdnbase.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-web-cdnbase"
                                 }
                             }

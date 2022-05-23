@@ -209,7 +209,7 @@
     [#local rdsManualSnapshot = getExistingReference(formatDependentRDSManualSnapshotId(rdsId), NAME_ATTRIBUTE_TYPE)]
     [#local rdsLastSnapshot = getExistingReference(rdsId, LASTRESTORE_ATTRIBUTE_TYPE )]
 
-    [#local backupTags = [] ]
+    [#local backupTags = {} ]
     [#local links = getLinkTargets(occurrence, {}, false) ]
     [#list links as linkId,linkTarget]
 
@@ -227,14 +227,13 @@
 
             [#case BACKUPSTORE_REGIME_COMPONENT_TYPE]
                 [#if linkTargetAttributes["TAG_NAME"]?has_content]
-                    [#local backupTags +=
-                        [
+                    [#local backupTags =
+                        mergeObjects(
+                            backupTags,
                             {
-                                "Key" : linkTargetAttributes["TAG_NAME"],
-                                "Value" : linkTargetAttributes["TAG_VALUE"]
+                                linkTargetAttributes["TAG_NAME"] : linkTargetAttributes["TAG_VALUE"]
                             }
-                        ]
-                    ]
+                        )]
                 [#else]
                     [@warn
                         message="Ignoring linked backup regime \"${linkTargetCore.SubComponent.Name}\" that does not support tag based inclusion"
@@ -253,7 +252,7 @@
                                         (getCLORunId())?split('')?reverse?join(''),
                                         "pre-deploy")]
 
-    [#local rdsTags = getOccurrenceCoreTags(occurrence, rdsFullName)]
+    [#local rdsTags = getOccurrenceTags(occurrence)]
 
     [#local restoreSnapshotName = "" ]
 
@@ -331,7 +330,7 @@
                 managedArns=[
                     "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
                 ]
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [/#if]
@@ -413,7 +412,7 @@
             id=rdsSecurityGroupId
             name=rdsSecurityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -825,6 +824,42 @@
                         )
                 /]
 
+                [#list solution.SystemNotifications as eventId, event ]
+                    [#if (event.Categories?size > 1) && (event.Categories?seq_contains("_all"))]
+                        [@fatal message="SystemNotification Category of _all cannot be included with other Categories" context=event /]
+                    [/#if]
+                    [#list event.Links as linkId, link ]
+                        [#if link?is_hash]
+                            [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+                            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                            [#if !linkTarget?has_content]
+                                [#continue]
+                            [/#if]
+
+                            [#local linkTargetCore = linkTarget.Core ]
+                            [#local linkTargetConfiguration = linkTarget.Configuration ]
+                            [#local linkTargetResources = linkTarget.State.Resources ]
+                            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+                            [#local linkTargetSolution = linkTargetConfiguration.Solution]
+
+                            [#if (link.Role+" ")?lower_case?starts_with("publish ") ]
+                                [#if (event.Categories)?has_content]
+                                    [#local linkRoles = event.Categories ]
+                                [#else]
+                                    [#local linkRoles = [] ]
+                                [/#if]
+                                [@createRDSEvent 
+                                    id=formatId(rdsId, eventId, linkId)
+                                    rdsId=rdsId
+                                    linkArn=linkTargetAttributes["ARN"]
+                                    linkRoles=linkRoles
+                                    sourceType="db-cluster"
+                                /]
+                            [/#if]
+                        [/#if]
+                    [/#list]
+                [/#list]
                 [#list resources["dbInstances"]?values as dbInstance ]
                     [@createRDSInstance
                         id=dbInstance.Id
@@ -895,7 +930,7 @@
                     deleteAutomatedBackups=solution.Backup.DeleteAutoBackups
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
-                    tags=rdsTags + backupTags
+                    tags=mergeObjects(rdsTags, backupTags)
                     enhancedMonitoring=solution.Monitoring.DetailedMetrics.Enabled
                     enhancedMonitoringInterval=solution.Monitoring.DetailedMetrics.CollectionInterval
                     enhancedMonitoringRoleId=monitoringRoleId!""
@@ -911,6 +946,43 @@
                             ""
                         )
                     /]
+                [#list solution.SystemNotifications as eventId, event ]
+                    [#if (event.Categories?size > 1) && (event.Categories?seq_contains("_all"))]
+                        [@fatal message="SystemNotification Category of _all cannot be included with other Categories" context=event /]
+                    [/#if]
+                    [#list event.Links as linkId, link ]
+                        [#if link?is_hash]
+                            [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+
+                            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                            [#if !linkTarget?has_content]
+                                [#continue]
+                            [/#if]
+
+                            [#local linkTargetCore = linkTarget.Core ]
+                            [#local linkTargetConfiguration = linkTarget.Configuration ]
+                            [#local linkTargetResources = linkTarget.State.Resources ]
+                            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+                            [#local linkTargetSolution = linkTargetConfiguration.Solution]
+
+                            [#if (link.Role+" ")?lower_case?starts_with("publish ") ]
+                                [#if (event.Categories)?has_content]
+                                    [#local linkRoles = event.Categories ]
+                                [#else]
+                                    [#local linkRoles = [] ]
+                                [/#if]
+                                [@createRDSEvent 
+                                    id=formatId(rdsId, eventId, linkId)
+                                    rdsId=rdsId
+                                    linkArn=linkTargetAttributes["ARN"]
+                                    linkRoles=linkRoles
+                                    sourceType="db-instance"
+                                /]
+                            [/#if]
+                        [/#if]
+                    [/#list]
+                [/#list]
             [/#if]
         [/#if]
     [/#if]

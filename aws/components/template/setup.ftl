@@ -189,7 +189,7 @@
         [@createCFNNestedStack
             id=templateId
             parameters=parameters
-            tags=getOccurrenceCoreTags(occurrence)
+            tags=getOccurrenceTags(occurrence)
             tempalteUrl=templateRootFileUrl
             outputs=outputs
             dependencies=""

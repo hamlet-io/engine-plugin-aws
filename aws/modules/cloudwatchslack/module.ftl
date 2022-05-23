@@ -123,7 +123,7 @@
                             "Functions" : {
                                 "send" : {
                                     "Handler" : "cloudwatch-slack/lambda_function.lambda_handler",
-                                    "RunTime" : "python3.6",
+                                    "RunTime" : "python3.9",
                                     "MemorySize" : 128,
                                     "Timeout" : 15,
                                     "VPCAccess" : false,

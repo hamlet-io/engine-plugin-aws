@@ -164,7 +164,7 @@
                     arrayIfContent(
                         [getPolicyDocument(transferLinkPolicies, "links")],
                         transferLinkPolicies)
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [/#if]
@@ -182,7 +182,7 @@
                     managedPolicyArns
                 )
             outputs=USER_OUTPUT_MAPPINGS
-            tags=getOccurrenceCoreTags(occurrence, userName)
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [#-- Manage API keys for the user if linked to usage plans --]
@@ -241,7 +241,7 @@
                                 roleId=resources["transferRole"].Id
                                 transferServerId=linkTargetResources["transferserver"].Id
                                 sshPublicKeys=sshPublicKeys?values
-                                tags=getOccurrenceCoreTags(occurrence, userName)
+                                tags=getOccurrenceTags(occurrence)
                             /]
                         [/#if]
                         [#break]
@@ -252,6 +252,7 @@
             [@createAPIKey
                 id=apikeyId
                 name=apikeyName
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [/#if]

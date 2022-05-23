@@ -93,10 +93,7 @@
                 isPartOfCurrentDeploymentUnit(bastionEIPId)]
             [@createEIP
                 id=bastionEIPId
-                tags=getOccurrenceCoreTags(
-                        occurrence,
-                        bastionEIPName
-                    )
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [#else]
@@ -217,7 +214,7 @@
                         [getPolicyDocument(linkPolicies, "links")],
                         linkPolicies)
                 managedArns=_context.ManagedPolicy
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
 
@@ -236,7 +233,7 @@
                 name=bastionSecurityGroupToName
                 vpcId=vpcId
                 description="Security Group for inbound SSH to the SSH Proxy"
-                occurrence=occurrence
+                tags=getOccurrenceTags(occurrence)
             /]
 
             [@createSecurityGroupRulesFromNetworkProfile
@@ -285,12 +282,7 @@
                 processorProfile=processorProfile
                 autoScalingConfig=solution.AutoScaling
                 multiAZ=multiAZ
-                tags=getOccurrenceCoreTags(
-                        occurrence,
-                        bastionAutoScaleGroupName
-                        "",
-                        true
-                    )
+                tags=getOccurrenceTags(occurrence)
                 networkResources=networkResources
             /]
 

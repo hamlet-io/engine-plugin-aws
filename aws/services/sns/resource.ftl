@@ -35,7 +35,7 @@
     }
 /]
 
-[#macro createSNSTopic id name encrypted=false kmsKeyId="" fixedName=false dependencies=[] tags=[]]
+[#macro createSNSTopic id name encrypted=false kmsKeyId="" fixedName=false dependencies=[] tags={}]
     [@cfResource
         id=id
         type="AWS::SNS::Topic"
@@ -52,10 +52,8 @@
                 "KmsMasterKeyId",
                 encrypted,
                 getReference(kmsKeyId, ARN_ATTRIBUTE_TYPE)
-            ) + attributeIfContent(
-                "Tags",
-                tags
             )
+        tags=tags
         outputs=SNS_TOPIC_OUTPUT_MAPPINGS
         dependencies=[]
     /]

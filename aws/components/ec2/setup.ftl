@@ -308,7 +308,7 @@
                     [getPolicyDocument(_context.Policy, "extension")],
                     _context.Policy
                 )
-            tags=getOccurrenceCoreTags(occurrence)
+            tags=getOccurrenceTags(occurrence)
         /]
     [/#if]
 
@@ -326,7 +326,7 @@
             id=ec2SecurityGroupId
             name=ec2SecurityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -403,16 +403,13 @@
                             ],
                             "UserData" : getUserDataFromComputeTasks(computeTaskConfig)
                         }
-                    tags=
-                        getOccurrenceCoreTags(
+                    tags=getOccurrenceTags(
                             occurrence,
-                            formatComponentFullName(core.Tier, core.Component, zone),
-                            zone
-                        ) +
-                        valueIfContent(
-                            [{"Key": "cot:role", "Value": solution.Role }],
-                            solution.Role,
-                            []
+                            mergeObjects(
+                                {"zone": zone},
+                                solution.Role?has_content?then({"role": solution.Role}, {})
+                            ),
+                            [ zone ]
                         )
                     outputs=AWS_EC2_INSTANCE_OUTPUT_MAPPINGS
                     dependencies=(fixedIP || publicRouteTable)?then(
@@ -444,21 +441,14 @@
                                 []
                             )
                     }
-                tags=
-                    getOccurrenceCoreTags(
-                        occurrence,
-                        formatComponentFullName(core.Tier, core.Component, zone, "eth0"),
-                        zone)
+                tags=getOccurrenceTags(occurrence, { "zone" : zone }, [ zone, "eth0"])
                 outputs={}
             /]
 
             [#if fixedIP || publicRouteTable]
                 [@createEIP
                     id=zoneEc2EIPId
-                    tags=getOccurrenceCoreTags(
-                        occurrence,
-                        zoneEc2EIPName
-                    )
+                    tags=getOccurrenceTags(occurrence, { "zone" : zone }, [ zone, "eth0"])
                 /]
 
                 [@cfResource

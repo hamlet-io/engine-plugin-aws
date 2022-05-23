@@ -123,6 +123,7 @@
                     address=address
                     regions=checkRegionIds
                     searchString=searchString
+                    tags=getOccurrenceTags(occurrence)
                 /]
             [/#if]
             [#break]
@@ -131,7 +132,6 @@
 
             [#local canaryId = resources["canary"].Id ]
             [#local canaryName = resources["canary"].Name ]
-            [#local canaryTagName = resources["canary"].TagName ]
             [#local roleId = resources["role"].Id ]
 
             [#-- Baseline component lookup --]
@@ -272,7 +272,7 @@
                         "lambda.amazonaws.com"
                     ]
                     managedArns=managedPolicies
-                    tags=getOccurrenceCoreTags(occurrence)
+                    tags=getOccurrenceTags(occurrence)
                 /]
 
                 [@createPolicy
@@ -386,7 +386,7 @@
                         id=securityGroupId
                         name=securityGroupName
                         vpcId=vpcId
-                        occurrence=occurrence
+                        tags=getOccurrenceTags(occurrence)
                     /]
 
                     [@createSecurityGroupRulesFromNetworkProfile
@@ -437,7 +437,7 @@
                     securityGroupIds=vpcAccess?then([ getReference(securityGroupId) ], [])
                     subnets=vpcAccess?then(getSubnets(core.Tier, networkResources), [])
                     vpcId=vpcAccess?then(vpcId, "")
-                    tags=getOccurrenceCoreTags(occurrence, canaryTagName)
+                    tags=getOccurrenceTags(occurrence)
                     script=script
                     s3Bucket=scriptBucket
                     s3Key=scriptFilePrefix

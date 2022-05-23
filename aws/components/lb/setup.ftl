@@ -744,7 +744,7 @@
                 id=securityGroupId
                 name=securityGroupName
                 vpcId=vpcId
-                occurrence=subOccurrence
+                tags=getOccurrenceTags(subOccurrence)
             /]
 
             [@createSecurityGroupRulesFromNetworkProfile
@@ -944,7 +944,7 @@
                         targetType=solution.Forward.TargetType
                         vpcId=vpcId
                         targets=staticTargets
-                        tags=getOccurrenceCoreTags(occurrence)
+                        tags=getOccurrenceTags(subOccurrence)
                     /]
                 [/#if]
 
@@ -962,7 +962,7 @@
                         targetType=solution.Forward.TargetType
                         vpcId=vpcId
                         targets=staticTargets
-                        tags=getOccurrenceCoreTags(occurrence)
+                        tags=getOccurrenceTags(subOccurrence)
                     /]
                 [/#if]
 
@@ -1093,7 +1093,9 @@
                     logs=lbLogs
                     type=engine
                     bucket=operationsBucket
-                    idleTimeout=idleTimeout /]
+                    idleTimeout=idleTimeout
+                    tags=getOccurrenceTags(occurrence)
+                /]
 
                 [#if resources["apiGatewayLink"]?has_content ]
                     [@createAPIGatewayVPCLink
@@ -1169,7 +1171,8 @@
                     deregistrationTimeout=(classicConnectionDrainingTimeouts?reverse)[0]
                     stickinessPolicies=classicStickinessPolicies
                     policies=classicPolicies
-                    /]
+                    tags=getOccurrenceTags(occurrence)
+                /]
             [/#if]
             [#break]
     [/#switch ]
