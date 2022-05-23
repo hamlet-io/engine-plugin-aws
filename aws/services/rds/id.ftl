@@ -33,6 +33,13 @@
     resource=AWS_RDS_SNAPSHOT_RESOURCE_TYPE
 /]
 
+[#assign AWS_RDS_EVENT_RESOURCE_TYPE = "rdsEvent" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_RELATIONAL_DATABASE_SERVICE
+    resource=AWS_RDS_EVENT_RESOURCE_TYPE
+/]
+
 [#assign AWS_RDS_CLUSTER_RESOURCE_TYPE = "rdsCluster" ]
 [@addServiceResource
     provider=AWS_PROVIDER

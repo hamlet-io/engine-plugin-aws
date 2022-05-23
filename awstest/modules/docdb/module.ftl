@@ -8,7 +8,7 @@
 /]
 
 
-[#macro awstest_module_db ]
+[#macro awstest_module_docdb ]
 
     [#-- Base database setup --]
     [@loadModule

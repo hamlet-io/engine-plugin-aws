@@ -22,6 +22,19 @@
     mappings=RDS_OUTPUT_MAPPINGS
 /]
 
+[#assign RDS_EVENT_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_RDS_EVENT_RESOURCE_TYPE
+    mappings=RDS_EVENT_OUTPUT_MAPPINGS
+/]
+
 [#assign RDS_CLUSTER_OUTPUT_MAPPINGS =
     {
         REFERENCE_ATTRIBUTE_TYPE : {
@@ -323,5 +336,30 @@
                 "Value" : snapshotArn
             }
         )
+    /]
+[/#macro]
+
+[#macro createRDSEvent id
+    rdsId
+    linkArn
+    linkRoles
+    sourceType
+]
+    [@cfResource
+        id=id
+        type="AWS::RDS::EventSubscription"
+        properties=
+            {
+                "Enabled" : true,
+                "SnsTopicArn" : linkArn,
+                "SourceIds" : [ getReference(rdsId) ],
+                "SourceType" : sourceType
+            } +
+            attributeIfTrue(
+                "EventCategories",
+                !linkRoles?seq_contains("_all"),
+                linkRoles
+            )
+        outputs=RDS_EVENT_OUTPUT_MAPPINGS
     /]
 [/#macro]

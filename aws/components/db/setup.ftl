@@ -824,6 +824,42 @@
                         )
                 /]
 
+                [#list solution.SystemNotifications as eventId, event ]
+                    [#if (event.Categories?size > 1) && (event.Categories?seq_contains("_all"))]
+                        [@fatal message="SystemNotification Category of _all cannot be included with other Categories" context=event /]
+                    [/#if]
+                    [#list event.Links as linkId, link ]
+                        [#if link?is_hash]
+                            [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+                            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                            [#if !linkTarget?has_content]
+                                [#continue]
+                            [/#if]
+
+                            [#local linkTargetCore = linkTarget.Core ]
+                            [#local linkTargetConfiguration = linkTarget.Configuration ]
+                            [#local linkTargetResources = linkTarget.State.Resources ]
+                            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+                            [#local linkTargetSolution = linkTargetConfiguration.Solution]
+
+                            [#if (link.Role+" ")?lower_case?starts_with("publish ") ]
+                                [#if (event.Categories)?has_content]
+                                    [#local linkRoles = event.Categories ]
+                                [#else]
+                                    [#local linkRoles = [] ]
+                                [/#if]
+                                [@createRDSEvent 
+                                    id=formatId(rdsId, eventId, linkId)
+                                    rdsId=rdsId
+                                    linkArn=linkTargetAttributes["ARN"]
+                                    linkRoles=linkRoles
+                                    sourceType="db-cluster"
+                                /]
+                            [/#if]
+                        [/#if]
+                    [/#list]
+                [/#list]
                 [#list resources["dbInstances"]?values as dbInstance ]
                     [@createRDSInstance
                         id=dbInstance.Id
@@ -910,6 +946,43 @@
                             ""
                         )
                     /]
+                [#list solution.SystemNotifications as eventId, event ]
+                    [#if (event.Categories?size > 1) && (event.Categories?seq_contains("_all"))]
+                        [@fatal message="SystemNotification Category of _all cannot be included with other Categories" context=event /]
+                    [/#if]
+                    [#list event.Links as linkId, link ]
+                        [#if link?is_hash]
+                            [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+
+                            [@debug message="Link Target" context=linkTarget enabled=false /]
+
+                            [#if !linkTarget?has_content]
+                                [#continue]
+                            [/#if]
+
+                            [#local linkTargetCore = linkTarget.Core ]
+                            [#local linkTargetConfiguration = linkTarget.Configuration ]
+                            [#local linkTargetResources = linkTarget.State.Resources ]
+                            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+                            [#local linkTargetSolution = linkTargetConfiguration.Solution]
+
+                            [#if (link.Role+" ")?lower_case?starts_with("publish ") ]
+                                [#if (event.Categories)?has_content]
+                                    [#local linkRoles = event.Categories ]
+                                [#else]
+                                    [#local linkRoles = [] ]
+                                [/#if]
+                                [@createRDSEvent 
+                                    id=formatId(rdsId, eventId, linkId)
+                                    rdsId=rdsId
+                                    linkArn=linkTargetAttributes["ARN"]
+                                    linkRoles=linkRoles
+                                    sourceType="db-instance"
+                                /]
+                            [/#if]
+                        [/#if]
+                    [/#list]
+                [/#list]
             [/#if]
         [/#if]
     [/#if]
