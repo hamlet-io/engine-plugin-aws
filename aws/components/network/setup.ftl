@@ -69,7 +69,7 @@
                                 cwLogsProducePermission(flowLogLogGroupName),
                                 "flow-logs-cloudwatch")
                         ]
-                    tags=getOccurrenceCoreTags(occurrence)
+                    tags=getOccurrenceTags(occurrence)
                 /]
             [/#if]
 
@@ -119,9 +119,10 @@
                 s3BucketId=flowLogS3DestinationArn
                 s3BucketPrefix=flowLogS3DestinationPrefix
                 trafficType=flowLogSolution.Action
-                tags=getOccurrenceCoreTags(
+                tags=getOccurrenceTags(
                         occurrence,
-                        formatName(core.FullName, "flowLog", id)
+                        {},
+                        ["flowlog", id]
                     )
             /]
         [/#if]
@@ -205,10 +206,10 @@
         [@createVPC
             id=vpcId
             resourceId=vpcResourceId
-            name=vpcName
             cidr=vpcCIDR
             dnsSupport=dnsSupport
             dnsHostnames=dnsHostnames
+            tags=getOccurrenceTags(occurrence)
         /]
     [/#if]
 
@@ -224,7 +225,7 @@
             [@createIGW
                 id=legacyIGWId
                 resourceId=legacyIGWResourceId
-                name=legacyIGWName
+                tags=getOccurrenceTags(occurrence)
             /]
             [@createIGWAttachment
                 id=legacyIGWAttachmentId
@@ -312,12 +313,17 @@
                         [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
                             [@createSubnet
                                 id=subnetId
-                                name=subnetName
                                 vpcId=vpcResourceId
-                                tier=networkTier
                                 zone=zone
                                 cidr=subnetAddress
-                                private=routeTable.Private!false
+                                tags=getOccurrenceTags(
+                                    occurrence,
+                                    {
+                                        "zone" : zone.Id,
+                                        "network": (routeTable.Private!false)?then("private", "public")
+                                    },
+                                    [ networkTier, zone.Id]
+                                )
                             /]
                             [@createRouteTableAssociation
                                 id=routeTableAssociationId
@@ -372,14 +378,12 @@
                 [#if zoneRouteTables[zone.Id]?has_content ]
                     [#local zoneRouteTableResources = zoneRouteTables[zone.Id] ]
                     [#local routeTableId = zoneRouteTableResources["routeTable"].Id]
-                    [#local routeTableName = zoneRouteTableResources["routeTable"].Name]
 
                     [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
                         [@createRouteTable
                             id=routeTableId
-                            name=routeTableName
                             vpcId=vpcResourceId
-                            zone=zone
+                            tags=getOccurrenceTags(occurrence, {"zone": zone.Id}, [zone.Id])
                         /]
 
                         [#if (zoneRouteTableResources["legacyIGWRoute"].Id!{})?has_content ]
@@ -401,15 +405,13 @@
         [#if core.Type == NETWORK_ACL_COMPONENT_TYPE ]
 
             [#local networkACLId = resources["networkACL"].Id]
-            [#local networkACLName = resources["networkACL"].Name]
-
             [#local networkACLRules = resources["rules"]]
 
             [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
                 [@createNetworkACL
                     id=networkACLId
-                    name=networkACLName
                     vpcId=vpcResourceId
+                    tags=getOccurrenceTags(occurrence)
                 /]
 
                 [#list networkACLRules as id, rule ]

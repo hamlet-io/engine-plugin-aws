@@ -88,13 +88,6 @@
         [/#if]
     [/#if]
 
-    [#local computeAutoScaleGroupTags =
-            getOccurrenceCoreTags(
-                    occurrence,
-                    computeClusterAutoScaleGroupName,
-                    "",
-                    true)]
-
     [#local targetGroupPermission = false ]
     [#local targetGroups = [] ]
     [#local loadBalancers = [] ]
@@ -348,7 +341,7 @@
                     linkPolicies)
             managedArns=
                 _context.ManagedPolicy
-            tags=getOccurrenceCoreTags(occurrence)
+            tags=getOccurrenceTags(occurrence)
         /]
 
     [/#if]
@@ -517,7 +510,7 @@
             id=computeClusterSecurityGroupId
             name=computeClusterSecurityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -556,7 +549,7 @@
             multiAZ=multiAZ
             targetGroups=targetGroups
             loadBalancers=loadBalancers
-            tags=computeAutoScaleGroupTags
+            tags=getOccurrenceTags(occurrence)
             networkResources=networkResources
         /]
 

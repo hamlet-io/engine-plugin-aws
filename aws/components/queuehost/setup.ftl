@@ -108,7 +108,7 @@
             id=securityGroupId
             name=securityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -138,7 +138,7 @@
             [/#if]
 
             [#-- Monitoring and Alerts --]
-            [#list solution.Alerts?values as alert ]
+            [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
                 [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
                 [#list monitoredResources as name,monitoredResource ]
@@ -183,7 +183,7 @@
                 kmsKeyId=cmkKeyId
                 subnets=getSubnets(core.Tier, networkResources )
                 securityGroupId=securityGroupId
-                tags=getOccurrenceCoreTags(occurrence, brokerFullName)
+                tags=getOccurrenceTags(occurrence)
                 users=[
                     getAmazonMqUser(
                         getSecretManagerSecretRef(resources["rootCredentials"]["secret"].Id, "username"),

@@ -6,6 +6,7 @@
             allowNonOrgPrincipals
             principals
             resourceArns
+            tags={}
     ]
 
     [@cfResource
@@ -18,6 +19,6 @@
                 "Principals" : principals,
                 "ResourceArns" : resourceArns
             }
-        tags=getCfTemplateCoreTags(name)
+        tags=tags
     /]
 [/#macro]

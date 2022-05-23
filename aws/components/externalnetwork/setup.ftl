@@ -24,7 +24,7 @@
             [#continue]
         [/#if]
 
-        [#list solution.Alerts?values as alert ]
+        [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
             [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
             [#list monitoredResources as name,monitoredResource ]
@@ -78,9 +78,9 @@
                 [#if deploymentSubsetRequired(EXTERNALNETWORK_COMPONENT_TYPE, true)]
                     [@createVPNCustomerGateway
                         id=customerGatewayId
-                        name=customerGatewayName
                         custSideAsn=BGPASN
                         custVPNIP=vpnPublicIP
+                        tags=getOccurrenceTags(occurrence)
                     /]
                 [/#if]
                 [#break]
@@ -126,10 +126,10 @@
                                 [#if deploymentSubsetRequired(EXTERNALNETWORK_COMPONENT_TYPE, true)]
                                     [@createVPNConnection
                                         id=vpnConnectionId
-                                        name=vpnConnectionName
                                         staticRoutesOnly=( ! parentSolution.BGP.Enabled )
                                         customerGateway=getReference(customerGatewayId)
                                         transitGateway=transitGateway
+                                        tags=getOccurrenceTags(occurrence)
                                     /]
                                 [/#if]
 

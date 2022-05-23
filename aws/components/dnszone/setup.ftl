@@ -32,7 +32,7 @@
     [@createRoute53HostedZone
         id=resources["zone"].Id
         name=resources["zone"].Name
-        tags=getOccurrenceCoreTags(occurrence, occurrence.Core.FullName)
+        tags=getOccurrenceTags(occurrence)
         vpcIds=vpcIds
     /]
 [/#macro]

@@ -153,7 +153,7 @@
             id=fileshareSecurityGroupId
             name=fileshareSecurityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -178,7 +178,7 @@
             [#case "NFS"]
                 [@createEFS
                     id=fileshareId
-                    tags=getOccurrenceCoreTags(occurrence, fileshareName, "", false)
+                    tags=getOccurrenceTags(occurrence)
                     encrypted=solution.Encrypted
                     kmsKeyId=cmkKeyId
                     iamRequired=solution["aws:IAMRequired"]
@@ -230,7 +230,7 @@
                     kmsKeyId=cmkKeyId
                     storageCapacity=(solution.Size)!"HamletFatal: Size missing for SMB fileshare"
                     windowsConfiguration=fsxWindowsConfiguration
-                    tags=getOccurrenceCoreTags(occurrence, fileshareName, "", false)
+                    tags=getOccurrenceTags(occurrence)
                 /]
                 [#break]
         [/#switch]
@@ -255,7 +255,7 @@
                         [@createEFSAccessPoint
                             id=efsAccessPointId
                             efsId=fileshareId
-                            tags=getOccurrenceCoreTags(occurrence, efsAccessPointName, "", false)
+                            tags=getOccurrenceTags(subOccurrence)
                             overidePermissions=subSolution.Ownership.Enforced
                             chroot=subSolution.chroot
                             uid=subSolution.Ownership.UID

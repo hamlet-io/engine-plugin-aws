@@ -85,9 +85,6 @@
     [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
     [#local publicRouteTable = routeTableConfiguration.Public ]
 
-    [#local ecsAsgTags = getOccurrenceCoreTags(occurrence, ecsAutoScaleGroupName, "", true)]
-    [#local ecsTags = getOccurrenceCoreTags(occurrence, ecsName )]
-
     [#local environmentVariables = {}]
 
     [#local efsMountPoints = {}]
@@ -183,7 +180,7 @@
                 arrayIfContent(
                     [getPolicyDocument(linkPolicies, "links")],
                     linkPolicies)
-            tags=getOccurrenceCoreTags(occurrence)
+            tags=getOccurrenceTags(occurrence)
         /]
 
     [/#if]
@@ -427,7 +424,7 @@
             id=ecsSecurityGroupId
             name=ecsSecurityGroupName
             vpcId=vpcId
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -451,7 +448,7 @@
 
         [/#list]
 
-        [#list solution.Alerts?values as alert ]
+        [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
             [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
             [#list monitoredResources as name,monitoredResource ]
@@ -513,7 +510,7 @@
 
         [@createECSCluster
             id=ecsId
-            tags=ecsTags
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [#local capacityProviders =
@@ -527,7 +524,7 @@
         [@createECSCapacityProvider?with_args(capacityProviderScalingPolicy)
             id=ecsASGCapacityProviderId
             asgId=ecsAutoScaleGroupId
-            tags=ecsTags
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createECSCapacityProviderAssociation
@@ -551,9 +548,10 @@
         [#list ecsEIPs as index,eip ]
             [@createEIP
                 id=eip["eip"].Id
-                tags=getOccurrenceCoreTags(
+                tags=getOccurrenceTags(
                     occurrence,
-                    eip["eip"].Name
+                    {},
+                    [index]
                 )
             /]
         [/#list]
@@ -566,7 +564,7 @@
             processorProfile=processorProfile
             autoScalingConfig=autoScalingConfig
             multiAZ=multiAZ
-            tags=ecsAsgTags
+            tags=getOccurrenceTags(occurrence)
             networkResources=networkResources
             hibernate=hibernate
             scaleInProtection=managedTermination
@@ -714,7 +712,7 @@
 
         [#local subnets = solution.MultiAZ?then(
                 getSubnets(core.Tier, networkResources),
-                getSubnets(core.Tier, networkResources)[0]
+                [ getSubnets(core.Tier, networkResources)[0] ]
             )]
 
         [#local networkProfile = getNetworkProfile(subOccurrence)]
@@ -743,7 +741,7 @@
                 {
                     "AwsvpcConfiguration" : {
                         "SecurityGroups" : getReferences(ecsSecurityGroupId),
-                        "Subnets" : asArray(subnets),
+                        "Subnets" : subnets,
                         "AssignPublicIp" : publicRouteTable?then("ENABLED", "DISABLED" )
                     }
                 }
@@ -754,7 +752,7 @@
                     id=ecsSecurityGroupId
                     name=ecsSecurityGroupName
                     vpcId=vpcId
-                    occurrence=subOccurrence
+                    tags=getOccurrenceTags(subOccurence)
                 /]
 
                 [#local inboundPorts = []]
@@ -787,7 +785,6 @@
         [#if core.Type == ECS_SERVICE_COMPONENT_TYPE]
 
             [#local serviceId = resources["service"].Id  ]
-            [#local serviceName = resources["service"].Name  ]
             [#local serviceDependencies = []]
 
             [#if deploymentSubsetRequired("ecs", true)]
@@ -1244,7 +1241,7 @@
                     )
                     dependencies=dependencies
                     circuitBreaker=useCircuitBreaker
-                    tags=getOccurrenceCoreTags(occurrence, serviceName )
+                    tags=getOccurrenceTags(subOccurrence)
                     executeCommand=solution["aws:ExecuteCommand"]
                 /]
             [/#if]
@@ -1309,7 +1306,7 @@
                     id=roleId
                     trustedServices=["ecs-tasks.amazonaws.com"]
                     managedArns=managedPolicy
-                    tags=getOccurrenceCoreTags(occurrence)
+                    tags=getOccurrenceTags(subOccurrence)
                 /]
             [/#if]
         [/#if]
@@ -1345,7 +1342,7 @@
                                 "schedule"
                             )
                         ]
-                        tags=getOccurrenceCoreTags(occurrence)
+                        tags=getOccurrenceTags(subOccurrence)
                     /]
                 [/#if]
 
@@ -1484,7 +1481,7 @@
                         "ecs-tasks.amazonaws.com"
                     ]
                     managedArns=["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
-                    tags=getOccurrenceCoreTags(occurrence)
+                    tags=getOccurrenceTags(subOccurrence)
                     policies=executionRolePolicy?has_content?then(
                         getPolicyDocument(executionRolePolicy, "executionPolicies"),
                         []
@@ -1565,7 +1562,7 @@
 
             [/#list]
 
-            [#list solution.Alerts?values as alert ]
+            [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
                 [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
                 [#list monitoredResources as name,monitoredResource ]
@@ -1607,7 +1604,7 @@
                 networkMode=networkMode
                 dependencies=dependencies
                 fixedName=solution.FixedName
-                tags=getOccurrenceCoreTags(occurrence, taskName )
+                tags=getOccurrenceTags(subOccurrence)
             /]
 
             [#if containers?size < 1 ]

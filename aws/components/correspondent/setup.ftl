@@ -17,6 +17,6 @@
     [@createPinpointApp
         id=correspondentId
         name=correspondentName
-        tags=getOccurrenceCoreTags(occurrence, core.FullName, "", false, true)
+        tags=getOccurrenceTags(occurrence)
     /]
 [/#macro]

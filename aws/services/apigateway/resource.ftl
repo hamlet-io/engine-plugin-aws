@@ -81,7 +81,7 @@
     ]
 [/#function]
 
-[#macro createAPIKey id name enabled=true distinctId=false description="" dependencies="" ]
+[#macro createAPIKey id name enabled=true distinctId=false description="" dependencies="" tags={} ]
     [@cfResource
         id=id
         type="AWS::ApiGateway::ApiKey"
@@ -94,7 +94,7 @@
             attributeIfContent("Description", description)
         outputs=APIGATEWAY_APIKEY_OUTPUT_MAPPINGS
         dependencies=dependencies
-        tags=getCfTemplateCoreTags(name)
+        tags=tags
     /]
 [/#macro]
 
@@ -112,7 +112,7 @@
     mappings=APIGATEWAY_USAGEPLAN_OUTPUT_MAPPINGS
 /]
 
-[#macro createAPIUsagePlan id name stages=[] quotaSettings={} dependencies="" ]
+[#macro createAPIUsagePlan id name stages=[] quotaSettings={} dependencies="" tags={} ]
     [@cfResource
         id=id
         type="AWS::ApiGateway::UsagePlan"
@@ -124,7 +124,7 @@
             attributeIfContent("Quota", quotaSettings)
         outputs=APIGATEWAY_USAGEPLAN_OUTPUT_MAPPINGS
         dependencies=dependencies
-        tags=getCfTemplateCoreTags(name)
+        tags=tags
     /]
 [/#macro]
 

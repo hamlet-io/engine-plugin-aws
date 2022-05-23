@@ -186,7 +186,7 @@
                     arrayIfContent(
                         [getPolicyDocument(linkPolicies, "links")],
                         linkPolicies)
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
 
@@ -196,7 +196,7 @@
             [@createRole
                 id=streamSubscriptionRoleId
                 trustedServices=[ formatDomainName("logs", getRegion(), "amazonaws.com") ]
-                tags=getOccurrenceCoreTags(occurrence)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
     [/#if]
@@ -219,7 +219,7 @@
                 name="local"
                 statements=
                             (solution.LogWatchers?has_content)?then(
-                                firehoseStreamCloudwatchPermission(streamId)  +
+                                kinesisFirehoseStreamCloudwatchPermission(streamId)  +
                                     iamPassRolePermission(
                                         getReference(streamSubscriptionRoleId, ARN_ATTRIBUTE_TYPE)
                                 ),

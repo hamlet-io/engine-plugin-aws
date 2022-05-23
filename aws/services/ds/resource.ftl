@@ -80,7 +80,7 @@
         adDNSIPs
         tags]
 
-    [#local connectorTags = tags?map(x -> "Key='${x.Key}',Value='${x.Value}'" )?join(" ")]
+    [#local connectorTags = getCFResourceTags(tags)?map(x -> "Key='${x.Key}',Value='${x.Value}'" )?join(" ")]
     [#local passwordSecretArn = getExistingReference(passwordSecretId, ARN_ATTRIBUTE_TYPE)]
     [#local vpc = getExistingReference(vpcId)]
     [#local adDNSIPs = adDNSIPs?has_content?then(adDNSIPs?join(","), "")]

@@ -305,7 +305,7 @@
     mappings=AWS_VPC_SECURITY_GROUP_OUTPUT_MAPPINGS
 /]
 
-[#macro createSecurityGroup id name vpcId occurrence description="" ]
+[#macro createSecurityGroup id name vpcId description="" tags={} ]
     [@cfResource
         id=id
         type="AWS::EC2::SecurityGroup"
@@ -317,12 +317,7 @@
                                 getVpc()
                             )
             }
-        tags=
-            getCfTemplateCoreTags(
-                name,
-                occurrence.Core.Tier,
-                occurrence.Core.Component
-            )
+        tags=tags
         outputs=AWS_VPC_SECURITY_GROUP_OUTPUT_MAPPINGS
     /]
 
@@ -351,7 +346,7 @@
             logGroupName=""
             s3BucketId=""
             s3BucketPrefix=""
-            tags=[] ]
+            tags={} ]
 
     [#switch logDestinationType?lower_case ]
         [#case "cloudwatch" ]
@@ -445,11 +440,11 @@
 
 [#macro createVPC
             id
-            name
             cidr
             dnsSupport
             dnsHostnames
-            resourceId=""]
+            resourceId=""
+            tags={}]
     [@cfResource
         id=(resourceId?has_content)?then(
                             resourceId,
@@ -461,7 +456,7 @@
                 "EnableDnsSupport" : dnsSupport,
                 "EnableDnsHostnames" : dnsHostnames
             }
-        tags=getCfTemplateCoreTags(name)
+        tags=tags
         outputs=VPC_OUTPUT_MAPPINGS
         outputId=id
     /]
@@ -482,14 +477,14 @@
 
 [#macro createIGW
             id
-            name
-            resourceId=""]
+            resourceId=""
+            tags={}]
     [@cfResource
         id=(resourceId?has_content)?then(
                             resourceId,
                             id)
         type="AWS::EC2::InternetGateway"
-        tags=getCfTemplateCoreTags(name)
+        tags=tags
         outputId=id
         outputs=AWS_VPC_IGW_OUTPUT_MAPPINGS
     /]
@@ -532,7 +527,7 @@
 
 [#macro createEIP
             id
-            tags=[]
+            tags={}
             dependencies=""]
     [@cfResource
         id=id
@@ -581,9 +576,7 @@
 [#macro createRouteTable
             id
             vpcId
-            name=""
-            zone=""
-            tags=[]
+            tags={}
             dependencies=[]]
     [@cfResource
         id=id
@@ -592,10 +585,7 @@
             {
                 "VpcId" : getReference(vpcId)
             }
-        tags=tags?has_content?then(
-            tags,
-            getCfTemplateCoreTags(name,"","",zone)
-        )
+        tags=tags
         dependencies=dependencies
     /]
 [/#macro]
@@ -697,8 +687,8 @@
 
 [#macro createNetworkACL
             id,
-            name,
-            vpcId]
+            vpcId
+            tags={}]
     [@cfResource
         id=id
         type="AWS::EC2::NetworkAcl"
@@ -706,7 +696,7 @@
             {
                 "VpcId" : getReference(vpcId)
             }
-        tags=getCfTemplateCoreTags(name)
+        tags=tags
         outputs=AWS_VPC_NETWORK_ACL_OUTPUT_MAPPINGS
     /]
 [/#macro]
@@ -809,24 +799,12 @@
 /]
 
 [#macro createSubnet
-            id,
-            name,
-            vpcId,
-            tier,
-            zone,
-            cidr,
-            private]
-    [#local tags =
-        private?then(
-            [
-                {
-                    "Key" : "network",
-                    "Value" : "private"
-                }
-            ],
-            []
-        )
-    ]
+            id
+            vpcId
+            zone
+            cidr
+            tags={}]
+
     [@cfResource
         id=id
         type="AWS::EC2::Subnet"
@@ -836,9 +814,7 @@
                 "AvailabilityZone" : getCFAWSAzReference(zone.Id),
                 "CidrBlock" : cidr
             }
-        tags=
-            tags +
-            getCfTemplateCoreTags(name, tier, "", zone)
+        tags=tags
         outputs=AWS_VPC_SUBNET_OUTPUT_MAPPINGS
     /]
 [/#macro]

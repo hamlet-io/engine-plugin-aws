@@ -170,7 +170,7 @@
                     "datapipeline.amazonaws.com"
                 ]
                 managedArns=["arn:aws:iam::aws:policy/service-role/AWSDataPipelineRole"]
-                tags=getOccurrenceCoreTags(occurrence, pipelineRoleName)
+                tags=getOccurrenceTags(occurrence)
             /]
         [/#if]
 
@@ -182,7 +182,7 @@
                     "ec2.amazonaws.com"
                 ]
                 managedArns=["arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforDataPipelineRole"]
-                tags=getOccurrenceCoreTags(occurrence, resourceRoleName)
+                tags=getOccurrenceTags(occurrence)
             /]
 
             [#if _context.Policy?has_content]
@@ -228,7 +228,7 @@
             id=securityGroupId
             vpcId=vpcId
             name=securityGroupName
-            occurrence=occurrence
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [@createSecurityGroupRulesFromNetworkProfile
@@ -251,29 +251,10 @@
     [/#if]
 
     [#if deploymentSubsetRequired("cli", false)]
-
-        [#local coreTags = getOccurrenceCoreTags(
-                    occurrence,
-                    pipelineName,
-                    "",
-                    false,
-                    false,
-                    10) ]
-
-        [#local cliTags = [] ]
-        [#-- datapiplines only allow 10 tags --]
-        [#list coreTags as tag ]
-            [#local cliTags += [
-                {
-                "key" : tag.Key,
-                "value" : tag.Value
-            } ] ]
-        [/#list]
-
         [#local pipelineCreateCliConfig = {
             "name" : pipelineName,
             "uniqueId" : pipelineId,
-            "tags" : cliTags
+            "tags" : getCFResourceTags(getOccurrenceTags(occurrence), false, 10)
         }]
 
         [@addCliToDefaultJsonOutput

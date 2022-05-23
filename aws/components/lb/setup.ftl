@@ -94,7 +94,7 @@
 
     [#-- LB level Alerts --]
     [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-        [#list solution.Alerts?values as alert ]
+        [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
             [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
             [#list monitoredResources as name,monitoredResource ]
@@ -700,7 +700,7 @@
 
         [#-- LB level Alerts --]
         [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-            [#list ((solution.Alerts)!{})?values as alert ]
+            [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
                 [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
                 [#list monitoredResources as name,monitoredResource ]
@@ -744,7 +744,7 @@
                 id=securityGroupId
                 name=securityGroupName
                 vpcId=vpcId
-                occurrence=subOccurrence
+                tags=getOccurrenceTags(subOccurrence)
             /]
 
             [@createSecurityGroupRulesFromNetworkProfile
@@ -944,7 +944,7 @@
                         targetType=solution.Forward.TargetType
                         vpcId=vpcId
                         targets=staticTargets
-                        tags=getOccurrenceCoreTags(occurrence)
+                        tags=getOccurrenceTags(subOccurrence)
                     /]
                 [/#if]
 
@@ -962,7 +962,7 @@
                         targetType=solution.Forward.TargetType
                         vpcId=vpcId
                         targets=staticTargets
-                        tags=getOccurrenceCoreTags(occurrence)
+                        tags=getOccurrenceTags(subOccurrence)
                     /]
                 [/#if]
 
@@ -1093,7 +1093,9 @@
                     logs=lbLogs
                     type=engine
                     bucket=operationsBucket
-                    idleTimeout=idleTimeout /]
+                    idleTimeout=idleTimeout
+                    tags=getOccurrenceTags(occurrence)
+                /]
 
                 [#if resources["apiGatewayLink"]?has_content ]
                     [@createAPIGatewayVPCLink
@@ -1169,7 +1171,8 @@
                     deregistrationTimeout=(classicConnectionDrainingTimeouts?reverse)[0]
                     stickinessPolicies=classicStickinessPolicies
                     policies=classicPolicies
-                    /]
+                    tags=getOccurrenceTags(occurrence)
+                /]
             [/#if]
             [#break]
     [/#switch ]

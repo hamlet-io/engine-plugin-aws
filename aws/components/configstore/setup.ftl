@@ -230,6 +230,7 @@
             kmsKeyId=kmsKeyId
             attributes=dynamoTableKeyAttributes
             keys=dynamoTableKeys
+            tags=getOccurrenceTags(occurrence)
         /]
     [/#if]
 [/#macro]

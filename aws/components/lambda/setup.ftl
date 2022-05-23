@@ -225,7 +225,12 @@
                                             id=formatLambdaEventSourceId(fn, "link", linkName)
                                             targetId=fnId
                                             source=linkTargetAttributes["ARN"]
-                                            batchSize=1
+                                            batchSize=solution["aws:EventSources"].SQS.BatchSize
+                                            functionResponseTypes=(solution["aws:EventSources"].SQS.ReportBatchItemFailures)?then(
+                                                ["ReportBatchItemFailures"],
+                                                []
+                                            )
+                                            maximumBatchingWindow=solution["aws:EventSources"].SQS.MaximumBatchingWindow
                                         /]
                                     [/#if]
                                     [#break]
@@ -353,7 +358,7 @@
                 []
             )
             managedArns=getManagedPoliciesFromSet(policySet)
-            tags=getOccurrenceCoreTags(fn)
+            tags=getOccurrenceTags(fn)
         /]
 
         [#-- Create any inline policies that attach to the role --]
@@ -390,7 +395,7 @@
                 codeHash=_context.CodeHash!""
                 outputId=versionId
                 deletionPolicy=(solution.FixedCodeVersion.NewVersionOnDeploy)?then(
-                    "Retain",
+                    solution.FixedCodeVersion.DeletionPolicy,
                     ""
                 )
                 provisionedExecutions=solution.ProvisionedExecutions
@@ -405,7 +410,7 @@
                 id=securityGroupId
                 name=securityGroupName
                 vpcId=vpcId
-                occurrence=fn
+                tags=getOccurrenceTags(fn)
             /]
 
             [@createSecurityGroupRulesFromNetworkProfile
@@ -557,7 +562,7 @@
             [/#list]
         [/#list]
 
-        [#list solution.Alerts?values as alert ]
+        [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
             [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
             [#list monitoredResources as name,monitoredResource ]

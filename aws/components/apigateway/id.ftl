@@ -57,3 +57,15 @@
         ]
     prefixed=false
 /]
+
+[@addResourceGroupAttributeValues
+    type=APIGATEWAY_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names": "AuthorisationModel",
+            "Types" : STRING_TYPE,
+            "Values" : [ "shared:SIG4ORIP", "SIG4_OR_IP", "shared:SIG4ANDIP", "SIG4_AND_IP" ]
+        }
+    ]
+/]

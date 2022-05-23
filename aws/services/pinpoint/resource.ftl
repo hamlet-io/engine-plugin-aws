@@ -18,9 +18,9 @@
 /]
 
 [#macro createPinpointApp id name
-        tags={}
         description=""
-        dependencies="" ]
+        dependencies=[]
+        tags={} ]
     [@cfResource
         id=id
         type="AWS::Pinpoint::App"
@@ -31,8 +31,12 @@
         attributeIfContent(
             "Description",
             description
+        ) +
+        attributeIfContent(
+            "Tags",
+            tags,
+            getCFResourceTags(tags, true)
         )
-        tags=tags
         outputs=AWS_PINPOINT_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]

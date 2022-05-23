@@ -28,13 +28,11 @@
             encrypted=solution.Encrypted
             kmsKeyId=cmkKeyId
             fixedName=solution.FixedName
-            tags=getOccurrenceCoreTags(
-                    occurrence,
-                    topicName)
+            tags=getOccurrenceTags(occurrence)
         /]
 
         [#--  Alerts --]
-        [#list solution.Alerts?values as alert ]
+        [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
             [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
             [#list monitoredResources as name,monitoredResource ]

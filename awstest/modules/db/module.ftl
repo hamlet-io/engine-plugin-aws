@@ -229,23 +229,23 @@
                         "JSON" : {
                             "Match" : {
                                 "SecurityGroupTagName" : {
-                                    "Path"  : "Resources.securityGroupXrdsXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.securityGroupXrdsXdbXpostgresdbgenerated.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 },
                                 "SubnetGroupTagName" : {
-                                    "Path"  : "Resources.rdsSubnetGroupXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.rdsSubnetGroupXdbXpostgresdbgenerated.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 },
                                 "DbTagName" : {
-                                    "Path"  : "Resources.rdsXdbXpostgresdbgenerated.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.rdsXdbXpostgresdbgenerated.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 },
                                 "OptionGroupTagName" : {
-                                    "Path"  : "Resources.rdsOptionGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.rdsOptionGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 },
                                 "ParameterGroupTagName" : {
-                                    "Path"  : "Resources.rdsParameterGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.rdsParameterGroupXdbXpostgresdbgeneratedXpostgres11.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-database-postgresdbgenerated"
                                 }
                             }

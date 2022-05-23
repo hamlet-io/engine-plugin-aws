@@ -45,14 +45,14 @@
     mappings=EFS_ACCESS_POINT_MAPPINGS
 /]
 
-[#macro createEFS id tags encrypted kmsKeyId iamRequired=true resourcePolicyStatements=[] dependencies=[]  ]
+[#macro createEFS id encrypted kmsKeyId iamRequired=true resourcePolicyStatements=[] dependencies=[] tags={}  ]
     [@cfResource
         id=id
         type="AWS::EFS::FileSystem"
         properties=
             {
                 "PerformanceMode" : "generalPurpose",
-                "FileSystemTags" : tags
+                "FileSystemTags" : getCFResourceTags(tags)
             } +
             encrypted?then(
                 {

@@ -127,11 +127,11 @@
                         "JSON" : {
                             "Match" : {
                                 "RestAPITagName" : {
-                                    "Path"  : "Resources.apigatewayXappXapigatewaybase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.apigatewayXappXapigatewaybase.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-apigatewaybase"
                                 },
                                 "StageTagName" : {
-                                    "Path"  : "Resources.apiStageXappXapigatewaybase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.apiStageXappXapigatewaybase.Properties.Tags[0].Value",
                                     "Value" : "application-apigatewaybase"
                                 }
                             }
@@ -272,7 +272,7 @@
                         "JSON" : {
                             "Match" : {
                                 "TagName" : {
-                                    "Path"  : "Resources.apiDomainXapigatewaydomainXmockXlocal.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.apiDomainXapigatewaydomainXmockXlocal.Properties.Tags[0].Value",
                                     "Value" : "apigatewaydomain.mock.local"
                                 },
                                 "DomainName" : {
@@ -408,7 +408,7 @@
                         "JSON" : {
                             "Match" : {
                                 "CFTags" : {
-                                    "Path"  : "Resources.cfXapigatewayXappXapigatewaycfdistro.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.cfXapigatewayXappXapigatewaycfdistro.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-apigatewaycfdistro"
                                 }
                             }

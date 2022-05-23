@@ -67,11 +67,11 @@
                         "JSON": {
                             "Match": {
                                 "cacheTags" : {
-                                    "Path"  : "Resources.cacheXappXcachebase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.cacheXappXcachebase.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-cachebase"
                                 },
                                 "securityGroupTags" : {
-                                    "Path"  : "Resources.securityGroupXcacheXappXcachebase.Properties.Tags[10].Value",
+                                    "Path"  : "Resources.securityGroupXcacheXappXcachebase.Properties.Tags[0].Value",
                                     "Value" : "mockedup-integration-application-cachebase"
                                 }
                             }

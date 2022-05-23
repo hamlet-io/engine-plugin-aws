@@ -107,7 +107,6 @@
                     index : {
                         "eip" : {
                             "Id" : formatResourceId(AWS_EIP_RESOURCE_TYPE, core.Id, index),
-                            "Name" : formatName(core.FullName, index),
                             "Type" : AWS_EIP_RESOURCE_TYPE
                         }
                     }
@@ -232,7 +231,6 @@
     [/#if]
 
     [#local serviceId = formatResourceId(AWS_ECS_SERVICE_RESOURCE_TYPE, core.Id)]
-    [#local serviceName = core.FullName]
     [#local taskId = formatResourceId(AWS_ECS_TASK_RESOURCE_TYPE, core.Id) ]
     [#local taskName = core.Name]
 
@@ -294,7 +292,6 @@
             "Resources" : {
                 "service" : {
                     "Id" : serviceId,
-                    "Name" : serviceName,
                     "Type" : AWS_ECS_SERVICE_RESOURCE_TYPE,
                     "Monitored" : true
                 },

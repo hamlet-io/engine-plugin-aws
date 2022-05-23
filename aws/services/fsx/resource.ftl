@@ -130,7 +130,6 @@
         properties=
             {
                 "FileSystemType" : fileSystemType,
-                "Tags" : tags,
                 "SubnetIds": subnets,
                 "SecurityGroupIds" : getReferences(securityGroupIds)
             } +
@@ -150,6 +149,7 @@
                 },
                 {}
             )
+        tags=tags
         outputs=FSX_FILESYSTEM_OUTPUT_MAPPINGS
     /]
 [/#macro]

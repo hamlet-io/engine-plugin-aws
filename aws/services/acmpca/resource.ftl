@@ -105,7 +105,7 @@
             subject
             revocationConfiguration={}
             csrExtensions={}
-            tags=[]
+            tags={}
             dependencies=[]]
 
     [@cfResource

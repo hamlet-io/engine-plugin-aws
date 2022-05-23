@@ -88,8 +88,20 @@
             {
                 "AWS::CloudFormation::Init" : {
                     "configSets" : {
-                        configSetName : configSetTaskList?sort,
-                        formatName(configSetName, "wait") : waitConfigSetTaskList?sort
+                        configSetName : configSetTaskList?map(
+                            x -> { "priority" : x?keep_before("_")?number, "value": x }
+                        )?sort_by(
+                            "priority"
+                        )?map(
+                            x -> x["value"]
+                        ),
+                        formatName(configSetName, "wait") : waitConfigSetTaskList?map(
+                            x -> { "priority" : x?keep_before("_")?number, "value": x }
+                        )?sort_by(
+                            "priority"
+                        )?map(
+                            x -> x["value"]
+                        )
                     }
                 } + cfnInitTasks
             }]
@@ -304,7 +316,6 @@
     processorProfile
     autoScalingConfig
     multiAZ
-    tags
     networkResources
     scaleInProtection=false
     hibernate=false
@@ -314,6 +325,7 @@
     targetGroups=[]
     dependencies=""
     outputId=""
+    tags={}
 ]
 
     [#if processorProfile.MaxCount?has_content ]
@@ -407,7 +419,7 @@
                 "LifecycleHookSpecificationList",
                 lifecycleHooks
             )
-        tags=tags
+        tags=getCFResourceTags(tags)?map(x -> x + {"PropagateAtLaunch": true})
         outputs=AWS_EC2_AUTO_SCALE_GROUP_OUTPUT_MAPPINGS
         outputId=outputId
         dependencies=dependencies
@@ -443,7 +455,6 @@
 [/#macro]
 
 [#macro createEBSVolume id
-    tags
     size
     zone
     volumeType
@@ -453,6 +464,7 @@
     snapshotId=""
     dependencies=""
     outputId=""
+    tags={}
 ]
 
     [@cfResource
@@ -482,7 +494,7 @@
             },
             {}
         )
-        tags=tags
+        tags=getCFResourceTags(tags)
         outputs=AWS_EC2_EBS_VOLUME_OUTPUT_MAPPINGS
         outputId=outputId
         dependencies=dependencies
