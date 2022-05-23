@@ -24,7 +24,6 @@
     [#local solution = occurrence.Configuration.Solution ]
 
     [#local logFileProfile = _context.LogFileProfile ]
-    [#local logGroupName = _context.InstanceLogGroup ]
 
     [#local logContent = [
         "[general]",
@@ -32,23 +31,33 @@
         ""
     ]]
 
-    [#list logFileProfile.LogFileGroups as logFileGroup ]
-        [#local logGroup = logFileGroups[logFileGroup] ]
-        [#list logGroup.LogFiles as logFile ]
-            [#local logFileDetails = logFiles[logFile] ]
+    [#list ((logFileProfile.LogFileGroups)![])?map(
+                x -> (getReferenceData(LOGFILEGROUP_REFERENCE_TYPE)[x])!{}
+            ) as logFileGroup ]
+
+        [#local logFileGroupName = _context.InstanceLogGroup ]
+        [#if logFileGroup.LogStore.Destination == "link"]
+            [#local logFileGroupName = getLinkTarget(occurrence, logFileGroup.LogStore.Link, false).State.Resources.lg.Name ]
+        [/#if]
+
+        [#list logFileGroup.LogFiles?map(
+                    x -> (getReferenceData(LOGFILE_REFERENCE_TYPE)[x])!{}
+                )?filter(
+                    x -> x?has_content) as logFileDetails ]
+
             [#local logContent +=
                 [
-                    "[" + logFileDetails.FilePath + "]",
-                    "file = " + logFileDetails.FilePath,
-                    "log_group_name = " + logGroupName,
-                    "log_stream_name = {instance_id}" + logFileDetails.FilePath
+                    "[${logFileDetails.FilePath}]",
+                    "file = ${logFileDetails.FilePath}",
+                    "log_group_name = ${logFileGroupName}",
+                    "log_stream_name = {instance_id}${logFileDetails.FilePath}"
                 ] +
                 (logFileDetails.TimeFormat!"")?has_content?then(
-                    [ "datetime_format = " + logFileDetails.TimeFormat ],
+                    [ "datetime_format = ${logFileDetails.TimeFormat}"],
                     []
                 ) +
                 (logFileDetails.MultiLinePattern!"")?has_content?then(
-                    [ "awslogs-multiline-pattern = " + logFileDetails.MultiLinePattern ],
+                    [ "awslogs-multiline-pattern = ${logFileDetails.MultiLinePattern}" ],
                     []
                 ) +
                 [ "" ]
