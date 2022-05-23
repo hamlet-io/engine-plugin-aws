@@ -355,8 +355,9 @@
                 "SourceIds" : [ getReference(rdsId) ],
                 "SourceType" : sourceType
             } +
-            attributeIfContent(
+            attributeIfTrue(
                 "EventCategories",
+                !linkRoles?seq_contains("_all"),
                 linkRoles
             )
         outputs=RDS_EVENT_OUTPUT_MAPPINGS

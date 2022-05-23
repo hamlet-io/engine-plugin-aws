@@ -826,6 +826,9 @@
                 /]
 
                 [#list solution.SystemNotifications as eventId, event ]
+                    [#if (event.Categories?size > 1) && (event.Categories?seq_contains("_all"))]
+                        [@fatal message="SystemNotification Category of _all cannot be included with other Categories" context=event /]
+                    [/#if]
                     [#list event.Links as linkId, link ]
                         [#if link?is_hash]
                             [#local linkTarget = getLinkTarget(occurrence, link, false) ]
@@ -945,6 +948,9 @@
                         )
                     /]
                 [#list solution.SystemNotifications as eventId, event ]
+                    [#if (event.Categories?size > 1) && (event.Categories?seq_contains("_all"))]
+                        [@fatal message="SystemNotification Category of _all cannot be included with other Categories" context=event /]
+                    [/#if]
                     [#list event.Links as linkId, link ]
                         [#if link?is_hash]
                             [#local linkTarget = getLinkTarget(occurrence, link, false) ]

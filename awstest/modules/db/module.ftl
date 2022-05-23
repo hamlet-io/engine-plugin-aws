@@ -529,6 +529,9 @@
                             },
                             "SystemNotifications": {
                                 "AllNotify": {
+                                    "Categories": [
+                                        "_all"
+                                    ],
                                     "Links": {
                                         "rds_events": {
                                             "Tier": "db",
