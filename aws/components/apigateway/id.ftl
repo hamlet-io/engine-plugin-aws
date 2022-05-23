@@ -65,7 +65,7 @@
         {
             "Names": "AuthorisationModel",
             "Types" : STRING_TYPE,
-            "Values" : [ "aws:SIG4_OR_IP", "aws:SIG4_AND_IP" ]
+            "Values" : [ "shared:SIG4ORIP", "SIG4_OR_IP", "shared:SIG4ANDIP", "SIG4_AND_IP" ]
         }
     ]
 /]
