@@ -56,6 +56,7 @@
 
         [#if dlqRequired ]
             [#local dlqId = resources["dlq"].Id ]
+            [#local dlqName = resources["dlq"].Name ]
 
             [#-- override the Id ane Name for replacement --]
             [#if getCLODeploymentUnitAlternative() == "replace1" ]
