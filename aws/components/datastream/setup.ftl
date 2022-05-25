@@ -24,12 +24,12 @@
         [@createKinesisDataStream
             id=streamId
             name=streamName
-            streamMode=solution["aws:Capacity"].ProvisiningMode
+            streamMode=solution["aws:Capacity"].ProvisioningMode
             retentionHours=( (solution.Lifecycle.Expiration)?is_string && solution.Lifecycle.Expiration == "_operations")?then(
                 (operationsExpiration * 24),
                 (solution.Lifecycle.Expiration * 24)
             )
-            shardCount=(solution["aws:Capacity"].ProvisiningMode == "provsioned")?then(
+            shardCount=(solution["aws:Capacity"].ProvisioningMode == "provsioned")?then(
                 solution["aws:Capacity"].Shards,
                 ""
             )

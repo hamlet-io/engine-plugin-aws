@@ -13,7 +13,7 @@
                     "Default" : 1
                 },
                 {
-                    "Names": "ProvisiningMode",
+                    "Names": "ProvisioningMode",
                     "DescribeStream" : "How the service is provisioned and charged",
                     "Types": STRING_TYPE,
                     "Values" : [ "provisioned", "on-demand" ],
