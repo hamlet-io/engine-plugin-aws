@@ -628,4 +628,152 @@
             }
         ]
     /]
+
+    [#-- Backend LB management --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "elb" : {
+                    "Components" : {
+                        "backendlb" : {
+                            "Type": "lb",
+                            "deployment:Unit": "aws-lb",
+                            "Engine" : "application",
+                            "Profiles" : {
+                                "Testing" : [ "backendlb" ]
+                            },
+                            "PortMappings" : {
+                                "https" : {
+                                    "IPAddressGroups" : ["_global"],
+                                    "Priority" : 500,
+                                    "HostFilter" : true,
+                                    "Hostname" : {
+                                        "IncludeInHost" : {
+                                            "Product" : false,
+                                            "Environment" : true,
+                                            "Segment" : false,
+                                            "Tier" : false,
+                                            "Component" : false,
+                                            "Instance" : true,
+                                            "Version" : false,
+                                            "Host" : true
+                                        },
+                                        "Host" : "test"
+                                    },
+                                    "Backend" : {
+                                        "Link" : {
+                                            "Tier" : "elb",
+                                            "Component" : "backendlb",
+                                            "SubComponent" : "srv_group",
+                                            "Type" : "lbbackend"
+                                        }
+                                    }
+                                },
+                                "https_pool" : {
+                                    "IPAddressGroups" : ["_global"],
+                                    "Priority" : 501,
+                                    "HostFilter" : true,
+                                    "Mapping" : "https",
+                                    "Hostname" : {
+                                        "IncludeInHost" : {
+                                            "Product" : false,
+                                            "Environment" : true,
+                                            "Segment" : false,
+                                            "Tier" : false,
+                                            "Component" : false,
+                                            "Instance" : true,
+                                            "Version" : false,
+                                            "Host" : true
+                                        },
+                                        "Host" : "test-backend"
+                                    },
+                                    "Backend" : {
+                                        "Link" : {
+                                            "Tier" : "elb",
+                                            "Component" : "backendpoollb",
+                                            "SubComponent" : "pool_group",
+                                            "Type" : "lbbackend"
+                                        }
+                                    }
+                                }
+                            },
+                            "Backends" : {
+                                "srv_group" : {
+                                    "Port" : "http"
+                                }
+                            }
+                        },
+                        "backendpoollb": {
+                            "Type": "lb",
+                            "deployment:Unit": "aws-lb",
+                            "Engine" : "application",
+                            "Backends" : {
+                                "pool_group" : {
+                                    "Port" : "https"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "backendlb" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "httpsListenerRule" : {
+                                    "Name" : "listenerRuleXelbXbackendlbXhttpsX500",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::ListenerRule"
+                                },
+                                "httpsPoolListenerRule" : {
+                                    "Name" : "listenerRuleXelbXbackendlbXhttpsX501",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::ListenerRule"
+                                },
+                                "loadBalancer" : {
+                                    "Name" : "lbXelbXbackendlb",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer"
+                                },
+                                "SrvGroupTargetGroup" : {
+                                    "Name" : "tgXelbXbackendlbXsrvXgroup",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
+                                },
+                                "PoolBalancerTargetGroup" : {
+                                    "Name" : "tgXelbXbackendpoollbXpoolXgroup",
+                                    "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
+                                }
+                            },
+                            "Output" : [
+                                "tgXelbXbackendlbXsrvXgroup",
+                                "tgXelbXbackendpoollbXpoolXgroup"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "BackendPoolForward" : {
+                                    "Path" : "Resources.listenerRuleXelbXbackendlbXhttpsX501.Properties.Actions[0]",
+                                    "Value" : {
+                                        "Type": "forward",
+                                        "TargetGroupArn": {
+                                            "Ref": "tgXelbXbackendpoollbXpoolXgroup"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "backendlb" : {
+                    "lb" : {
+                        "TestCases" : [ "backendlb" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+    /]
 [/#macro]

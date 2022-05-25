@@ -44,3 +44,15 @@
         }
     ]
 /]
+
+[@addResourceGroupInformation
+    type=LB_BACKEND_COMPONENT_TYPE
+    attributes=[]
+    provider=AWS_PROVIDER
+    resourceGroup=DEFAULT_RESOURCE_GROUP
+    services=
+        [
+            AWS_ELASTIC_LOAD_BALANCER_SERVICE,
+            AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
+        ]
+/]

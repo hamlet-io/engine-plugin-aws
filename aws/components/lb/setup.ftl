@@ -27,6 +27,8 @@
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
+    [#local networkProfile = getNetworkProfile(occurrence)]
+
     [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
     [#local networkLink = occurrenceNetwork.Link!{} ]
 
@@ -166,13 +168,147 @@
         [/#if]
     [/#list]
 
-    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled ) as subOccurrence]
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == LB_BACKEND_COMPONENT_TYPE ) as subOccurrence]
 
         [#local core = subOccurrence.Core ]
         [#local solution = subOccurrence.Configuration.Solution ]
         [#local resources = subOccurrence.State.Resources ]
 
-        [#local networkProfile = getNetworkProfile(subOccurrence)]
+        [#local targetgroup = resources["targetgroup"]]
+        [#local backendSg = resources["sg"]]
+
+        [#local lbSecurityGroupIds += [backendSg.Id ]]
+
+        [#local staticTargets = []]
+
+        [#if engine != "application" ]
+            [@fatal
+                message="Backed Configuration only supported for application engine"
+                context={
+                    "Lb": occurrence.Core.RawId,
+                    "Engine": engine,
+                    "Backend": subOccurrence.Core.RawId
+                }
+            /]
+            [#continue]
+        [/#if]
+
+        [#local port = (getReferenceData(PORT_REFERENCE_TYPE)[solution.Port])!{} ]
+        [#if ! port?has_content ]
+            [@fatal
+                message="Unkown port for backend"
+                context={
+                    "LbId" : occurrence.Core.RawId,
+                    "Backend" : subOccurrence.Core.RawId,
+                    "Port" : solution.Port
+                }
+            /]
+            [#continue]
+        [/#if]
+
+        [#if ["instance", "ip"]?seq_contains(solution.TargetType) &&
+                ! ["HTTP", "HTTPS"]?seq_contains(port.Protocol) ]
+
+            [@fatal
+                message="Invalid destination port protocol - supports HTTP or HTTPS Protocols"
+                context={
+                    "lb": occurrence.Core.RawId,
+                    "lbport": subOccurrence.Core.RawId,
+                    "TargetType": solution.Forward.TargetType,
+                    "Protocol": (port.Protocol)!""
+                }
+            /]
+        [/#if]
+
+        [@createSecurityGroup
+            id=backendSg.Id
+            name=backendSg.Name
+            vpcId=vpcId
+            description="Security Group for inbound SSH to the SSH Proxy"
+            tags=getOccurrenceTags(subOccurrence)
+        /]
+
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=subOccurrence
+            groupId=backendSg.Id
+            networkProfile=networkProfile
+            inboundPorts=[]
+        /]
+
+        [#list (solution.StaticEndpoints.Links)?values?filter(
+                    x -> x?is_hash && x.Enabled
+                )?map(
+                    x -> getLinkTarget(subOccurrence, x)
+                )?filter(
+                    x -> x?has_content
+                ) as linkTarget ]
+
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetConfiguration = linkTarget.Configuration ]
+            [#local linkTargetResources = linkTarget.State.Resources ]
+            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+            [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+                [@createSecurityGroupRulesFromLink
+                    occurrence=subOccurrence
+                    groupId=backendSg.Id
+                    linkTarget=linkTarget
+                    inboundPorts=[]
+                    networkProfile=networkProfile
+                /]
+            [/#if]
+
+            [#switch linkTargetCore.Type]
+                [#case EXTERNALSERVICE_ENDPOINT_COMPONENT_TYPE]
+                    [#local endpointPort = ports[linkTargetConfiguration.Solution.Port].Port ]
+
+                    [#list asFlattenedArray(
+                                getGroupCIDRs(linkTargetConfiguration.Solution.IPAddressGroups, true)
+                            ?map(
+                                x -> getHostsFromNetwork(x))) as endpointAddress ]
+                        [#local staticTargets += getTargetGroupTarget(
+                                    "ip",
+                                    endpointAddress,
+                                    endpointPort,
+                                    solution.StaticEndpoints.External
+                                )]
+                    [/#list]
+                    [#break]
+            [/#switch]
+        [/#list]
+
+        [#local tgAttributes = (solution.StickinessTime > 0)?then(
+                {
+                    "stickiness.enabled" : true,
+                    "stickiness.type" : "lb_cookie",
+                    "stickiness.lb_cookie.duration_seconds" : solution.StickinessTime
+                },
+                {}
+            ) +
+            (solution.SlowStartTime > 0)?then(
+                {
+                    "slow_start.duration_seconds" : solution.SlowStartTime
+                },
+                {}
+            )]
+
+        [@createTargetGroup
+            id=targetgroup.Id
+            destination=port
+            attributes=tgAttributes
+            targetType=solution.TargetType
+            vpcId=vpcId
+            targets=staticTargets
+            tags=getOccurrenceTags(subOccurrence)
+        /]
+    [/#list]
+
+    [#-- Port Mapping Rule Processing --]
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == LB_PORT_COMPONENT_TYPE ) as subOccurrence]
+
+        [#local core = subOccurrence.Core ]
+        [#local solution = subOccurrence.Configuration.Solution ]
+        [#local resources = subOccurrence.State.Resources ]
 
         [#-- Determine if this is the first mapping for the source port --]
         [#-- The assumption is that all mappings for a given port share --]
@@ -551,6 +687,39 @@
                     [/#if]
                 [/#if]
             [/#if]
+
+            [#-- Backend rule management --]
+            [#if isPresent(solution.Backend) ]
+                [#local targetGroupRequired = false ]
+
+                [#local backendLink = getLinkTarget(subOccurrence, solution.Backend.Link, false)]
+                [#if (getOccurrenceDeploymentUnit(backendLink) != getOccurrenceDeploymentUnit(subOccurrence) ) && ! isLinkTargetActive(backendLink) ]
+                    [@fatal
+                        message="Backend link outside of deployment must be active"
+                        context={
+                            "Lb": occurrence.Core.RawId,
+                            "PortMapping": subOccurrence.Core.RawId,
+                            "Backend" : solution.Backend.Link
+                        }
+                    /]
+                    [#continue]
+                [/#if]
+
+                [#if backendLink.Core.Type != LB_BACKEND_COMPONENT_TYPE ]
+                    [@fatal
+                        message="Invalid component for backend"
+                        context={
+                            "Lb": occurrence.Core.RawId,
+                            "PortMapping": subOccurrence.Core.RawId,
+                            "Backend" : solution.Backend.Link,
+                            "Type" : backendLinkCore.Type
+                        }
+                    /]
+                    [#continue]
+                [/#if]
+
+                [#local targetGroupId = backendLink.State.Resources.targetgroup.Id ]
+            [/#if]
         [/#if]
 
         [#-- Use presence of links to determine rule required --]
@@ -698,7 +867,7 @@
             [/#if]
         [/#list]
 
-        [#-- LB level Alerts --]
+        [#-- PortMapping level Alerts --]
         [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
             [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
@@ -797,17 +966,10 @@
                     [#case EXTERNALSERVICE_ENDPOINT_COMPONENT_TYPE]
                         [#local endpointPort = ports[linkTargetConfiguration.Solution.Port].Port ]
 
-                        [#local endpointAddresses = []]
-                        [#local endpointCIDRS = getGroupCIDRs(
-                                                        linkTargetConfiguration.Solution.IPAddressGroups,
-                                                        true,
-                                                        subOccurrence)]
-
-                        [#list endpointCIDRS as endpointCIDR ]
-                            [#local endpointAddresses += getHostsFromNetwork(endpointCIDR) ]
-                        [/#list]
-
-                        [#list endpointAddresses as endpointAddress ]
+                        [#list asFlattenedArray(
+                                    getGroupCIDRs(linkTargetConfiguration.Solution.IPAddressGroups, true)
+                                ?map(
+                                    x -> getHostsFromNetwork(x))) as endpointAddress ]
                             [#local staticTargets += getTargetGroupTarget("ip", endpointAddress, endpointPort, solution.Forward.StaticEndpoints.External)]
                         [/#list]
                         [#break]
@@ -936,9 +1098,6 @@
                 [#if engine == "network" && deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                     [@createTargetGroup
                         id=targetGroupId
-                        name=targetGroupName
-                        tier=core.Tier
-                        component=core.Component
                         destination=destinationPort
                         attributes=tgAttributes
                         targetType=solution.Forward.TargetType
@@ -954,9 +1113,6 @@
 
                     [@createTargetGroup
                         id=targetGroupId
-                        name=targetGroupName
-                        tier=core.Tier
-                        component=core.Component
                         destination=destinationPort
                         attributes=tgAttributes
                         targetType=solution.Forward.TargetType
@@ -1031,149 +1187,151 @@
         [/#if]
     [/#if]
 
-    [#switch engine ]
-        [#case "application"]
-            [#if wafLogStreamingResources?has_content ]
+    [#if (occurrence.Occurrences![])?filter(x -> x.Core.Type == LB_PORT_COMPONENT_TYPE )?has_content ]
+        [#switch engine ]
+            [#case "application"]
+                [#if wafLogStreamingResources?has_content ]
 
-                [@setupLoggingFirehoseStream
-                    occurrence=occurrence
-                    componentSubset=LB_COMPONENT_TYPE
-                    resourceDetails=wafLogStreamingResources
-                    destinationLink=baselineLinks["OpsData"]
-                    bucketPrefix="WAF"
-                    cloudwatchEnabled=true
-                    cmkKeyId=kmsKeyId
-                    version=solution.WAF.Version
-                    loggingProfile=loggingProfile
-                /]
-
-                [@enableWAFLogging
-                    wafaclId=wafAclResources.acl.Id
-                    wafaclArn=wafAclResources.acl.Arn
-                    componentSubset=LB_COMPONENT_TYPE
-                    deliveryStreamId=wafLogStreamingResources["stream"].Id
-                    deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
-                    regional=true
-                    version=solution.WAF.Version
-                /]
-            [/#if]
-            [#if wafAclResources?has_content ]
-                [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-                    [#-- Create a WAF ACL if required --]
-                    [@createWAFAclFromSecurityProfile
-                        id=wafAclResources.acl.Id
-                        name=wafAclResources.acl.Name
-                        metric=wafAclResources.acl.Name
-                        wafSolution=wafSolution
-                        securityProfile=securityProfile
+                    [@setupLoggingFirehoseStream
                         occurrence=occurrence
+                        componentSubset=LB_COMPONENT_TYPE
+                        resourceDetails=wafLogStreamingResources
+                        destinationLink=baselineLinks["OpsData"]
+                        bucketPrefix="WAF"
+                        cloudwatchEnabled=true
+                        cmkKeyId=kmsKeyId
+                        version=solution.WAF.Version
+                        loggingProfile=loggingProfile
+                    /]
+
+                    [@enableWAFLogging
+                        wafaclId=wafAclResources.acl.Id
+                        wafaclArn=wafAclResources.acl.Arn
+                        componentSubset=LB_COMPONENT_TYPE
+                        deliveryStreamId=wafLogStreamingResources["stream"].Id
+                        deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
                         regional=true
                         version=solution.WAF.Version
                     /]
-                    [@createWAFAclAssociation
-                        id=wafAclResources.association.Id
-                        wafaclId=(solution.WAF.Version == "v1")?then(wafAclResources.acl.Id, wafAclResources.acl.Arn)
-                        endpointId=getReference(lbId)
-                        version=solution.WAF.Version
-                    /]
                 [/#if]
-            [/#if]
-
-        [#case "network"]
-            [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-                [@createALB
-                    id=lbId
-                    name=lbName
-                    shortName=lbShortName
-                    tier=core.Tier
-                    component=core.Component
-                    securityGroups=lbSecurityGroupIds
-                    networkResources=networkResources
-                    publicEndpoint=publicRouteTable
-                    logs=lbLogs
-                    type=engine
-                    bucket=operationsBucket
-                    idleTimeout=idleTimeout
-                    tags=getOccurrenceTags(occurrence)
-                /]
-
-                [#if resources["apiGatewayLink"]?has_content ]
-                    [@createAPIGatewayVPCLink
-                        id=resources["apiGatewayLink"].Id
-                        name=resources["apiGatewayLink"].Name
-                        networkLBId=lbId
-                    /]
-                [/#if]
-
-                [#list lbListeners as lbListener ]
+                [#if wafAclResources?has_content ]
                     [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-
-                        [#switch engine]
-                            [#case "network"]
-                                [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
-                                    [#local defaultActions += { source : getListenerRuleForwardAction(lbListener.DefaultTargetGroupId)} ]
-                                [/#if]
-                                [#break]
-
-                            [#case "application"]
-                                [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
-                                    [#local defaultActions += {
-                                        lbListener.Source : getListenerRuleFixedAction(
-                                            "Access Denied - Last Rule",
-                                            "text/plain",
-                                            403
-                                        )
-                                    }]
-                                [/#if]
-                                [#break]
-                        [/#switch]
-
-                        [@createALBListener
-                            id=lbListener.Id
-                            port=lbListener.SourcePort
-                            albId=lbId
-                            defaultActions=defaultActions[lbListener.Source]
-                            certificateId=lbListener.CertificateId
-                            sslPolicy=securityProfile.HTTPSProfile
+                        [#-- Create a WAF ACL if required --]
+                        [@createWAFAclFromSecurityProfile
+                            id=wafAclResources.acl.Id
+                            name=wafAclResources.acl.Name
+                            metric=wafAclResources.acl.Name
+                            wafSolution=wafSolution
+                            securityProfile=securityProfile
+                            occurrence=occurrence
+                            regional=true
+                            version=solution.WAF.Version
+                        /]
+                        [@createWAFAclAssociation
+                            id=wafAclResources.association.Id
+                            wafaclId=(solution.WAF.Version == "v1")?then(wafAclResources.acl.Id, wafAclResources.acl.Arn)
+                            endpointId=getReference(lbId)
+                            version=solution.WAF.Version
                         /]
                     [/#if]
-                [/#list]
-            [/#if]
-            [#break]
+                [/#if]
 
-        [#case "classic"]
+            [#case "network"]
+                [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+                    [@createALB
+                        id=lbId
+                        name=lbName
+                        shortName=lbShortName
+                        tier=core.Tier
+                        component=core.Component
+                        securityGroups=lbSecurityGroupIds
+                        networkResources=networkResources
+                        publicEndpoint=publicRouteTable
+                        logs=lbLogs
+                        type=engine
+                        bucket=operationsBucket
+                        idleTimeout=idleTimeout
+                        tags=getOccurrenceTags(occurrence)
+                    /]
 
-            [#local healthCheck = {
-                "Target" : getHealthCheckProtocol(healthCheckPort)?upper_case + ":"
-                            + (healthCheckPort.HealthCheck.Port!healthCheckPort.Port)?c + healthCheckPort.HealthCheck.Path!"",
-                "HealthyThreshold" : healthCheckPort.HealthCheck.HealthyThreshold,
-                "UnhealthyThreshold" : healthCheckPort.HealthCheck.UnhealthyThreshold,
-                "Interval" : healthCheckPort.HealthCheck.Interval,
-                "Timeout" : healthCheckPort.HealthCheck.Timeout
-            }]
+                    [#if resources["apiGatewayLink"]?has_content ]
+                        [@createAPIGatewayVPCLink
+                            id=resources["apiGatewayLink"].Id
+                            name=resources["apiGatewayLink"].Name
+                            networkLBId=lbId
+                        /]
+                    [/#if]
 
-            [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-                [@createClassicLB
-                    id=lbId
-                    name=lbName
-                    shortName=lbShortName
-                    tier=core.Tier
-                    component=core.Component
-                    listeners=classicListeners
-                    healthCheck=healthCheck
-                    securityGroups=lbSecurityGroupIds
-                    networkResources=networkResources
-                    publicEndpoint=publicRouteTable
-                    logs=lbLogs
-                    multiAZ=solution.MultiAZ
-                    bucket=operationsBucket
-                    idleTimeout=idleTimeout
-                    deregistrationTimeout=(classicConnectionDrainingTimeouts?reverse)[0]
-                    stickinessPolicies=classicStickinessPolicies
-                    policies=classicPolicies
-                    tags=getOccurrenceTags(occurrence)
-                /]
-            [/#if]
-            [#break]
-    [/#switch ]
+                    [#list lbListeners as lbListener ]
+                        [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+
+                            [#switch engine]
+                                [#case "network"]
+                                    [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
+                                        [#local defaultActions += { source : getListenerRuleForwardAction(lbListener.DefaultTargetGroupId)} ]
+                                    [/#if]
+                                    [#break]
+
+                                [#case "application"]
+                                    [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
+                                        [#local defaultActions += {
+                                            lbListener.Source : getListenerRuleFixedAction(
+                                                "Access Denied - Last Rule",
+                                                "text/plain",
+                                                403
+                                            )
+                                        }]
+                                    [/#if]
+                                    [#break]
+                            [/#switch]
+
+                            [@createALBListener
+                                id=lbListener.Id
+                                port=lbListener.SourcePort
+                                albId=lbId
+                                defaultActions=defaultActions[lbListener.Source]
+                                certificateId=lbListener.CertificateId
+                                sslPolicy=securityProfile.HTTPSProfile
+                            /]
+                        [/#if]
+                    [/#list]
+                [/#if]
+                [#break]
+
+            [#case "classic"]
+
+                [#local healthCheck = {
+                    "Target" : getHealthCheckProtocol(healthCheckPort)?upper_case + ":"
+                                + (healthCheckPort.HealthCheck.Port!healthCheckPort.Port)?c + healthCheckPort.HealthCheck.Path!"",
+                    "HealthyThreshold" : healthCheckPort.HealthCheck.HealthyThreshold,
+                    "UnhealthyThreshold" : healthCheckPort.HealthCheck.UnhealthyThreshold,
+                    "Interval" : healthCheckPort.HealthCheck.Interval,
+                    "Timeout" : healthCheckPort.HealthCheck.Timeout
+                }]
+
+                [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+                    [@createClassicLB
+                        id=lbId
+                        name=lbName
+                        shortName=lbShortName
+                        tier=core.Tier
+                        component=core.Component
+                        listeners=classicListeners
+                        healthCheck=healthCheck
+                        securityGroups=lbSecurityGroupIds
+                        networkResources=networkResources
+                        publicEndpoint=publicRouteTable
+                        logs=lbLogs
+                        multiAZ=solution.MultiAZ
+                        bucket=operationsBucket
+                        idleTimeout=idleTimeout
+                        deregistrationTimeout=(classicConnectionDrainingTimeouts?reverse)[0]
+                        stickinessPolicies=classicStickinessPolicies
+                        policies=classicPolicies
+                        tags=getOccurrenceTags(occurrence)
+                    /]
+                [/#if]
+                [#break]
+        [/#switch ]
+    [/#if]
 [/#macro]
