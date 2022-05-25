@@ -156,6 +156,17 @@
         [#local linkPolicies += getLinkTargetsOutboundRoles( { "destination", destinationLink} ) ]
     [/#if]
 
+    [#local dataStreamSourceId = ""]
+
+    [#if solution["aws:DataStreamSource"].Enabled ]
+        [#local dataStreamLink = getLinkTarget(occurrence, mergeObjects(solution["aws:DataStreamSource"].Link, { "Direction": "Outbound", "Role", "consume"}))]
+
+        [#if dataStreamLink?has_content ]
+            [#local dataStreamSourceId = dataStreamLink.State.Resources.stream.Id]
+            [#local linkPolicies += getLinkTargetsOutboundRoles({"datastreamsource" : dataStreamLink})]
+        [/#if]
+    [/#if]
+
     [#if deploymentSubsetRequired("iam", true)]
 
         [#if isPartOfCurrentDeploymentUnit(streamRoleId)]
@@ -254,7 +265,8 @@
                                                 streamBackupLoggingConfiguration )]
 
         [#local includeOrder = solution.Bucket.Include.Order ]
-        [#switch (destinationLink.Core.Type)!"notfound" ]
+        [#switch destinationLink.Core.Type ]
+
             [#case BASELINE_DATA_COMPONENT_TYPE]
                 [#if !(includeOrder?seq_contains("ComponentPath")) || !(solution.Bucket.Include.ComponentPath) ]
                     [@fatal
@@ -267,7 +279,6 @@
                     /]
                 [/#if]
 
-                [#-- continue to s3 case --]
             [#case S3_COMPONENT_TYPE ]
 
                 [#-- Establish bucket prefixes --]
@@ -390,6 +401,13 @@
                     name=streamName
                     destination=streamS3Destination
                     dependencies=streamDependencies
+                    deliveryStreamType=(solution["aws:DataStreamSource"].Enabled)?then(
+                        "KinesisStreamAsSource",
+                        ""
+                    )
+                    kinesisStreamSourceId=dataStreamSourceId
+                    roleId=streamRoleId
+                    tags=getOccurrenceTags(occurrence)
                 /]
                 [#break]
 
@@ -420,9 +438,12 @@
 
             [#default]
                 [@fatal
-                    message="Invalid stream destination or destination not found"
-                    detail="Supported Destinations - ES"
-                    context=occurrence
+                    message="Invalid stream destination Type or destination not active"
+                    context={
+                        "DataFeed" : occurrence.Core.RawId,
+                        "Destination" : solution.Destination.Link,
+                        "DestinationType" : destinationLink.Core.Type
+                    }
                 /]
         [/#switch]
     [/#if]

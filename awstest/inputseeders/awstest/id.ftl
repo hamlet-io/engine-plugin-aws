@@ -109,6 +109,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "correspondent"
                             },
+                            "datafeed" : {
+                                "Provider" : "awstest",
+                                "Name" : "datafeed"
+                            },
                             "datapipeline" : {
                                 "Provider" : "awstest",
                                 "Name" : "datapipeline"

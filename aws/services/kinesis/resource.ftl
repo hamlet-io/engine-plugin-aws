@@ -98,7 +98,16 @@
     /]
 [/#macro]
 
-[#macro createFirehoseStream id destination name="" dependencies="" ]
+[#macro createFirehoseStream
+        id
+        destination
+        name=""
+        deliveryStreamType=""
+        kinesisStreamSourceId=""
+        roleId=""
+        dependencies=""
+        tags=[] ]
+
     [@cfResource
         id=id
         type="AWS::KinesisFirehose::DeliveryStream"
@@ -108,7 +117,20 @@
                 "DeliveryStreamName",
                 name
             ) +
+            attributeIfContent(
+                "DeliveryStreamType",
+                deliveryStreamType
+            ) +
+            attributeIfContent(
+                "KinesisStreamSourceConfiguration",
+                kinesisStreamSourceId,
+                {
+                    "KinesisStreamARN" : getArn(kinesisStreamSourceId),
+                    "RoleARN" : getArn(roleId)
+                }
+            ) +
             destination
+        tags=tags
         outputs=KINESIS_FIREHOSE_STREAM_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]

@@ -37,6 +37,23 @@
                     ]
                 }
             ]
+        },
+        {
+            "Names" : "DataStreamSource",
+            "Description" : "Use a data stream as the source of data for the feed",
+            "Children" : [
+                {
+                    "Names" : "Enabled",
+                    "Description": "Require the use of a data stream as the data source",
+                    "Types" : BOOLEAN_TYPE,
+                    "Default" : false
+                },
+                {
+                    "Names" : "Link",
+                    "Description" : "A link to the datastream to use as the source",
+                    "AttributeSet": LINK_ATTRIBUTESET_TYPE
+                }
+            ]
         }
     ]
     provider=AWS_PROVIDER
