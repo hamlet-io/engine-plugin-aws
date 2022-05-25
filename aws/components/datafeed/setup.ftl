@@ -265,7 +265,7 @@
                                                 streamBackupLoggingConfiguration )]
 
         [#local includeOrder = solution.Bucket.Include.Order ]
-        [#switch destinationLink.Core.Type ]
+        [#switch (destinationLink.Core.Type)!"" ]
 
             [#case BASELINE_DATA_COMPONENT_TYPE]
                 [#if !(includeOrder?seq_contains("ComponentPath")) || !(solution.Bucket.Include.ComponentPath) ]
