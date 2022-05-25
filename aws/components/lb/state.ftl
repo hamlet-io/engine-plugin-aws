@@ -352,3 +352,68 @@
         }
     ]
 [/#macro]
+
+[#macro aws_lbbackend_cf_state occurrence parent={} ]
+    [#local core = occurrence.Core]
+    [#local solution = occurrence.Configuration.Solution]
+    [#local parentSolution = parent.Configuration.Solution ]
+
+    [#local engine = parentSolution.Engine]
+
+    [#local targetGroupId = formatResourceId(AWS_ALB_TARGET_GROUP_RESOURCE_TYPE, core.Id) ]
+    [#local securityGroupId = formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id)]
+
+    [#local port = (getReferenceData(PORT_REFERENCE_TYPE)[solution.Port])!{} ]
+    [#local resources = {}]
+
+    [#switch parentSolution.Engine ]
+        [#case "application" ]
+            [#local targetGroupArn = getExistingReference(targetGroupId, ARN_ATTRIBUTE_TYPE)]
+
+            [#local resources += {
+                "targetgroup" : {
+                    "Id" : targetGroupId,
+                    "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE,
+                    "Monitored": true
+                },
+                "sg" : {
+                    "Id" : securityGroupId,
+                    "Name": core.FullName,
+                    "Ports" : [solution.Port],
+                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+                }
+            }]
+
+            [#break]
+        [#default]
+            [#local targetGroupArn = ""]
+    [/#switch]
+
+    [#assign componentState =
+        {
+            "Resources" : resources,
+            "Attributes" : {
+                "ENGINE": engine,
+                "PROTOCOL" : (port.Protocol)!"",
+                "PORT" : (port.Port)!"",
+                "DESTINATION_PORT" : (port.Port)!"",
+                "TARGET_GROUP_ARN" : targetGroupArn
+            },
+            "Roles" : {
+                "Inbound" : {
+                    "networkacl": {
+                        "SecurityGroups" : securityGroupId,
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ solution.Port ],
+                        "Description" : core.FullName,
+                        "SecurityGroups" : [ securityGroupId ]
+                    }
+                }
+            }
+        }
+    ]
+[/#macro]

@@ -40,6 +40,7 @@
 
         [#switch linkTargetCore.Type]
             [#case LB_PORT_COMPONENT_TYPE]
+            [#case LB_BACKEND_COMPONENT_TYPE]
 
                 [#switch linkTargetAttributes["ENGINE"]]
 

@@ -279,7 +279,7 @@
     [#return [ target ]]
 [/#function]
 
-[#macro createTargetGroup id name tier component destination attributes vpcId targetType="" targets=[] tags={} ]
+[#macro createTargetGroup id destination attributes vpcId targetType="" targets=[] tags={} ]
 
     [#local healthCheckProtocol = getHealthCheckProtocol(destination)?upper_case]
 
