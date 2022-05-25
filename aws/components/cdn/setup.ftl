@@ -47,7 +47,8 @@
     [#local defaultCacheBehaviour = []]
     [#local invalidationPaths = []]
 
-    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled ) as subOccurrence]]
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_ROUTE_COMPONENT_TYPE)  as subOccurrence]
+
         [#local subCore = subOccurrence.Core ]
         [#local subSolution = subOccurrence.Configuration.Solution ]
         [#local subResources = subOccurrence.State.Resources ]
@@ -62,10 +63,6 @@
                                         "",
                                         originPathPattern
         )]
-
-        [#if !subSolution.Enabled]
-            [#continue]
-        [/#if]
 
         [#local contextLinks = getLinkTargets(subOccurrence)]
         [#local _context =
@@ -209,7 +206,7 @@
                     subSolution.Compress,
                     eventHandlers,
                     _context.ForwardHeaders)]
-                    [#local routeBehaviours += behaviour ]
+                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
                 [#break]
 
             [#case S3_COMPONENT_TYPE ]
@@ -241,7 +238,7 @@
                     subSolution.Compress,
                     eventHandlers,
                     _context.ForwardHeaders)]
-                    [#local routeBehaviours += behaviour ]
+                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
                 [#break]
 
             [#case SPA_COMPONENT_TYPE ]
@@ -283,7 +280,7 @@
                     subSolution.Compress,
                     eventHandlers,
                     _context.ForwardHeaders)]
-                [#local routeBehaviours += spaCacheBehaviour ]
+                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": spaCacheBehaviour }]]
 
                 [#local configCacheBehaviour = getCFSPACacheBehaviour(
                     configOrigin,
@@ -293,7 +290,7 @@
                     eventHandlers,
                     _context.ForwardHeaders) ]
 
-                [#local routeBehaviours += configCacheBehaviour ]
+                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": configCacheBehaviour }]]
                 [#break]
 
             [#case LB_COMPONENT_TYPE ]
@@ -332,11 +329,15 @@
                             getCFLBCacheBehaviour(
                                 origin,
                                 behaviourPattern,
-                                subSolution.CachingTTL,
+                                {
+                                    "Default" : subSolution.CachingTTL.Default,
+                                    "Max" : subSolution.CachingTTL.Maximum,
+                                    "Min" : subSolution.CachingTTL.Minimum
+                                },
                                 subSolution.Compress,
                                 _context.ForwardHeaders,
                                 eventHandlers )]
-                [#local routeBehaviours += behaviour ]
+                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
                 [#break]
 
             [#case APIGATEWAY_COMPONENT_TYPE ]
@@ -353,11 +354,15 @@
                             getCFLBCacheBehaviour(
                                 origin,
                                 behaviourPattern,
-                                subSolution.CachingTTL,
+                                {
+                                    "Default" : subSolution.CachingTTL.Default,
+                                    "Max" : subSolution.CachingTTL.Maximum,
+                                    "Min" : subSolution.CachingTTL.Minimum
+                                },
                                 subSolution.Compress,
                                 _context.ForwardHeaders,
                                 eventHandlers )]
-                [#local routeBehaviours += behaviour ]
+                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
                 [#break]
 
             [#case EXTERNALSERVICE_COMPONENT_TYPE ]
@@ -386,14 +391,21 @@
                             getCFLBCacheBehaviour(
                                 origin,
                                 behaviourPattern,
-                                subSolution.CachingTTL,
+                                {
+                                    "Default" : subSolution.CachingTTL.Default,
+                                    "Max" : subSolution.CachingTTL.Maximum,
+                                    "Min" : subSolution.CachingTTL.Minimum
+                                },
                                 subSolution.Compress,
                                 _context.ForwardHeaders,
                                 eventHandlers )]
-                [#local routeBehaviours += behaviour ]
+                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
                 [#break]
 
         [/#switch]
+
+        [#-- Sort the routes to ensure they are mapped to their precedence --]
+        [#local routeBehaviours = asFlattenedArray(routeBehaviours?sort_by("Priority")?map( x -> x.behaviour))]
 
         [#list routeBehaviours as behaviour ]
             [@debug message="behaviour check" context={ "Behaviour" : behaviour, "defaultPath" : originDefaultPath } enabled=true /]
@@ -404,9 +416,9 @@
                     [#local defaultCacheBehaviour = behaviour ]
                 [#else]
                     [@fatal
-                        message="Default route couldnt not be determined"
+                        message="Default route could not not be determined"
                         context=solution
-                        detail="Check your routes to make sure PathPattern is different and that one has been defined"
+                        detail="Check your routes to make sure PathPatterns are different and that a default path pattern is set with _default"
                         enabled=false
                     /]
                 [/#if]
