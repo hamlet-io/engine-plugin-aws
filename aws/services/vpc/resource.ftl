@@ -135,7 +135,8 @@
 
     [#if (linkTargetRoles.Inbound["networkacl"]!{})?has_content
             && linkDirection == "inbound"
-            && linkRole == "networkacl" ]
+            && linkRole == "networkacl"
+            && inboundPorts?has_content ]
 
         [#local linkTargetInboundRule = mergeObjects(
                                         linkTargetRoles.Inbound["networkacl"],
