@@ -775,7 +775,7 @@
                     id=ecsSecurityGroupId
                     name=ecsSecurityGroupName
                     vpcId=vpcId
-                    tags=getOccurrenceTags(subOccurence)
+                    tags=getOccurrenceTags(subOccurrence)
                 /]
 
                 [#local inboundPorts = []]
