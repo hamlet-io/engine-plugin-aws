@@ -131,6 +131,11 @@
                     "Type" : resourceType,
                     "PublicFacing" : publicFacing,
                     "Monitored" : true
+                },
+                "targetGroupSG" : {
+                    "Id" : formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id, "targetGroup"),
+                    "Name": formatName(core.FullName, "targetGroup"),
+                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }
             } +
             attributeIfContent("wafacl", wafResources) +
@@ -357,12 +362,11 @@
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
     [#local parentSolution = parent.Configuration.Solution ]
+    [#local parentResources = parent.State.Resources]
 
     [#local engine = parentSolution.Engine]
 
     [#local targetGroupId = formatResourceId(AWS_ALB_TARGET_GROUP_RESOURCE_TYPE, core.Id) ]
-    [#local securityGroupId = formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id)]
-
     [#local port = (getReferenceData(PORT_REFERENCE_TYPE)[solution.Port])!{} ]
     [#local resources = {}]
 
@@ -375,12 +379,6 @@
                     "Id" : targetGroupId,
                     "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE,
                     "Monitored": true
-                },
-                "sg" : {
-                    "Id" : securityGroupId,
-                    "Name": core.FullName,
-                    "Ports" : [solution.Port],
-                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }
             }]
 
@@ -402,7 +400,7 @@
             "Roles" : {
                 "Inbound" : {
                     "networkacl": {
-                        "SecurityGroups" : securityGroupId,
+                        "SecurityGroups" : parentResources.targetGroupSG.Id,
                         "Description" : core.FullName
                     }
                 },
@@ -410,7 +408,7 @@
                     "networkacl" : {
                         "Ports" : [ solution.Port ],
                         "Description" : core.FullName,
-                        "SecurityGroups" : [ securityGroupId ]
+                        "SecurityGroups" : [ parentResources.targetGroupSG.Id ]
                     }
                 }
             }
