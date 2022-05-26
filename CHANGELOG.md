@@ -2,6 +2,14 @@
 
 ## Unreleased (2022-05-26)
 
+#### Others
+
+* changelog bump
+
+Full set of changes: [`8.6.0...c19f45d`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.6.0...c19f45d)
+
+## 8.6.0 (2022-05-26)
+
 #### New Features
 
 * (vpc): support creating security groups without inbound ports
@@ -73,7 +81,7 @@
 * (datavolume): zone filter support for volume mounts
 * (datavolume): remove backups from datavolume
 
-Full set of changes: [`8.5.0...72ee9df`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.5.0...72ee9df)
+Full set of changes: [`8.5.0...8.6.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.5.0...8.6.0)
 
 ## 8.5.0 (2022-03-25)
 
