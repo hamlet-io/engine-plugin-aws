@@ -13,8 +13,11 @@
     [#local lbId = resources["lb"].Id ]
     [#local lbName = resources["lb"].Name ]
     [#local lbShortName = resources["lb"].ShortName ]
+
+    [#local targetGroupSG = resources["targetGroupSG"] ]
+
     [#local lbLogs = solution.Logs ]
-    [#local lbSecurityGroupIds = [] ]
+    [#local lbSecurityGroupIds = [targetGroupSG.Id] ]
 
     [#local wafAclResources = resources["wafacl"]!{} ]
     [#local wafSolution = solution.WAF]
@@ -94,8 +97,9 @@
         ]]
     [/#if]
 
-    [#-- LB level Alerts --]
     [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+
+        [#-- LB level Alerts --]
         [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
 
             [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
@@ -128,10 +132,24 @@
                 [/#switch]
             [/#list]
         [/#list]
+
+        [@createSecurityGroup
+            id=targetGroupSG.Id
+            name=targetGroupSG.Name
+            vpcId=vpcId
+            description="Security group for LB to Target Group Access"
+            tags=getOccurrenceTags(occurrence, {}, "TargetGroup")
+        /]
+
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=occurrence
+            groupId=targetGroupSG.Id
+            networkProfile=networkProfile
+            inboundPorts=[]
+        /]
     [/#if]
 
-
-    [#list solution.Links?values as link]
+    [#list solution.Links?values?filter(x -> x?is_hash && x.Enabled ) as link]
         [#if link?is_hash]
 
             [#local linkTarget = getLinkTarget(occurrence, link) ]
@@ -145,6 +163,16 @@
             [#local linkTargetConfiguration = linkTarget.Configuration ]
             [#local linkTargetResources = linkTarget.State.Resources ]
             [#local linkTargetAttributes = linkTarget.State.Attributes ]
+
+            [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+                [@createSecurityGroupRulesFromLink
+                    occurrence=occurrence
+                    groupId=targetGroupSG.Id
+                    linkTarget=linkTarget
+                    inboundPorts=[]
+                    networkProfile=networkProfile
+                /]
+            [/#if]
 
             [#switch linkTargetCore.Type]
                 [#case SERVICE_REGISTRY_SERVICE_COMPONENT_TYPE ]
@@ -175,10 +203,6 @@
         [#local resources = subOccurrence.State.Resources ]
 
         [#local targetgroup = resources["targetgroup"]]
-        [#local backendSg = resources["sg"]]
-
-        [#local lbSecurityGroupIds += [backendSg.Id ]]
-
         [#local staticTargets = []]
 
         [#if engine != "application" ]
@@ -220,21 +244,6 @@
             /]
         [/#if]
 
-        [@createSecurityGroup
-            id=backendSg.Id
-            name=backendSg.Name
-            vpcId=vpcId
-            description="Security Group for inbound SSH to the SSH Proxy"
-            tags=getOccurrenceTags(subOccurrence)
-        /]
-
-        [@createSecurityGroupRulesFromNetworkProfile
-            occurrence=subOccurrence
-            groupId=backendSg.Id
-            networkProfile=networkProfile
-            inboundPorts=[]
-        /]
-
         [#list (solution.StaticEndpoints.Links)?values?filter(
                     x -> x?is_hash && x.Enabled
                 )?map(
@@ -251,7 +260,7 @@
             [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                 [@createSecurityGroupRulesFromLink
                     occurrence=subOccurrence
-                    groupId=backendSg.Id
+                    groupId=targetGroupSG.Id
                     linkTarget=linkTarget
                     inboundPorts=[]
                     networkProfile=networkProfile
@@ -693,6 +702,11 @@
                 [#local targetGroupRequired = false ]
 
                 [#local backendLink = getLinkTarget(subOccurrence, solution.Backend.Link, false)]
+
+                [#if ! backendLink?has_content]
+                    [#continue]
+                [/#if]
+
                 [#if (getOccurrenceDeploymentUnit(backendLink) != getOccurrenceDeploymentUnit(subOccurrence) ) && ! isLinkTargetActive(backendLink) ]
                     [@fatal
                         message="Backend link outside of deployment must be active"
