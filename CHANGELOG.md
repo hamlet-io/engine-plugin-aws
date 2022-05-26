@@ -1,6 +1,81 @@
 # Changelog
 
-## Unreleased (2022-03-24)
+## Unreleased (2022-05-26)
+
+#### New Features
+
+* (vpc): support creating security groups without inbound ports
+* (lb): add support for lb backends
+* (datafeed): add support for data streams as a source
+* (cdn): rule priority sorting
+* aws logstore implementation  ([#573](https://github.com/hamlet-io/engine-plugin-aws/issues/573))
+* (rds): event support ([#569](https://github.com/hamlet-io/engine-plugin-aws/issues/569))
+* occurrence level configuration tagging
+* (lambda): sqs batch control
+* (task): add secrets manager get secret task
+* (datastream): aws implementation of data stream ([#575](https://github.com/hamlet-io/engine-plugin-aws/issues/575))
+* (lambda): versioned lambda retention policy ([#574](https://github.com/hamlet-io/engine-plugin-aws/issues/574))
+* (alertslack): allow setting runtime with param ([#570](https://github.com/hamlet-io/engine-plugin-aws/issues/570))
+* (alerts): add filter on alerts for enable status
+* add docdb support ([#521](https://github.com/hamlet-io/engine-plugin-aws/issues/521))
+* add SES SMTP user module
+* (task): add ses smtp password generation task
+* (ec2): support IPAddress groups and LB on same port
+* only include enabled occurrences in suboccurrence processing
+* (lambda): provisioned executions ([#559](https://github.com/hamlet-io/engine-plugin-aws/issues/559))
+* (dnszone): add support for private vpc zones
+* remove auto state generation for fixutre testing
+* (secretsmanager): add read write support fo secrets
+* (certificateauthority): intial support with ACMPCA
+* (apigateway): mutual TLS attribute ([#548](https://github.com/hamlet-io/engine-plugin-aws/issues/548))
+* policy chunking ([#545](https://github.com/hamlet-io/engine-plugin-aws/issues/545))
+* ec2 resource outputs and replace updates
+* (cdn): only add enabled event handlers
+* add s3 runbook tasks
+* (cdn): add error for wrong logging region
+* (lb): add support for alb as a network target ([#537](https://github.com/hamlet-io/engine-plugin-aws/issues/537))
+* add role tag to components if present
+* (ec2): zone based control for instances
+#### Fixes
+
+* (ecs): tags handling ([#588](https://github.com/hamlet-io/engine-plugin-aws/issues/588))
+* handle missing link
+* (datastream): typo in attribute name
+* (globaldb): tag function call
+* (sqs): add dlqName back into setup routine
+* handle empty tag sets
+* add backup tags for dds
+* spelling in message
+* (s3): handle notifications for endpoints already deployed
+* casing for MulitAZ attribute
+* format json content for run task module
+* (ec2): fix ordering for cfn init commands
+* (ecs): ensure subnets are always treated as an array
+* (ecs): paramter types for templates
+* typo
+* (lb): use suboccurrence for static forwardning
+* testing updates ([#556](https://github.com/hamlet-io/engine-plugin-aws/issues/556))
+* various updates from testing
+* log and account processing
+* include Value in getReference
+* (computecluster): general fixes
+* (iam): inline policy creation from policy set ([#547](https://github.com/hamlet-io/engine-plugin-aws/issues/547))
+* (backupstore): tag based conditions
+* typo in message
+#### Refactorings
+
+* (apigateway): authorization models ([#581](https://github.com/hamlet-io/engine-plugin-aws/issues/581))
+* (network): remove baseline components that aren't required
+* network subnet function
+* move test module loading to product layer
+* multiAZ migration to component configuration
+* (iam): limits used for policy splitting ([#549](https://github.com/hamlet-io/engine-plugin-aws/issues/549))
+* (datavolume): zone filter support for volume mounts
+* (datavolume): remove backups from datavolume
+
+Full set of changes: [`8.5.0...72ee9df`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.5.0...72ee9df)
+
+## 8.5.0 (2022-03-25)
 
 #### New Features
 
@@ -53,8 +128,11 @@
 * backup encryption key ([#512](https://github.com/hamlet-io/engine-plugin-aws/issues/512))
 * (backup): Configuration options ([#511](https://github.com/hamlet-io/engine-plugin-aws/issues/511))
 * attribute sets for global configuration
+#### Others
 
-Full set of changes: [`8.4.0...590fc5b`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.4.0...590fc5b)
+* changelog bump ([#497](https://github.com/hamlet-io/engine-plugin-aws/issues/497))
+
+Full set of changes: [`8.4.0...8.5.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.4.0...8.5.0)
 
 ## 8.4.0 (2022-01-06)
 
