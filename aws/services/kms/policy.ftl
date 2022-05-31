@@ -75,11 +75,25 @@
                 getArn(keyId, false, bucketRegion),
                 "",
                 {
-                    "StringEquals" : {
-                        "kms:ViaService" : formatDomainName( "s3", bucketRegion, "amazonaws.com" )
-                    },
                     "StringLike" : {
                         "kms:EncryptionContext:aws:s3:arn" : "arn:aws:s3:::" + formatRelativePath(bucketName, bucketPrefix?ensure_ends_with("*") )
+                    }
+                }
+            )
+        ]
+    ]
+[/#function]
+
+[#function kinesisStreamEncryptionStatement actions keyId kinesisStreamId ]
+    [#return
+        [
+            getPolicyStatement(
+                asArray(actions),
+                getArn(keyId),
+                "",
+                {
+                    "StringEquals" : {
+                        "kms:EncryptionContext:aws:kinesis:arn" : getArn(kinesisStreamId)
                     }
                 }
             )

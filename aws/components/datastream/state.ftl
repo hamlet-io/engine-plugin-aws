@@ -6,6 +6,10 @@
 
     [#local streamId = formatResourceId(AWS_KINESIS_DATA_STREAM_RESOURCE_TYPE, core.Id)]
 
+    [#local baselineLinks = getBaselineLinks(occurrence, ["Encryption"])]
+    [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+    [#local cmkKeyId = baselineComponentIds["Encryption"]]
+
     [#assign componentState =
         {
             "Resources" : {
@@ -23,8 +27,28 @@
             "Roles" : {
                 "Outbound" : {
                     "default" : "consume",
-                    "consume" : kinesisDataStreamConsumePermssion(streamId),
-                    "produce" : kinesisDataStreamProducePermssion(streamId)
+                    "consume" : kinesisDataStreamConsumePermssion(streamId) +
+                                solution.Encryption.Enabled?then(
+                                    kinesisStreamEncryptionStatement(
+                                        [
+                                            "kms:Decrypt"
+                                        ],
+                                        cmkKeyId,
+                                        streamId
+                                        ),
+                                        []
+                                ),
+                    "produce" : kinesisDataStreamProducePermssion(streamId) +
+                                solution.Encryption.Enabled?then(
+                                    kinesisStreamEncryptionStatement(
+                                        [
+                                            "kms:GenerateDataKey"
+                                        ],
+                                        cmkKeyId,
+                                        streamId
+                                        ),
+                                        []
+                                )
                 },
                 "Inbound" : {
                 }

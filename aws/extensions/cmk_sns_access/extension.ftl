@@ -1,19 +1,19 @@
 [#ftl]
 
 [@addExtension
-    id="cmk_s3_access"
+    id="cmk_sns_access"
     aliases=[
-        "_cmk_s3_access"
+        "_cmk_sns_access"
     ]
     description=[
-        "Grants access to a CMK from the S3 Service"
+        "Grants access to a CMK from the SNS Service"
     ]
     supportedTypes=[
         BASELINE_KEY_COMPONENT_TYPE
     ]
 /]
 
-[#macro shared_extension_cmk_s3_access_deployment_setup occurrence ]
+[#macro shared_extension_cmk_sns_access_deployment_setup occurrence ]
 
     [@Policy
         [
@@ -24,11 +24,11 @@
                 ],
                 "*"
                 {
-                    "Service" : "s3.amazonaws.com"
+                    "Service" : "sns.amazonaws.com"
                 },
                 "",
                 true,
-                "S3 Access - Inventory Reports - SNS SQS Notifications"
+                "SNS Service Principal Access"
             )
         ]
     /]
