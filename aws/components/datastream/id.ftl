@@ -28,6 +28,7 @@
         [
             AWS_CLOUDWATCH_SERVICE,
             AWS_IDENTITY_SERVICE,
-            AWS_KINESIS_SERVICE
+            AWS_KINESIS_SERVICE,
+            AWS_KEY_MANAGEMENT_SERVICE
         ]
 /]
