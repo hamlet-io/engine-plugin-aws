@@ -57,17 +57,17 @@
                         [@createEBSVolumeAttachment
                             id=formatDependentResourceId(
                                 AWS_EC2_EBS_ATTACHMENT_RESOURCE_TYPE,
-                                zoneEc2InstanceId,
-                                dataVolume.Id
+                                instanceId,
+                                dataVolume[zone].VolumeId
                             )
                             device=volumeMount.DeviceId
-                            instanceId=zoneEc2InstanceId
-                            volumeId=zoneVolume
+                            instanceId=instanceId
+                            volumeId=dataVolume[zone].VolumeId
                         /]
                     [/#if]
 
                     [#local volumes += {
-                        dataVolume.Id : {
+                        dataVolume[zone].VolumeId  : {
                             "Enabled" : true,
                             "MountPath" : volumeMount.MountPath,
                             "Device" : volumeMount.DeviceId,
