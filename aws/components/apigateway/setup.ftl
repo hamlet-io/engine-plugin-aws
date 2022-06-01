@@ -17,6 +17,12 @@
 
     [#local definitionsObject =  getDefinitions() ]
 
+    [#local openapiIntegrations =
+        contentIfContent(
+            getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true)
+        )
+    ]
+
     [#local apiId      = resources["apigateway"].Id]
     [#local apiName    = resources["apigateway"].Name]
 
@@ -277,7 +283,8 @@
                             getIPCondition(apiPolicyCidr, false),
                             false
                         )
-                    ] ]
+                    ]
+                ]
                 [#break]
 
             [#case "SIG4ORIP" ]
@@ -296,16 +303,32 @@
                             "*",
                             getIPCondition(apiPolicyCidr)
                         )
-                    ] ]
+                    ]
+                ]
+
+                [#-- OPTIONS need to be handled separately in case    --]
+                [#-- options security is disabled in the integrations --]
+                [#if (openapiIntegrations.Options!true) &&
+                    ((openapiIntegrations.OptionsSecurity!"") == "disabled") ]
+                    [#local apiPolicyStatements +=
+                        [
+                            getPolicyStatement(
+                                "execute-api:Invoke",
+                                "execute-api:/*/OPTIONS/*",
+                                "*"
+                            )
+                        ]
+                    ]
+                [/#if]
                 [#break]
 
             [#case "SIG4ANDIP" ]
             [#case "aws:SIG4_AND_IP" ]
             [#case "AUTHORIZER_AND_IP" ]
             [#case "AUTHORISER_AND_IP" ]
-                [#-- If IP doesn't match, EXPLICIT DENY regardless of SIG4 --]
-                [#-- If IP matches, then IAM policy MUST provide the       --]
-                [#-- explicit ALLOW.                                       --]
+                [#-- If IP doesn't match, EXPLICIT DENY regardless   --]
+                [#-- If IP matches, then IAM policy MUST provide the --]
+                [#-- explicit ALLOW.                                 --]
                 [#local apiPolicyStatements +=
                     [
                         getPolicyStatement(
@@ -315,7 +338,25 @@
                             getIPCondition(apiPolicyCidr, false),
                             false
                         )
-                    ] ]
+                    ]
+                ]
+
+                [#-- OPTIONS need to be handled separately in case    --]
+                [#-- options security is disabled in the integrations --]
+                [#if (openapiIntegrations.Options!true) &&
+                    ((openapiIntegrations.OptionsSecurity!"") == "disabled") ]
+                    [#local apiPolicyStatements +=
+                        [
+                            getPolicyStatement(
+                                "execute-api:Invoke",
+                                "execute-api:/*/OPTIONS/*",
+                                "*"
+                            )
+                        ]
+                    ]
+                [/#if]
+
+
                 [#break]
         [/#switch]
     [#else]
@@ -593,11 +634,6 @@
         /]
 
         [#-- Throttling Configuration --]
-        [#local openapiIntegrations = valueIfContent(
-                                        getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true),
-                                        getOccurrenceSettingValue(occurrence, [["apigw"], ["Integrations"]], true),
-                                        {})]
-
         [#local methodSettings = [
             {
                 "HttpMethod": "*",
