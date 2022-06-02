@@ -192,7 +192,7 @@
                         id=forwardingRoleId
                         trustedServices=[  "logs." + getRegion() + ".amazonaws.com" ]
                         policies=[]
-                        tags=getOccurrenceTags()
+                        tags=getOccurrenceTags(linkTarget)
                     /]
 
                     [@createPolicy
