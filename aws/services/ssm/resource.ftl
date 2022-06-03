@@ -33,13 +33,13 @@
         properties=
             {
                 "Content" : content,
-                "DocumentType" : documentType,
-                "Tags" : tags
+                "DocumentType" : documentType
             } +
             attributeIfContent(
                 "Name",
                 name
             )
+        tags=tags
         outputs=SSM_DOCUMENT_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]
@@ -64,9 +64,9 @@
                 "Schedule" : schedule,
                 "Duration" : durationHours,
                 "Cutoff" : cutoffHours,
-                "Tags" : tags,
                 "ScheduleTimezone" : scheduleTimezone
             }
+        tags=tags
         outputs=AWS_SSM_MAINTENANCE_WINDOW_OUTPUT_MAPPINGS
         dependencies=dependencies
     /]
