@@ -1,12 +1,25 @@
 # Changelog
 
-## Unreleased (2022-05-26)
+## latest (2022-06-07)
 
+#### Fixes
+
+* (ec2): number formatting for priorities
+* (ssm): tag properties for ssm resourcs
+* (logs): fix tags applied to log subscription role
+* (apigateway): OPTIONS handling with authorisers
+* (volumemounts): update Ids and properties in volume mounts
+* (kms): policies for kms encryption from via services
+#### Refactorings
+
+* (lb): use shared security group for backends
+* (cd): move to using a reusable pipeline for changelogs ([#592](https://github.com/hamlet-io/engine-plugin-aws/issues/592))
 #### Others
 
 * changelog bump
+* changelog bump
 
-Full set of changes: [`8.6.0...c19f45d`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.6.0...c19f45d)
+Full set of changes: [`8.6.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.6.0...latest)
 
 ## 8.6.0 (2022-05-26)
 
