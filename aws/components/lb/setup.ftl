@@ -369,6 +369,10 @@
         [#local sourcePort = (ports[source])!{} ]
         [#local destinationPort = (ports[destination])!{} ]
 
+        [#if !(sourcePort?has_content && destinationPort?has_content)]
+            [@fatal message="Invalid port mapping" context={"mapping": mapping, "source": source, "destination": destination} stop=true /]
+        [/#if]
+
         [#local firstMappingForPort = !listenerPortsSeen?seq_contains(listenerId) ]
         [#switch engine ]
             [#case "application"]
