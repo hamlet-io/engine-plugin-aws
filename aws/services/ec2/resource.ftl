@@ -74,7 +74,7 @@
 
             [#if ((cfnInitTask.Content)!{})?has_content ]
 
-                [#local configSetId = "${cfnInitTask.Priorty}_${id}_wait" ]
+                [#local configSetId = "${(cfnInitTask.Priorty)?c}_${id}_wait" ]
                 [#local waitConfigSetTaskList += [ configSetId ] ]
                 [#local cfnInitTasks += {
                     configSetId : cfnInitTask.Content
