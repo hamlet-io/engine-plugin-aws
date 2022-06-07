@@ -420,7 +420,7 @@
                     creationPolicy={
                         "ResourceSignal" : {
                             "Count" : 1,
-                            "Timeout" : "PT${solution.StartupTimeout}S"
+                            "Timeout" : "PT${solution.StartupTimeout?c}S"
                         }
                     }
                 /]
