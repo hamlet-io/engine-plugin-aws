@@ -567,44 +567,46 @@
             [/#if]
 
             [#list solution.Conditions as id, condition ]
-                [#switch condition.Type ]
-                    [#case "httpHeader" ]
-                        [#local listenerRuleConditions +=
-                            getListenerRuleCondition(
-                                "http-header",
-                                {
-                                    "HeaderName" : (condition["type:httpHeader"].HeaderName)!"HamletFatal: Missing HeaderName for httpHeader filter",
-                                    "Values" : (condition["type:httpHeader"].HeaderValues)!"HamletFatal: Missing HeaderValues for httpHeader filter"
-                                }
-                            )]
-                        [#break]
-                    [#case "httpRequestMethod" ]
-                        [#local listenerRuleConditions +=
-                            getListenerRuleCondition(
-                                "http-request-method",
-                                (condition["type:httpRequestMethod"].Methods)!"HamletFatal: Missing Methods for httpRequestMethod condition"
-                            )]
-                        [#break]
-                    [#case "httpQueryString" ]
-                        [#list condition["type:httpQueryString"] as id,query ]
+                [#if condition.Enabled ]
+                    [#switch condition.Type ]
+                        [#case "httpHeader" ]
                             [#local listenerRuleConditions +=
                                 getListenerRuleCondition(
-                                    "query-string",
+                                    "http-header",
                                     {
-                                        "Key" : (query.Key)!"HamletFatal: Missing Key in httpQueryString condition",
-                                        "Value" : (query.Value)!"HamletFatal: Missing Value in httpQueryString condition"
+                                        "HeaderName" : (condition["type:httpHeader"].HeaderName)!"HamletFatal: Missing HeaderName for httpHeader filter",
+                                        "Values" : (condition["type:httpHeader"].HeaderValues)!"HamletFatal: Missing HeaderValues for httpHeader filter"
                                     }
                                 )]
-                        [/#list]
-                        [#break]
-                    [#case "SourceIP" ]
-                        [#local listenerRuleConditions +=
-                            getListenerRuleCondition(
-                                "source-ip",
-                                getGroupCIDRs(condition["type:SourceIP"].IPAddressGroups, true, subOccurrence)
-                            )]
-                        [#break]
-                [/#switch]
+                            [#break]
+                        [#case "httpRequestMethod" ]
+                            [#local listenerRuleConditions +=
+                                getListenerRuleCondition(
+                                    "http-request-method",
+                                    (condition["type:httpRequestMethod"].Methods)!"HamletFatal: Missing Methods for httpRequestMethod condition"
+                                )]
+                            [#break]
+                        [#case "httpQueryString" ]
+                            [#list condition["type:httpQueryString"] as id,query ]
+                                [#local listenerRuleConditions +=
+                                    getListenerRuleCondition(
+                                        "query-string",
+                                        {
+                                            "Key" : (query.Key)!"HamletFatal: Missing Key in httpQueryString condition",
+                                            "Value" : (query.Value)!"HamletFatal: Missing Value in httpQueryString condition"
+                                        }
+                                    )]
+                            [/#list]
+                            [#break]
+                        [#case "SourceIP" ]
+                            [#local listenerRuleConditions +=
+                                getListenerRuleCondition(
+                                    "source-ip",
+                                    getGroupCIDRs(condition["type:SourceIP"].IPAddressGroups, true, subOccurrence)
+                                )]
+                            [#break]
+                    [/#switch]
+                [/#if]
             [/#list]
 
             [#-- Redirect rule processing --]
