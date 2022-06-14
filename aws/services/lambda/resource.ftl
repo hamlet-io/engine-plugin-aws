@@ -31,6 +31,20 @@
         },
         ARN_ATTRIBUTE_TYPE : {
             "UseRef" : true
+        },
+        VERSION_ATTRIBUTE_TYPE : {
+            "Attribute" : "Version"
+        }
+    }
+]
+
+[#assign LAMBDA_ALIAS_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        },
+        ARN_ATTRIBUTE_TYPE : {
+            "UseRef" : true
         }
     }
 ]
@@ -54,6 +68,8 @@
 [#assign lambdaMappings =
     {
         AWS_LAMBDA_FUNCTION_RESOURCE_TYPE : LAMBDA_FUNCTION_OUTPUT_MAPPINGS,
+        AWS_LAMBDA_VERSION_RESOURCE_TYPE : LAMBDA_VERSION_OUTPUT_MAPPINGS,
+        AWS_LAMBDA_ALIAS_RESOURCE_TYPE : LAMBDA_ALIAS_OUTPUT_MAPPINGS,
         AWS_LAMBDA_PERMISSION_RESOURCE_TYPE : LAMBDA_PERMISSION_OUTPUT_MAPPINGS,
         AWS_LAMBDA_EVENT_SOURCE_TYPE : LAMBDA_EVENT_SOURCE_MAPPINGS
     }
@@ -170,6 +186,43 @@
                 }
             )
         outputs=LAMBDA_VERSION_OUTPUT_MAPPINGS
+        outputId=outputId
+        dependencies=dependencies
+        updateReplacePolicy=updateReplacePolicy
+        deletionPolicy=deletionPolicy
+    /]
+[/#macro]
+
+[#macro createLambdaAlias id name
+            functionId
+            targetId
+            description=""
+            dependencies=""
+            outputId=""
+            deletionPolicy=""
+            updateReplacePolicy=""
+            provisionedExecutions=-1 ]
+    [@cfResource
+        id=id
+        type="AWS::Lambda::Alias"
+        properties=
+            {
+                "Name" : name,
+                "FunctionName" : getReference(functionId),
+                "FunctionVersion" : getReference(targetId, VERSION_ATTRIBUTE_TYPE)
+            } +
+            attributeIfContent(
+                "Description",
+                description
+            ) +
+            attributeIfTrue(
+                "ProvisionedConcurrencyConfig",
+                provisionedExecutions >= 1,
+                {
+                    "ProvisionedConcurrentExecutions" : provisionedExecutions
+                }
+            )
+        outputs=LAMBDA_ALIAS_OUTPUT_MAPPINGS
         outputId=outputId
         dependencies=dependencies
         updateReplacePolicy=updateReplacePolicy
