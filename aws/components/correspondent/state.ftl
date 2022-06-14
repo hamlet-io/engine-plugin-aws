@@ -30,3 +30,39 @@
     ]
 
 [/#macro]
+
+
+[#macro aws_correspondentchannel_cf_state occurrence parent={} ]
+    [#local core = occurrence.Core]
+    [#local solution = occurrence.Configuration.Solution]
+
+    [#local resources = {}]
+    [#local attributes = {}]
+
+    [#local correspondentId = formatResourceId(AWS_PINPOINT_RESOURCE_TYPE, core.Id)]
+
+    [#local resourceType = ""]
+    [#switch solution.Engine]
+        [#case "apns"]
+            [#local resourceType = AWS_PINPOINT_APNS_CHANNEL_RESOURCE_TYPE]
+            [#break]
+        [#case "apns_sanbox"]
+            [#local resourceType = AWS_PINPOINT_APNS_SANDBOX_CHANNEL_RESOURCE_TYPE]
+            [#break]
+        [#case "firebase"]
+            [#local resourceType = AWS_PINPOINT_GCM_CHANNEL_RESOURCE_TYPE]
+            [#break]
+    [/#switch]
+
+    [#assign componentState =
+        {
+            "Resources" : {
+                "channel": {
+                    "Id" : formatResourceId(resourceType, core.Id),
+                    "Type" : resourceType
+                }
+            },
+            "Attributes" : {}
+        }
+    ]
+[/#macro]

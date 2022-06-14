@@ -17,10 +17,7 @@
     mappings=AWS_PINPOINT_OUTPUT_MAPPINGS
 /]
 
-[#macro createPinpointApp id name
-        description=""
-        dependencies=[]
-        tags={} ]
+[#macro createPinpointApp id name description="" tags={} dependencies=[]]
     [@cfResource
         id=id
         type="AWS::Pinpoint::App"
@@ -34,10 +31,49 @@
         ) +
         attributeIfContent(
             "Tags",
-            tags,
-            getCFResourceTags(tags, true)
+            tags
         )
         outputs=AWS_PINPOINT_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#macro createPinpointAPNSChannel id pinpointAppId certificate privateKey dependencies=[] ]
+    [@cfResource
+        id=id
+        type="AWS::Pinpoint::APNSChannel"
+        properties={
+            "ApplicationId": getReference(pinpointAppId),
+            "DefaultAuthenticationMethod" : "CERTIFICATE",
+            "Certificate" : certificate,
+            "PrivateKey" : privateKey
+        }
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#macro createPinpointAPNSSandboxChannel id pinpointAppId certificate privateKey dependencies=[] ]
+    [@cfResource
+        id=id
+        type="AWS::Pinpoint::APNSSandboxChannel"
+        properties={
+            "ApplicationId": getReference(pinpointAppId),
+            "Certificate" : certificate,
+            "DefaultAuthenticationMethod" : "CERTIFICATE",
+            "PrivateKey" : privateKey
+        }
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#macro createPinpointGCMChannel id pinpointAppId apiKey dependencies=[]]
+    [@cfResource
+        id=id
+        type="AWS::Pinpoint::GCMChannel"
+        properties={
+            "ApplicationId" : getReference(pinpointAppId),
+            "ApiKey": apiKey
+        }
         dependencies=dependencies
     /]
 [/#macro]
