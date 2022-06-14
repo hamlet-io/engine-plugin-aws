@@ -138,10 +138,27 @@
                                 linkTargetCore.SubComponent.Name,
                                 "LAMBDA")
                     ]
+                    [#-- The stage variable is used in the openapi extensions as part of the ARN     --]
+                    [#-- of the backing function. While ideally the entire ARN would be substituted, --]
+                    [#-- that is not currently supported by the AWS integration extension.           --]
+                    [#--                                                                             --]
+                    [#-- NOTE: if the lambda is versioned, the result will include the lambda        --]
+                    [#-- version. It also means that the lambda deployments will need to precede     --]
+                    [#-- the api deployment, which is problematic initially in that the lambdas need --]
+                    [#-- the API to exist to permit it to invoke them. The options are either to run --]
+                    [#-- the API deployment both before AND after the lambdas, or run it after and   --]
+                    [#-- accept the API will not work as expected when initially deployed until      --]
+                    [#-- the lambda functions are deployed a second time and their resource polciies --]
+                    [#-- updated to include the API.                                                 --]
+                    [#--                                                                             --]
+                    [#-- NOTE: this code will also handle lambda alias ARNs, which include the alias --]
+                    [#-- in the same location as the version. Use of an alias would mitigate the     --]
+                    [#-- issues described above as the openapi config would be using a fixed arn     --]
+                    [#-- which does not vary as the lambda function version changes.                 --]
                     [#local stageVariables +=
                         {
                             stageVariableName :
-                                linkTargetResources["function"].Name
+                                linkTargetAttributes.ARN?keep_after("function:")
                         }
                     ]
                     [#if ["authorise", "authorize"]?seq_contains(linkTarget.Role) ]
