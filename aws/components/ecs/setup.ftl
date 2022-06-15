@@ -643,7 +643,8 @@
     [#local ecsASGCapacityProviderId = parentResources["ecsASGCapacityProvider"].Id]
     [#local essASGCapacityProviderAssociationId = parentResources["ecsCapacityProviderAssociation"].Id ]
 
-    [#if ! (getExistingReference(ecsId)?has_content) ]
+    [#if deploymentSubsetRequired("ecs", true) &&
+        (! (getExistingReference(ecsId)?has_content)) ]
         [@fatal
             message="ECS Cluster not deployed or active"
             context={
@@ -718,7 +719,9 @@
 
         [#-- Provides warning for hosting updates this will still deploy but using fixed launch type --]
         [#-- Only use capacity providers when the assocation is in place --]
-        [#if ( engine == "ec2") && ( ! (getExistingReference(essASGCapacityProviderAssociationId)?has_content)) ]
+        [#if deploymentSubsetRequired("ecs", true) &&
+            ( engine == "ec2") &&
+            ( ! (getExistingReference(essASGCapacityProviderAssociationId)?has_content)) ]
             [#local useCapacityProvider = false ]
             [@warn
                 message="Could not find ECS Capacity provider for Ec2 - Update the solution ecs component"
@@ -824,7 +827,7 @@
                             [#local networkLinks += [ container.Name ] ]
                         [#else]
                             [@fatal
-                                message="Network links only avaialble on bridge mode and ec2 engine"
+                                message="Network links only available on bridge mode and ec2 engine"
                                 context=
                                     {
                                         "Description" : "Container links are only available in bridge mode and ec2 engine",
@@ -980,7 +983,7 @@
                                     [/#if]
 
                                     [#if serviceRecordTypes?seq_contains("A") && networkMode != "awsvpc" ]
-                                        [@fatal message="A record registration only availalbe on awsvpc network Type" context=link /]
+                                        [@fatal message="A record registration only available on awsvpc network Type" context=link /]
                                     [/#if]
 
                                     [#if serviceRecordTypes?seq_contains("AAAA") ]
