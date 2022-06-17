@@ -27,22 +27,71 @@
 
     [#local id = formatResourceId(AWS_LAMBDA_FUNCTION_RESOURCE_TYPE, core.Id)]
 
-    [#local versionOutputId = formatResourceId(AWS_LAMBDA_VERSION_RESOURCE_TYPE, core.Id) ]
-
-    [#if solution.FixedCodeVersion.NewVersionOnDeploy ]
-        [#local versionId = formatId(versionOutputId, runId )]
-    [#else]
-        [#local versionId = versionOutputId]
-    [/#if]
-
     [#local region = getExistingReference(id, REGION_ATTRIBUTE_TYPE)!getRegion()]
+
+    [#-- Unversioned lambda ARN - make available to permit linkage even if function isn't deployed --]
+    [#local arn =
+        formatArn(
+            getRegionObject().Partition,
+            "lambda",
+            region,
+            accountObject.ProviderId,
+            "function:" + core.FullName,
+            true
+        )
+    ]
+
+    [#local fixedCodeVersion = {} ]
+    [#if isPresent(solution.FixedCodeVersion) ]
+
+        [#local versionOutputId = formatResourceId(AWS_LAMBDA_VERSION_RESOURCE_TYPE, core.Id) ]
+
+        [#-- The arn changes as part of the deployment process to reflect the new version --]
+        [#local arn = getExistingReference(versionOutputId) ]
+        [#local fixedCodeVersion =
+            {
+                "version" : {
+                    "Id" : versionOutputId,
+                    "ResourceId" :
+                        valueIfTrue(
+                            formatId(versionOutputId, runId),
+                            solution.FixedCodeVersion.NewVersionOnDeploy,
+                            versionOutputId
+                        ),
+                    "Type" : AWS_LAMBDA_VERSION_RESOURCE_TYPE
+                }
+            }
+        ]
+
+        [#if solution.FixedCodeVersion.Alias?has_content]
+            [#local aliasId = formatResourceId(AWS_LAMBDA_ALIAS_RESOURCE_TYPE, core.Id) ]
+            [#local fixedCodeVersion +=
+                {
+                    "alias" : {
+                        "Id" : aliasId,
+                        "Name" : solution.FixedCodeVersion.Alias,
+                        "Type" : AWS_LAMBDA_ALIAS_RESOURCE_TYPE
+                    }
+                }
+            ]
+            [#-- Alias ARN is fixed - make available to permit linkage even if function isn't deployed --]
+            [#local arn =
+                formatArn(
+                    getRegionObject().Partition,
+                    "lambda",
+                    region,
+                    accountObject.ProviderId,
+                    ["function", core.FullName, solution.FixedCodeVersion.Alias]?join(":")
+                    true
+                )
+            ]
+        [/#if]
+    [/#if]
 
     [#local lgId = formatLogGroupId(core.Id)]
     [#local lgName = formatAbsolutePath("aws", "lambda", core.FullName)]
 
     [#local securityGroupId = formatDependentSecurityGroupId(id)]
-
-    [#local fixedCodeVersion = isPresent(solution.FixedCodeVersion) ]
 
     [#local logMetrics = {} ]
     [#list solution.LogMetrics as name,logMetric ]
@@ -75,15 +124,7 @@
                 }
             } +
             attributeIfContent("logMetrics", logMetrics) +
-            attributeIfTrue(
-                "version",
-                fixedCodeVersion,
-                {
-                    "Id" : versionOutputId,
-                    "ResourceId" : versionId,
-                    "Type" : AWS_LAMBDA_VERSION_RESOURCE_TYPE
-                }
-            ) +
+            fixedCodeVersion +
             attributeIfTrue(
                 "securityGroup",
                 solution.VPCAccess,
@@ -95,17 +136,7 @@
             ),
             "Attributes" : {
                 "REGION" : region,
-                "ARN" : valueIfTrue(
-                            getExistingReference(versionOutputId),
-                            fixedCodeVersion
-                            formatArn(
-                                getRegionObject().Partition,
-                                "lambda",
-                                region,
-                                accountObject.ProviderId,
-                                "function:" + core.FullName,
-                                true)
-                ),
+                "ARN" : arn,
                 "NAME" : core.FullName,
                 "DEPLOYMENT_TYPE": solution.DeploymentType
             },

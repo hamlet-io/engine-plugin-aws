@@ -45,6 +45,28 @@
     [#local fnLgId = resources["lg"].Id ]
     [#local fnLgName = resources["lg"].Name ]
 
+    [#local fixedVersionRequired = (resources["version"])?has_content ]
+    [#local aliasRequired = (resources["alias"])?has_content ]
+
+    [#-- While the role of the unqualified function is inherited by qualified versions, --]
+    [#-- permissions must be attached individually. For now the priority is             --]
+    [#-- ALIAS -> Version -> unqualified                                                --]
+    [#-- The assumption is that if an alias is defined, all access will be through it,  --]
+    [#-- and a version is required, then the unqualified function shoould not directly  --]
+    [#-- be accessed.                                                                   --]
+    [#--                                                                                --]
+    [#-- NOTE: Lamda@edge currently doesn't support aliases so this case is handled     --]
+    [#-- specially.                                                                     --]
+    [#local targetFunctionId = fnId]
+    [#if fixedVersionRequired]
+        [#local versionId = resources["version"].Id  ]
+        [#local versionResourceId = resources["version"].ResourceId ]
+        [#local targetFunctionId = versionResourceId ]
+        [#if aliasRequired]
+            [#local targetFunctionId = resources["alias"].Id  ]
+        [/#if]
+    [/#if]
+
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(fn, [ "OpsData", "AppData", "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
@@ -191,7 +213,7 @@
                                 [#case MTA_RULE_COMPONENT_TYPE ]
                                     [@createLambdaPermission
                                         id=formatLambdaPermissionId(fn, "link", linkName)
-                                        targetId=fnId
+                                        targetId=targetFunctionId
                                         source=linkTargetRoles.Inbound["invoke"]
                                     /]
                                     [#break]
@@ -205,7 +227,7 @@
                                  [#case APIGATEWAY_COMPONENT_TYPE ]
                                     [@createLambdaPermission
                                         id=formatLambdaPermissionId(fn, "link", linkName)
-                                        targetId=fnId
+                                        targetId=targetFunctionId
                                         source=linkTargetRoles.Inbound["authorize"]
                                     /]
                                     [#break]
@@ -223,7 +245,7 @@
                                     [#if linkTargetAttributes["ARN"]?has_content ]
                                         [@createLambdaEventSource
                                             id=formatLambdaEventSourceId(fn, "link", linkName)
-                                            targetId=fnId
+                                            targetId=targetFunctionId
                                             source=linkTargetAttributes["ARN"]
                                             batchSize=solution["aws:EventSources"].SQS.BatchSize
                                             functionResponseTypes=(solution["aws:EventSources"].SQS.ReportBatchItemFailures)?then(
@@ -377,9 +399,7 @@
     [/#if]
 
 
-    [#if isPresent(solution.FixedCodeVersion) ]
-        [#local versionId = resources["version"].Id  ]
-        [#local versionResourceId = resources["version"].ResourceId ]
+    [#if fixedVersionRequired ]
 
         [#if !(core.Version?has_content)]
             [@fatal
@@ -393,13 +413,23 @@
                 id=versionResourceId
                 targetId=fnId
                 codeHash=_context.CodeHash!""
-                outputId=versionId
+                outputId=resources["version"].Id
                 deletionPolicy=(solution.FixedCodeVersion.NewVersionOnDeploy)?then(
                     solution.FixedCodeVersion.DeletionPolicy,
                     ""
                 )
-                provisionedExecutions=solution.ProvisionedExecutions
+                [#-- Provision the alias if in use --]
+                provisionedExecutions=valueIfTrue(-1, aliasRequired, solution.ProvisionedExecutions)
             /]
+            [#if aliasRequired]
+                [@createLambdaAlias
+                    id=resources["alias"].Id
+                    name=resources["alias"].Name
+                    functionId=fnId
+                    targetId=versionResourceId
+                    provisionedExecutions=solution.ProvisionedExecutions
+                /]
+            [/#if]
         [/#if]
     [/#if]
 
@@ -471,11 +501,19 @@
 
         [#if deploymentType == "EDGE" ]
 
-            [#if !isPresent(solution.FixedCodeVersion) ]
+            [#if !fixedVersionRequired ]
                 [@fatal
                     message="EDGE based deployments must be deployed as Fixed code version deployments"
                     context=_context
                     detail="Lambda@Edge deployments are based on a snapshot of lambda code and a specific hamlet version is required "
+                /]
+            [/#if]
+
+            [#if aliasRequired ]
+                [@fatal
+                    message="EDGE based deployments cannot use aliases"
+                    context=_context
+                    detail="Lambda@Edge deployments are currently not able to use aliases. Remove the ALIAS value from the configuration."
                 /]
             [/#if]
 
@@ -508,12 +546,12 @@
                 enabled=schedule.Enabled
                 scheduleExpression=schedule.Expression
                 targetParameters=targetParameters
-                dependencies=fnId
+                dependencies=targetFunctionId
             /]
 
             [@createLambdaPermission
                 id=formatLambdaPermissionId(fn, "schedule", schedule.Id)
-                targetId=fnId
+                targetId=targetFunctionId
                 sourcePrincipal="events.amazonaws.com"
                 sourceId=scheduleRuleId
                 dependencies=scheduleRuleId
@@ -546,15 +584,15 @@
                                 "Principal" : roleSource.Principal,
                                 "SourceArn" : logGroupArn
                             }
-                            dependencies=fnId
+                            dependencies=targetFunctionId
                         /]
 
                         [@createLogSubscription
                             id=formatDependentLogSubscriptionId(fnId, logWatcherLink.Id, logGroupId?index)
                             logGroupName=getExistingReference(logGroupId)
                             logFilterId=logFilter
-                            destination=fnId
-                            dependencies=fnId
+                            destination=targetFunctionId
+                            dependencies=targetFunctionId
                         /]
 
                     [/#if]

@@ -32,6 +32,13 @@
     resource=AWS_LAMBDA_VERSION_RESOURCE_TYPE
 /]
 
+[#assign AWS_LAMBDA_ALIAS_RESOURCE_TYPE = "lambdaAlias" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_LAMBDA_SERVICE
+    resource=AWS_LAMBDA_ALIAS_RESOURCE_TYPE
+/]
+
 [#function formatLambdaPermissionId occurrence extensions...]
     [#return formatResourceId(
                 AWS_LAMBDA_PERMISSION_RESOURCE_TYPE,
