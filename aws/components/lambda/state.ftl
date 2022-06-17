@@ -26,6 +26,9 @@
     [#local solution = occurrence.Configuration.Solution ]
 
     [#local id = formatResourceId(AWS_LAMBDA_FUNCTION_RESOURCE_TYPE, core.Id)]
+
+    [#local region = getExistingReference(id, REGION_ATTRIBUTE_TYPE)!getRegion()]
+
     [#-- Unversioned lambda ARN - make available to permit linkage even if function isn't deployed --]
     [#local arn =
         formatArn(
@@ -84,8 +87,6 @@
             ]
         [/#if]
     [/#if]
-
-    [#local region = getExistingReference(id, REGION_ATTRIBUTE_TYPE)!getRegion()]
 
     [#local lgId = formatLogGroupId(core.Id)]
     [#local lgName = formatAbsolutePath("aws", "lambda", core.FullName)]
