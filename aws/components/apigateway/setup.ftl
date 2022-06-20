@@ -210,7 +210,10 @@
     [#local apiPolicyAuth          = solution.AuthorisationModel?upper_case ]
 
     [#local apiPolicyCidr          = getGroupCIDRs(solution.IPAddressGroups) ]
-    [#if (!(wafAclResources?has_content)) && (!(apiPolicyCidr?has_content)) ]
+    [#local apiPolicyCidrProvided  = apiPolicyCidr?has_content ]
+    [#local apiPolicyCidrIsClosed  = apiPolicyCidrProvided && getGroupCIDRs(solution.IPAddressGroups, true, {}, true) ]
+
+    [#if (!(wafAclResources?has_content)) && (!apiPolicyCidrProvided) ]
         [@fatal
             message="No IP Address Groups provided for API Gateway"
             context={
@@ -260,7 +263,7 @@
                 false
             )
         ] ]
-    [#if apiPolicyCidr?has_content ]
+    [#if apiPolicyCidrIsClosed ]
         [#-- If lambda authorizers are in use, and the default AuthorisationModel is --]
         [#-- effect, warn and force the model to a valid value                       --]
         [#if lambdaAuthorizers?has_content && !apiPolicyAuth?starts_with("AUTHORI") ]
@@ -377,10 +380,10 @@
                 [#break]
         [/#switch]
     [#else]
-        [#-- No IP filtering required                                           --]
-        [#-- Because we must have a resource policy to block the default stage, --]
-        [#-- the policy also needs to provide an explicit ALLOW to satisfy the  --]
-        [#-- "API Gateway resource policy only" workflow                        --]
+        [#-- No IP filtering required                                            --]
+        [#-- Because we must have a resource policy to block the default stage,  --]
+        [#-- the policy also needs to provide an explicit ALLOW to satisfy the   --]
+        [#-- "API Gateway authorization workflow" for other types of authorizers --]
         [#local apiPolicyStatements +=
             [
                 getPolicyStatement(
