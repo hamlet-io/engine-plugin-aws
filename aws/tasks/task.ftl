@@ -1,6 +1,7 @@
 [#ftl]
 
 [#assign AWS_RDS_CREATE_SNAPSHOT_TASK_TYPE = "aws_rds_create_snapshot" ]
+[#assign AWS_ECR_DOCKER_LOGIN_TASK_TYPE = "aws_ecr_docker_login" ]
 [#assign AWS_ECS_SELECT_TASK_TASK_TYPE = "aws_ecs_select_task" ]
 [#assign AWS_ECS_RUN_COMMAND_TASK_TYPE = "aws_ecs_run_command" ]
 [#assign AWS_ECS_RUN_TASK_TASK_TYPE = "aws_ecs_run_task" ]
@@ -9,6 +10,8 @@
 [#assign AWS_KMS_DECRYPT_CIPHERTEXT_TASK_TYPE = "aws_kms_decrypt_ciphertext" ]
 [#assign AWS_LAMBDA_INVOKE_FUNCTION_TASK_TYPE = "aws_lambda_invoke_function"]
 [#assign AWS_S3_DOWNLOAD_BUCKET_TASK_TYPE = "aws_s3_download_bucket"]
+[#assign AWS_S3_DOWNLOAD_OBJECT_TASK_TYPE = "aws_s3_download_object" ]
 [#assign AWS_S3_EMPTY_BUCKET_TASK_TYPE = "aws_s3_empty_bucket"]
+[#assign AWS_S3_UPLOAD_OBJECT_TASK_TYPE = "aws_s3_upload_object" ]
 [#assign AWS_SECRETSMANAGER_GET_SECRET_VALUE_TASK_TYPE = "aws_secretsmanager_get_secret_value"]
 [#assign AWS_SES_SMTP_PASSWORD_TASK_TYPE = "aws_ses_smtp_password" ]
