@@ -279,7 +279,12 @@
     [#assign componentState =
         {
             "Resources" : {
-                "lb" : parentState.Resources["lb"],
+                "lb" : mergeObjects(
+                    parentState.Resources.lb,
+                    {
+                        "Deployed" : getExistingReference(listenerId)?has_content
+                    }
+                ),
                 "listener" : {
                     "Id" : listenerId,
                     "Type" : AWS_ALB_LISTENER_RESOURCE_TYPE
@@ -379,6 +384,12 @@
             [#local targetGroupArn = getExistingReference(targetGroupId, ARN_ATTRIBUTE_TYPE)]
 
             [#local resources += {
+                "lb" : mergeObjects(
+                    parentResources.lb,
+                    {
+                        "Deployed" : getExistingReference(targetGroupId)?has_content
+                    }
+                ),
                 "targetgroup" : {
                     "Id" : targetGroupId,
                     "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE,

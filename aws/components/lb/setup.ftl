@@ -99,40 +99,6 @@
 
     [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
 
-        [#-- LB level Alerts --]
-        [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
-
-            [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
-            [#list monitoredResources as name,monitoredResource ]
-
-                [@debug message="Monitored resource" context=monitoredResource enabled=false /]
-
-                [#switch alert.Comparison ]
-                    [#case "Threshold" ]
-                        [@createAlarm
-                            id=formatDependentAlarmId(monitoredResource.Id, alert.Id )
-                            severity=alert.Severity
-                            resourceName=core.FullName
-                            alertName=alert.Name
-                            actions=getCWAlertActions(occurrence, solution.Profiles.Alert, alert.Severity )
-                            metric=getCWMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
-                            namespace=getCWResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
-                            description=alert.Description!alert.Name
-                            threshold=alert.Threshold
-                            statistic=alert.Statistic
-                            evaluationPeriods=alert.Periods
-                            period=alert.Time
-                            operator=alert.Operator
-                            reportOK=alert.ReportOk
-                            unit=alert.Unit
-                            missingData=alert.MissingData
-                            dimensions=getCWMetricDimensions(alert, monitoredResource, resources)
-                        /]
-                    [#break]
-                [/#switch]
-            [/#list]
-        [/#list]
-
         [@createSecurityGroup
             id=targetGroupSG.Id
             name=targetGroupSG.Name
@@ -887,42 +853,6 @@
             [/#if]
         [/#list]
 
-        [#-- PortMapping level Alerts --]
-        [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
-            [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
-
-                [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
-                [#list monitoredResources as name,monitoredResource ]
-
-                    [@debug message="Monitored resource" context=monitoredResource enabled=false /]
-
-                    [#switch alert.Comparison ]
-                        [#case "Threshold" ]
-                            [@createAlarm
-                                id=formatDependentAlarmId(monitoredResource.Id, alert.Id )
-                                severity=alert.Severity
-                                resourceName=core.FullName
-                                alertName=alert.Name
-                                actions=getCWAlertActions(occurrence, solution.Profiles.Alert, alert.Severity )
-                                metric=getCWMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
-                                namespace=getCWResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
-                                description=alert.Description!alert.Name
-                                threshold=alert.Threshold
-                                statistic=alert.Statistic
-                                evaluationPeriods=alert.Periods
-                                period=alert.Time
-                                operator=alert.Operator
-                                reportOK=alert.ReportOk
-                                unit=alert.Unit
-                                missingData=alert.MissingData
-                                dimensions=getCWMetricDimensions(alert, monitoredResource, resources)
-                            /]
-                        [#break]
-                    [/#switch]
-                [/#list]
-            [/#list]
-        [/#if]
-
         [#-- Create the security group for the listener --]
         [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) &&
                 securityGroupRequired ]
@@ -1188,6 +1118,46 @@
                 [/#if]
                 [#break]
         [/#switch]
+    [/#list]
+
+    [#-- Manage alerts for occurrences --]
+    [#list asFlattenedArray( [ occurrence, occurrence.Occurrences![] ], true )?filter(x -> x.Configuration.Solution.Enabled) as subOccurrence]
+        [#local core = subOccurrence.Core]
+        [#local solution = subOccurrence.Configuration.Solution]
+        [#local resources = subOccurrence.State.Resources]
+
+        [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+            [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
+
+                [#local monitoredResources = getCWMonitoredResources(core.Id, resources, alert.Resource)]
+                [#list monitoredResources as name,monitoredResource ]
+
+                    [#switch alert.Comparison ]
+                        [#case "Threshold" ]
+                            [@createAlarm
+                                id=formatDependentAlarmId(monitoredResource.Id, alert.Id )
+                                severity=alert.Severity
+                                resourceName=core.FullName
+                                alertName=alert.Name
+                                actions=getCWAlertActions(occurrence, solution.Profiles.Alert, alert.Severity )
+                                metric=getCWMetricName(alert.Metric, monitoredResource.Type, core.ShortFullName)
+                                namespace=getCWResourceMetricNamespace(monitoredResource.Type, alert.Namespace)
+                                description=alert.Description!alert.Name
+                                threshold=alert.Threshold
+                                statistic=alert.Statistic
+                                evaluationPeriods=alert.Periods
+                                period=alert.Time
+                                operator=alert.Operator
+                                reportOK=alert.ReportOk
+                                unit=alert.Unit
+                                missingData=alert.MissingData
+                                dimensions=getCWMetricDimensions(alert, monitoredResource, resources)
+                            /]
+                        [#break]
+                    [/#switch]
+                [/#list]
+            [/#list]
+        [/#if]
     [/#list]
 
     [#-- Reset common variables to this scope (from subOccurrence scope above) --]
