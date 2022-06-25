@@ -7,89 +7,70 @@
 [#-- reousrce type definitions will be needed here but for now --]
 [#-- AWs hasn't defined any of interest                        --]
 [#assign AWS_WAF_RULE_RESOURCE_TYPE = "wafRule" ]
-[@addServiceResource
-    provider=AWS_PROVIDER
-    service=AWS_WEB_APPLICATION_FIREWALL_SERVICE
-    resource=AWS_WAF_RULE_RESOURCE_TYPE
-/]
 [#assign AWS_WAF_ACL_RESOURCE_TYPE = "wafAcl" ]
-[@addServiceResource
-    provider=AWS_PROVIDER
-    service=AWS_WEB_APPLICATION_FIREWALL_SERVICE
-    resource=AWS_WAF_ACL_RESOURCE_TYPE
-/]
 [#assign AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE = "wafAssoc" ]
-[@addServiceResource
-    provider=AWS_PROVIDER
-    service=AWS_WEB_APPLICATION_FIREWALL_SERVICE
-    resource=AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE
-/]
-
-[#-- TODO(mfl): Deprecate direct creation of IPSet rule --]
 [#assign AWS_WAF_IPSET_RESOURCE_TYPE = "wafIpSet" ]
-[#function formatWAFIPSetId group regional=false ]
-    [#return regional?then(
-            formatAccountResourceId(
-                AWS_WAF_IPSET_RESOURCE_TYPE,
-                group),
-            formatAccountResourceId(
-                AWS_WAF_IPSET_RESOURCE_TYPE,
-                group))
-    ]
-[/#function]
-[#function formatWAFIPSetRuleId group]
-    [#return formatDependentWAFRuleId(
-                formatWAFIPSetId(group))]
-[/#function]
 
-[#function formatWAFConditionId type ids...]
-    [#return formatResourceId(
-                "waf" + type,
-                ids)]
-[/#function]
+[#assign AWS_WAFV2_RULE_RESOURCE_TYPE = "wafv2Rule" ]
+[#assign AWS_WAFV2_ACL_RESOURCE_TYPE = "wafv2Acl" ]
+[#assign AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE = "wafv2Assoc" ]
+[#assign AWS_WAFV2_IPSET_RESOURCE_TYPE = "wafv2IpSet" ]
 
-[#function formatDependentWAFConditionId type resourceId extensions...]
+[#list [
+    AWS_WAF_RULE_RESOURCE_TYPE,
+    AWS_WAF_ACL_RESOURCE_TYPE,
+    AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE,
+    AWS_WAF_IPSET_RESOURCE_TYPE,
+    AWS_WAFV2_RULE_RESOURCE_TYPE,
+    AWS_WAFV2_ACL_RESOURCE_TYPE,
+    AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE,
+    AWS_WAFV2_IPSET_RESOURCE_TYPE ] as resource]
+
+    [@addServiceResource
+        provider=AWS_PROVIDER
+        service=AWS_WEB_APPLICATION_FIREWALL_SERVICE
+        resource=resource
+    /]
+[/#list]
+
+
+[#function formatDependentWAFConditionId version type resourceId extensions...]
     [#return formatDependentResourceId(
-                "waf" + type,
-                resourceId,
-                extensions)]
+        (version == "v2")?then(
+            "wafv2",
+            "waf"
+        ) + type,
+        resourceId,
+        extensions)]
 [/#function]
 
-[#function formatWAFRuleId ids...]
-    [#return formatResourceId(
-                AWS_WAF_RULE_RESOURCE_TYPE,
-                ids)]
-[/#function]
-
-[#function formatDependentWAFRuleId resourceId extensions...]
+[#function formatDependentWAFRuleId version resourceId extensions...]
     [#return formatDependentResourceId(
-                AWS_WAF_RULE_RESOURCE_TYPE,
-                resourceId,
-                extensions)]
+            (version == "v2")?then(
+                AWS_WAFV2_RULE_RESOURCE_TYPE,
+                AWS_WAF_RULE_RESOURCE_TYPE
+            ),
+            resourceId,
+            extensions)]
 [/#function]
 
-[#function formatWAFAclId ids...]
-    [#return formatResourceId(
-                AWS_WAF_ACL_RESOURCE_TYPE,
-                ids)]
-[/#function]
-
-[#function formatDependentWAFAclId resourceId extensions...]
+[#function formatDependentWAFAclId version resourceId extensions...]
     [#return formatDependentResourceId(
-                AWS_WAF_ACL_RESOURCE_TYPE,
-                resourceId,
-                extensions)]
+            (version == "v2")?then(
+                AWS_WAFV2_ACL_RESOURCE_TYPE,
+                AWS_WAF_ACL_RESOURCE_TYPE
+            ),
+            resourceId,
+            extensions)]
 [/#function]
 
-[#function formatWAFAclAssociationId ids...]
-    [#return formatResourceId(
-                AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE,
-                ids)]
-[/#function]
-
-[#function formatDependentWAFAclAssociationId resourceId extensions...]
+[#function formatDependentWAFAclAssociationId version resourceId extensions...]
     [#return formatDependentResourceId(
-                AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE,
-                resourceId,
-                extensions)]
+        (version == "v2")?then(
+            AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE,
+            AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE
+        ),
+        resourceId,
+        extensions
+    )]
 [/#function]
