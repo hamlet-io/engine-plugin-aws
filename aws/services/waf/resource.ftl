@@ -116,11 +116,8 @@
                         }}] ]
                 [#break]
                 [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
-                    [#--local result += formatWAFIPMatchTuples(filter, valueSet, version) 
-                        Also assumes that only one condition of IPAddressGroups is valid
-                    --]
                     [#local v2WkStatement += [ { "IPSetReferenceStatement": {
-                        "Arn": { "Fn::GetAtt" : [ formatDependentWAFConditionId(condition.Type, id, "c1"), "Arn" ] }
+                        "Arn": { "Fn::GetAtt" : [ formatDependentWAFConditionId("v2", condition.Type, id, "c1"), "Arn" ] }
                         }}] ]
                 [#break]
                 [#default]
@@ -294,7 +291,7 @@
         [#local conditionName = condition.Name!conditionId]
         [#-- Generate id/name from rule equivalents if not provided --]
         [#if !conditionId?has_content]
-            [#local conditionId = formatDependentWAFConditionId(condition.Type, id, "c" + condition?counter?c)]
+            [#local conditionId = formatDependentWAFConditionId(version, condition.Type, id, "c" + condition?counter?c)]
         [/#if]
         [#if !conditionName?has_content]
             [#local conditionName = formatName(name,"c" + condition?counter?c,condition.Type)]
@@ -368,7 +365,7 @@
             [#-- Rule to be created with the acl --]
             [#-- Generate id/name/metric from acl equivalents if not provided --]
             [#if !ruleId?has_content]
-                [#local ruleId = formatDependentWAFRuleId(id,"r" + rule?counter?c)]
+                [#local ruleId = formatDependentWAFRuleId(version, id,"r" + rule?counter?c)]
             [/#if]
             [#if !ruleName?has_content]
                 [#local ruleName = formatName(name,"r" + rule?counter?c,rule.NameSuffix!"")]
@@ -417,7 +414,7 @@
                                 "Statement" : v2Statement,
                                 "VisibilityConfig" : {
                                     "CloudWatchMetricsEnabled" : true,
-                                    "MetricName" : ruleMetric,
+                                    "MetricName" : ruleName,
                                     "SampledRequestsEnabled" : true
                                 }
                             }
@@ -456,7 +453,7 @@
                     "Scope": regional?then("REGIONAL","CLOUDFRONT"),
                     "VisibilityConfig" : {
                         "CloudWatchMetricsEnabled" : true,
-                        "MetricName" : metric?replace("-","X"),
+                        "MetricName" : ruleName,
                         "SampledRequestsEnabled" : true
                     }
                 }

@@ -68,13 +68,13 @@
         [#local wafResources =
             {
                 "acl" : {
-                    "Id" : formatDependentWAFAclId(id),
-                    "Arn": (solution.WAF.Version == "v2")?then({ "Fn::GetAtt" : [ formatDependentWAFAclId(id), "Arn" ] }, ""),
+                    "Id" : formatDependentWAFAclId(solution.WAF.Version, id),
+                    "Arn": (solution.WAF.Version == "v2")?then({ "Fn::GetAtt" : [ formatDependentWAFAclId(solution.WAF.Version, id), "Arn" ] }, ""),
                     "Name" : formatComponentWAFAclName(core.Tier, core.Component, occurrence),
                     "Type" : AWS_WAF_ACL_RESOURCE_TYPE
                 },
                 "association" : {
-                    "Id" : formatDependentWAFAclAssociationId(id),
+                    "Id" : formatDependentWAFAclAssociationId(solution.WAF.Version, id),
                     "Type" : AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE
                 }
             } ]
