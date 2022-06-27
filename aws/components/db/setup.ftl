@@ -810,7 +810,7 @@
                     parameterGroupId=getReference(rdsClusterParameterGroupId)
                     snapshotArn=snapshotArn
                     securityGroupId=getReference(rdsSecurityGroupId)
-                    tags=rdsTags
+                    tags=mergeObjects(rdsTags, backupTags)
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
                     maintenanceWindow=
@@ -849,7 +849,7 @@
                                 [#else]
                                     [#local linkRoles = [] ]
                                 [/#if]
-                                [@createRDSEvent 
+                                [@createRDSEvent
                                     id=formatId(rdsId, eventId, linkId)
                                     rdsId=rdsId
                                     linkArn=linkTargetAttributes["ARN"]
@@ -972,7 +972,7 @@
                                 [#else]
                                     [#local linkRoles = [] ]
                                 [/#if]
-                                [@createRDSEvent 
+                                [@createRDSEvent
                                     id=formatId(rdsId, eventId, linkId)
                                     rdsId=rdsId
                                     linkArn=linkTargetAttributes["ARN"]
