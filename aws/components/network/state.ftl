@@ -32,8 +32,7 @@
 
     [#local subnets = {} ]
     [#-- Define subnets --]
-    [#list segmentObject.Network.Tiers.Order as tierId]
-        [#local networkTier = getTier(tierId) ]
+    [#list getTiers()?filter(x -> x.Network.Enabled && x.Active ) as networkTier]
         [#if ! (networkTier?has_content && networkTier.Network.Enabled &&
                     networkTier.Network.Link.Tier == core.Tier.Id && networkTier.Network.Link.Component == core.Component.Id &&
                     (networkTier.Network.Link.Version!core.Version.Id) == core.Version.Id && (networkTier.Network.Link.Instance!core.Instance.Id) == core.Instance.Id  ) ]
@@ -48,7 +47,7 @@
                                     formatSubnetName(networkTier, zone),
                                     formatName(core.FullName, networkTier.Name, zone.Name))]
 
-            [#local subnetIndex = ( tierId?index * network.Zones.Order?size ) + zone?index]
+            [#local subnetIndex = ( networkTier.Index * network.Zones.Order?size ) + zone?index]
             [#local subnetCIDR = subnetCIDRS[subnetIndex]]
             [#local subnets =  mergeObjects( subnets, {
                 networkTier.Id  : {
@@ -208,12 +207,7 @@
         [#local legacyIGWRouteId = formatRouteId(routeTableId, "gateway") ]
     [/#if]
 
-    [#list segmentObject.Network.Tiers.Order as tierId]
-        [#local networkTier = getTier(tierId) ]
-        [#if ! (networkTier?has_content && networkTier.Network.Enabled ) ]
-            [#continue]
-        [/#if]
-
+    [#list getTiers()?filter(x -> x.Active && x.Network.Enabled ) as networkTier]
         [#list getZones() as zone]
             [#local zoneRouteTableId = formatId(routeTableId, zone.Id)]
             [#local zoneRouteTableName = formatName(routeTableName, zone.Id)]
