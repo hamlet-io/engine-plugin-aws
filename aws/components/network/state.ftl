@@ -38,6 +38,11 @@
                     (networkTier.Network.Link.Version!core.Version.Id) == core.Version.Id && (networkTier.Network.Link.Instance!core.Instance.Id) == core.Instance.Id  ) ]
             [#continue]
         [/#if]
+
+        [#if ! (networkTier.Index)?is_number ]
+            [#continue]
+        [/#if]
+
         [#list getZones() as zone]
             [#local subnetId = legacyVpc?then(
                                     formatSubnetId(networkTier, zone),
