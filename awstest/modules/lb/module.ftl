@@ -624,7 +624,8 @@
                 "Account" : "0123456789",
                 "Region" : "mock-region-1",
                 "DeploymentUnit" : "aws-lb",
-                "lbXelbXnlbalbXalb" : "lbXelbXnlbalbXalb"
+                "lbXelbXnlbalbXalb" : "lbXelbXnlbalbXalb",
+                "listenerXelbXnlbalbXalbXhttp": "listenerXelbXnlbalbXalbXhttp"
             }
         ]
     /]
