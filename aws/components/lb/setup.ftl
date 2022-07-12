@@ -970,7 +970,7 @@
                     [#if getExistingReference(listenerId)?has_content && ! getExistingReference(listenerRuleId)?has_content ]
                         [#local ruleCleanupScript += [
                                 "cleanup_elbv2_rules" +
-                                "       \"" + region + "\" " +
+                                "       \"" + getRegion() + "\" " +
                                 "       \"" + getExistingReference(listenerId, ARN_ATTRIBUTE_TYPE) + "\" "
                             ]]
                     [/#if]
