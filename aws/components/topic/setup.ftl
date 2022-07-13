@@ -67,9 +67,20 @@
 
         [#local topicPolicyStatements = []]
 
-        [#list solution.Links as linkId,link]
+        [#local contextLinks = getLinkTargets(occurrence) ]
+        [#local _context =
+            {
+                "Links" : contextLinks,
+                "Policy" : []
+            }
+        ]
+        [#local _context = invokeExtensions( occurrence, _context )]
 
-            [#local linkTarget = getLinkTarget(occurrence, link) ]
+        [#if _context.Policy?has_content ]
+            [#local topicPolicyStatements += _context.Policy /]
+        [/#if]
+
+        [#list _context.Links as linkId,linkTarget]
 
             [@debug message="Link Target" context=linkTarget enabled=false /]
 
