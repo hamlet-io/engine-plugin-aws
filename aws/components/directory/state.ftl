@@ -12,6 +12,8 @@
     [#local hostName = getHostName(certificateObject, occurrence) ]
     [#local fqdn = formatDomainName(hostName, primaryDomainObject) ]
 
+    [#local securityGroupId = ""]
+
     [#local adminUser = solution.RootCredentials.Username ]
 
     [#local dnsPorts = [
