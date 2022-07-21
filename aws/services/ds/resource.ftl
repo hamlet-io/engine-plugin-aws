@@ -104,10 +104,10 @@
             '      ${directoryIdEnvVar}=' + r'"${directory_id}"',
             r'     # watch setup',
             r'     for ((i=1;i<=100;i++)); do',
-            r'        stage="$(aws --region "${region}" ds describe-directories --directory-id "${direcotory_id}" --output text --query "DirectoryDescriptions[0].Stage" )"',
-            r'        case',
+            r'        stage="$(aws --region "${region}" ds describe-directories --directory-id "${directory_id}" --output text --query "DirectoryDescriptions[0].Stage" )"',
+            r'        case ${stage} in',
             r'          Active)',
-            r'            info "AD Connector ${direcotory_id} setup complete"'
+            r'            info "AD Connector ${directory_id} setup complete"'
         ] +
             pseudoStackOutputScript(
                 "AD Connector",
@@ -118,13 +118,13 @@
             r'            break',
             r'            ;;',
             r'          Failed)',
-            r'            stage_reason="$(aws --region "${region}" ds describe-directories --directory-id "${direcotory_id}" --output text --query "DirectoryDescriptions[0].StageReason" )"',
-            r'            fatal "AD Connector ${direcotory_id} setup failed | ${stage_reason}"',
+            r'            stage_reason="$(aws --region "${region}" ds describe-directories --directory-id "${directory_id}" --output text --query "DirectoryDescriptions[0].StageReason" )"',
+            r'            fatal "AD Connector ${directory_id} setup failed | ${stage_reason}"',
             r'            exit 128',
             r'            ;;',
             r'         esac',
             r'         [[ $i == 99 ]] && fatal "AD Connector ${directory_id} setup timeout" && exit 64',
-            r'         sleep 15s',
+            r'         sleep 15',
             r'      done',
             r'      ;;',
             r'  delete)',
