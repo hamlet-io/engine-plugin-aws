@@ -46,9 +46,9 @@
             "# 'Create logging dir for cfninit scripts' ;",
             "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-data.log -Append ;",
             "echo 'Create staging dirs for cfninit scripts' ;",
-            "mkdir c:\\ProgramData\\Hamlet\\Scripts ;",
-            "mkdir c:\\Temp ;",
-            "mkdir c:\\ProgramData\\Amazon\\AmazonCloudWatchAgent ;",
+            "New-Item -Type Directory -Force c:\\ProgramData\\Hamlet\\Scripts ;",
+            "New-Item -Type Directory -Force c:\\Temp ;",
+            "New-Item -Type Directory -Force c:\\ProgramData\\Amazon\\AmazonCloudWatchAgent ;",
             "echo 'Remainder of configuration via metadata' ;",
             {
                 "Fn::Sub" : [
