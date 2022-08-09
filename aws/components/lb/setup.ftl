@@ -1258,7 +1258,7 @@
                             [#switch engine]
                                 [#case "network"]
                                     [#if ! ((defaultActions[lbListener.Source])!{})?has_content ]
-                                        [#local defaultActions += { source : getListenerRuleForwardAction(lbListener.DefaultTargetGroupId)} ]
+                                        [#local defaultActions += { lbListener.Source : getListenerRuleForwardAction(lbListener.DefaultTargetGroupId)} ]
                                     [/#if]
                                     [#break]
 
