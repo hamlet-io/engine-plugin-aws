@@ -83,6 +83,15 @@
             [#local replicationDestinationAccountId = "" ]
             [#local replicationExternalPolicy = []]
 
+            [#local contextLinks = getLinkTargets(occurrence)]
+            [#local _context =
+                {
+                    "Links" : contextLinks,
+                    "Policy" : []
+                }
+            ]
+            [#local _context = invokeExtensions(occurrence, _context )]
+
             [#if ( deploymentSubsetRequired(BASELINE_COMPONENT_TYPE, true) && legacyS3 == false ) ||
                 ( deploymentSubsetRequired("s3") && legacyS3 == true) ]
 
@@ -185,56 +194,46 @@
                     [/#if]
                 [/#list]
 
-                [#list subSolution.Links?values as link]
-                    [#if link?is_hash]
-                        [#local linkTarget = getLinkTarget(occurrence, link, false) ]
+                [#list _context.Links as id, linkTarget]
+                    [#local linkTargetCore = linkTarget.Core ]
+                    [#local linkTargetConfiguration = linkTarget.Configuration ]
+                    [#local linkTargetResources = linkTarget.State.Resources ]
+                    [#local linkTargetAttributes = linkTarget.State.Attributes ]
 
-                        [@debug message="Link Target" context=linkTarget enabled=false /]
+                    [#switch linkTargetCore.Type]
 
-                        [#if !linkTarget?has_content]
-                            [#continue]
-                        [/#if]
-
-                        [#local linkTargetCore = linkTarget.Core ]
-                        [#local linkTargetConfiguration = linkTarget.Configuration ]
-                        [#local linkTargetResources = linkTarget.State.Resources ]
-                        [#local linkTargetAttributes = linkTarget.State.Attributes ]
-
-                        [#switch linkTargetCore.Type]
-
-                            [#case BASELINE_KEY_COMPONENT_TYPE]
-                                [#if linkTargetConfiguration.Solution.Engine == "oai" ]
-                                    [#local cfAccessCanonicalIds += [ getReference( (linkTargetResources["originAccessId"].Id), CANONICAL_ID_ATTRIBUTE_TYPE )] ]
-                                [/#if]
-                                [#break]
+                        [#case BASELINE_KEY_COMPONENT_TYPE]
+                            [#if linkTargetConfiguration.Solution.Engine == "oai" ]
+                                [#local cfAccessCanonicalIds += [ getReference( (linkTargetResources["originAccessId"].Id), CANONICAL_ID_ATTRIBUTE_TYPE )] ]
+                            [/#if]
+                            [#break]
 
 
-                            [#case EXTERNALSERVICE_COMPONENT_TYPE ]
-                                [#if linkTarget.Role  == "replicadestination" ]
-                                    [#local replicationDestinationAccountId = linkTargetAttributes["ACCOUNT_ID"]!"" ]
-                                    [#local replicationExternalPolicy +=   s3ReplicaDestinationPermission( linkTargetAttributes["ARN"] ) ]
-                                [/#if]
+                        [#case EXTERNALSERVICE_COMPONENT_TYPE ]
+                            [#if linkTarget.Role  == "replicadestination" ]
+                                [#local replicationDestinationAccountId = linkTargetAttributes["ACCOUNT_ID"]!"" ]
+                                [#local replicationExternalPolicy +=   s3ReplicaDestinationPermission( linkTargetAttributes["ARN"] ) ]
+                            [/#if]
 
-                            [#case BASELINE_DATA_COMPONENT_TYPE]
-                            [#case S3_COMPONENT_TYPE]
+                        [#case BASELINE_DATA_COMPONENT_TYPE]
+                        [#case S3_COMPONENT_TYPE]
 
-                                [#switch linkTarget.Role ]
-                                    [#case "replicadestination" ]
-                                        [#local replicationEnabled = true]
-                                        [#if !replicationBucket?has_content ]
-                                            [#local replicationBucket = linkTargetAttributes["ARN"]]
-                                        [#else]
-                                            [@fatal
-                                                message="Only one replication destination is supported"
-                                                context=links
-                                            /]
-                                        [/#if]
-                                        [#break]
-                                [/#switch]
-                                [#break]
+                            [#switch linkTarget.Role ]
+                                [#case "replicadestination" ]
+                                    [#local replicationEnabled = true]
+                                    [#if !replicationBucket?has_content ]
+                                        [#local replicationBucket = linkTargetAttributes["ARN"]]
+                                    [#else]
+                                        [@fatal
+                                            message="Only one replication destination is supported"
+                                            context=links
+                                        /]
+                                    [/#if]
+                                    [#break]
+                            [/#switch]
+                            [#break]
 
-                        [/#switch]
-                    [/#if]
+                    [/#switch]
                 [/#list]
 
                 [#-- Add Replication Rules --]
@@ -378,6 +377,9 @@
                         [#break]
                 [/#switch]
 
+                [#if _context.Policy?has_content ]
+                    [#local bucketPolicy += _context.Policy /]
+                [/#if]
                 [#if bucketPolicy?has_content ]
                     [@createBucketPolicy
                         id=bucketPolicyId
