@@ -236,6 +236,16 @@ created in either case.
                     },
                     fqdns
                 ),
+                "cachePolicy": {
+                    "Id" : formatResourceId(AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE, core.Id),
+                    "Name" : core.RawFullName,
+                    "Type" : AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE
+                },
+                "originRequestPolicy": {
+                    "Id" : formatResourceId(AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE, core.Id),
+                    "Name" : core.RawFullName,
+                    "Type" : AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE
+                },
                 "origin" : {
                     "Id" : "apigateway",
                     "Fqdn" : signingFqdn,
