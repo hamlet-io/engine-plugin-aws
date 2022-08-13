@@ -236,7 +236,7 @@
         type="AWS::Lambda::Permission"
         properties=
             {
-                "FunctionName" : getReference(targetId),
+                "FunctionName" : getArn(targetId),
                 "Action" : action
             } +
             valueIfContent(

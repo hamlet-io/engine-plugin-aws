@@ -249,6 +249,14 @@
                                 )]
                     [/#list]
                     [#break]
+
+                    [#case LAMBDA_FUNCTION_COMPONENT_TYPE]
+                        [#local staticTargets += getTargetGroupTarget(
+                            "lambda",
+                            linkTargetAttributes["ARN"]
+                        )]
+                        [#break]
+                    [#break]
             [/#switch]
         [/#list]
 
@@ -942,6 +950,13 @@
                                 linkTarget.State.Attributes.SOURCE_PORT
                             )]
                         [#break]
+
+                    [#case LAMBDA_FUNCTION_COMPONENT_TYPE]
+                        [#local staticTargets += getTargetGroupTarget(
+                            "lambda",
+                            linkTargetAttributes["ARN"]
+                        )]
+                        [#break]
                 [/#switch]
             [/#if]
         [/#list]
@@ -1038,7 +1053,7 @@
 
             [#case "network"]
 
-                [#if solution.Forward.TargetType != "aws:alb"]
+                [#if ! ["aws:alb", "aws:lambda"]?seq_contains(solution.Forward.TargetType)]
                     [#local tgAttributes +=
                         {
                             "deregistration_delay.timeout_seconds" : solution.Forward.DeregistrationTimeout

@@ -38,7 +38,7 @@
             "Children" : [
                 {
                     "Names" : "TargetType",
-                    "Values" : [ "shared:ip", "shared:instance", "alb"]
+                    "Values" : [ "shared:ip", "shared:instance", "alb", "lambda"]
                 }
             ]
         }

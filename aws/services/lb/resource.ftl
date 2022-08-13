@@ -302,55 +302,88 @@
         [#case "alb"]
             [#local targetType = "alb"]
             [#break]
+        [#case "aws:lambda"]
+        [#case "lambda"]
+            [#local targetType= "lambda"]
+            [#break]
     [/#switch]
+
+    [#local healthCheckEnabled = true]
+    [#if ! destination.HealthCheck.Enabled && targetType == "lambda" ]
+        [#local healthCheckEnabled = false]
+    [/#if]
+
+    [#local networkRequired = true]
+    [#if targetType == "lambda"]
+        [#local networkRequired = false]
+    [/#if]
 
     [@cfResource
         id=id
         type="AWS::ElasticLoadBalancingV2::TargetGroup"
-        properties=
-            {
-                "HealthCheckPort" : (destination.HealthCheck.Port)!"traffic-port",
-                "HealthCheckProtocol": healthCheckProtocol,
-                "HealthyThresholdCount" : destination.HealthCheck.HealthyThreshold?number,
-                "Port" : destination.Port,
-                "Protocol" : protocol!((destination.Protocol)?upper_case),
-                "VpcId": getReference(vpcId)
-            } +
+        properties={} +
             attributeIfContent(
                 "TargetGroupAttributes",
                 targetGroupAttributes
             ) +
-            valueIfContent(
-                {
-                    "Matcher" : { "HttpCode" : (destination.HealthCheck.SuccessCodes)!"" }
-                },
-                (destination.HealthCheck.SuccessCodes)!"") +
             valueIfTrue(
                 {
                     "TargetType" : targetType
                 },
-                targetType == "ip" || targetType == "alb"
-            ) +
-            valueIfContent(
-                {
-                    "HealthCheckPath" : (destination.HealthCheck.Path)!""
-                },
-                (destination.HealthCheck.Path)!""
-            ) +
-            (destination.Protocol != "TCP")?then(
-                {
-                    "HealthCheckIntervalSeconds" : destination.HealthCheck.Interval?number,
-                    "HealthCheckTimeoutSeconds" : destination.HealthCheck.Timeout?number,
-                    "UnhealthyThresholdCount" : destination.HealthCheck.UnhealthyThreshold?number
-                },
-                {
-                    "UnhealthyThresholdCount" : destination.HealthCheck.HealthyThreshold?number
-                }
-
+                targetType != "instance"
             ) +
             attributeIfContent(
                 "Targets",
                 targets
+            ) +
+            networkRequired?then(
+                {
+                    "Port" : destination.Port,
+                    "Protocol" : protocol!((destination.Protocol)?upper_case),
+                    "VpcId": getReference(vpcId)
+                },
+                {}
+            ) +
+            healthCheckEnabled?then(
+                {
+                    "HealthCheckEnabled" : healthCheckEnabled,
+                    "HealthyThresholdCount" : destination.HealthCheck.HealthyThreshold?number
+                } +
+                valueIfTrue(
+                    {
+                        "HealthCheckPort" : (destination.HealthCheck.Port)!"traffic-port",
+                        "HealthCheckProtocol": healthCheckProtocol
+                    },
+                    targetType != "lambda"
+                ) +
+                valueIfContent(
+                    {
+                        "Matcher" : {
+                            "HttpCode" : (destination.HealthCheck.SuccessCodes)!""
+                        }
+                    },
+                    (destination.HealthCheck.SuccessCodes)!""
+                ) +
+                valueIfContent(
+                    {
+                        "HealthCheckPath" : (destination.HealthCheck.Path)!""
+                    },
+                    (destination.HealthCheck.Path)!""
+                ) +
+                (destination.Protocol != "TCP")?then(
+                    {
+                        "HealthCheckIntervalSeconds" : destination.HealthCheck.Interval?number,
+                        "HealthCheckTimeoutSeconds" : destination.HealthCheck.Timeout?number,
+                        "UnhealthyThresholdCount" : destination.HealthCheck.UnhealthyThreshold?number
+                    },
+                    {
+                        "UnhealthyThresholdCount" : destination.HealthCheck.HealthyThreshold?number
+                    }
+
+                ),
+                {
+                    "HealthCheckEnabled" : false
+                }
             )
         tags=tags
         outputs=ALB_TARGET_GROUP_OUTPUT_MAPPINGS
