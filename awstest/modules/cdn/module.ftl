@@ -9,7 +9,7 @@
 
 [#macro awstest_module_cdn ]
 
-    [#-- Base database setup --]
+    [#-- Base setup --]
     [@loadModule
         settingSets=[
             {
@@ -118,5 +118,308 @@
                 "cfXwebXcdnbase": "abc123def"
             }
         ]
+    /]
+
+    [#-- Separate Origin --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "web" : {
+                    "Components" : {
+                        "cdnorigin": {
+                            "Type": "cdn",
+                            "deployment:Unit": "aws-cdn",
+                            "Routes" : {
+                                "default" : {
+                                    "PathPattern": "_default",
+                                    "OriginSource": "CDN",
+                                    "OriginSource:CDN": {
+                                        "Id": "lb"
+                                    }
+                                },
+                                "static": {
+                                    "PathPattern" : "static/*",
+                                    "OriginSource" : "CDN",
+                                    "OriginSource:CDN" : {
+                                        "Id": "lb"
+                                    },
+                                    "RequestForwarding": {
+                                        "AdditionalHeaders" : {
+                                            "X-Anon-Content" : {
+                                                "Value": "true"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "Origins" : {
+                                "lb" : {
+                                    "Link" : {
+                                        "Tier" : "web",
+                                        "Component" : "cdnoriginlb",
+                                        "SubComponent" : "https"
+                                    }
+                                }
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "cdnorigin" ]
+                            }
+                        },
+                        "cdnoriginlb" : {
+                            "Type" : "lb",
+                            "deployment:Unit" : "aws-cdn",
+                            "Engine" : "application",
+                            "PortMappings" : {
+                                "https": {
+                                    "Mapping" : "https"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "cdnorigin" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "cfXwebXcdnorigin" : {
+                                    "Name" : "cfXwebXcdnorigin",
+                                    "Type" : "AWS::CloudFront::Distribution"
+                                }
+                            },
+                            "Output" : [
+                                "cfXwebXcdnoriginXdns",
+                                "cfXwebXcdnorigin"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "SplitOrigin" : {
+                                    "Path" : "Resources.cfXwebXcdnorigin.Properties.DistributionConfig.Origins[0].Id",
+                                    "Value" : "cforiginXwebXcdnoriginXlbXcdnorigin"
+                                },
+                                "CDNtags" : {
+                                    "Path"  : "Resources.cfXwebXcdnorigin.Properties.Tags[0].Value",
+                                    "Value" : "mockedup-integration-web-cdnorigin"
+                                }
+                            },
+                            "Length" : {
+                                "Origins" : {
+                                    "Path" : "Resources.cfXwebXcdnorigin.Properties.DistributionConfig.Origins",
+                                    "Count" : 1
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "cdnorigin" : {
+                    "cdn" : {
+                        "TestCases" : [ "cdnorigin" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+    /]
+
+    [#-- Response Policy --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "web" : {
+                    "Components" : {
+                        "cdnheaderresponse": {
+                            "Type": "cdn",
+                            "deployment:Unit": "aws-cdn",
+                            "Routes" : {
+                                "default" : {
+                                    "PathPattern": "_default",
+                                    "OriginSource": "Route",
+                                    "OriginSource:Route": {
+                                        "Link" : {
+                                            "Tier" : "web",
+                                            "Component" : "cdnheaderresponselb",
+                                            "SubComponent" : "https"
+                                        }
+                                    },
+                                    "ResponsePolicy" : {
+                                        "Id" : "hsts"
+                                    }
+                                }
+                            },
+                            "ResponsePolicys" :{
+                                "hsts" : {
+                                    "HeaderInjection" : {
+                                        "StrictTransportSecurity" : {
+                                            "Enabled": true
+                                        }
+                                    }
+                                }
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "cdnheaderresponse" ]
+                            }
+                        },
+                        "cdnheaderresponselb" : {
+                            "Type" : "lb",
+                            "deployment:Unit" : "aws-cdn",
+                            "Engine" : "application",
+                            "PortMappings" : {
+                                "https": {
+                                    "Mapping" : "https"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "cdnheaderresponse" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "cfXwebXcdnheaderresponse" : {
+                                    "Name" : "cfXwebXcdnheaderresponse",
+                                    "Type" : "AWS::CloudFront::Distribution"
+                                },
+                                "cfresponseheaderspolicyXwebXcdnheaderresponseXhsts" : {
+                                    "Name" : "cfresponseheaderspolicyXwebXcdnheaderresponseXhsts",
+                                    "Type" : "AWS::CloudFront::ResponseHeadersPolicy"
+                                }
+                            },
+                            "Output" : [
+                                "cfXwebXcdnheaderresponseXdns",
+                                "cfXwebXcdnheaderresponse"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "HSTSDontOverride" : {
+                                    "Path" : "Resources.cfresponseheaderspolicyXwebXcdnheaderresponseXhsts.Properties.ResponseHeadersPolicyConfig.SecurityHeadersConfig.StrictTransportSecurity.Override",
+                                    "Value" : false
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "cdnheaderresponse" : {
+                    "cdn" : {
+                        "TestCases" : [ "cdnheaderresponse" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+    /]
+
+    [#-- Cache Policy --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "web" : {
+                    "Components" : {
+                        "cdncachepolicy": {
+                            "Type": "cdn",
+                            "deployment:Unit": "aws-cdn",
+                            "Routes" : {
+                                "default" : {
+                                    "PathPattern": "_default",
+                                    "OriginSource": "Route",
+                                    "OriginSource:Route": {
+                                        "Link" : {
+                                            "Tier" : "web",
+                                            "Component" : "cdncachepolicylb",
+                                            "SubComponent" : "https"
+                                        }
+                                    },
+                                    "CachePolicy" : "Custom",
+                                    "CachePolicy:Custom": {
+                                        "Id" : "CacheAll"
+                                    }
+                                }
+                            },
+                            "CachePolicies" :{
+                                "CacheAll" : {
+                                    "Headers" : [],
+                                    "Methods" : ["GET", "HEAD", "OPTIONS"],
+                                    "QueryParams": [],
+                                    "Cookies": [],
+                                    "TTL" : {
+                                        "Minimum" : 86400,
+                                        "Maximum" : 86400,
+                                        "Default" : 86400
+                                    }
+                                }
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "cdncachepolicy" ]
+                            }
+                        },
+                        "cdncachepolicylb" : {
+                            "Type" : "lb",
+                            "deployment:Unit" : "aws-cdn",
+                            "Engine" : "application",
+                            "PortMappings" : {
+                                "https": {
+                                    "Mapping" : "https"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "cdncachepolicy" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "cfXwebXcdncachepolicy" : {
+                                    "Name" : "cfXwebXcdnheaderresponse",
+                                    "Type" : "AWS::CloudFront::Distribution"
+                                },
+                                "cfcachepolicyXwebXcdncachepolicyXCacheAll" : {
+                                    "Name" : "cfcachepolicyXwebXcdncachepolicyXCacheAll",
+                                    "Type" : "AWS::CloudFront::CachePolicy"
+                                }
+                            },
+                            "Output" : [
+                                "cfXwebXcdncachepolicyXdns",
+                                "cfXwebXcdncachepolicy"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "HSTSDontOverride" : {
+                                    "Path" : "Resources.cfcachepolicyXwebXcdncachepolicyXCacheAll.Properties.CachePolicyConfig.MinTTL",
+                                    "Value" : 86400
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "cdncachepolicy" : {
+                    "cdn" : {
+                        "TestCases" : [ "cdncachepolicy" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
     /]
 [/#macro]

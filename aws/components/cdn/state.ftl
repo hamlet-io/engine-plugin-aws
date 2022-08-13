@@ -237,7 +237,7 @@
     [#assign componentState =
         {
             "Resources" : {
-                "cdnresponseheaderspolicy" : {
+                "responseHeaderPolicy" : {
                     "Id" : formatResourceId(AWS_CLOUDFRONT_RESPONSE_HEADERS_POLICY_RESOURCE_TYPE, core.Id ),
                     "Name" : occurrence.Core.RawFullName,
                     "Type" : AWS_CLOUDFRONT_RESPONSE_HEADERS_POLICY_RESOURCE_TYPE

@@ -150,16 +150,16 @@
         [@createCFResponseHeadersPolicy
             id=responseHeaderPolicy.Id
             name=responseHeaderPolicy.Name
-            corsEnabled=subSolution.Responses.HeaderInjection.CORS.Enabled
-            corsOverride=( ! subSolution.Responses.HeaderInjection.CORS.PreferOrigin )
-            corsPolicy=subSolution.Responses.HeaderInjection.CORS
-            securityHeadersEnabled=subSolution.Responses.HeaderInjection.Security.Enabled
-            securityHeadersOverride=( ! subSolution.Responses.HeaderInjection.Security.PreferOrigin )
-            securityHeadersPolicy=subSolution.Responses.HeaderInjection.Security
-            strictTransportSecurityEnabled=subSolution.Responses.HeaderInjection.StrictTransportSecurity.Enabled
-            strictTransportSecurityPolicy=subSolution.Responses.HeaderInjection.StrictTransportSecurity
-            strictTransportSecurityOverride=( ! subSolution.Responses.HeaderInjection.StrictTransportSecurity.PreferOrigin )
-            customHeaders=subSolution.Responses.HeaderInjection.Additional
+            corsEnabled=subSolution.HeaderInjection.CORS.Enabled
+            corsOverride=( ! subSolution.HeaderInjection.CORS.PreferOrigin )
+            corsPolicy=subSolution.HeaderInjection.CORS
+            securityHeadersEnabled=subSolution.HeaderInjection.Security.Enabled
+            securityHeadersOverride=( ! subSolution.HeaderInjection.Security.PreferOrigin )
+            securityHeadersPolicy=subSolution.HeaderInjection.Security
+            strictTransportSecurityEnabled=subSolution.HeaderInjection.StrictTransportSecurity.Enabled
+            strictTransportSecurityPolicy=subSolution.HeaderInjection.StrictTransportSecurity
+            strictTransportSecurityOverride=( ! subSolution.HeaderInjection.StrictTransportSecurity.PreferOrigin )
+            customHeaders=subSolution.HeaderInjection.Additional
         /]
     [/#list]
 
@@ -322,7 +322,7 @@
                 subOccurrence,
                 {
                     "Tier" : subOccurrence.Core.Tier.Id,
-                    "Component" : subOccurrence.Component.RawId,
+                    "Component" : subOccurrence.Core.Component.RawId,
                     "SubComponent" : subSolution.ResponsePolicy.Id,
                     "Instance" : subSolution.ResponsePolicy.Instance,
                     "Version": subSolution.ResponsePolicy.Version
