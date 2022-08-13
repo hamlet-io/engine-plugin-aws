@@ -719,6 +719,43 @@
 
         [#-- Create a CloudFront distribution if required --]
         [#if cfResources?has_content]
+
+            [#local cachePolicy = cfResources["cachePolicy"] ]
+            [#local originRequestPolicy = cfResources["originRequestPolicy"]]
+
+            [@createCFCachePolicy
+                id=cachePolicy.Id
+                name=cachePolicy.Name
+                ttl={
+                    "Min": 0,
+                    "Max": 0,
+                    "Default": 0
+                }
+                headerNames=[] cookieNames=[]
+                queryStringNames=[] compressionProtocols=[]
+            /]
+
+            [@createCFOriginRequestPolicy?with_args(
+                getOriginRequestPolicy(
+                    "originRequestPolicy",
+                    "LinkType",
+                    occurrence.Core.Type,
+                    [],
+                    [],
+                    combineEntities(
+                        _context.ForwardHeaders,
+                        solution.CloudFront.CustomHeaders,
+                        UNIQUE_COMBINE_BEHAVIOUR
+                    ) +
+                    valueIfTrue(
+                        ["Host"],
+                        endpointType == "REGIONAL",
+                        []
+                    ),
+                    []
+                )
+            ) id=originRequestPolicy.Id name=originRequestPolicy.Name /]
+
             [#local origin =
                 getCFHTTPOrigin(
                     cfResources["origin"].Id,
@@ -739,18 +776,27 @@
                         "x-api-key",
                         getOccurrenceSettingValue(
                             occurrence,
-                            ["APIGateway","API","AccessKey"]))) ]
+                            ["APIGateway","API","AccessKey"]
+                        )
+                    )
+                )
+            ]
+
             [#local defaultCacheBehaviour =
-                getCFAPIGatewayCacheBehaviour(
+                getCFCacheBehaviour(
                     origin,
-                    solution.CloudFront.CustomHeaders +
-                        valueIfTrue(
-                            ["Host"],
-                            endpointType == "REGIONAL",
-                            []
-                        ),
+                    cachePolicy.Id,
+                    "",
+                    [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ],
+                    [ "GET", "HEAD" ],
                     solution.CloudFront.Compress,
-                    securityProfile.ProtocolPolicy) ]
+                    [],
+                    originRequestPolicy.Id,
+                    "",
+                    securityProfile.ProtocolPolicy
+                )
+            ]
+
             [#local restrictions = {} ]
             [#local whitelistedCountryCodes = getGroupCountryCodes(solution.CloudFront.CountryGroups![], false) ]
             [#if whitelistedCountryCodes?has_content]

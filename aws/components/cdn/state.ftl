@@ -42,6 +42,15 @@
                     "Name" : cfName,
                     "Type" : AWS_CLOUDFRONT_DISTRIBUTION_RESOURCE_TYPE
                 },
+                "cachePolicyDefault": {
+                    "Id": formatResourceId(AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE, core.Id, "Default"),
+                    "Name": occurrence.Core.RawFullName,
+                    "Type" : AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE
+                },
+                "originPlaceHolder" : {
+                    "Id" : formatResourceId(AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE, core.Id, "Placeholder"),
+                    "Type" : AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE
+                },
                 "wafacl" : {
                     "Id" : formatDependentWAFAclId(solution.WAF.Version, cfId),
                     "Arn": (solution.WAF.Version == "v2")?then({ "Fn::GetAtt" : [ formatDependentWAFAclId(solution.WAF.Version, cfId), "Arn" ] }, ""),
@@ -123,17 +132,118 @@
     [#assign componentState =
         {
             "Resources" : {
-                "origin" : {
-                    "Id" : formatResourceId(AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE, core.Id ),
-                    "Type" : AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE,
+                "behaviour" : {
+                    "Id" : formatResourceId(AWS_CLOUDFRONT_BEHAVIOUR_RESOURCE_TYPE, core.Id),
                     "Deployed" : getExistingReference(cfId)?has_content,
-                    "PathPattern" : pathPattern,
-                    "DefaultPath" : isDefaultPath
+                    "PathPattern": pathPattern,
+                    "DefaultPath": isDefaultPath
                 }
-            },
+            } +
+            (solution.OriginSource == "Route")?then(
+                {
+                    "origin" : {
+                        "Id" : formatResourceId(AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE, core.Id, core.Type ),
+                        "Type" : AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE,
+                        "Deployed" : getExistingReference(cfId)?has_content
+                    },
+                    "originRequestPolicy": {
+                        "Id": formatResourceId(AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE, core.Id),
+                        "Name": occurrence.Core.RawFullName,
+                        "Type" : AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE
+                    }
+                },
+                {}
+            ),
             "Attributes" : parentAttributes + {
                 "URL" : formatRelativePath( parentAttributes["URL"], pathPattern?remove_ending("*") )
             },
+            "Roles" : {
+                "Inbound" : {},
+                "Outbound" : {}
+            }
+        }
+    ]
+[/#macro]
+
+[#macro aws_cdnorigin_cf_state occurrence parent={}]
+    [#local core = occurrence.Core]
+    [#local solution = occurrence.Configuration.Solution]
+
+    [#local parentAttributes = parent.State.Attributes ]
+    [#local parentResources = parent.State.Resources ]
+
+    [#local cfId = parentResources["cf"].Id ]
+
+    [#assign componentState =
+        {
+            "Resources" : {
+                "origin" : {
+                    "Id" : formatResourceId(AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE, core.Id, core.Type ),
+                    "Type" : AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE,
+                    "Deployed" : getExistingReference(cfId)?has_content
+                },
+                "originRequestPolicy": {
+                    "Id": formatResourceId(AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE, core.Id, core.Type),
+                    "Name": occurrence.Core.RawFullName,
+                    "Type" : AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE
+                }
+            },
+            "Attributes" : {},
+            "Roles" : {
+                "Inbound" : {},
+                "Outbound" : {}
+            }
+        }
+    ]
+[/#macro]
+
+[#macro aws_cdncachepolicy_cf_state occurrence parent={}]
+
+    [#local core = occurrence.Core]
+    [#local solution = occurrence.Configuration.Solution]
+
+    [#local parentAttributes = parent.State.Attributes ]
+    [#local parentResources = parent.State.Resources ]
+
+    [#local cfId = parentResources["cf"].Id ]
+
+    [#assign componentState =
+        {
+            "Resources" : {
+                "cachepolicy" : {
+                    "Id" : formatResourceId(AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE, core.Id ),
+                    "Name" : occurrence.Core.RawFullName,
+                    "Type" : AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE
+                }
+            },
+            "Attributes" : {},
+            "Roles" : {
+                "Inbound" : {},
+                "Outbound" : {}
+            }
+        }
+    ]
+[/#macro]
+
+[#macro aws_cdnresponsepolicy_cf_state occurrence parent={}]
+    [#local core = occurrence.Core]
+    [#local solution = occurrence.Configuration.Solution]
+
+    [#local parentAttributes = parent.State.Attributes ]
+    [#local parentResources = parent.State.Resources ]
+
+    [#local cfId = parentResources["cf"].Id ]
+
+    [#assign componentState =
+        {
+            "Resources" : {
+                "cdnresponseheaderspolicy" : {
+                    "Id" : formatResourceId(AWS_CLOUDFRONT_RESPONSE_HEADERS_POLICY_RESOURCE_TYPE, core.Id ),
+                    "Name" : occurrence.Core.RawFullName,
+                    "Type" : AWS_CLOUDFRONT_RESPONSE_HEADERS_POLICY_RESOURCE_TYPE
+                }
+            },
+            "Attributes" : {},
             "Roles" : {
                 "Inbound" : {},
                 "Outbound" : {}

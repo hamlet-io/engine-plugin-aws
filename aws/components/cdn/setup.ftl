@@ -22,6 +22,11 @@
 
     [#local wafLogStreamingResources = resources["wafLogStreaming"]!{} ]
 
+    [#local defaultCachePolicyRequired = false ]
+    [#local defaultCachePolicy = resources["cachePolicyDefault"]]
+
+    [#local originPlaceHolder = resources["originPlaceHolder"]]
+
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ])]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
@@ -47,22 +52,36 @@
     [#local defaultCacheBehaviour = []]
     [#local invalidationPaths = []]
 
-    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_ROUTE_COMPONENT_TYPE)  as subOccurrence]
+    [#local defaultTTLPolicy = {}]
+
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_ORIGIN_COMPONENT_TYPE) as subOccurrence]
 
         [#local subCore = subOccurrence.Core ]
         [#local subSolution = subOccurrence.Configuration.Solution ]
         [#local subResources = subOccurrence.State.Resources ]
 
-        [#local routeBehaviours = []]
+        [#local origin = subResources["origin"]]
 
-        [#local originId = subResources["origin"].Id ]
-        [#local originPathPattern = subResources["origin"].PathPattern ]
-        [#local originDefaultPath = subResources["origin"].DefaultPath ]
+        [#local originRequestPolicy = subResources["originRequestPolicy"]]
 
-        [#local behaviourPattern = originDefaultPath?then(
-                                        "",
-                                        originPathPattern
-        )]
+        [#local originLink = getLinkTarget(occurrence, subSolution.Link) ]
+
+        [#if !originLink?has_content]
+            [#continue]
+        [/#if]
+
+        [#local customHeaders = []]
+        [#list subSolution.RequestForwarding.AdditionalHeaders as id, header ]
+            [#local customHeaders = combineEntities(
+                customHeaders,
+                [
+                    {
+                        "HeaderName": (header.Name)!id,
+                        "HeaderValue": header.Value
+                    }
+                ]
+            )]
+        [/#list]
 
         [#local contextLinks = getLinkTargets(subOccurrence)]
         [#local _context =
@@ -75,7 +94,263 @@
                 "DefaultEnvironmentVariables" : false,
                 "DefaultLinkVariables" : true,
                 "DefaultBaselineVariables" : false,
-                "Route" : subCore.SubComponent.Id
+                "CustomHeadersConfig" : customHeaders
+            }
+        ]
+
+        [#-- Add in entrance specifics including override of defaults --]
+        [#local _context = invokeExtensions( subOccurrence, _context, occurrence )]
+
+        [#local originLinkTargetCore = originLink.Core ]
+        [#local originLinkTargetConfiguration = originLink.Configuration ]
+        [#local originLinkTargetResources = originLink.State.Resources ]
+        [#local originLinkTargetAttributes = originLink.State.Attributes ]
+
+        [@createCFOriginRequestPolicy?with_args(
+            getOriginRequestPolicy(
+                "originRequestPolicy",
+                subSolution.RequestForwarding.Policy,
+                originLinkTargetCore.Type,
+                subSolution.RequestForwarding["Policy:Custom"].Methods,
+                subSolution.RequestForwarding["Policy:Custom"].Cookies,
+                combineEntities(
+                    _context.ForwardHeaders,
+                    subSolution.RequestForwarding["Policy:Custom"].Headers,
+                    UNIQUE_COMBINE_BEHAVIOUR
+                ),
+                subSolution.RequestForwarding["Policy:Custom"].QueryParams
+            )
+        ) id=originRequestPolicy.Id name=originRequestPolicy.Name /]
+
+        [#if ! origins?map(x -> x.Id )?seq_contains(origin.Id ) ]
+            [#local origins = combineEntities(
+                    origins,
+                    getOriginFromLink(
+                        origin.Id,
+                        subSolution.BasePath,
+                        _context.CustomHeadersConfig,
+                        originLink,
+                        subSolution.TLSProtocols,
+                        subSolution.ConnectionTimeout
+                    ),
+                    APPEND_COMBINE_BEHAVIOUR
+                )]
+        [/#if]
+
+    [/#list]
+
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_RESPONSE_POLICY_COMPONENT_TYPE) as subOccurrence]
+
+        [#local subCore = subOccurrence.Core ]
+        [#local subSolution = subOccurrence.Configuration.Solution ]
+        [#local subResources = subOccurrence.State.Resources ]
+
+        [#local responseHeaderPolicy = subResources.responseHeaderPolicy]
+
+        [@createCFResponseHeadersPolicy
+            id=responseHeaderPolicy.Id
+            name=responseHeaderPolicy.Name
+            corsEnabled=subSolution.Responses.HeaderInjection.CORS.Enabled
+            corsOverride=( ! subSolution.Responses.HeaderInjection.CORS.PreferOrigin )
+            corsPolicy=subSolution.Responses.HeaderInjection.CORS
+            securityHeadersEnabled=subSolution.Responses.HeaderInjection.Security.Enabled
+            securityHeadersOverride=( ! subSolution.Responses.HeaderInjection.Security.PreferOrigin )
+            securityHeadersPolicy=subSolution.Responses.HeaderInjection.Security
+            strictTransportSecurityEnabled=subSolution.Responses.HeaderInjection.StrictTransportSecurity.Enabled
+            strictTransportSecurityPolicy=subSolution.Responses.HeaderInjection.StrictTransportSecurity
+            strictTransportSecurityOverride=( ! subSolution.Responses.HeaderInjection.StrictTransportSecurity.PreferOrigin )
+            customHeaders=subSolution.Responses.HeaderInjection.Additional
+        /]
+    [/#list]
+
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_CACHE_POLICY_COMPONENT_TYPE) as subOccurrence]
+
+        [#local subCore = subOccurrence.Core ]
+        [#local subSolution = subOccurrence.Configuration.Solution ]
+        [#local subResources = subOccurrence.State.Resources ]
+
+        [#local cachePolicy = subResources["cachepolicy"]]
+        [@createCFCachePolicy
+            id=cachePolicy.Id
+            name=cachePolicy.Name
+            ttl={
+                "Default" : subSolution.TTL.Default,
+                "Max" : subSolution.TTL.Maximum,
+                "Min" : subSolution.TTL.Minimum
+            }
+            cookieNames=subSolution.Cookies
+            headerNames=subSolution.Headers
+            queryStringNames=subSolution.QueryParams
+            compressionProtocols=subSolution.CompressionEncoding
+        /]
+
+    [/#list]
+
+    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_ROUTE_COMPONENT_TYPE)  as subOccurrence]
+
+        [#local subCore = subOccurrence.Core ]
+        [#local subSolution = subOccurrence.Configuration.Solution ]
+        [#local subResources = subOccurrence.State.Resources ]
+
+        [#local routeBehaviours = []]
+        [#local customHeaders = []]
+        [#local allowedHttpMethods = ["GET", "HEAD", "OPTIONS"]]
+
+        [#local behaviourResource = subResources["behaviour"]]
+        [#local originRequestPolicyRequired = true]
+
+        [#-- Pick the source of the Origin --]
+        [#switch subSolution.OriginSource]
+            [#case "Route"]
+                [#local origin = subResources["origin"]]
+                [#local originConfig = subSolution["OriginSource:Route"]]
+                [#local originRequestPolicy = subResources["originRequestPolicy"]]
+
+                [#list originConfig.RequestForwarding.AdditionalHeaders as id, header ]
+                    [#local customHeaders = combineEntities(
+                        customHeaders,
+                        [
+                            {
+                                "HeaderName": (header.Name)!id,
+                                "HeaderValue": header.Value
+                            }
+                        ]
+                    )]
+                [/#list]
+                [#break]
+
+            [#case "CDN"]
+                [#local originLink = getLinkTarget(
+                    subOccurrence,
+                    {
+                        "Tier" : subOccurrence.Core.Tier.Id,
+                        "Component": subOccurrence.Core.Component.RawId,
+                        "SubComponent": subSolution["OriginSource:CDN"].Id,
+                        "Instance": subSolution["OriginSource:CDN"].Instance,
+                        "Version": subSolution["OriginSource:CDN"].Version
+                    },
+                    false
+                )]
+                [#if ! originLink?has_content]
+                    [#continue]
+                [/#if]
+                [#local origin = originLink.State.Resources.origin]
+                [#local originConfig = originLink.Configuration.Solution ]
+                [#local originRequestPolicy = originLink.State.Resources.originRequestPolicy]
+                [#break]
+
+            [#case "Placeholder"]
+                [#if ! origins?map(x -> x.Id)?seq_contains(originPlaceHolder.Id)]
+                    [#local origins = combineEntities(
+                            origins,
+                            getCFHTTPOrigin(
+                                originPlaceHolder.Id,
+                                "example.org"
+                            ),
+                            APPEND_COMBINE_BEHAVIOUR
+                    )]
+                [/#if]
+
+                [#local origin = originPlaceHolder ]
+                [#local originConfig = {}]
+                [#local originRequestPolicyRequired = false]
+                [#local originRequestPolicy = {
+                    "Id" : "",
+                    "Name" : ""
+                }]
+
+        [/#switch]
+
+        [#if behaviourResource.DefaultPath ]
+            [#local defaultTTLPolicy = {
+                "Max": subSolution.CachingTTL.Maximum,
+                "Min": subSolution.CachingTTL.Minimum,
+                "Default" : subSolution.CachingTTL.Default
+            }]
+        [#else]
+            [#if subSolution.CachingTTL.Configured]
+                [@fatal
+                    message="Caching TTL control moved to custom Cache Policy"
+                    detail="To add caching ttl control to a non default route you will need to create a custom CachePolicy"
+                    context={
+                        "cdn" : occurrence.Core.RawId,
+                        "Route" : subOccurrence.Core.RawId,
+                        "TTLConfig" : subSolution.CachingTTL
+                    }
+                /]
+            [/#if]
+        [/#if]
+
+        [#-- Pick the Cache Policy to use --]
+        [#switch subSolution.CachePolicy]
+            [#case "Default"]
+                [#local defaultCachePolicyRequired = true]
+                [#local cachePolicy = defaultCachePolicy]
+                [#local cacheHttpMethods = ["GET", "HEAD"]]
+                [#break]
+
+            [#case "Custom"]
+                [#local cachePolicyLink = getLinkTarget(
+                    subOccurrence,
+                    {
+                        "Tier" : subOccurrence.Core.Tier.Id,
+                        "Component" : subOccurrence.Core.Component.RawId,
+                        "SubComponent" : subSolution["CachePolicy:Custom"].Id,
+                        "Instance" : subSolution["CachePolicy:Custom"].Instance,
+                        "Version": subSolution["CachePolicy:Custom"].Version
+                    },
+                    false
+                )]
+
+                [#if !cachePolicyLink?has_content ]
+                    [#continue]
+                [/#if]
+
+                [#local cachePolicy = (cachePolicyLink.State.Resources.cachepolicy)!{}]
+                [#local cacheHttpMethods = cachePolicyLink.Configuration.Solution.Methods]
+                [#break]
+        [/#switch]
+
+        [#local behaviourPattern = behaviourResource.DefaultPath?then(
+                                        "",
+                                        behaviourResource.PathPattern
+        )]
+
+        [#-- Response Policy --]
+        [#if (subSolution.ResponsePolicy.Id)??]
+            [#local responsePolicyLink = getLinkTarget(
+                subOccurrence,
+                {
+                    "Tier" : subOccurrence.Core.Tier.Id,
+                    "Component" : subOccurrence.Component.RawId,
+                    "SubComponent" : subSolution.ResponsePolicy.Id,
+                    "Instance" : subSolution.ResponsePolicy.Instance,
+                    "Version": subSolution.ResponsePolicy.Version
+                },
+                false
+            )]
+
+            [#if !responsePolicyLink?has_content ]
+                [#continue]
+            [/#if]
+
+            [#local responseHeadersPolicy = (responsePolicyLink.State.Resources.cdnresponseheaderspolicy)!{}]
+        [/#if]
+
+        [#local contextLinks = getLinkTargets(subOccurrence)]
+        [#local _context =
+            {
+                "Environment" : {},
+                "Links" : contextLinks,
+                "BaselineLinks" : baselineLinks,
+                "DefaultEnvironment" : defaultEnvironment(subOccurrence, contextLinks, baselineLinks),
+                "DefaultCoreVariables" : false,
+                "DefaultEnvironmentVariables" : false,
+                "DefaultLinkVariables" : true,
+                "DefaultBaselineVariables" : false,
+                "Route" : subCore.SubComponent.Id,
+                "CustomHeadersConfig" : customHeaders,
+                "ForwardHeaders" : (originConfig.Headers)![]
             }
         ]
 
@@ -165,254 +440,190 @@
             [/#if]
         [/#list]
 
-        [#local originLink = getLinkTarget(occurrence, subSolution.Origin.Link) ]
+        [#if originConfig?has_content ]
+            [#local originLink = getLinkTarget(occurrence, originConfig.Link) ]
+            [#if !originLink?has_content]
+                [#continue]
+            [/#if]
 
-        [#if !originLink?has_content]
-            [#continue]
+            [#local originLinkTargetCore = originLink.Core ]
+            [#local originLinkTargetConfiguration = originLink.Configuration ]
+            [#local originLinkTargetResources = originLink.State.Resources ]
+            [#local originLinkTargetAttributes = originLink.State.Attributes ]
+
+            [#local allowedHttpMethods = getOriginRequestPolicy(
+                "behaviour",
+                originConfig.RequestForwarding.Policy,
+                originLinkTargetCore.Type,
+                originConfig.RequestForwarding["Policy:Custom"].Methods
+            ).httpMethods]
+
+            [#if originRequestPolicyRequired]
+                [@createCFOriginRequestPolicy?with_args(
+                    getOriginRequestPolicy(
+                        "originRequestPolicy",
+                        originConfig.RequestForwarding.Policy,
+                        originLinkTargetCore.Type,
+                        originConfig.RequestForwarding["Policy:Custom"].Methods,
+                        originConfig.RequestForwarding["Policy:Custom"].Cookies,
+                        _context.ForwardHeaders,
+                        originConfig.RequestForwarding["Policy:Custom"].QueryParams
+                    )
+                ) id=originRequestPolicy.Id name=originRequestPolicy.Name /]
+            [/#if]
+
+            [#if ! origins?map(x -> x.Id )?seq_contains(origin.Id )]
+                [#local origins = combineEntities(
+                        origins,
+                        getOriginFromLink(
+                            origin.Id,
+                            originConfig.BasePath,
+                            _context.CustomHeadersConfig,
+                            originLink,
+                            originConfig.TLSProtocols,
+                            originConfig.ConnectionTimeout
+                        ),
+                        APPEND_COMBINE_BEHAVIOUR
+                    )]
+            [/#if]
+
+            [#switch originLinkTargetCore.Type]
+                [#case MOBILEAPP_COMPONENT_TYPE ]
+                    [#local behaviour = getCFCacheBehaviour(
+                            origins?filter( x -> x.Id == origin.Id)[0],
+                            cachePolicy.Id,
+                            behaviourPattern,
+                            allowedHttpMethods,
+                            cacheHttpMethods,
+                            subSolution.Compress,
+                            eventHandlers,
+                            originRequestPolicy.Id,
+                            (responseHeadersPolicy.Id)!""
+                        )]
+                        [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
+                    [#break]
+
+                [#case S3_COMPONENT_TYPE ]
+
+                    [#local behaviour = getCFCacheBehaviour(
+                        origins?filter( x -> x.Id == origin.Id)[0],
+                        cachePolicy.Id,
+                        behaviourPattern,
+                        allowedHttpMethods,
+                        cacheHttpMethods,
+                        subSolution.Compress,
+                        eventHandlers,
+                        originRequestPolicy.Id,
+                        (responseHeadersPolicy.Id)!""
+                    )]
+                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
+                    [#break]
+
+                [#case SPA_COMPONENT_TYPE ]
+
+                    [#local configPathPattern = originLinkTargetAttributes["CONFIG_PATH_PATTERN"]]
+
+                    [#local behaviour = getCFCacheBehaviour(
+                        origins?filter( x -> x.Id == origin.Id)[0],
+                        cachePolicy.Id,
+                        behaviourPattern,
+                        allowedHttpMethods,
+                        cacheHttpMethods,
+                        subSolution.Compress,
+                        eventHandlers,
+                        originRequestPolicy.Id,
+                        (responseHeadersPolicy.Id)!""
+                    )]
+                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
+
+                    [#local configBehaviour = getCFCacheBehaviour(
+                        origins?filter( x -> x.Id == formatId(origin.Id, "config"))[0],
+                        cachePolicy.Id,
+                        formatAbsolutePath( behaviourPattern, configPathPattern),
+                        allowedHttpMethods,
+                        cacheHttpMethods,
+                        subSolution.Compress,
+                        eventHandlers,
+                        originRequestPolicy.Id,
+                        (responseHeadersPolicy.Id)!""
+                    )]
+
+                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": configBehaviour }]]
+                    [#break]
+
+                [#case LB_COMPONENT_TYPE ]
+                [#case LB_PORT_COMPONENT_TYPE ]
+                    [#local behaviour = getCFCacheBehaviour(
+                        origins?filter( x -> x.Id == origin.Id)[0],
+                        cachePolicy.Id,
+                        behaviourPattern,
+                        allowedHttpMethods,
+                        cacheHttpMethods,
+                        subSolution.Compress,
+                        eventHandlers,
+                        originRequestPolicy.Id,
+                        (responseHeadersPolicy.Id)!""
+                    )]
+                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
+                    [#break]
+
+                [#case APIGATEWAY_COMPONENT_TYPE ]
+                    [#local behaviour = getCFCacheBehaviour(
+                        origins?filter( x -> x.Id == origin.Id)[0],
+                        cachePolicy.Id,
+                        behaviourPattern,
+                        allowedHttpMethods,
+                        cacheHttpMethods,
+                        subSolution.Compress,
+                        eventHandlers,
+                        originRequestPolicy.Id,
+                        (responseHeadersPolicy.Id)!""
+                    )]
+                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
+                    [#break]
+
+                [#case EXTERNALSERVICE_COMPONENT_TYPE ]
+                    [#local behaviour = getCFCacheBehaviour(
+                        origins?filter( x -> x.Id == origin.Id)[0],
+                        cachePolicy.Id,
+                        behaviourPattern,
+                        allowedHttpMethods,
+                        cacheHttpMethods,
+                        subSolution.Compress,
+                        eventHandlers,
+                        originRequestPolicy.Id,
+                        (responseHeadersPolicy.Id)!""
+                    )]
+                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
+                    [#break]
+
+            [/#switch]
         [/#if]
 
-        [#local originLinkTargetCore = originLink.Core ]
-        [#local originLinkTargetConfiguration = originLink.Configuration ]
-        [#local originLinkTargetResources = originLink.State.Resources ]
-        [#local originLinkTargetAttributes = originLink.State.Attributes ]
-
-        [#switch originLinkTargetCore.Type]
-            [#case MOBILEAPP_COMPONENT_TYPE ]
-                [#local spaBaslineProfile = originLinkTargetConfiguration.Solution.Profiles.Baseline ]
-                [#local spaBaselineLinks = getBaselineLinks(originLink, [ "CDNOriginKey" ])]
-                [#local spaBaselineComponentIds = getBaselineComponentIds(spaBaselineLinks)]
-                [#local cfAccess = getExistingReference(spaBaselineComponentIds["CDNOriginKey"]!"")]
-
-                [#local originBucket = originLinkTargetAttributes["OTA_ARTEFACT_BUCKET"]]
-                [#local originPrefix = originLinkTargetAttributes["OTA_ARTEFACT_PREFIX"]]
-
-                [#local otaOrigin =
-                    getCFS3Origin(
-                        originId,
-                        originBucket,
-                        cfAccess,
-                        originPrefix
-                    )]
-                [#local origins += otaOrigin ]
-
-                [#local behaviour = getCFSPACacheBehaviour(
-                    otaOrigin,
-                    behaviourPattern,
-                    {
-                        "Default" : subSolution.CachingTTL.Default,
-                        "Max" : subSolution.CachingTTL.Maximum,
-                        "Min" : subSolution.CachingTTL.Minimum
-                    },
-                    subSolution.Compress,
-                    eventHandlers,
-                    _context.ForwardHeaders)]
-                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
-                [#break]
-
-            [#case S3_COMPONENT_TYPE ]
-
-                [#local spaBaslineProfile = originLinkTargetConfiguration.Solution.Profiles.Baseline ]
-                [#local spaBaselineLinks = getBaselineLinks(originLink, [ "CDNOriginKey" ])]
-                [#local spaBaselineComponentIds = getBaselineComponentIds(spaBaselineLinks)]
-                [#local cfAccess = getExistingReference(spaBaselineComponentIds["CDNOriginKey"]!"")]
-
-                [#local originBucket = originLinkTargetAttributes["NAME"] ]
-
-                [#local origin =
-                    getCFS3Origin(
-                        originId,
-                        originBucket,
-                        cfAccess,
-                        subSolution.Origin.BasePath,
-                        _context.CustomOriginHeaders)]
-                [#local origins += origin ]
-
-                [#local behaviour = getCFSPACacheBehaviour(
-                    origin,
-                    behaviourPattern,
-                    {
-                        "Default" : subSolution.CachingTTL.Default,
-                        "Max" : subSolution.CachingTTL.Maximum,
-                        "Min" : subSolution.CachingTTL.Minimum
-                    },
-                    subSolution.Compress,
-                    eventHandlers,
-                    _context.ForwardHeaders)]
-                    [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
-                [#break]
-
-            [#case SPA_COMPONENT_TYPE ]
-
-                [#local spaBaslineProfile = originLinkTargetConfiguration.Solution.Profiles.Baseline ]
-                [#local spaBaselineLinks = getBaselineLinks(originLink, [ "OpsData", "CDNOriginKey" ])]
-                [#local spaBaselineComponentIds = getBaselineComponentIds(spaBaselineLinks)]
-                [#local originBucket = getExistingReference(spaBaselineComponentIds["OpsData"]!"") ]
-                [#local cfAccess = getExistingReference(spaBaselineComponentIds["CDNOriginKey"]!"")]
-
-                [#local configPathPattern = originLinkTargetAttributes["CONFIG_PATH_PATTERN"]]
-
-                [#local spaOrigin =
-                    getCFS3Origin(
-                        originId,
-                        originBucket,
-                        cfAccess,
-                        formatAbsolutePath(getSettingsFilePrefix(originLink), "spa"),
-                        _context.CustomOriginHeaders)]
-                [#local origins += spaOrigin ]
-
-                [#local configOrigin =
-                    getCFS3Origin(
-                        formatId(originId, "config"),
-                        originBucket,
-                        cfAccess,
-                        formatAbsolutePath(getSettingsFilePrefix(originLink)),
-                        _context.CustomOriginHeaders)]
-                [#local origins += configOrigin ]
-
-                [#local spaCacheBehaviour = getCFSPACacheBehaviour(
-                    spaOrigin,
-                    behaviourPattern,
-                    {
-                        "Default" : subSolution.CachingTTL.Default,
-                        "Max" : subSolution.CachingTTL.Maximum,
-                        "Min" : subSolution.CachingTTL.Minimum
-                    },
-                    subSolution.Compress,
-                    eventHandlers,
-                    _context.ForwardHeaders)]
-                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": spaCacheBehaviour }]]
-
-                [#local configCacheBehaviour = getCFSPACacheBehaviour(
-                    configOrigin,
-                    formatAbsolutePath( behaviourPattern, configPathPattern),
-                    { "Default" : 60 },
-                    subSolution.Compress,
-                    eventHandlers,
-                    _context.ForwardHeaders) ]
-
-                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": configCacheBehaviour }]]
-                [#break]
-
-            [#case LB_COMPONENT_TYPE ]
-            [#case LB_PORT_COMPONENT_TYPE ]
-
-                [#switch originLinkTargetCore.Type ]
-                    [#case LB_COMPONENT_TYPE ]
-                        [#local originHostName = originLinkTargetAttributes["INTERNAL_FQDN"] ]
-                        [#local originPath = formatAbsolutePath( "", subSolution.Origin.BasePath ) ]
-                        [#local originProtocol = "HTTPS" ]
-                        [#local originPort = 443 ]
-                        [#break]
-
-                    [#case LB_PORT_COMPONENT_TYPE ]
-                        [#local originHostName = originLinkTargetAttributes["FQDN"] ]
-                        [#local originPath = formatAbsolutePath( originLinkTargetAttributes["PATH"], subSolution.Origin.BasePath ) ]
-                        [#local originProtocol = originLinkTargetAttributes["PROTOCOL"]]
-                        [#local originPort = originLinkTargetAttributes["PORT"]]
-                        [#break]
-                [/#switch]
-
-                [#local origin =
-                            getCFHTTPOrigin(
-                                originId,
-                                originHostName,
-                                _context.CustomOriginHeaders,
-                                originPath,
-                                originProtocol,
-                                originPort,
-                                subSolution.Origin.TLSProtocols,
-                                subSolution.Origin.ConnectionTimeout
-                            )]
-                [#local origins += origin ]
-
-                [#local behaviour =
-                            getCFLBCacheBehaviour(
-                                origin,
-                                behaviourPattern,
-                                {
-                                    "Default" : subSolution.CachingTTL.Default,
-                                    "Max" : subSolution.CachingTTL.Maximum,
-                                    "Min" : subSolution.CachingTTL.Minimum
-                                },
-                                subSolution.Compress,
-                                _context.ForwardHeaders,
-                                eventHandlers )]
-                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
-                [#break]
-
-            [#case APIGATEWAY_COMPONENT_TYPE ]
-                [#local origin =
-                            getCFHTTPOrigin(
-                                originId,
-                                originLinkTargetAttributes["FQDN"],
-                                _context.CustomOriginHeaders,
-                                formatAbsolutePath( originLinkTargetAttributes["BASE_PATH"], subSolution.Origin.BasePath )
-                            )]
-                [#local origins += origin ]
-
-                [#local behaviour =
-                            getCFLBCacheBehaviour(
-                                origin,
-                                behaviourPattern,
-                                {
-                                    "Default" : subSolution.CachingTTL.Default,
-                                    "Max" : subSolution.CachingTTL.Maximum,
-                                    "Min" : subSolution.CachingTTL.Minimum
-                                },
-                                subSolution.Compress,
-                                _context.ForwardHeaders,
-                                eventHandlers )]
-                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
-                [#break]
-
-            [#case EXTERNALSERVICE_COMPONENT_TYPE ]
-
-                [#local originHostName = originLinkTargetAttributes["FQDN"]!"HamletFatal: Could not find FQDN Attribute on external service" ]
-
-                [#local path = originLinkTargetAttributes["PATH"]!"HamletFatal: Could not find PATH Attribute on external service" ]
-                [#local originPath = formatAbsolutePath( path, subSolution.Origin.BasePath ) ]
-                [#local protocol = (originLinkTargetAttributes["PROTOCOL"])!"https" ]
-                [#local port = (originLinkTargetAttributes["PROTOCOL"])!443 ]
-
-                [#local origin =
-                            getCFHTTPOrigin(
-                                originId,
-                                originHostName,
-                                _context.CustomOriginHeaders,
-                                originPath,
-                                protocol,
-                                port,
-                                subSolution.Origin.TLSProtocols,
-                                subSolution.Origin.ConnectionTimeout
-                            )]
-                [#local origins += origin ]
-
-                [#local behaviour =
-                            getCFLBCacheBehaviour(
-                                origin,
-                                behaviourPattern,
-                                {
-                                    "Default" : subSolution.CachingTTL.Default,
-                                    "Max" : subSolution.CachingTTL.Maximum,
-                                    "Min" : subSolution.CachingTTL.Minimum
-                                },
-                                subSolution.Compress,
-                                _context.ForwardHeaders,
-                                eventHandlers )]
-                [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
-                [#break]
-
-        [/#switch]
+        [#if subSolution.OriginSource == "Placeholder" ]
+            [#local behaviour = getCFCacheBehaviour(
+                origins?filter( x -> x.Id == origin.Id)[0],
+                cachePolicy.Id,
+                behaviourPattern,
+                allowedHttpMethods,
+                cacheHttpMethods,
+                subSolution.Compress,
+                eventHandlers,
+                "",
+                (responseHeadersPolicy.Id)!""
+            )]
+            [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
+        [/#if]
 
         [#-- Sort the routes to ensure they are mapped to their precedence --]
         [#local routeBehaviours = asFlattenedArray(routeBehaviours?sort_by("Priority")?map( x -> x.behaviour))]
 
         [#list routeBehaviours as behaviour ]
-            [@debug message="behaviour check" context={ "Behaviour" : behaviour, "defaultPath" : originDefaultPath } enabled=true /]
+            [@debug message="behaviour check" context={ "Behaviour" : behaviour, "defaultPath" : behaviourResource.DefaultPath } enabled=true /]
             [#if (behaviour.PathPattern!"")?has_content  ]
                 [#local cacheBehaviours += [ behaviour ] ]
             [#else]
-                [#if ! defaultCacheBehaviour?has_content && originDefaultPath ]
+                [#if ! defaultCacheBehaviour?has_content && behaviourResource.DefaultPath ]
                     [#local defaultCacheBehaviour = behaviour ]
                 [#else]
                     [@fatal
@@ -426,13 +637,26 @@
         [/#list]
 
         [#if subSolution.InvalidateOnUpdate ]
-            [#if ! invalidationPaths?seq_contains("/*") ]
-                [#local invalidationPaths += [ originPathPattern ]]
+            [#if ! invalidationPaths?seq_contains('/*') ]
+                [#local invalidationPaths += [ behaviourResource.PathPattern ]]
             [/#if]
         [/#if]
     [/#list]
 
     [#if deploymentSubsetRequired(CDN_COMPONENT_TYPE, true)]
+
+        [#if defaultCachePolicyRequired ]
+            [@createCFCachePolicy
+                id=defaultCachePolicy.Id
+                name=defaultCachePolicy.Name
+                ttl=defaultTTLPolicy
+                headerNames=[]
+                cookieNames=["_all"]
+                queryStringNames=["_all"]
+                compressionProtocols=["gzip", "brotli"]
+            /]
+        [/#if]
+
         [#local restrictions = {} ]
         [#local whitelistedCountryCodes = getGroupCountryCodes(solution.CountryGroups![], false) ]
         [#if whitelistedCountryCodes?has_content]
