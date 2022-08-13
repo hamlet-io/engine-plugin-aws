@@ -66,7 +66,7 @@
                 [#if linkDirection == "inbound" ]
                     [#local distributions += [ {
                         "DistributionId" : linkTargetAttributes["DISTRIBUTION_ID"],
-                        "PathPattern" : linkTargetResources["origin"].PathPattern
+                        "PathPattern" : linkTargetResources["behaviour"].PathPattern
                     }]]
                 [/#if]
                 [#break]
