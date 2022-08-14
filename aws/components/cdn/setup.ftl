@@ -227,7 +227,8 @@
                         "Component": subOccurrence.Core.Component.RawId,
                         "SubComponent": subSolution["OriginSource:CDN"].Id,
                         "Instance": subSolution["OriginSource:CDN"].Instance,
-                        "Version": subSolution["OriginSource:CDN"].Version
+                        "Version": subSolution["OriginSource:CDN"].Version,
+                        "Type" : CDN_ORIGIN_COMPONENT_TYPE
                     },
                     false
                 )]
@@ -297,7 +298,8 @@
                         "Component" : subOccurrence.Core.Component.RawId,
                         "SubComponent" : subSolution["CachePolicy:Custom"].Id,
                         "Instance" : subSolution["CachePolicy:Custom"].Instance,
-                        "Version": subSolution["CachePolicy:Custom"].Version
+                        "Version": subSolution["CachePolicy:Custom"].Version,
+                        "Type" : CDN_CACHE_POLICY_COMPONENT_TYPE
                     },
                     false
                 )]
@@ -325,16 +327,17 @@
                     "Component" : subOccurrence.Core.Component.RawId,
                     "SubComponent" : subSolution.ResponsePolicy.Id,
                     "Instance" : subSolution.ResponsePolicy.Instance,
-                    "Version": subSolution.ResponsePolicy.Version
+                    "Version": subSolution.ResponsePolicy.Version,
+                    "Type" : CDN_RESPONSE_POLICY_COMPONENT_TYPE
                 },
                 false
             )]
 
-            [#if !responsePolicyLink?has_content ]
+            [#if ! responsePolicyLink?has_content ]
                 [#continue]
             [/#if]
 
-            [#local responseHeadersPolicy = (responsePolicyLink.State.Resources.cdnresponseheaderspolicy)!{}]
+            [#local responseHeadersPolicy = responsePolicyLink.State.Resources.responseHeaderPolicy]
         [/#if]
 
         [#local contextLinks = getLinkTargets(subOccurrence)]
