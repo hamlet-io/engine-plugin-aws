@@ -697,13 +697,15 @@
         [/#if]
 
         [#list solution.ErrorResponseOverrides as key,errorResponseOverride ]
-            [#local errorResponses +=
-                getErrorResponse(
-                        errorResponseOverride.ErrorCode,
-                        errorResponseOverride.ResponseCode,
-                        errorResponseOverride.ResponsePagePath
-                )
-            ]
+            [#if errorResponseOverride.Enabled]
+                [#local errorResponses +=
+                    getErrorResponse(
+                            errorResponseOverride.ErrorCode,
+                            errorResponseOverride.ResponseCode,
+                            errorResponseOverride.ResponsePagePath
+                    )
+                ]
+            [/#if]
         [/#list]
 
         [@createCFDistribution
