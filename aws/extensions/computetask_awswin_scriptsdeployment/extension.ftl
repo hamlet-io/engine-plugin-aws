@@ -35,7 +35,7 @@
                             "Fn::Join" : [
                                 "\n",
                                 [
-                                    r'mkdir c:\ProgramData\Hamlet\Scripts ;',
+                                    r'New-Item -Type Directory -Force c:\ProgramData\Hamlet\Scripts ;',
                                     r'Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ;',
                                     {
                                         "Fn::Sub" : [

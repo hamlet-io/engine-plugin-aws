@@ -67,19 +67,6 @@
         engine=AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE
         content={
                 "files" : {
-                    "c:\\ProgramData\\Hamlet\\Scripts\\set_dirs.ps1" : {
-                        "content" : {
-                            "Fn::Join" : [
-                                "\n",
-                                [
-                                    "Start-Transcript -Path c:\\ProgramData\\Hamlet\\Logs\\user-step.log -Append ;",
-                                    r'echo "Directory and File Creation - set_dirs.ps1" ;'
-                                    r"mkdir c:\ProgramData\Hamlet\Logs\codeontap"
-                                ]
-                            ]
-                        },
-                        "mode" : "000755"
-                    },
                     "c:\\ProgramData\\Hamlet\\Scripts\\set_env.ps1" : {
                         "content" : {
                             "Fn::Join" : [
@@ -105,11 +92,7 @@
                     }
                 },
                 "commands": {
-                    "01Directories" : {
-                        "command" : "powershell.exe -ExecutionPolicy Bypass -Command c:\\ProgramData\\Hamlet\\Scripts\\set_dirs.ps1",
-                        "ignoreErrors" : false
-                    },
-                    "02SetEnv" : {
+                    "01SetEnv" : {
                         "command" : "powershell.exe -ExecutionPolicy Bypass -Command c:\\ProgramData\\Hamlet\\Scripts\\source_env.ps1",
                         "ignoreErrors" : false
                     }
