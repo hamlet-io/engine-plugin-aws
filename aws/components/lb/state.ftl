@@ -337,7 +337,13 @@
                 "TARGET_GROUP_ARN" : targetGroupArn
             },
             "Roles" : {
-                "Inbound" : {} +
+                "Inbound" : {
+                    "default" : "networkacl",
+                    "invoke" : {
+                        "Principal" : "elasticloadbalancing.amazonaws.com",
+                        "SourceArn" : targetGroupArn
+                    }
+                } +
                 attributeIfTrue(
                     "networkacl",
                     securityGroupRequired,
@@ -414,9 +420,14 @@
             },
             "Roles" : {
                 "Inbound" : {
+                    "default" : "networkacl",
                     "networkacl": {
                         "SecurityGroups" : parentResources.targetGroupSG.Id,
                         "Description" : core.FullName
+                    },
+                    "invoke" : {
+                        "Principal" : "elasticloadbalancing.amazonaws.com",
+                        "SourceArn" : targetGroupArn
                     }
                 },
                 "Outbound" : {
