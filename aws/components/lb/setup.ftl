@@ -383,9 +383,9 @@
         [#switch engine ]
             [#case "network" ]
 
-                [#if ! ["UDP", "TCP"]?seq_contains(sourcePort.Protocol)]
+                [#if ! ["UDP", "TCP", "SSL"]?seq_contains(sourcePort.Protocol)]
                     [@fatal
-                        message="Invalid source port protocol - supports TCP or UDP Protocols"
+                        message="Invalid source port protocol - supports TCP or UDP or SSL Protocols"
                         context={
                             "lb": occurrence.Core.RawId,
                             "lbport": subOccurrence.Core.RawId,
@@ -409,19 +409,6 @@
                     /]
                 [/#if]
 
-                [#if ["aws:alb"]?seq_contains(solution.Forward.TargetType) &&
-                        ! ["TCP"]?seq_contains(destinationPort.Protocol) ]
-
-                    [@fatal
-                        message="Invalid destination port protocol - supports HTTP or HTTPS Protocols"
-                        context={
-                            "lb": occurrence.Core.RawId,
-                            "lbport": subOccurrence.Core.RawId,
-                            "TargetType": solution.Forward.TargetType,
-                            "Protocol": destinationPort.Protocol
-                        }
-                    /]
-                [/#if]
                 [#break]
 
             [#case "application" ]
@@ -440,6 +427,20 @@
 
                 [#if ["instance", "ip"]?seq_contains(solution.Forward.TargetType) &&
                         ! ["HTTP", "HTTPS"]?seq_contains(destinationPort.Protocol) ]
+
+                    [@fatal
+                        message="Invalid destination port protocol - supports HTTP or HTTPS Protocols"
+                        context={
+                            "lb": occurrence.Core.RawId,
+                            "lbport": subOccurrence.Core.RawId,
+                            "TargetType": solution.Forward.TargetType,
+                            "Protocol": destinationPort.Protocol
+                        }
+                    /]
+                [/#if]
+
+                [#if ["aws:alb"]?seq_contains(solution.Forward.TargetType) &&
+                        ! ["TCP"]?seq_contains(destinationPort.Protocol) ]
 
                     [@fatal
                         message="Invalid destination port protocol - supports HTTP or HTTPS Protocols"
