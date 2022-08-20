@@ -44,7 +44,13 @@
     [#if (ports[port].Port)?has_content]
         [#local portObject = ports[port] ]
     [#else]
-        [@fatal message="Unknown Port" context=port /]
+        [@fatal
+            message="Unknown Port for cache component"
+            context={
+                "Id" : occurrence.Core.RawId,
+                "Port" : port
+            }
+        /]
     [/#if]
 
     [#local countPerZone = processorProfile.CountPerZone]
