@@ -53,7 +53,13 @@
     [#if (ports[port])?has_content]
         [#local portObject = ports[port] ]
     [#else]
-        [@fatal message="Unknown Port" context=port /]
+        [@fatal
+            message="Unknown Port for db component"
+            context={
+                "Id": occurrence.Core.RawId,
+                "Port" : port
+            }
+        /]
     [/#if]
 
     [#if auroraCluster ]

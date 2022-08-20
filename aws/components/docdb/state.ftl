@@ -15,7 +15,13 @@
     [#if (ports[port])?has_content]
         [#local portObject = ports[port] ]
     [#else]
-        [@fatal message="Unknown Port" context=port /]
+        [@fatal
+            message="Unknown Port for docdb component type"
+            context={
+                "Id": occurrence.Core.RawId,
+                "Port": port
+            }
+        /]
     [/#if]
 
     [#local id = formatResourceId(AWS_DDS_CLUSTER_RESOURCE_TYPE, core.Id) ]
