@@ -341,7 +341,10 @@
                     "default" : "networkacl",
                     "invoke" : {
                         "Principal" : "elasticloadbalancing.amazonaws.com",
-                        "SourceArn" : targetGroupArn
+                        "SourceArn" : formatRegionalArn(
+                            "elasticloadbalancing",
+                            "targetgroup/*"
+                        )
                     }
                 } +
                 attributeIfTrue(
@@ -427,7 +430,10 @@
                     },
                     "invoke" : {
                         "Principal" : "elasticloadbalancing.amazonaws.com",
-                        "SourceArn" : targetGroupArn
+                        "SourceArn" : formatRegionalArn(
+                            "elasticloadbalancing",
+                            "targetgroup/*"
+                        )
                     }
                 },
                 "Outbound" : {
