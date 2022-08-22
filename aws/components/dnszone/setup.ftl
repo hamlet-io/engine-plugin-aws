@@ -13,26 +13,29 @@
     [#local resources = occurrence.State.Resources ]
     [#local attributes = occurrence.State.Attributes ]
 
-    [#local vpcIds = []]
+    [#if ! solution["external:ProviderId"]?? ]
 
-    [#if (solution.Profiles.Network)?has_content]
+        [#local vpcIds = []]
 
-        [#local networkLink = getOccurrenceNetwork(occurrence).Link!{} ]
-        [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
-        [#if ! networkLinkTarget?has_content ]
-            [@fatal message="Network could not be found" context=networkLink /]
-            [#return]
+        [#if (solution.Profiles.Network)?has_content]
+
+            [#local networkLink = getOccurrenceNetwork(occurrence).Link!{} ]
+            [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
+            [#if ! networkLinkTarget?has_content ]
+                [@fatal message="Network could not be found" context=networkLink /]
+                [#return]
+            [/#if]
+            [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
+            [#local networkResources = networkLinkTarget.State.Resources ]
+            [#local vpcIds = combineEntities(vpcIds, [ networkResources["vpc"].Id ], UNIQUE_COMBINE_BEHAVIOUR)]
+
         [/#if]
-        [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
-        [#local networkResources = networkLinkTarget.State.Resources ]
-        [#local vpcIds = combineEntities(vpcIds, [ networkResources["vpc"].Id ], UNIQUE_COMBINE_BEHAVIOUR)]
 
+        [@createRoute53HostedZone
+            id=resources["zone"].Id
+            name=resources["zone"].Name
+            tags=getOccurrenceTags(occurrence)
+            vpcIds=vpcIds
+        /]
     [/#if]
-
-    [@createRoute53HostedZone
-        id=resources["zone"].Id
-        name=resources["zone"].Name
-        tags=getOccurrenceTags(occurrence)
-        vpcIds=vpcIds
-    /]
 [/#macro]

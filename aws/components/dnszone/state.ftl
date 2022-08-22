@@ -5,46 +5,26 @@
     [#local solution = getOccurrenceSolution(occurrence) ]
     [#local locations = getOccurrenceLocations(occurrence) ]
 
-    [#local privateZone = (solution.Profiles.Network)?has_content]
+    [#local domainObject = getCertificateObject(
+        {} +
+        attributeIfContent(
+            "Domain",
+            (solution.Domain)!""
+        ) +
+        attributeIfTrue(
+            "IncludeInDomain",
+            solution.IncludeInDomain.Configured
+        )
+    )]
 
-    [#local resources = {}]
+    [#local domainName = getCertificatePrimaryDomain(domainObject).Name ]
+    [#local zoneId = formatResourceId(AWS_ROUTE53_HOSTED_ZONE_RESOURCE_TYPE, core.Id) ]
+
     [#local attributes = {}]
-    [#local roles = {
-        "Inbound" : {},
-        "Outbound" : {}
-    }]
+    [#local resources = {}]
 
-    [#if privateZone]
+    [#if solution["external:ProviderId"]?? ]
 
-        [#local zoneId = formatResourceId(AWS_ROUTE53_HOSTED_ZONE_RESOURCE_TYPE, core.Id) ]
-
-        [#local domainObject = getCertificateObject(
-            {} +
-            attributeIfContent(
-                "Domain",
-                (solution.Domain)!""
-            ) +
-            attributeIfTrue(
-                "IncludeInDomain",
-                solution.IncludeInDomain.Configured
-            )
-        )]
-        [#local domainName = getCertificatePrimaryDomain(domainObject).Name ]
-
-        [#local resources = {
-            "zone" : {
-                "Id": zoneId,
-                "Name" : domainName,
-                "Type": AWS_ROUTE53_HOSTED_ZONE_RESOURCE_TYPE
-            }
-        }]
-
-        [#local attributes = {
-            "DOMAIN" : domainName,
-            "ZONE" : getExistingReference(zoneId)
-        }]
-
-    [#else]
         [#-- Combine any placement attributes with explicitly provided values --]
         [#local attributes =
             {
@@ -67,14 +47,29 @@
                     attributes["ZONE"]?has_content
             }
         }]
+    [#else]
+        [#local resources = {
+            "zone" : {
+                "Id": zoneId,
+                "Name" : domainName,
+                "Type": AWS_ROUTE53_HOSTED_ZONE_RESOURCE_TYPE
+            }
+        }]
 
+        [#local attributes = {
+            "DOMAIN" : domainName,
+            "ZONE" : getExistingReference(zoneId)
+        }]
     [/#if]
 
     [#assign componentState =
         {
             "Resources": resources,
             "Attributes": attributes,
-            "Roles": roles
+            "Roles": {
+                "Inbound" : {},
+                "Outbound" : {}
+            }
         }
     ]
 [/#macro]
