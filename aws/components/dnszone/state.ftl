@@ -48,7 +48,7 @@
             }
         }]
     [#else]
-        [#local resouces = {
+        [#local resources = {
             "zone" : {
                 "Id": zoneId,
                 "Name" : domainName,
