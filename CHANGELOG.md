@@ -1,6 +1,45 @@
 # Changelog
 
-## latest (2022-06-07)
+## latest (2022-08-23)
+
+#### New Features
+
+* (baseline): extension and policy support
+* (lb): lambda backend support for lb ([#626](https://github.com/hamlet-io/engine-plugin-aws/issues/626))
+* queue topic permission extensions ([#618](https://github.com/hamlet-io/engine-plugin-aws/issues/618))
+* (image): aws support for the image component
+* (runbook): add push_image runbook for images
+* adds extensions and tasks for image management
+* (lambda): lambda aliases ([#606](https://github.com/hamlet-io/engine-plugin-aws/issues/606))
+* (dyanmicvalues): add support for aws secrets as dynamic values
+* (correspondent): add support for AWS pinpoint channels
+* (lb): add support for enabling/disbaling conditions
+#### Fixes
+
+* incorporate feedback
+* (cert): raise error on invalid FQDN
+* support dns zone creation without network ([#619](https://github.com/hamlet-io/engine-plugin-aws/issues/619))
+* (lb): expand permissions for lambda invoke ([#629](https://github.com/hamlet-io/engine-plugin-aws/issues/629))
+* error messages for port lookups ([#628](https://github.com/hamlet-io/engine-plugin-aws/issues/628))
+* (lb): protocol checks for nlb
+* (lb): action lookup for network load balancer ([#623](https://github.com/hamlet-io/engine-plugin-aws/issues/623))
+* (computetask): windows directory creation ([#622](https://github.com/hamlet-io/engine-plugin-aws/issues/622))
+* (directory): handle missing config connector
+* (healthcheck): add iam service to setup
+* (lb): create alerts across all occurrences
+* (waf): support v1 -> v2 migrations
+* (db): aurora cluster backups ([#616](https://github.com/hamlet-io/engine-plugin-aws/issues/616))
+* (lambda): size checking ([#609](https://github.com/hamlet-io/engine-plugin-aws/issues/609))
+* (apigateway): handle open ip address groups ([#608](https://github.com/hamlet-io/engine-plugin-aws/issues/608))
+* (apigateway): reference versioned lambdas
+* (lb): standard error for invalid port mapping
+#### Refactorings
+
+* (ecs): lg pass handling ([#607](https://github.com/hamlet-io/engine-plugin-aws/issues/607))
+
+Full set of changes: [`8.6.2...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.6.2...latest)
+
+## 8.6.2 (2022-06-07)
 
 #### Fixes
 
@@ -16,10 +55,11 @@
 * (cd): move to using a reusable pipeline for changelogs ([#592](https://github.com/hamlet-io/engine-plugin-aws/issues/592))
 #### Others
 
+* update changelog ([#590](https://github.com/hamlet-io/engine-plugin-aws/issues/590))
 * changelog bump
 * changelog bump
 
-Full set of changes: [`8.6.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.6.0...latest)
+Full set of changes: [`8.6.0...8.6.2`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.6.0...8.6.2)
 
 ## 8.6.0 (2022-05-26)
 
