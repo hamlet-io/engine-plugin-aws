@@ -589,6 +589,7 @@
         [#else]
             [#if headerNames?seq_contains("_cdn") ]
                 [#local headerBehaviour = "allViewerAndWhitelistCloudFront"]
+                [#local headerNames = headerNames?filter(x -> x != "_cdn")]
             [#else]
                 [#local headerBehaviour = "whitelist"]
             [/#if]

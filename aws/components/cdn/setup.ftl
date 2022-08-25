@@ -25,6 +25,9 @@
     [#local defaultCachePolicyRequired = false ]
     [#local defaultCachePolicy = resources["cachePolicyDefault"]]
 
+    [#local defaultRequestForwardPolicyRequired = false ]
+    [#local defaultRequestForwardPolicy = resources["requestPolicyDefault"] ]
+
     [#local originPlaceHolder = resources["originPlaceHolder"]]
 
     [#-- Baseline component lookup --]
@@ -604,6 +607,7 @@
         [/#if]
 
         [#if subSolution.OriginSource == "Placeholder" ]
+            [#local defaultRequestForwardPolicyRequired = true]
             [#local behaviour = getCFCacheBehaviour(
                 origins?filter( x -> x.Id == origin.Id)[0],
                 cachePolicy.Id,
@@ -612,7 +616,7 @@
                 cacheHttpMethods,
                 subSolution.Compress,
                 eventHandlers,
-                "",
+                defaultRequestForwardPolicy.Id,
                 (responseHeadersPolicy.Id)!""
             )]
             [#local routeBehaviours += [{ "Priority" : subSolution.Priority, "behaviour": behaviour }]]
@@ -657,6 +661,28 @@
                 cookieNames=["_all"]
                 queryStringNames=["_all"]
                 compressionProtocols=["gzip", "brotli"]
+            /]
+        [/#if]
+
+        [#if defaultRequestForwardPolicyRequired]
+            [@createCFOriginRequestPolicy
+                id=defaultRequestForwardPolicy.Id
+                name=defaultRequestForwardPolicy.Name
+                headerNames=[
+                    "_cdn",
+                    [#-- Include the extra CloudFront headers available from CloudFront --]
+                    "CloudFront-Viewer-Address",
+                    "CloudFront-Viewer-Country",
+                    "CloudFront-Viewer-City",
+                    "CloudFront-Viewer-Country-Name",
+                    "CloudFront-Viewer-Country-Region",
+                    "CloudFront-Viewer-Country-Region-Name",
+                    "CloudFront-Forwarded-Proto",
+                    "CloudFront-Viewer-Http-Version",
+                    "CloudFront-Viewer-TLS"
+                ]
+                cookieNames=["_all"]
+                queryStringNames=["_all"]
             /]
         [/#if]
 
