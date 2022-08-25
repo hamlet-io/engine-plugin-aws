@@ -47,6 +47,11 @@
                     "Name": occurrence.Core.RawFullName,
                     "Type" : AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE
                 },
+                "requestPolicyDefault" : {
+                    "Id": formatResourceId(AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE, core.Id, "Default"),
+                    "Name": occurrence.Core.RawFullName,
+                    "Type" : AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE
+                },
                 "originPlaceHolder" : {
                     "Id" : formatResourceId(AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE, core.Id, "Placeholder"),
                     "Type" : AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE
