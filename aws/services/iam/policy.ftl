@@ -55,17 +55,6 @@
             ),
             permissions.AppData,
             []
-        ) +
-        valueIfTrue(
-            s3AllPermission(baselineIds["AppData"], getAppDataPublicFilePrefix(occurrence)) +
-            s3EncryptionAllPermission(
-                baselineIds["Encryption"],
-                getExistingReference(baselineIds["AppData"], NAME_ATTRIBUTE_TYPE),
-                getAppDataPublicFilePrefix(occurrence),
-                getExistingReference(baselineIds["AppData"], REGION_ATTRIBUTE_TYPE)
-            ),
-            permissions.AppPublic && getAppDataPublicFilePrefix(occurrence)?has_content,
-            []
         )
     ]
 [/#function]
