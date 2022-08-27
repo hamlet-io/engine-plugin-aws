@@ -253,7 +253,7 @@
                                     }
                                 }
                             },
-                            "ResponsePolicys" :{
+                            "ResponsePolicies" :{
                                 "hsts" : {
                                     "HeaderInjection" : {
                                         "StrictTransportSecurity" : {
