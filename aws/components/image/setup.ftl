@@ -84,7 +84,6 @@
                                 r'destination_repository_name="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + repository.Id + r'" "ref" || return $?)"',
                                 r'tag="$(for i in $(docker inspect "${source_image}" --format ' + r"'{{join .RepoTags " + r'" "' + r"}}');" + r' do  [[ "${i}" =~ ^${source_image} ]] && echo "${i#*:}" && break; done)"',
                                 r'',
-                                r'image_tool=""',
                                 r'if docker info &>/dev/null; then',
                                 '   aws --region "${getRegion()}" ecr get-login-password \\',
                                 r'    | docker login --username AWS \',
