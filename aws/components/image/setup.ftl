@@ -78,20 +78,26 @@
                 [#case "ContainerRegistry"]
                     [#if deploymentSubsetRequired("epilogue", false)]
                         [@addToDefaultBashScriptOutput
-                            content=
-                                getImageFromContainerRegistryScript(
-                                    productName,
-                                    environmentName,
-                                    segmentName,
-                                    occurrence,
-                                    solution["Source:ContainerRegistry"].Image,
-                                    "docker",
-                                    getRegistryEndPoint("docker", occurrence),
-                                    "ecr",
-                                    getRegion(),
-                                    "",
-                                    image.Registry
-                                )
+                            content=[
+                                'source_image="${solution["Source:ContainerRegistry"]["Image"]}"',
+                                r'destination_repository_url="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + repository.Id + r'" "url" || return $?)"',
+                                r'destination_repository_name="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + repository.Id + r'" "ref" || return $?)"',
+                                r'tag="$(for i in $(docker inspect "${source_image}" --format ' + r"'{{join .RepoTags " + r'" "' + r"}}');" + r' do  [[ "${i}" =~ ^${source_image} ]] && echo "${i#*:}" && break; done)"',
+                                r'',
+                                r'image_tool=""',
+                                r'if docker info &>/dev/null; then',
+                                '   aws --region "${getRegion()}" ecr get-login-password \\',
+                                r'    | docker login --username AWS \',
+                                r'       --password-stdin "${destination_repository_url%/*}" || return $?',
+                                r'  docker pull "${source_image}" || return $?',
+                                r'  docker tag "${source_image}" "${destination_repository_url}:${tag}" || return $?',
+                                r'  docker image push "${destination_repository_url}:${tag}" || return $?',
+                                r'  digest="$(aws ecr --region "' + "${getRegion()}" + r'" batch-get-image --repository-name "${destination_repository_name}" --image-ids "imageTag=${tag}" --query "images[0].imageId.imageDigest" --output text)"',
+                                r'  echo "digest: ${digest}"',
+                                r'else',
+                                r'  warning "docker not found to pull image - skipping pull"',
+                                r'fi'
+                            ]
                         /]
                     [/#if]
                     [#break]
