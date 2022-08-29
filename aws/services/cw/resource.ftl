@@ -154,6 +154,7 @@
 
             [#local roleRequired = false]
             [#local forwardingRoleId = formatDependentRoleId(logGroupId, linkTarget.Core.Id ) ]
+            [#local forwardingRolePolicyId = formatDependentPolicyId(logGroupId, linkTarget.Core.Id )]
 
             [#if ((linkTargetRoles.Outbound["logwatcher"].Policy)!{})?has_content ]
 
@@ -196,7 +197,7 @@
                     /]
 
                     [@createPolicy
-                        id=formatDependentPolicyId(logGroupId, linkTarget.Core.Id )
+                        id=forwardingRolePolicyId
                         name="log-forwarding"
                         statements=linkTargetRoles.Outbound["logwatcher"].Policy +
                                     iamPassRolePermission(
@@ -218,7 +219,11 @@
                                 forwardingRoleId,
                                 ""
                         )
-                        dependencies=dependencies
+                        dependencies=dependencies +
+                            roleRequired?then(
+                                [forwardingRolePolicyId],
+                                []
+                            )
                     /]
             [/#if]
     [/#if]
