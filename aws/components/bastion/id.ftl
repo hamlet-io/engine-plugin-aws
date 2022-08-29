@@ -1,12 +1,7 @@
 [#ftl]
 [@addResourceGroupInformation
     type=BASTION_COMPONENT_TYPE
-    attributes=[
-        {
-            "Names" : "AntiVirus",
-            "AttributeSet" : AWS_ANTIVIRUS_ATTRIBUTESET_TYPE
-        }
-    ]
+    attributes=[]
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=
