@@ -22,7 +22,6 @@
 [#macro shared_extension_computetask_awswin_ospatching_deployment_computetask occurrence ]
 
     [#local OSPatching = _context.InstanceOSPatching ]
-    [#local avConfig = occurrence.Configuration.Solution["aws:AntiVirus"]]
 
     [#if OSPatching.Enabled ]
         [@warning

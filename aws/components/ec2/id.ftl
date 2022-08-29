@@ -3,12 +3,7 @@
     type=EC2_COMPONENT_TYPE
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
-    attributes=[
-        {
-            "Names" : "AntiVirus",
-            "AttributeSet" : AWS_ANTIVIRUS_ATTRIBUTESET_TYPE
-        }
-    ]
+    attributes=[]
     services=
         [
             AWS_CLOUDWATCH_SERVICE,
