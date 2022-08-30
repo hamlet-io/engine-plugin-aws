@@ -19,10 +19,9 @@
         [
             getPolicyStatement(
                 [
-                    "firehose:DeleteDeliveryStream",
-                    "firehose:PutRecord",
-                    "firehose:PutRecordBatch",
-                    "firehose:UpdateDestination"
+                    [#-- Full permissions required based on AWS documentation --]
+                    [#-- https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SubscriptionFilters.html#FirehoseExample --]
+                    "firehose:*"
                 ],
                 getArn(id)
             )

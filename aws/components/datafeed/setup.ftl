@@ -107,7 +107,10 @@
                             logFilterId=logwatcher.LogFilter
                             destination=streamId
                             role=streamSubscriptionRoleId
-                            dependencies=streamId
+                            dependencies=[
+                                streamId,
+                                streamSubscriptionPolicyId
+                            ]
                         /]
                     [/#if]
                 [/#if]
