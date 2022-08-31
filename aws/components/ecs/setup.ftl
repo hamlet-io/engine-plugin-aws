@@ -840,8 +840,14 @@
                     [#list container.PortMappings![] as portMapping]
                         [#if portMapping.LoadBalancer?has_content]
                             [#local loadBalancer = portMapping.LoadBalancer]
+
+                            [#if ! container.Links[loadBalancer.Link]??]
+                                [#continue]
+                            [/#if]
+
                             [#local link = container.Links[loadBalancer.Link] ]
                             [@debug message="Link" context=link enabled=false /]
+
                             [#local linkCore = link.Core ]
                             [#local linkResources = link.State.Resources ]
                             [#local linkConfiguration = link.Configuration.Solution ]
