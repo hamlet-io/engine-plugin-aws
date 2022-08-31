@@ -70,6 +70,82 @@
         }
     /]
 
+    [#-- NFS File Share Mounts --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "app" : {
+                    "Components" : {
+                        "filesharemount_nfs" : {
+                            "Type" : "fileshare",
+                            "deployment:Unit" : "aws-fileshare",
+                            "Engine" : "NFS",
+                            "Profiles" : {
+                                "Testing" : [ "filesharemount_nfs" ]
+                            },
+                            "Mounts" : {
+                                "home" : {
+                                    "Directory": "home",
+                                    "chroot" : true,
+                                    "Ownership" : {
+                                        "Enforced" : true,
+                                        "UID": 100,
+                                        "GID": 100
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "filesharemount_nfs" : {
+                    "OutputSuffix" : "template.json",
+                     "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "fileSystem" : {
+                                    "Name" : "efsXappXfilesharebaseXnfs",
+                                    "Type" : "AWS::EFS::FileSystem"
+                                },
+                                "securityGroup" : {
+                                    "Name" : "securityGroupXefsXappXfilesharebaseXnfs",
+                                    "Type" : "AWS::EC2::SecurityGroup"
+                                },
+                                "mountTargetA" : {
+                                    "Name" : "efsMountTargetXefsXappXfilesharebaseXnfsXa",
+                                    "Type" : "AWS::EFS::MountTarget"
+                                },
+                                "mountTargetB" : {
+                                    "Name" : "efsMountTargetXefsXappXfilesharebaseXnfsXb",
+                                    "Type" : "AWS::EFS::MountTarget"
+                                },
+                                "accessPoint": {
+                                    "Name" : "efsAccessPointXappXfilesharemountXnfsXhome",
+                                    "Type" : "AWS::EFS::AccessPoint"
+                                }
+                            },
+                            "Output" : [
+                                "efsXappXfilesharebaseXnfs",
+                                "securityGroupXefsXappXfilesharebaseXnfs"
+                            ]
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "filesharemount_nfs" : {
+                    "fileshare" : {
+                        "TestCases" : [ "filesharemount_nfs" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+    /]
+
     [#-- SMB File Share --]
     [@loadModule
         blueprint={
@@ -128,9 +204,6 @@
             "TestCases" : {
                 "filesharebase_smb" : {
                     "OutputSuffix" : "template.json",
-                    "Tools" : {
-                       "cfn-lint" : {}
-                    },
                     "Structural" : {
                         "CFN" : {
                             "Resource" : {
@@ -155,6 +228,9 @@
                 "filesharebase_smb" : {
                     "fileshare" : {
                         "TestCases" : [ "filesharebase_smb" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
                     }
                 }
             }

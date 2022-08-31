@@ -105,7 +105,7 @@
         properties=
             {
                 "FileSystemId" : getReference(efsId),
-                "AccessPointTags" : tags
+                "AccessPointTags" : getCFResourceTags(tags)
             } +
             attributeIfTrue(
                 "PosixUser",
