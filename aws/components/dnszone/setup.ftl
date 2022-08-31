@@ -31,11 +31,13 @@
 
         [/#if]
 
-        [@createRoute53HostedZone
-            id=resources["zone"].Id
-            name=resources["zone"].Name
-            tags=getOccurrenceTags(occurrence)
-            vpcIds=vpcIds
-        /]
+        [#if deploymentSubsetRequired(DNS_ZONE_COMPONENT_TYPE, true)]
+            [@createRoute53HostedZone
+                id=resources["zone"].Id
+                name=resources["zone"].Name
+                tags=getOccurrenceTags(occurrence)
+                vpcIds=vpcIds
+            /]
+        [/#if]
     [/#if]
 [/#macro]
