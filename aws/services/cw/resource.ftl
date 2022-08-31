@@ -185,9 +185,8 @@
                     [/#if]
                 [/#list]
 
-                [#if
-                    ( deploymentSubsetRequired("iam", true) || !iamResourceSetActive ) &&
-                    isPartOfCurrentDeploymentUnit(forwardingRoleId) ]
+                [#if ( deploymentSubsetRequired("iam", true) || !iamResourceSetActive ) &&
+                        isPartOfCurrentDeploymentUnit(forwardingRoleId) ]
 
                     [@createRole
                         id=forwardingRoleId
@@ -220,7 +219,7 @@
                                 ""
                         )
                         dependencies=dependencies +
-                            roleRequired?then(
+                            (roleRequired && isPartOfCurrentDeploymentUnit(forwardingRoleId))?then(
                                 [forwardingRolePolicyId],
                                 []
                             )
