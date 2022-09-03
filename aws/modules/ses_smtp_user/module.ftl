@@ -46,6 +46,9 @@
                         component: {
                             "Type" : "user",
                             "deployment:Unit": deploymentUnit,
+                            "Extensions" : [
+                                "_user_ses_smtp_permissions"
+                            ],
                             "GenerateCredentials" : {
                                 "EncryptionScheme" : "",
                                 "Formats" : [ "system" ]
@@ -53,7 +56,6 @@
                             "Permissions" : {
                                 "Decrypt": false,
                                 "AppData": false,
-                                "AppPublic": false,
                                 "AsFile": false
                             }
                         },

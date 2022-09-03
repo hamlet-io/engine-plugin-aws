@@ -13,7 +13,7 @@
     ]
 /]
 
-[#macro shared_extension_runbook_user_ses_smtp_permissions_runbook_setup occurrence ]
+[#macro shared_extension_user_ses_smtp_permissions_deployment_setup occurrence ]
 
     [@includeServicesConfiguration
         provider=AWS_PROVIDER
