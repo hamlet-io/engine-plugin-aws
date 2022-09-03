@@ -167,7 +167,7 @@
                     "Fn::Join": [
                         "/",
                         [
-                            "aws",
+                            "/aws",
                             "transfer",
                             getReference(transferServerId, NAME_ATTRIBUTE_TYPE)
                         ]
