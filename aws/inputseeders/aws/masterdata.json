@@ -348,8 +348,7 @@
                                 "Permissions": {
                                     "Decrypt": false,
                                     "AsFile": false,
-                                    "AppData": false,
-                                    "AppPublic": false
+                                    "AppData": false
                                 },
                                 "Extensions": [
                                     "_cfredirect-v1"
