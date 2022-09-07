@@ -41,6 +41,10 @@
     [#-- Global Secondary Indexes --]
     [#local globalSecondaryIndexes = [] ]
     [#list solution.SecondaryIndexes!{} as key,value]
+        [#if ! value.Enabled ]
+            [#continue]
+        [/#if]
+
         [#local globalSecondaryIndexes +=
             getGlobalSecondaryIndex(
                 value.Name,
