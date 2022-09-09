@@ -45,10 +45,10 @@
                     "Component"  : sources.occurrence.Core.Component.RawId,
                     "LinkId" : properties.linkId,
                     "Links" : sources.occurrence.Configuration.Solution.Links,
-                    "LinkType" : (linkTarget.Core.Type)!""
+                    "LinkType" : (linkTarget.Core.Type)!"",
+                    "DynamicValue" : value
                 }
             /]
-            [#return ""]
         [/#if]
 
         [#local version = (properties.version == "LATEST")?then("", properties.version)]
@@ -65,5 +65,4 @@
             ]
         }]
     [/#if]
-    [#return "__${vaule}__"]
 [/#function]
