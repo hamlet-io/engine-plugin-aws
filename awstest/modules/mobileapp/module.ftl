@@ -44,6 +44,22 @@
                             "deployment:Unit": "aws-mobileapp",
                             "Profiles" : {
                                 "Testing" : [ "mobileappbase" ]
+                            },
+                            "BuildFormats:android" : {
+                                "KeyStore" : {
+                                    "Password" : "password123",
+                                    "KeyAlias" : "my-key",
+                                    "KeyPassword" : "password123"
+                                }
+                            },
+                            "BuildFormats:ios" : {
+                                "AppleTeamId" : "123456",
+                                "TestFlight" : {
+                                    "AppId": "APPL123",
+                                    "Username" : "user1",
+                                    "Password": "password123"
+                                },
+                                "DistributionCertificatePassword" : "password123"
                             }
                         }
                     }
