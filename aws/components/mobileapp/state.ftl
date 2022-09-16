@@ -13,19 +13,6 @@
     [#local otaPrefix = core.RelativePath ]
     [#local otaURL = ""]
 
-    [#local releaseChannel =
-        getOccurrenceSettingValue(occurrence, "RELEASE_CHANNEL", true)?has_content?then(
-                getOccurrenceSettingValue(occurrence, "RELEASE_CHANNEL", true),
-                environmentName
-            )
-    ]
-
-    [#local exportMethod =
-        getOccurrenceSettingValue(occurrence, "IOS_DIST_EXPORT_METHOD", true)?has_content?then(
-            getOccurrenceSettingValue(occurrence, "IOS_DIST_EXPORT_METHOD", true),
-            "app-store"
-        )
-    ]
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData" ], true, false )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
@@ -62,11 +49,7 @@
                     [#break]
                 [#case CDN_ROUTE_COMPONENT_TYPE ]
                     [#if id?lower_case?starts_with("ota")]
-                        [#if solution.UseOTAPrefix ]
-                            [#local otaCDNURL = formatRelativePath(linkTargetAttributes["URL"], otaPrefix )]
-                        [#else]
-                            [#local otaCDNURL = linkTargetAttributes["URL"] ]
-                        [/#if]
+                        [#local otaCDNURL = formatRelativePath(linkTargetAttributes["URL"], otaPrefix )]
                     [/#if]
                     [#break]
             [/#switch]
@@ -94,9 +77,6 @@
                 }
             },
             "Attributes" : {
-                "ENGINE" : solution.Engine,
-                "RELEASE_CHANNEL" : releaseChannel,
-                "IOS_DIST_EXPORT_METHOD" : exportMethod,
                 "OTA_ARTEFACT_BUCKET" : otaBucket,
                 "OTA_ARTEFACT_PREFIX" : otaPrefix,
                 "OTA_ARTEFACT_URL" : otaURL,
