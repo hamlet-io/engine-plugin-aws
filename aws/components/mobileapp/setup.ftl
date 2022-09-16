@@ -129,7 +129,7 @@
                 "ANDROID_DIST_BUNDLE_ID": (solution["BuildFormats:android"].BundleIdOverride)!"",
                 "ANDROID_DIST_KEYSTORE_FILENAME": solution["BuildFormats:android"].KeyStore.FileName,
                 "ANDROID_DIST_KEYSTORE_PASSWORD": (solution["BuildFormats:android"].KeyStore.Password)!"HamletFatal: Missing android keystore password - solution.BuildFormats:android.KeyStore.Password",
-                "ANDROID_DIST_KEY_ALIAS": solution["BuildFormats:android"].KeyStore.KeyAlias,
+                "ANDROID_DIST_KEY_ALIAS": solution["BuildFormats:android"].KeyStore.KeyAlias!"HamletFatal: Missing android keystore key alias - solution.BuildFormats:android.KeyStore.KeyAlias",
                 "ANDROID_DIST_KEY_PASSWORD": (solution["BuildFormats:android"].KeyStore.KeyPassword)!"HamletFatal: Missing android key password - solution.BuildFormats:android.KeyStore.KeyPassword"
             } +
             (solution["BuildFormats:android"].PlayStore.Enabled)?then(
