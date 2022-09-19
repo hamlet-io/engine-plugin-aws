@@ -134,14 +134,14 @@
             } +
             (solution["BuildFormats:android"].PlayStore.Enabled)?then(
                 {
-                    "ANDROID_PLAYSTORE_JSON_KEY_FILENAME": solution["BuildFormats:ios"].PlayStore.JSONKeyFileName
+                    "ANDROID_PLAYSTORE_JSON_KEY_FILENAME": solution["BuildFormats:android"].PlayStore.JSONKeyFileName
                 },
                 {}
             ) +
             (solution["BuildFormats:android"].Firebase.Enabled)?then(
                 {
-                    "ANDROID_DIST_FIREBASE_APP_ID": (solution["BuildFormats:ios"].Firebase.AppId)!"HamletFatal: Missing firebase app Id - solution.BuildFormats:ios.Firebase.AppId",
-                    "ANDROID_DIST_FIREBASE_JSON_KEY_FILENAME": solution["BuildFormats:ios"].Firebase.JSONKeyFileName
+                    "ANDROID_DIST_FIREBASE_APP_ID": (solution["BuildFormats:android"].Firebase.AppId)!"HamletFatal: Missing firebase app Id - solution.BuildFormats:ios.Firebase.AppId",
+                    "ANDROID_DIST_FIREBASE_JSON_KEY_FILENAME": solution["BuildFormats:android"].Firebase.JSONKeyFileName
                 },
                 {}
             ),
