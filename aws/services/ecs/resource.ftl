@@ -1081,8 +1081,26 @@
         ]
 
         [#if container.Image.Source == "containerregistry" ]
-            [#local _context += { "Image" : container.Image["Source:containerregistry"].Image }]
-            [@debug message="SourceImage" context=container.Image["Source:containerregistry"].Image enabled=true /]
+            [#local imageName = container.Image["Source:containerregistry"].Image]
+            [#if imageName?contains("/")]
+                [#local imageName = imageName?keep_after_last("/")]
+            [/#if]
+            [#if imageName?contains(":")]
+                [#local imageTag = imageName?keep_after_last(":") ]
+            [#else]
+                [#local imageTag = ""]
+            [/#if]
+
+            [#local _context += {
+                "Image" : (container.Image['Source:containerregistry'].Image)?remove_ending(":${imageTag}")
+            } +
+            (imageTag?has_content && ! ((container.ImageVersion)!"")?has_content)?then(
+                {
+                    "ImageVersion" : imageTag
+                },
+                {}
+            )]
+            [@debug message="SourceImage" context={"Image": _context.Image, "ImageVersion": _context.ImageVersion} enabled=true /]
         [/#if]
 
         [#local linkIngressRules = [] ]
