@@ -375,6 +375,7 @@
 
             [#local cfRedirectLink = {
                 "cfredirect" : {
+                    "Enabled" : true,
                     "Id" : "cfredirect",
                     "Name" : "cfredirect",
                     "Tier" : "gbl",
