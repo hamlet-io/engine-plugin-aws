@@ -64,30 +64,42 @@
             [#switch condition.Type]
                 [#case AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
-                        [#local v2WkStatement += [ {"SqliMatchStatement": {
-                            "FieldToMatch": formatV2FieldMatch(field),
-                            "TextTransformations": formatV2TextTransformations(filter.Transformations)
-                            }}]]
+                        [#local v2WkStatement += [
+                            {
+                                "SqliMatchStatement": {
+                                    "FieldToMatch": formatV2FieldMatch(field),
+                                    "TextTransformations": formatV2TextTransformations(filter.Transformations)
+                                }
+                            }
+                        ]]
                     [/#list]
                 [#break]
                 [#case AWS_WAF_XSS_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
-                        [#local v2WkStatement += [ { "XssMatchStatement": {
-                            "FieldToMatch": formatV2FieldMatch(field),
-                            "TextTransformations": formatV2TextTransformations(filter.Transformations)
-                            }}]]
+                        [#local v2WkStatement += [
+                            {
+                                "XssMatchStatement": {
+                                    "FieldToMatch": formatV2FieldMatch(field),
+                                    "TextTransformations": formatV2TextTransformations(filter.Transformations)
+                                }
+                            }
+                        ]]
                     [/#list]
                 [#break]
                 [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#list getWAFValueList(filter.Constraints, valueSet) as constraint]
                             [#list getWAFValueList(filter.Targets, valueSet) as target]
-                                [#local v2WkStatement += [ {"ByteMatchStatement": {
-                                    "FieldToMatch": formatV2FieldMatch(field),
-                                    "PositionalConstraint" : constraint,
-                                    "SearchString" : target,
-                                    "TextTransformations": formatV2TextTransformations(filter.Transformations)
-                                    }}]]
+                                [#local v2WkStatement += [
+                                    {
+                                        "ByteMatchStatement": {
+                                            "FieldToMatch": formatV2FieldMatch(field),
+                                            "PositionalConstraint" : constraint,
+                                            "SearchString" : target,
+                                            "TextTransformations": formatV2TextTransformations(filter.Transformations)
+                                        }
+                                    }
+                                ]]
                             [/#list]
                         [/#list]
                     [/#list]
@@ -96,12 +108,16 @@
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#list getWAFValueList(filter.Operators, valueSet) as operator]
                             [#list getWAFValueList(filter.Sizes, valueSet) as size]
-                                [#local v2WkStatement += [ { "SizeConstraintStatement": {
-                                    "ComparisonOperator": operator,
-                                    "FieldToMatch": formatV2FieldMatch(field),
-                                    "TextTransformations": formatV2TextTransformations(filter.Transformations),
-                                    "Size": size
-                                    }}]]
+                                [#local v2WkStatement += [
+                                    {
+                                        "SizeConstraintStatement": {
+                                            "ComparisonOperator": operator,
+                                            "FieldToMatch": formatV2FieldMatch(field),
+                                            "TextTransformations": formatV2TextTransformations(filter.Transformations),
+                                            "Size": size
+                                        }
+                                    }
+                                ]]
                             [/#list]
                         [/#list]
                     [/#list]
@@ -111,14 +127,24 @@
                     [#list getWAFValueList(filter.Targets, valueSet) as target]
                         [#local v2WkGeo += [ target] ]
                     [/#list]
-                    [#local v2WkStatement += [ { "GeoMatchStatement": {
-                        "CountryCodes": v2WkGeo
-                        }}] ]
+                    [#local v2WkStatement += [
+                        {
+                            "GeoMatchStatement": {
+                                "CountryCodes": v2WkGeo
+                            }
+                        }
+                    ]]
                 [#break]
                 [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
-                    [#local v2WkStatement += [ { "IPSetReferenceStatement": {
-                        "Arn": { "Fn::GetAtt" : [ formatDependentWAFConditionId("v2", condition.Type, id, "c1"), "Arn" ] }
-                        }}] ]
+                    [#local v2WkStatement += [
+                        {
+                            "IPSetReferenceStatement": {
+                                "Arn": getArn(
+                                    formatDependentWAFConditionId("v2", condition.Type, id, "c" + condition?counter?c)
+                                )
+                            }
+                        }
+                    ]]
                 [#break]
                 [#default]
                     [#local v2WkStatement += [ { "HamletFatal:UnknownStatement": condition } ]]
@@ -131,12 +157,12 @@
             [#local v2WkStatement = [ {"OrStatement": { "Statements": v2WkStatement}}]]
         [/#if]
         [#if condition.Negated]
-            [#local v2Statements += [ { "NotStatement": v2WkStatement[0] }] ]
+            [#local v2Statements += [ { "NotStatement": {"Statement": v2WkStatement[0] }}] ]
         [#else]
             [#local v2Statements += v2WkStatement]
         [/#if]
     [/#list]
-    [#if v2WkStatement?size > 1]
+    [#if v2Statements?size > 1]
         [#local v2Statements = { "AndStatement": { "Statements": v2Statements}}]
     [#else]
         [#local v2Statements = v2Statements[0] ]
@@ -145,11 +171,30 @@
 [/#function]
 
 [#-- Capture similarity between conditions --]
-[#macro createWAFCondition id name type filters=[] valueSet={} regional=false version="v1"]
-    [#if (WAFConditions[type].ResourceType)?has_content]
+[#macro createWAFMatchSetFromCondition id name conditionType filters=[] valueSet={} regional=false version="v1"]
+
+    [#local wafConditionDetails = getWAFConditionSetMappings(conditionType)]
+    [#if ((wafConditionDetails.ResourceType[version])!{})?has_content]
+
+        [#local hamletResourceType = wafConditionDetails["ResourceType"][version]["hamlet"]]
+        [#local cfnResourceType = ""]
+
+        [#switch version ]
+            [#case "v1"]
+                [#if regional ]
+                    [#local cfnResourceType = wafConditionDetails["ResourceType"][version]["cfn"]["regional"]]
+                [#else]
+                    [#local cfnResourceType = wafConditionDetails["ResourceType"][version]["cfn"]["global"]]
+                [/#if]
+                [#break]
+            [#case "v2"]
+                [#local cfnResourceType = wafConditionDetails["ResourceType"][version]["cfn"] ]
+                [#break]
+        [/#switch]
+
         [#local result = [] ]
         [#list asArray(filters) as filter]
-            [#switch type]
+            [#switch conditionType]
                 [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
                     [#local result += formatWAFByteMatchTuples(filter, valueSet) ]
                     [#break]
@@ -173,117 +218,40 @@
 
         [@cfResource
             id=id
-            type=formatWAFResourceType(WAFConditions[type].ResourceType, regional, version)
+            type=cfnResourceType
             properties=
+                {
+                    "Name": name
+                } +
+                (version == "v2")?then(
                     {
-                        "Name": name
-                    } +
-                    (version == "v2")?then(
-                        { "Scope" : regional?then("REGIONAL","CLOUDFRONT")},
-                        {}
-                    )+
-                    ((type == "IPMatch") && (version == "v2"))?then(
-                        { "IPAddressVersion" : "IPV4"},
-                        {}
-                    )+
-                    contentIfContent(
-                        attributeIfContent(
-                            ((type == "IPMatch") && (version == "v2"))?then("Addresses",WAFConditions[type].TuplesAttributeKey!""),
-                            result
+                        "Scope" : regional?then("REGIONAL","CLOUDFRONT")
+                    },
+                    {}
+                )+
+                ((conditionType == "IPMatch") && (version == "v2"))?then(
+                    {
+                        "IPAddressVersion" : "IPV4"
+                    },
+                    {}
+                )+
+                contentIfContent(
+                    attributeIfContent(
+                        ((conditionType == "IPMatch") && (version == "v2"))?then(
+                            "Addresses",
+                            wafConditionDetails.TuplesAttributeKey!""
                         ),
                         result
-                    )
+                    ),
+                    result
+                )
         /]
     [/#if]
 [/#macro]
 
-[#macro createWAFByteMatchSetCondition id name matches=[] valueSet={} regional=false version="v1" ]
-    [@createWAFCondition
-        id=id
-        name=name
-        type=AWS_WAF_BYTE_MATCH_CONDITION_TYPE
-        filters=matches
-        valueSet=valueSet
-        regional=regional
-        version=version /]
-[/#macro]
 
-[#macro createWAFGeoMatchSetCondition id name countryCodes=[] regional=true version="v1"]
-    [#local filters = [{"Targets" : "countrycodes"}] ]
-    [#local valueSet = {"countrycodes" : asFlattenedArray(countryCodes) } ]
-    [@createWAFCondition
-        id=id
-        name=name
-        type=AWS_WAF_GEO_MATCH_CONDITION_TYPE
-        filters=filters
-        valueSet=valueSet
-        regional=regional
-        version=version /]
-[/#macro]
-
-[#macro createWAFIPSetCondition id name cidr=[] regional=false version="v1" ]
-    [#local filters = [{"Targets" : "ips"}] ]
-    [#local valueSet = {"ips" : asFlattenedArray(cidr) } ]
-    [#switch version]
-        [#case "v1"]
-            [@createWAFCondition
-                id=id
-                name=name
-                type=AWS_WAF_IP_MATCH_CONDITION_TYPE
-                filters=filters
-                valueSet=valueSet
-                regional=regional /]
-        [#break]
-        [#case "v2"]
-            [@cfResource
-                id=id
-                type="AWS::WAFv2::IPSet"
-                properties=
-                        {
-                            "Name": name,
-                            "Addresses": formatWAFIPMatchTuples(filter, valueSet, version),
-                            "IPAddressVersion": "IPV4",
-                            "Scope": regional?then("REGIONAL","CLOUDFRONT")
-                        }
-            /]
-        [#break]
-    [/#switch]
-[/#macro]
-
-[#macro createWAFSizeConstraintCondition id name constraints=[] valueSet={} regional=false version="v1"]
-    [@createWAFCondition
-        id=id
-        name=name
-        type=AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE
-        filters=constraints
-        valueSet=valueSet
-        regional=regional
-        version=version /]
-[/#macro]
-
-[#macro createWAFSqlInjectionMatchSetCondition id name matches=[] valueSet={} regional=false version="v1"]
-    [@createWAFCondition
-        id=id
-        name=name
-        type=AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE
-        filters=matches
-        valueSet=valueSet
-        regional=regional
-        version=version /]
-[/#macro]
-
-[#macro createWAFXssMatchSetCondition id name matches=[] valueSet={} regional=false version="v1"]
-    [@createWAFCondition
-        id=id
-        name=name
-        type=AWS_WAF_XSS_MATCH_CONDITION_TYPE
-        filters=matches
-        valueSet=valueSet
-        regional=regional
-        version=version /]
-[/#macro]
-
-[#macro createWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit="" version="v1"]
+[#-- Creates the WAF Rule along with any MatchSets required for the conditions of the rule --]
+[#macro setupWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit="" version="v1"]
     [#local predicates = [] ]
     [#list asArray(conditions) as condition]
         [#local rateBased = (rateKey?has_content && rateLimit?has_content)]
@@ -298,17 +266,15 @@
         [/#if]
         [#if condition.Filters?has_content]
             [#-- Condition to be created with the rule --]
-            [#if (version == "v1") || ((condition.Type) == "IPMatch") ]
-                [#-- V2 templates create rules as part of WebAcl except for IPMatch --]
-                [@createWAFCondition
-                    id=conditionId
-                    name=conditionName
-                    type=condition.Type
-                    filters=condition.Filters
-                    valueSet=valueSet
-                    regional=regional
-                    version=version /]
-            [/#if]
+            [@createWAFMatchSetFromCondition
+                id=conditionId
+                name=conditionName
+                conditionType=condition.Type
+                filters=condition.Filters
+                valueSet=valueSet
+                regional=regional
+                version=version
+            /]
         [/#if]
         [#local predicates +=
             [
@@ -322,7 +288,6 @@
     [/#list]
 
     [#if version == "v1"]
-        [#-- V2 templates create rules as part of WebAcl except for IPMatch --]
         [@cfResource
             id=id
             type=formatWAFResourceType(rateBased?then("RateBasedRule", "Rule"), regional)
@@ -342,7 +307,7 @@
 [#-- Rules are grouped into bands. Bands are sorted into ascending alphabetic --]
 [#-- order, with rules within a band ordered based on occurrence in the rules --]
 [#-- array. Rules without a band are put into the default band.               --]
-[#macro createWAFAcl id name metric defaultAction rules=[] valueSet={} regional=false bandDefault="default" version="v1" ]
+[#macro setupWAFAcl id name metric defaultAction rules=[] valueSet={} regional=false bandDefault="default" version="v1" ]
     [#-- Determine the bands --]
     [#local bands = [] ]
     [#list asArray(rules) as rule]
@@ -374,7 +339,7 @@
                 [#local ruleMetric = formatId(metric,"r" + rule?counter?c)]
             [/#if]
             [#if rule.Conditions?has_content]
-                [@createWAFRule
+                [@setupWAFRule
                     id=ruleId
                     name=ruleName
                     metric=ruleMetric
@@ -470,11 +435,14 @@
 
 [#macro createWAFAclFromSecurityProfile id name metric wafSolution securityProfile occurrence={} regional=false version="v1"]
     [#if wafSolution.OWASP]
-        [#local wafProfile = wafProfiles[securityProfile.WAFProfile!""]!{} ]
+        [#local wafProfile = getReferenceData(WAFPROFILE_REFERENCE_TYPE)[securityProfile.WAFProfile!""]!{} ]
     [#else]
         [#local wafProfile = {"Rules" : [], "DefaultAction" : "ALLOW"} ]
     [/#if]
-    [#local wafValueSet = wafValueSets[securityProfile.WAFValueSet!""]!{} ]
+    [#local wafValueSet = resolveDynamicValues(
+        getReferenceData(WAFVALUESET_REFERENCE_TYPE)[securityProfile.WAFValueSet!""]!{},
+        {"occurrence": occurrence}
+    )]
 
     [#if getGroupCIDRs(wafSolution.IPAddressGroups, true, occurrence, true) ]
         [#local wafValueSet += {
@@ -528,7 +496,12 @@
                 "DefaultAction" : (version == "v1")?then("ALLOW","Allow")
             } ]
     [/#if]
-    [#local rules = getWAFProfileRules(wafProfile, wafRuleGroups, wafRules, wafConditions)]
+    [#local rules = getWAFProfileRules(
+        wafProfile,
+        getReferenceData(WAFRULEGROUP_REFERENCE_TYPE),
+        getReferenceData(WAFRULE_REFERENCE_TYPE),
+        getReferenceData(WAFCONDITION_REFERENCE_TYPE)
+    )]
 
     [#if wafSolution.RateLimits?has_content]
 
@@ -560,7 +533,7 @@
         [/#if]
     [/#if]
 
-    [@createWAFAcl
+    [@setupWAFAcl
         id=id
         name=name
         metric=metric
