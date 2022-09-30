@@ -33,9 +33,27 @@
     [#local subnets = {} ]
     [#-- Define subnets --]
     [#list getTiers()?filter(x -> x.Network.Enabled && x.Active ) as networkTier]
-        [#if ! (networkTier?has_content && networkTier.Network.Enabled &&
-                    networkTier.Network.Link.Tier == core.Tier.Id && networkTier.Network.Link.Component == core.Component.Id &&
-                    (networkTier.Network.Link.Version!core.Version.Id) == core.Version.Id && (networkTier.Network.Link.Instance!core.Instance.Id) == core.Instance.Id  ) ]
+
+        [#-- Ensure the required network configuration is present --]
+        [#if ! (
+                (networkTier.Network.Link.Tier)?has_content &&
+                (networkTier.Network.Link.Component)?has_content &&
+                (networkTier.Network.RouteTable)?has_content &&
+                (networkTier.Network.NetworkACL)?has_content
+               ) ]
+            [@fatal
+                message="Incomplete Network attribute configuration for " + networkTier.Name + " tier"
+                context=networkTier
+                detail="Link, RouteTable and NetworkACL attribute values must be provided. If no network is required, set the Enabled attribute to false (it is true by default)."
+            /]
+            [#continue]
+        [/#if]
+        [#if ! (
+                networkTier.Network.Link.Tier == core.Tier.Id &&
+                networkTier.Network.Link.Component == core.Component.Id &&
+                (networkTier.Network.Link.Version!core.Version.Id) == core.Version.Id &&
+                (networkTier.Network.Link.Instance!core.Instance.Id) == core.Instance.Id
+               ) ]
             [#continue]
         [/#if]
 
