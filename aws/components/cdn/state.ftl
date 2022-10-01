@@ -43,12 +43,12 @@
                     "Type" : AWS_CLOUDFRONT_DISTRIBUTION_RESOURCE_TYPE
                 },
                 "cachePolicyDefault": {
-                    "Id": formatResourceId(AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE, core.Id, "Default"),
+                    "Id": formatResourceId(AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE, core.Id, "default"),
                     "Name": occurrence.Core.RawFullName,
                     "Type" : AWS_CLOUDFRONT_CACHE_POLICY_RESOURCE_TYPE
                 },
                 "requestPolicyDefault" : {
-                    "Id": formatResourceId(AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE, core.Id, "Default"),
+                    "Id": formatResourceId(AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE, core.Id, "default"),
                     "Name": occurrence.Core.RawFullName,
                     "Type" : AWS_CLOUDFRONT_ORIGIN_REQUEST_POLICY_RESOURCE_TYPE
                 },
