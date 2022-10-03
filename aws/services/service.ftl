@@ -73,6 +73,9 @@
 [#assign AWS_FSX_SERVICE = "fsx" ]
 [@addService provider=AWS_PROVIDER service=AWS_FSX_SERVICE /]
 
+[#assign AWS_GLUE_SERVICE = "glue" ]
+[@addService provider=AWS_PROVIDER service=AWS_GLUE_SERVICE /]
+
 [#assign AWS_TRANSFER_SERVICE = "transfer" ]
 [@addService provider=AWS_PROVIDER service=AWS_TRANSFER_SERVICE /]
 
