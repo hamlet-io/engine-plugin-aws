@@ -398,7 +398,8 @@
                     id,
                     originBucket,
                     cfAccess,
-                    basePath
+                    basePath,
+                    customHeaders
                 )]
             [#local origins += origin ]
 
@@ -419,7 +420,8 @@
                     id,
                     originBucket,
                     cfAccess,
-                    formatAbsolutePath(getSettingsFilePrefix(originLink), "spa")
+                    formatAbsolutePath(getSettingsFilePrefix(originLink), "spa"),
+                    customHeaders
                 )]
             [#local origins += spaOrigin ]
 
@@ -428,7 +430,8 @@
                     formatId(id, "config"),
                     originBucket,
                     cfAccess,
-                    formatAbsolutePath(getSettingsFilePrefix(originLink))
+                    formatAbsolutePath(getSettingsFilePrefix(originLink)),
+                    customHeaders
                 )]
             [#local origins += configOrigin ]
             [#break]

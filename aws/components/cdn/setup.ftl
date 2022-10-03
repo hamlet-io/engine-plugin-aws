@@ -375,6 +375,7 @@
 
             [#local cfRedirectLink = {
                 "cfredirect" : {
+                    "Enabled" : true,
                     "Id" : "cfredirect",
                     "Name" : "cfredirect",
                     "Tier" : "gbl",
@@ -398,16 +399,18 @@
 
                 [#local _context +=
                     {
-                        "CustomOriginHeaders" : (_context.CustomOriginHeaders![]) + [
-                            getCFHTTPHeader(
-                                "X-Redirect-Primary-Domain-Name",
-                                primaryFQDN ),
-                            getCFHTTPHeader(
-                                "X-Redirect-Response-Code",
-                                "301"
-                            )
-                        ]
-                    }]
+                        "CustomHeadersConfig" :
+                            (_context.CustomHeadersConfig![]) +
+                            [
+                                getCFHTTPHeader(
+                                    "X-Redirect-Primary-Domain-Name",
+                                    primaryFQDN ),
+                                getCFHTTPHeader(
+                                    "X-Redirect-Response-Code",
+                                    "301"
+                                )
+                            ]
+                    } ]
             [#else]
                 [@fatal
                     message="Could not find cfredirect component"
@@ -657,7 +660,7 @@
                 id=defaultCachePolicy.Id
                 name=defaultCachePolicy.Name
                 ttl=defaultTTLPolicy
-                headerNames=[]
+                headerNames=_context.ForwardHeaders
                 cookieNames=["_all"]
                 queryStringNames=["_all"]
                 compressionProtocols=["gzip", "brotli"]
