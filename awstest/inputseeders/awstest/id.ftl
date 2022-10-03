@@ -109,6 +109,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "correspondent"
                             },
+                            "datacatalog" : {
+                                "Provider" : "awstest",
+                                "Name" : "datacatalog"
+                            },
                             "datafeed" : {
                                 "Provider" : "awstest",
                                 "Name" : "datafeed"
