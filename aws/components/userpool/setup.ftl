@@ -582,8 +582,8 @@
             [#local userPoolClientId           = subResources["client"].Id]
             [#local userPoolClientName         = subResources["client"].Name]
 
-            [#local callbackUrls = []]
-            [#local logoutUrls = []]
+            [#local callbackUrls = subSolution.OAuth.CallbackUrls]
+            [#local logoutUrls = subSolution.OAuth.LogoutUrls ]
             [#local identityProviders = [ ]]
 
             [#local clientDepedencies = []]
