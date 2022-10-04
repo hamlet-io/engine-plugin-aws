@@ -45,6 +45,11 @@
         }
     ]]
 
+    [#local logContent = [
+        "[general]",
+        ""
+    ]]
+
     [#list ((logFileProfile.LogFileGroups)![])?map(
                 x -> (getReferenceData(LOGFILEGROUP_REFERENCE_TYPE)[x])!{}
             ) as logFileGroup ]
