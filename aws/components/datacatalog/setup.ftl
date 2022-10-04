@@ -104,7 +104,7 @@
         [/#list]
 
         [#local serDeParams = {}]
-        [#list solution.Format.SerDe.Parameters as k,v ]
+        [#list solution.Format.Serialisation.Parameters as k,v ]
             [#if v.Enabled ]
                 [#local serDeParams = mergeObjects(
                     serDeParams,
@@ -147,7 +147,7 @@
                     solution.Format.Output,
                     {},
                     {},
-                    solution.Format.SerDe.Library,
+                    solution.Format.Serialisation.Library,
                     "",
                     serDeParams
                 )]
