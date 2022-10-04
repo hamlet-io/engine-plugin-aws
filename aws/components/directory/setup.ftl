@@ -381,7 +381,7 @@
                     [#break]
 
                     [#default]
-                        [@fatal
+                        [@warn
                             message="Logging not available for this engine"
                             detail={
                                 "Id" : core.RawId,

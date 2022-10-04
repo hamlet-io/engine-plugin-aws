@@ -50,11 +50,21 @@
         [#local flowLogDestinationType = flowLogSolution.DestinationType ]
 
         [#local flowLogS3DestinationArn = "" ]
+
         [#local flowLogS3DestinationPrefix =
                     formatRelativePath(
-                        flowLogSolution.s3.Prefix,
-                        core.FullAbsolutePath,
-                        id
+                        (flowLogSolution.s3.IncludeInPrefix)?map(
+                            x -> (x == "Prefix")?then(
+                                flowLogSolution.s3.Prefix,
+                                (x == "FullAbsolutePath" )?then(
+                                    core.FullAbsolutePath,
+                                    (x == "Id" )?then(
+                                        id,
+                                        ""
+                                    )
+                                )
+                            )
+                        )
                     )]
 
         [#if flowLogDestinationType == "log" ]
