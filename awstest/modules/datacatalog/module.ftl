@@ -42,7 +42,7 @@
                                     "Format": {
                                         "Input": "org.apache.hadoop.mapred.TextInputFormat",
                                         "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                                        "SerDe": {
+                                        "Serialisation": {
                                             "Library": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
                                         }
                                     }
