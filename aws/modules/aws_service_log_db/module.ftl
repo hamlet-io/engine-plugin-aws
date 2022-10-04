@@ -141,7 +141,7 @@
                                     "Format": {
                                         "Input": "org.apache.hadoop.mapred.TextInputFormat",
                                         "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                                        "SerDe": {
+                                        "Serialisation": {
                                             "Library": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe",
                                             "Parameters" : {
                                                 "field.delim": {
@@ -277,7 +277,7 @@
                                     "Format": {
                                         "Input": "org.apache.hadoop.mapred.TextInputFormat",
                                         "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                                        "SerDe": {
+                                        "Serialisation": {
                                             "Library": "org.apache.hadoop.hive.serde2.RegexSerDe",
                                             "Parameters" : {
                                                 "serialization.format": {
@@ -383,7 +383,7 @@
                                     "Format": {
                                         "Input": "org.apache.hadoop.mapred.TextInputFormat",
                                         "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                                        "SerDe": {
+                                        "Serialisation": {
                                             "Library": "org.apache.hadoop.hive.serde2.RegexSerDe",
                                             "Parameters" : {
                                                 "serialization.format": {
@@ -477,7 +477,7 @@
                                     "Format": {
                                         "Input": "org.apache.hadoop.mapred.TextInputFormat",
                                         "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                                        "SerDe": {
+                                        "Serialisation": {
                                             "Library": "org.apache.hadoop.hive.serde2.RegexSerDe",
                                             "Parameters" : {
                                                 "serialization.format": {
@@ -560,7 +560,7 @@
                                     "Format": {
                                         "Input": "org.apache.hadoop.mapred.TextInputFormat",
                                         "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                                        "SerDe": {
+                                        "Serialisation": {
                                             "Library": "org.openx.data.jsonserde.JsonSerDe"
                                         }
                                     }
@@ -681,7 +681,7 @@
                                     "Format": {
                                         "Input": "org.apache.hadoop.mapred.TextInputFormat",
                                         "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                                        "SerDe": {
+                                        "Serialisation": {
                                             "Library": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe",
                                             "Parameters" : {
                                                 "field.delim": {
@@ -752,7 +752,7 @@
                                     "Format": {
                                         "Input": "org.apache.hadoop.mapred.TextInputFormat",
                                         "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                                        "SerDe": {
+                                        "Serialisation": {
                                             "Library": "org.openx.data.jsonserde.JsonSerDe"
                                         }
                                     }
@@ -788,7 +788,7 @@
                                     "Format": {
                                         "Input": "org.apache.hadoop.mapred.TextInputFormat",
                                         "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                                        "SerDe": {
+                                        "Serialisation": {
                                             "Library": "org.openx.data.jsonserde.JsonSerDe",
                                             "Parameters": {
                                                 "paths": {
