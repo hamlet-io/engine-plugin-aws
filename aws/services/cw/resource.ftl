@@ -648,6 +648,7 @@
     s3Key=""
     script=""
     vpcEnabled=false
+    deleteLambdaOnDelete=true
     securityGroupIds=[]
     subnets=[]
     vpcId=""
@@ -660,6 +661,7 @@
         properties={
             "Name" : name,
             "ArtifactS3Location" : artifactS3Url,
+            "DeleteLambdaResourcesOnCanaryDeletion": deleteLambdaOnDelete,
             "Code" : {
                 "Handler" : handler
             } +
