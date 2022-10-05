@@ -43,7 +43,11 @@
                ) ]
             [@fatal
                 message="Incomplete Network attribute configuration for " + networkTier.Name + " tier"
-                context=networkTier
+                context={
+                    "NetworkName": occurrence.Core.RawFullName,
+                    "Tier": networkTier.Name,
+                    "Network" : networkTier.Network
+                }
                 detail="Link, RouteTable and NetworkACL attribute values must be provided. If no network is required, set the Enabled attribute to false (it is true by default)."
             /]
             [#continue]
@@ -71,7 +75,8 @@
                                     formatName(core.FullName, networkTier.Name, zone.Name))]
 
             [#local subnetIndex = ( networkTier.Index * network.Zones.Order?size ) + zone?index]
-            [#local subnetCIDR = subnetCIDRS[subnetIndex]]
+
+            [#local subnetCIDR = (subnetCIDRS[subnetIndex])!"HamletFatal: Could not allocate subnet for ${networkTier.Id}/${zone.Id}" ]
             [#local subnets =  mergeObjects( subnets, {
                 networkTier.Id  : {
                     zone.Id : {
