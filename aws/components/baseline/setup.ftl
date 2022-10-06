@@ -73,7 +73,6 @@
             [#local bucketName = subResources["bucket"].Name ]
             [#local bucketPolicyId = subResources["bucketpolicy"].Id ]
             [#local legacyS3 = subResources["bucket"].LegacyS3 ]
-            [#local links = getLinkTargets(subOccurrence)]
             [#local versioningEnabled = (subSolution.Replication!{})?has_content?then(true, subSolution.Versioning)]
 
             [#local replicationRoleId = subResources["role"].Id]
@@ -83,7 +82,7 @@
             [#local replicationDestinationAccountId = "" ]
             [#local replicationExternalPolicy = []]
 
-            [#local contextLinks = getLinkTargets(occurrence)]
+            [#local contextLinks = getLinkTargets(subOccurrence)]
             [#local _context =
                 {
                     "Links" : contextLinks,
@@ -226,7 +225,7 @@
                                     [#else]
                                         [@fatal
                                             message="Only one replication destination is supported"
-                                            context=links
+                                            context=contextLinks
                                         /]
                                     [/#if]
                                     [#break]
@@ -257,7 +256,7 @@
                             getS3ReplicationConfiguration(replicationRoleId, replicationRules)]
 
                         [#local replicationLinkPolicies =
-                            getLinkTargetsOutboundRoles(links) +
+                            getLinkTargetsOutboundRoles(contextLinks) +
                             replicateEncryptedData?then(
                                 s3EncryptionReadPermission(
                                     cmkId,
