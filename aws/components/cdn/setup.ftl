@@ -833,16 +833,14 @@
         [#if invalidationPaths?has_content && getExistingReference(cfId)?has_content && (wafVersion == "v1") ]
             [@addToDefaultBashScriptOutput
                 [
-                    "case $\{STACK_OPERATION} in",
-                    "  create|update)"
-                    "       # Invalidate distribution",
-                    "       info \"Invalidating cloudfront distribution ... \"",
-                    "       invalidate_distribution" +
-                    "       \"" + getRegion() + "\" " +
-                    "       \"" + getExistingReference(cfId) + "\" " +
-                    "       \"" + invalidationPaths?join(" ") + "\" || return $?"
-                    " ;;",
-                    " esac"
+                    r'case ${STACK_OPERATION} in',
+                    r'  create|update)',
+                    r'       cf_id="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + cfId + r'" "ref" || return $?)"',
+                    r'       # Invalidate distribution',
+                    r'       info "Invalidating cloudfront distribution"',
+                    r'       invalidate_distribution "' + getRegion() + r'" "${cf_id}" "' + invalidationPaths?join(" ") + r'" || return $?',
+                    r' ;;',
+                    r' esac'
                 ]
             /]
         [/#if]
