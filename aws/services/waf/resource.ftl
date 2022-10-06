@@ -60,6 +60,7 @@
     [#local v2Statements = []]
     [#list conditions as condition]
         [#local v2WkStatement = []]
+
         [#list condition.Filters as filter]
             [#switch condition.Type]
                 [#case AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
@@ -74,6 +75,7 @@
                         ]]
                     [/#list]
                 [#break]
+
                 [#case AWS_WAF_XSS_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#local v2WkStatement += [
@@ -86,6 +88,7 @@
                         ]]
                     [/#list]
                 [#break]
+
                 [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#list getWAFValueList(filter.Constraints, valueSet) as constraint]
@@ -104,6 +107,7 @@
                         [/#list]
                     [/#list]
                 [#break]
+
                 [#case AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#list getWAFValueList(filter.Operators, valueSet) as operator]
@@ -122,6 +126,7 @@
                         [/#list]
                     [/#list]
                 [#break]
+
                 [#case AWS_WAF_GEO_MATCH_CONDITION_TYPE]
                     [#local v2WkGeo = []]
                     [#list getWAFValueList(filter.Targets, valueSet) as target]
@@ -135,6 +140,7 @@
                         }
                     ]]
                 [#break]
+
                 [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
                     [#local v2WkStatement += [
                         {
@@ -146,6 +152,7 @@
                         }
                     ]]
                 [#break]
+
                 [#default]
                     [#local v2WkStatement += [ { "HamletFatal:UnknownStatement": condition } ]]
                     [@fatal message="Unknown WAF statement type" context=filter /]
@@ -156,16 +163,18 @@
         [#if v2WkStatement?size > 1]
             [#local v2WkStatement = [ {"OrStatement": { "Statements": v2WkStatement}}]]
         [/#if]
+
         [#if condition.Negated]
             [#local v2Statements += [ { "NotStatement": {"Statement": v2WkStatement[0] }}] ]
         [#else]
             [#local v2Statements += v2WkStatement]
         [/#if]
     [/#list]
+
     [#if v2Statements?size > 1]
         [#local v2Statements = { "AndStatement": { "Statements": v2Statements}}]
     [#else]
-        [#local v2Statements = v2Statements[0] ]
+        [#local v2Statements = (v2Statements[0])!{} ]
     [/#if]
     [#return v2Statements]
 [/#function]
@@ -351,6 +360,20 @@
                     version=version /]
             [/#if]
             [#switch version]
+
+                [#switch rule.Engine ]
+                    [#case "Conditional" ]
+                        [#break]
+                    [#default]
+                        [@fatal
+                            message="Unsupported engine for WAF V1 - Only the conditional engine is available"
+                            context={
+                                "WafId": id,
+                                "Rule": rule
+                            }
+                        /]
+                [/#switch]
+
                 [#case "v1"]
                     [#local aclRules +=
                         [
@@ -366,14 +389,110 @@
                 [#break]
 
                 [#case "v2"]
+                    [#local v2OverrideAction = ""]
                     [#local v2Action = (rule.Action)?lower_case?cap_first]
                     [#local v2Statement = formatV2Conditions(rule.Conditions, valueSet, ruleId) ]
+
+                    [#local rateLimitRule = {}]
+                    [#switch rule.Engine ]
+                        [#case "Conditional" ]
+                            [#break]
+
+                        [#case "RateLimit"]
+                            [#if ! (rule["Engine:RateLimit"].Limit)?has_content]
+                                [@fatal
+                                    message="Limit required when RateLimit is enabled for WAF Condition"
+                                    context={
+                                        "WafId": id,
+                                        "Rule": rule
+                                    }
+                                /]
+                                [#continue]
+                            [/#if]
+
+                            [#local rateLimitRule = {
+                                "AggregateKeyType": (rule["Engine:RateLimit"].IPAddressSource == "ClientIP")?then(
+                                    "IP",
+                                    "FORWARDED_IP"
+                                ),
+                                "Limit": (rule["Engine:RateLimit"].Limit)!0
+                            } +
+                            attributeIfTrue(
+                                "ForwardedIPConfig",
+                                rule["Engine:RateLimit"].IPAddressSource == "HTTPHeader",
+                                {
+                                    "HeaderName": rule["Engine:RateLimit"]["IPAddressSource:HTTPHeader"].HeaderName,
+                                    "FallbackBehavior": (rule["Engine:RateLimit"]["IPAddressSource:HTTPHeader"].ApplyLimitWhenMissing)?then(
+                                        "MATCH",
+                                        "NO_MATCH"
+                                    )
+                                }
+                            )]
+
+                            [#local v2Statement = {
+                                "RateBasedStatement" : rateLimitRule +
+                                    attributeIfTrue(
+                                        "ScopeDownStatement",
+                                        v2Statement?has_content,
+                                        v2Statement
+                                    )
+                            }]
+                            [#break]
+
+                        [#case "VendorManaged"]
+                            [#if ! ( (rule["Engine:VendorManaged"].Vendor)?has_content || (rule["Engine:VendorManaged"].RuleName)?has_content )]
+                                [@fatal
+                                    message="Engine:VendorManaged.Vendor and Engine:VendorManaged.RuleName required when using a Vendor Managed Rule"
+                                    context={
+                                        "WafId": id,
+                                        "Rule": rule
+                                    }
+                                /]
+                                [#continue]
+                            [/#if]
+
+                            [#-- Actions are controlled by the indvidual rules within a vendor managed group --]
+                            [#local v2Action = ""]
+                            [#-- The recommendation from AWS is to always use None and then add overrides for particular rules in the group --]
+                            [#-- https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-wafv2-webacl-overrideaction.html --]
+                            [#local v2OverrideAction =
+                                {
+                                    "None": {}
+                                }
+                            ]
+
+                            [#local vendorManagedRule = {
+                                "Name": (rule["Engine:VendorManaged"].RuleName)!"",
+                                "VendorName": (rule["Engine:VendorManaged"].Vendor)!""
+                            } +
+                            attributeIfContent(
+                                "Version",
+                                 (rule["Engine:VendorManaged"].RuleVersion)!""
+                            ) +
+                            attributeIfContent(
+                                "ManagedRuleGroupConfigs",
+                                (rule["Engine:VendorManaged"].Parameters)!{},
+                                asArray(rule["Engine:VendorManaged"].Parameters)
+                            ) +
+                            attributeIfContent(
+                                "ExcludedRules",
+                                rule["Engine:VendorManaged"].DisabledRules
+                            )]
+
+                            [#local v2Statement = {
+                                "ManagedRuleGroupStatement" : vendorManagedRule +
+                                    attributeIfTrue(
+                                        "ScopeDownStatement",
+                                        v2Statement?has_content,
+                                        v2Statement
+                                    )
+                            }]
+                            [#break]
+                    [/#switch]
+
                     [#local aclRules +=
                         [
                             {
-                                "Action" : {
-                                    v2Action : {}
-                                },
                                 "Name" : ruleName,
                                 "Priority" : nextRulePriority,
                                 "Statement" : v2Statement,
@@ -382,7 +501,18 @@
                                     "MetricName" : ruleName,
                                     "SampledRequestsEnabled" : true
                                 }
-                            }
+                            } +
+                            attributeIfContent(
+                                "Action",
+                                v2Action,
+                                {
+                                    v2Action: {}
+                                }
+                            ) +
+                            attributeIfContent(
+                                "OverrideAction",
+                                v2OverrideAction
+                            )
                         ]
                     ]
                 [#break]
