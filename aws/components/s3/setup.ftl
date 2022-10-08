@@ -158,40 +158,39 @@
 
     [#local policyStatements = [] ]
 
-    [#list solution.PublicAccess?values as publicAccessConfiguration]
+    [#local publicPolicyRequired = false]
+    [#list solution.PublicAccess?values?filter(x -> x.Enabled ) as publicAccessConfiguration]
+        [#local publicPolicyRequired = true ]
         [#list publicAccessConfiguration.Paths as publicPrefix]
-            [#if publicAccessConfiguration.Enabled ]
-                [#local publicIPWhiteList =
-                    getIPCondition(getGroupCIDRs(publicAccessConfiguration.IPAddressGroups, true)) ]
+            [#local publicIPWhiteList =
+                getIPCondition(getGroupCIDRs(publicAccessConfiguration.IPAddressGroups, true)) ]
 
-                [#switch publicAccessConfiguration.Permissions ]
-                    [#case "ro" ]
-                        [#local policyStatements += s3ReadPermission(
-                                                        s3Name,
-                                                        publicPrefix,
-                                                        "*",
-                                                        "*",
-                                                        publicIPWhiteList)]
-                        [#break]
-                    [#case "wo" ]
-                        [#local policyStatements += s3WritePermission(
-                                                        s3Name,
-                                                        publicPrefix,
-                                                        "*",
-                                                        "*",
-                                                        publicIPWhiteList)]
-                        [#break]
-                    [#case "rw" ]
-                        [#local policyStatements += s3AllPermission(
-                                                        s3Name,
-                                                        publicPrefix,
-                                                        "*",
-                                                        "*",
-                                                        publicIPWhiteList)]
-                        [#break]
-                [/#switch]
-
-            [/#if]
+            [#switch publicAccessConfiguration.Permissions ]
+                [#case "ro" ]
+                    [#local policyStatements += s3ReadPermission(
+                                                    s3Name,
+                                                    publicPrefix,
+                                                    "*",
+                                                    "*",
+                                                    publicIPWhiteList)]
+                    [#break]
+                [#case "wo" ]
+                    [#local policyStatements += s3WritePermission(
+                                                    s3Name,
+                                                    publicPrefix,
+                                                    "*",
+                                                    "*",
+                                                    publicIPWhiteList)]
+                    [#break]
+                [#case "rw" ]
+                    [#local policyStatements += s3AllPermission(
+                                                    s3Name,
+                                                    publicPrefix,
+                                                    "*",
+                                                    "*",
+                                                    publicIPWhiteList)]
+                    [#break]
+            [/#switch]
         [/#list]
     [/#list]
 
@@ -507,8 +506,6 @@
         [@createS3Bucket
             id=s3Id
             name=s3Name
-            tier=core.Tier
-            component=core.Component
             lifecycleRules=
                 (isPresent(solution.Lifecycle) && ((solution.Lifecycle.Expiration!operationsExpiration)?has_content || (solution.Lifecycle.Offline!operationsOffline)?has_content))?then(
                         getS3LifecycleRule(solution.Lifecycle.Expiration!operationsExpiration, solution.Lifecycle.Offline!operationsOffline),
@@ -528,6 +525,9 @@
             inventoryReports=inventoryReports
             dependencies=dependencies
             tags=mergeObjects(getOccurrenceTags(occurrence), backupTags)
+            publicAccessBlockConfiguration=(
+                getPublicAccessBlockConfiguration( ! publicPolicyRequired)
+            )
         /]
     [/#if]
 [/#macro]

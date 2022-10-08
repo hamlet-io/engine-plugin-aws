@@ -310,6 +310,9 @@
                     kmsKeyId=cmkId
                     dependencies=bucketDependencies
                     tags=getOccurrenceTags(subOccurrence)
+                    publicAccessBlockConfiguration=(
+                        getPublicAccessBlockConfiguration()
+                    )
                 /]
 
                 [#-- role based bucket policies --]
