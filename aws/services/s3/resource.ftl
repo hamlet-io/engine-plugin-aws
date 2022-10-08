@@ -357,28 +357,51 @@
     }
 ]
 
+[#-- Default policy applied will essentially disable public ACLs and lock down cross account access if a bucket is public --]
+[#-- https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html --]
+[#function getPublicAccessBlockConfiguration
+        blockPublicPolicy=true
+        blockPublicAcls=true
+        ignorePublicAcls=true
+        restrictPublicBuckets=true
+    ]
+
+    [#return
+        {
+            "BlockPublicAcls" : blockPublicAcls,
+            "BlockPublicPolicy" : blockPublicPolicy,
+            "IgnorePublicAcls" : ignorePublicAcls,
+            "RestrictPublicBuckets" : restrictPublicBuckets
+        }
+    ]
+[/#function]
+
 [@addOutputMapping
     provider=AWS_PROVIDER
     resourceType=AWS_S3_RESOURCE_TYPE
     mappings=S3_OUTPUT_MAPPINGS
 /]
 
-[#macro createS3Bucket id name tier="" component=""
-                        encrypted=false
-                        encryptionSource="aws:kms"
-                        kmsKeyId=""
-                        lifecycleRules=[]
-                        notifications=[]
-                        versioning=false
-                        websiteConfiguration={}
-                        replicationConfiguration={}
-                        cannedACL=""
-                        CORSBehaviours=[]
-                        inventoryReports=[]
-                        dependencies=""
-                        outputId=""
-                        tags={}
-                        ]
+
+[#macro createS3Bucket
+        id
+        name
+        encrypted=false
+        encryptionSource="aws:kms"
+        kmsKeyId=""
+        lifecycleRules=[]
+        notifications=[]
+        versioning=false
+        websiteConfiguration={}
+        replicationConfiguration={}
+        publicAccessBlockConfiguration={}
+        cannedACL=""
+        CORSBehaviours=[]
+        inventoryReports=[]
+        dependencies=""
+        outputId=""
+        tags={}
+    ]
 
     [#local loggingConfiguration = {} ]
 
@@ -520,6 +543,10 @@
             attributeIfContent(
                 "InventoryConfigurations",
                 inventoryReports
+            ) +
+            attributeIfContent(
+                "PublicAccessBlockConfiguration",
+                publicAccessBlockConfiguration
             )
         tags=tags
         outputs=S3_OUTPUT_MAPPINGS
