@@ -361,20 +361,19 @@
             [/#if]
             [#switch version]
 
-                [#switch rule.Engine ]
-                    [#case "Conditional" ]
-                        [#break]
-                    [#default]
-                        [@fatal
-                            message="Unsupported engine for WAF V1 - Only the conditional engine is available"
-                            context={
-                                "WafId": id,
-                                "Rule": rule
-                            }
-                        /]
-                [/#switch]
-
                 [#case "v1"]
+                    [#switch rule.Engine ]
+                        [#case "Conditional" ]
+                            [#break]
+                        [#default]
+                            [@fatal
+                                message="Unsupported engine for WAF V1 - Only the conditional engine is available"
+                                context={
+                                    "WafId": id,
+                                    "Rule": rule
+                                }
+                            /]
+                    [/#switch]
                     [#local aclRules +=
                         [
                             {
