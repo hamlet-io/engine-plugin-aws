@@ -6,21 +6,15 @@
 [#macro aws_dataset_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution ]
-    [#local buildReference = getOccurrenceBuildReference(occurrence, true ) ]
 
     [#local dataSetDeploymentUnit = getOccurrenceDeploymentUnit(occurrence)!"" ]
-
-    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
-
-    [#local imageSource = solution.Image.Source]
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
-    [/#if]
 
     [#local attributes = {
             "DATASET_ENGINE" : solution.Engine
     }]
     [#local resources = {}]
+    [#local image = {}]
+
     [#local producePolicy = []]
     [#local consumePolicy = []]
 
@@ -28,32 +22,21 @@
 
     [#switch solution.Engine ]
         [#case "s3" ]
-            [#local registryBucket = getRegistryEndPoint("dataset", occurrence) ]
-            [#local registryPrefix = formatRelativePath(
-                                                getRegistryPrefix("dataset", occurrence),
-                                                getOccurrenceBuildProduct(occurrence, productName),
-                                                getOccurrenceBuildScopeExtension(occurrence),
-                                                buildUnit
-                                        )]
+            [#local image = constructAWSImageResource(occurrence, "dataset", {}, "default")]
             [#local datasetPrefix = formatRelativePath(solution.Prefix)]
 
             [#local attributes += {
                 "DATASET_PREFIX" : datasetPrefix,
-                "DATASET_REGISTRY" : "s3://" + registryBucket +
-                                            formatAbsolutePath(
-                                                registryPrefix
-                                            ),
-                "DATASET_LOCATION" : "s3://" + registryBucket +
-                                            formatAbsolutePath(
-                                                registryPrefix,
-                                                buildReference
-                                            )
-                }]
+                "DATASET_REGISTRY" : image.default.RegistryPath,
+                "DATASET_LOCATION" : image.default.ImageLocation
+            }]
 
             [#local consumePolicy +=
                     s3ConsumePermission(
-                        registryBucket,
-                        registryPrefix)]
+                        (image.default.RegistryPath)?keep_after("s3://")?keep_before("/"),
+                        (image.default.RegistryPath)?keep_after("s3://")?keep_after("/")
+                    )
+                ]
 
             [#local resources += {
                 "datasetS3" : {
@@ -66,18 +49,10 @@
             [#break]
 
         [#case "rds" ]
-
-            [#local registryPrefix = getRegistryPrefix("rdssnapshot", occurrence) ]
-            [#local registryImage = formatName(
-                                        registryPrefix,
-                                        "rdssnapshot",
-                                        productId,
-                                        dataSetDeploymentUnit,
-                                        buildReference)]
-
+            [#local image = constructAWSImageResource(occurrence, "rdssnapshot")]
             [#local attributes += {
-                "SNAPSHOT_NAME" : registryImage,
-                "DATASET_LOCATION" : formatName( "dataset",  core.FullName, buildReference )
+                "SNAPSHOT_NAME" : image.default.ImageLocation,
+                "DATASET_LOCATION" : image.default.ImageLocation
             }]
 
             [#local resources += {
@@ -158,6 +133,7 @@
         {
             "Resources" : resources,
             "Attributes" : attributes,
+            "Images": image,
             "Roles" : {
                 "Inbound" : {},
                 "Outbound" : {

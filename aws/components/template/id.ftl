@@ -6,6 +6,7 @@
     resourceGroup=DEFAULT_RESOURCE_GROUP
     services=
         [
-            AWS_CLOUDFORMATION_SERVICE
+            AWS_CLOUDFORMATION_SERVICE,
+            AWS_IMAGE_SERVICE
         ]
 /]

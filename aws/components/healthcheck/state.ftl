@@ -7,6 +7,7 @@
     [#local segmentSeedId = formatSegmentSeedId() ]
     [#local segmentSeed = getExistingReference(segmentSeedId)]
 
+    [#local image = {}]
     [#local resources = {}]
     [#local attributes = {}]
     [#local roles = {
@@ -30,36 +31,40 @@
             [#local canaryId = formatResourceId(AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE, core.Id)]
             [#local securityGroupId = formatDependentSecurityGroupId(canaryId)]
 
-            [#local resources += {
-                "canary" : {
-                    "Id" : formatResourceId(AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE, core.Id),
-                    [#-- Name must be less than 21 chars --]
-                    "Name" : concatenate([
-                                    segmentSeed?truncate_c(5, ""),
-                                    (core.Version.Name)?split("")?reverse?join("")?truncate_c(5, "")?split("")?reverse?join(""),
-                                    (core.Instance.Name)?split("")?reverse?join("")?truncate_c(5, "")?split("")?reverse?join(""),
-                                    (core.Component.Name)?split("")?reverse?join("")?truncate_c(5, "")?split("")?reverse?join("")
-                                ],
-                                "_")
-                                ?lower_case,
-                    "Type" : AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE,
-                    "Monitored" : true
-                },
-                "role" : {
-                    "Id" : formatDependentRoleId(canaryId),
-                    "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
-                    "IncludeInDeploymentState" : false
-                }
-            } +
-            attributeIfTrue(
-                "securityGroup",
-                solution.NetworkAccess,
+            [#local resources +=
                 {
-                    "Id" : securityGroupId,
-                    "Name" : core.FullName,
-                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
-                }
-            )]
+                    "canary" : {
+                        "Id" : formatResourceId(AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE, core.Id),
+                        [#-- Name must be less than 21 chars --]
+                        "Name" : concatenate([
+                                        segmentSeed?truncate_c(5, ""),
+                                        (core.Version.Name)?split("")?reverse?join("")?truncate_c(5, "")?split("")?reverse?join(""),
+                                        (core.Instance.Name)?split("")?reverse?join("")?truncate_c(5, "")?split("")?reverse?join(""),
+                                        (core.Component.Name)?split("")?reverse?join("")?truncate_c(5, "")?split("")?reverse?join("")
+                                    ],
+                                    "_")
+                                    ?lower_case,
+                        "Type" : AWS_CLOUDWATCH_CANARY_RESOURCE_TYPE,
+                        "Monitored" : true
+                    },
+                    "role" : {
+                        "Id" : formatDependentRoleId(canaryId),
+                        "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
+                        "IncludeInDeploymentState" : false
+                    }
+                } +
+                attributeIfTrue(
+                    "securityGroup",
+                    solution.NetworkAccess,
+                    {
+                        "Id" : securityGroupId,
+                        "Name" : core.FullName,
+                        "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+                    }
+                )
+            ]
+
+            [#local image = constructAWSImageResource(occurrence, "scripts", solution["Engine:Complex"].Image)]
 
             [#local roles += {
                 "Inbound" : {
@@ -77,6 +82,7 @@
 
     [#assign componentState =
         {
+            "Images": image,
             "Resources" : resources,
             "Attributes" : attributes,
             "Roles" : roles

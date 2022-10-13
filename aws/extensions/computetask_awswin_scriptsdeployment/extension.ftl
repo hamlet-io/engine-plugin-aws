@@ -39,7 +39,7 @@
                                     r'Set-Location -Path "C:\Program Files\Amazon\AWSCLIV2" ;',
                                     {
                                         "Fn::Sub" : [
-                                            r'.\aws --region "${Region}" s3 cp --quiet "s3://${ScriptsFile}" c:\ProgramData\Hamlet\Scripts 2>&1 | Write-Output',
+                                            r'.\aws s3 cp --quiet "${ScriptsFile}" c:\ProgramData\Hamlet\Scripts 2>&1 | Write-Output',
                                             {
                                                 "Region" : {
                                                     "Ref" : "AWS::Region"

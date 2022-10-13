@@ -133,6 +133,7 @@
             [#local canaryId = resources["canary"].Id ]
             [#local canaryName = resources["canary"].Name ]
             [#local roleId = resources["role"].Id ]
+            [#local image =  getOccurrenceImage(occurrence)]
 
             [#-- Baseline component lookup --]
             [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption" ] )]
@@ -149,7 +150,7 @@
 
             [#local scriptFile = formatRelativePath(
                                     scriptsPrefix,
-                                    solution["Engine:Complex"]["Image"]["ScriptFileName"]
+                                    solution["Engine:Complex"]["ScriptFileName"]
             )]
 
             [#local vpcAccess = solution.NetworkAccess ]
@@ -174,46 +175,19 @@
                 [#local securityGroupName = resources["securityGroup"].Name ]
             [/#if]
 
-            [#local buildReference = getOccurrenceBuildReference(occurrence)]
-            [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
-
-            [#local imageSource = solution["Engine:Complex"].Image.Source]
-            [#if imageSource == "url" ]
-                [#local buildUnit = occurrence.Core.Name ]
-            [/#if]
-
-            [#if deploymentSubsetRequired("pregeneration", false) && imageSource == "url" ]
-                [@addToDefaultBashScriptOutput
-                    content=
-                        getImageFromUrlScript(
-                            getRegion(),
-                            productName,
-                            environmentName,
-                            segmentName,
-                            occurrence,
-                            solution.Image.UrlSource.Url,
-                            "scripts",
-                            "scripts.zip",
-                            solution.Image.UrlSource.ImageHash
-                        )
-                /]
-            [/#if]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=getAWSImageFromUrlScript(image, true)
+        /]
+    [/#if]
 
             [#local contextLinks = getLinkTargets(occurrence) ]
             [#local _context =
                 {
                     "DefaultEnvironment" : defaultEnvironment(occurrence, contextLinks, baselineLinks),
                     "Environment" : {},
-                    "S3Bucket" : getRegistryEndPoint("scripts", occurrence),
-                    "S3Key" :
-                        formatRelativePath(
-                            getRegistryPrefix("scripts", occurrence),
-                            getOccurrenceBuildProduct(occurrence,productName),
-                            getOccurrenceBuildScopeExtension(occurrence),
-                            buildUnit,
-                            buildReference,
-                            "scripts.zip"
-                        ),
+                    "S3Bucket" : (image.ImageLocation?remove_beginning("s3://")?keep_before("/"))!"",
+                    "S3Key" : (image.ImageLocation?remove_beginning("s3://")?keep_after("/"))!"",
                     "Links" : contextLinks,
                     "BaselineLinks" : baselineLinks,
                     "DefaultCoreVariables" : false,
@@ -403,7 +377,7 @@
 
                 [#local handler = solution["Engine:Complex"].Handler]
 
-                [#if imageSource == "none" ]
+                [#if image.Source == "none" ]
                     [#if _context.Script?has_content ]
 
                         [#local script = asArray(_context.Script)?join("\n")]

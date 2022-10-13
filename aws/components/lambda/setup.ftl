@@ -56,6 +56,8 @@
     [#local fixedVersionRequired = (resources["version"])?has_content ]
     [#local aliasRequired = (resources["alias"])?has_content ]
 
+    [#local image = getOccurrenceImage(fn)]
+
     [#-- While the role of the unqualified function is inherited by qualified versions, --]
     [#-- permissions must be attached individually. For now the priority is             --]
     [#-- ALIAS -> Version -> unqualified                                                --]
@@ -107,37 +109,10 @@
         [#local securityGroupName = resources["securityGroup"].Name ]
     [/#if]
 
-    [#local buildReference = getOccurrenceBuildReference(fn)]
-    [#local buildUnit = getOccurrenceBuildUnit(fn)]
-
-    [#local imageSource = solution.Image.Source]
-    [#if imageSource == "url" ]
-        [#local buildUnit = fn.Core.Name ]
-    [/#if]
-
-    [#if deploymentSubsetRequired("pregeneration", false) && imageSource == "url" ]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
         [@addToDefaultBashScriptOutput
-            content=
-                getImageFromUrlScript(
-                    getRegion(),
-                    productName,
-                    environmentName,
-                    segmentName,
-                    fn,
-                    solution.Image["source:Url"].Url,
-                    "lambda",
-                    "lambda.zip",
-                    solution.Image["source:Url"].ImageHash
-                )
+            content=getAWSImageFromUrlScript(image, true)
         /]
-    [/#if]
-
-    [#local registryName = "lambda" ]
-    [#local lambdaPackage = "lambda.zip"]
-
-    [#if ((fn.Configuration.Settings.Build.BUILD_FORMATS.Value)![])?seq_contains("lambda_jar") ]
-        [#local registryName = "lambda_jar" ]
-        [#local lambdaPackage = "lambda_jar.jar" ]
     [/#if]
 
     [#local contextLinks = getLinkTargets(fn) ]
@@ -145,16 +120,8 @@
         {
             "DefaultEnvironment" : defaultEnvironment(fn, contextLinks, baselineLinks),
             "Environment" : {},
-            "S3Bucket" : getRegistryEndPoint(registryName, fn),
-            "S3Key" :
-                formatRelativePath(
-                    getRegistryPrefix(registryName, fn),
-                    getOccurrenceBuildProduct(fn,productName),
-                    getOccurrenceBuildScopeExtension(fn),
-                    buildUnit,
-                    buildReference,
-                    lambdaPackage
-                ),
+            "S3Bucket" : (image.ImageLocation?remove_beginning("s3://")?keep_before("/"))!"",
+            "S3Key" : (image.ImageLocation?remove_beginning("s3://")?keep_after("/"))!"",
             "Links" : contextLinks,
             "BaselineLinks" : baselineLinks,
             "DefaultCoreVariables" : true,
@@ -172,8 +139,8 @@
     ]
 
     [#-- Ensures that all ZipFile hashses are unique --]
-    [#if imageSource == "extension" && solution.Image["source:Extension"].IncludeRunId ]
-        [#local runIdComment = "${solution.Image['source:Extension'].CommentCharacters} RunId: ${getCLORunId()}" ]
+    [#if image.Source == "extension" && solution.Image["source:extension"].IncludeRunId ]
+        [#local runIdComment = "${solution.Image['source:extension'].CommentCharacters} RunId: ${getCLORunId()}" ]
         [#local _context  = mergeObjects(_context,
             { "ZipFile" :
                 combineEntities(

@@ -18,6 +18,7 @@
 
     [#assign componentState =
         {
+            "Images": constructAWSImageResource(occurrence, "scripts"),
             "Resources" : {
                 "template" : {
                     "Id" : templateId,

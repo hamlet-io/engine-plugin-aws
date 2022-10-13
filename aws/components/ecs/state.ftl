@@ -242,12 +242,33 @@
 
     [#local region = getExistingReference(serviceId, REGION_ATTRIBUTE_TYPE )!getRegion() ]
 
-    [#local availablePorts = [  ]]
+    [#local availablePorts = []]
+
+    [#local images = {}]
+    [#local occurrenceImage = constructAWSImageResource(
+        occurrence,
+        "docker",
+        getCompositeObject(
+            getAttributeSet(IMAGE_CONTAINER_ATTRIBUTESET_TYPE).Attributes,
+            {}
+        ),
+        "default"
+    )]
+
+    [#if (occurrenceImage.default.Reference)?has_content ]
+        [#local images = occurrenceImage]
+    [/#if]
 
     [#list solution.Containers as id,container ]
         [#list container.Ports as id,port ]
             [#local availablePorts += [ port.Name ]]
         [/#list]
+
+        [#-- if we can get a bulid reference setting then we aren't doing per container images --]
+        [#if ( container.Image.Source == "registry" && getOccurrenceBuildReference(occurrence, true)?has_content ) ]
+            [#continue]
+        [/#if]
+        [#local images = mergeObjects(images, constructAWSImageResource(occurrence, "docker", container.Image, id))]
     [/#list]
 
     [#local logMetrics = {} ]
@@ -336,6 +357,7 @@
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }) +
             autoScaling,
+            "Images": images,
             "Attributes" : {
                 "CLUSTER_ARN" : getArn(ecsId),
                 "ARN": getArn(serviceId)
@@ -405,11 +427,31 @@
     [/#if]
 
     [#local availablePorts = []]
+    [#local images = {}]
+    [#local occurrenceImage = constructAWSImageResource(
+        occurrence,
+        "docker",
+        getCompositeObject(
+            getAttributeSet(IMAGE_CONTAINER_ATTRIBUTESET_TYPE).Attributes,
+            {}
+        ),
+        "default"
+    )]
+
+    [#if (occurrenceImage.default.Reference)?has_content ]
+        [#local images = occurrenceImage]
+    [/#if]
 
     [#list solution.Containers as id,container ]
         [#list container.Ports as id,port ]
             [#local availablePorts += [ port.Name ]]
         [/#list]
+
+        [#-- if we can get a bulid reference setting then we aren't doing per container images --]
+        [#if ( container.Image.Source == "registry" && getOccurrenceBuildReference(occurrence, true)?has_content ) ]
+            [#continue]
+        [/#if]
+        [#local images = mergeObjects(images, constructAWSImageResource(occurrence, "docker", container.Image, id))]
     [/#list]
 
     [#local lgId = formatDependentLogGroupId(taskId) ]
@@ -506,6 +548,7 @@
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }
             ),
+            "Images": images,
             "Attributes" : {
                 "ECSHOST" : getExistingReference(ecsId),
                 "CAPACITY_PROVIDER" : capacityProvider,

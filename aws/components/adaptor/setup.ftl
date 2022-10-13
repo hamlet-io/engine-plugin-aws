@@ -19,39 +19,17 @@
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources ]
     [#local attributes = occurrence.State.Attributes ]
+    [#local image =  getOccurrenceImage(occurrence)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
 
-    [#local buildReference = getOccurrenceBuildReference(occurrence)]
-    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
-
-    [#local imageSource = solution.Image.Source]
-
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
-    [/#if]
-
-    [#if deploymentSubsetRequired("pregeneration", false)]
-        [#if imageSource = "url" ]
-            [@addToDefaultBashScriptOutput
-                content=
-                    getImageFromUrlScript(
-                        getRegion(),
-                        productName,
-                        environmentName,
-                        segmentName,
-                        occurrence,
-                        solution.Image.UrlSource.Url,
-                        "scripts",
-                        "scripts.zip",
-                        solution.Image.UrlSource.ImageHash,
-                        true
-                    )
-            /]
-        [/#if]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=getAWSImageFromUrlScript(image, true)
+        /]
     [/#if]
 
     [#local asFiles = getAsFileSettings(occurrence.Configuration.Settings.Product) ]
@@ -137,15 +115,11 @@
     [#if deploymentSubsetRequired("epilogue", false) ]
         [@addToDefaultBashScriptOutput
             content=
-                ( imageSource != "none" )?then(
-                    getBuildScript(
+                ( image.Source != "none" )?then(
+                    getAWSImageBuildScript(
                         "src_zip",
                         getRegion(),
-                        "scripts",
-                        productName,
-                        occurrence,
-                        "scripts.zip",
-                        buildUnit
+                        image
                     ) +
                     [
                         "addToArray src \"$\{tmpdir}/src/\"",

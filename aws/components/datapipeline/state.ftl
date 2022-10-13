@@ -41,6 +41,7 @@
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 }
             },
+            "Images": constructAWSImageResource(occurrence, "pipeline"),
             "Attributes" : {
                 "ID" : getExistingReference( pipelineId )
             },

@@ -11,6 +11,7 @@
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources ]
     [#local attributes = occurrence.State.Attributes ]
+    [#local image =  getOccurrenceImage(occurrence)]
     [#local buildSettings = occurrence.Configuration.Settings.Build ]
     [#local buildRegistry = (buildSettings["BUILD_FORMATS"].Value[0])!"HamletFatal No build format defined" ]
     [#local roles = occurrence.State.Roles]
@@ -1095,10 +1096,10 @@
 
             [#local publisherPath = getContextPath( occurrence, publisher.Path )]
             [#if publisher.UsePathInName ]
-                [#local fileName = formatName( publisherPath, buildRegistry + ".json") ]
+                [#local fileName = formatName( publisherPath, "${image.Format}.json") ]
                 [#local publisherPath = "" ]
             [#else]
-                [#local fileName = buildRegistry + ".json" ]
+                [#local fileName = "${image.Format}.json" ]
             [/#if]
 
             [#list publisherLinks as publisherLinkId, publisherLinkTarget ]
@@ -1157,41 +1158,20 @@
         /]
     [/#if]
 
-    [#local imageSource = solution.Image.Source]
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
-    [/#if]
-
     [#if deploymentSubsetRequired("pregeneration", false)]
-        [#if imageSource = "url" ]
+        [#if image.Source == "url" ]
             [@addToDefaultBashScriptOutput
-                content=
-                    getImageFromUrlScript(
-                        getRegion(),
-                        productName,
-                        environmentName,
-                        segmentName,
-                        occurrence,
-                        solution.Image.UrlSource.Url,
-                        "openapi",
-                        "openapi.zip",
-                        solution.Image.UrlSource.ImageHash,
-                        true
-                    )
+                content=getAWSImageFromUrlScript(image, true)
             /]
         [/#if]
 
-
-        [#if imageSource == "url" || imageSource == "registry" ]
+        [#if image.Source == "url" || image.Source == "registry" ]
             [@addToDefaultBashScriptOutput
                 content=
-                    getBuildScript(
+                    getAWSImageBuildScript(
                         "openapiFiles",
                         getRegion(),
-                        buildRegistry,
-                        productName,
-                        occurrence,
-                        buildRegistry + ".zip"
+                        image
                     ) +
                     [
                         "get_openapi_definition_file" + " " +

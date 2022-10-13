@@ -109,6 +109,10 @@
 
     [#assign componentState =
         {
+            "Images": constructAWSImageResource(
+                occurrence,
+                (solution.Image.ArchiveFormat == "zip")?then("lambda", "lambda_jar")
+            ),
             "Resources" : {
                 "function" : {
                     "Id" : id,

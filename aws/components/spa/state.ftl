@@ -22,6 +22,7 @@
 
     [#assign componentState =
         {
+            "Images": constructAWSImageResource(occurrence, "spa" ),
             "Resources" : {
                 "site" :{
                     "Id" : formatResourceId( SPA_COMPONENT_TYPE, core.Id ),

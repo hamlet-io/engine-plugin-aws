@@ -9,6 +9,7 @@
         [
             AWS_CLOUDWATCH_SERVICE,
             AWS_ROUTE53_SERVICE,
-            AWS_IDENTITY_SERVICE
+            AWS_IDENTITY_SERVICE,
+            AWS_IMAGE_SERVICE
         ]
 /]

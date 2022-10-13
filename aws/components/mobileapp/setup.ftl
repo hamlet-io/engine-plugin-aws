@@ -21,56 +21,26 @@
     [#local configFilePath = resources["mobileapp"].ConfigFilePath ]
     [#local configFileName = resources["mobileapp"].ConfigFileName ]
 
-    [#local buildReference = getOccurrenceBuildReference(occurrence)]
-    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
+    [#local image = getOccurrenceImage(occurrence)]
 
-    [#local imageSource = solution.Image.Source]
-
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=getAWSImageFromUrlScript(image, true)
+        /]
     [/#if]
-
-    [#if deploymentSubsetRequired("pregeneration", false)]
-        [#if imageSource = "url" ]
-            [@addToDefaultBashScriptOutput
-                content=
-                    getImageFromUrlScript(
-                        getRegion(),
-                        productName,
-                        environmentName,
-                        segmentName,
-                        occurrence,
-                        solution.Image["Source:url"].Url,
-                        "scripts",
-                        "scripts.zip",
-                        solution.Image["Source:url"].ImageHash,
-                        true
-                    )
-            /]
-        [/#if]
-    [/#if]
-
-    [#local codeSrcBucket = getRegistryEndPoint("scripts", occurrence)]
-    [#local codeSrcPrefix = formatRelativePath(
-                                    getRegistryPrefix("scripts", occurrence),
-                                    getOccurrenceBuildProduct(occurrence, productName),
-                                    getOccurrenceBuildScopeExtension(occurrence),
-                                    buildUnit,
-                                    buildReference
-                                )]
 
     [#local buildConfig =
         {
             "RUN_ID"            : getCLORunId(),
-            "BUILD_REFERENCE"   : buildReference,
-            "APP_REFERENCE"     : (occurrence.Configuration.Settings.Build.APP_REFERENCE.Value)!"",
+            "BUILD_REFERENCE"   : image.Reference,
+            "APP_REFERENCE"     : image.Tag,
             "OPSDATA_BUCKET"    : operationsBucket,
             "SETTINGS_PREFIX"   : getSettingsFilePrefix(occurrence),
             "APPDATA_BUCKET"    : dataBucket,
             "APPDATA_PREFIX"    : getAppDataFilePrefix(occurrence),
 
-            "CODE_SRC_BUCKET"   : codeSrcBucket,
-            "CODE_SRC_PREFIX"   : codeSrcPrefix,
+            "CODE_SRC_BUCKET" : (image.ImageLocation?remove_beginning("s3://")?keep_before("/"))!"",
+            "CODE_SRC_PREFIX" : (image.ImageLocation?remove_beginning("s3://")?keep_after("/"))!"",
             "APP_BUILD_FORMATS" : solution.BuildFormats?join(","),
             "KMS_PREFIX"        : solution.EncryptionPrefix,
 
@@ -85,7 +55,6 @@
                         "cmdb", ""
                     )
                 )
-
         } +
         (solution.AppFrameworks?seq_contains("expo"))?then(
             {

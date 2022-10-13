@@ -7,6 +7,7 @@
     services=
         [
             AWS_SIMPLE_STORAGE_SERVICE,
-            AWS_RELATIONAL_DATABASE_SERVICE
+            AWS_RELATIONAL_DATABASE_SERVICE,
+            AWS_IMAGE_SERVICE
         ]
 /]

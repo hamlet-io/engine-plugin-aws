@@ -18,6 +18,7 @@
     [#local solution = occurrence.Configuration.Solution ]
     [#local settings = occurrence.Configuration.Settings ]
     [#local resources = occurrence.State.Resources]
+    [#local image = getOccurrenceImage(occurrence)]
 
     [#if (resources["legacyCF"]!{})?has_content ]
         [@fatal
@@ -87,26 +88,9 @@
         /]
     [/#if]
 
-    [#local imageSource = solution.Image.Source]
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
-    [/#if]
-
-    [#if deploymentSubsetRequired("pregeneration", false) && imageSource == "url" ]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
         [@addToDefaultBashScriptOutput
-            content=
-                getImageFromUrlScript(
-                    getRegion(),
-                    productName,
-                    environmentName,
-                    segmentName,
-                    occurrence,
-                    solution.Image.UrlSource.Url,
-                    "spa",
-                    "spa.zip",
-                    solution.Image.UrlSource.ImageHash,
-                    true
-                )
+            content=getAWSImageFromUrlScript(image, true)
         /]
     [/#if]
 
@@ -114,14 +98,10 @@
 
         [@addToDefaultBashScriptOutput
             content=
-                getBuildScript(
+                getAWSImageBuildScript(
                     "spaFiles",
                     getRegion(),
-                    "spa",
-                    productName,
-                    occurrence,
-                    "spa.zip",
-                    buildUnit
+                    image
                 ) +
                 syncFilesToBucketScript(
                     "spaFiles",

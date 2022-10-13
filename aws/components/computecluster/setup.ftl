@@ -9,6 +9,7 @@
     [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources ]
+    [#local image =  getOccurrenceImage(occurrence)]
     [#local links = solution.Links ]
 
     [#local computeClusterRoleId               = resources["role"].Id ]
@@ -61,31 +62,10 @@
     [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
     [#local publicRouteTable = routeTableConfiguration.Public ]
 
-    [#local imageSource = solution.Image.Source]
-
-    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
-    [/#if]
-
-    [#if deploymentSubsetRequired("pregeneration", false)]
-        [#if imageSource = "url" ]
-            [@addToDefaultBashScriptOutput
-                content=
-                    getImageFromUrlScript(
-                        getRegion(),
-                        productName,
-                        environmentName,
-                        segmentName,
-                        occurrence,
-                        solution.Image["Source:url"].Url,
-                        "scripts",
-                        "scripts.zip",
-                        solution.Image["Source:url"].ImageHash,
-                        true
-                    )
-            /]
-        [/#if]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=getAWSImageFromUrlScript(image, true)
+        /]
     [/#if]
 
     [#local targetGroupPermission = false ]
@@ -119,26 +99,6 @@
         [/#if]
     [/#list]
 
-    [#local scriptsFile = ""]
-    [#if imageSource != "none" ]
-        [#local scriptsPath =
-                formatRelativePath(
-                    getRegistryEndPoint("scripts", occurrence),
-                    getRegistryPrefix("scripts", occurrence),
-                    getOccurrenceBuildProduct(occurrence, productName),
-                    getOccurrenceBuildScopeExtension(occurrence),
-                    buildUnit,
-                    getOccurrenceBuildReference(occurrence)
-                )]
-
-        [#local scriptsFile =
-            formatRelativePath(
-                scriptsPath,
-                "scripts.zip"
-            )
-        ]
-    [/#if]
-
     [#local contextLinks = getLinkTargets(occurrence, links) ]
     [#local _context =
         {
@@ -160,7 +120,7 @@
             "BootstrapProfile" : bootstrapProfile,
             "InstanceLogGroup" : computeClusterLogGroupName,
             "InstanceOSPatching" : osPatching,
-            "ScriptsFile" : scriptsFile
+            "ScriptsFile" : (image.ImageLocation)!""
         }
     ]
 
@@ -318,16 +278,14 @@
                             computeClusterAutoScaleGroupName
                         ) +
                         ec2ReadTagsPermission() +
-                        s3ReadPermission(
-                            formatRelativePath(
-                                getRegistryEndPoint("scripts", occurrence),
-                                getRegistryPrefix("scripts", occurrence)
-                            )
-                        ) +
-                        s3AccountEncryptionReadPermission(
-                            getRegistryBucket(),
-                            getRegistryPrefix("scripts", occurrence),
-                            getRegistryBucketRegion()
+                        (image.RegistryLocation??)?then(
+                            s3ReadPermission(image.RegistryLocation?keep_after("s3://")) +
+                            s3AccountEncryptionReadPermission(
+                                image.RegistryLocation?keep_after("s3://")?keep_before("/"),
+                                image.RegistryLocation?keep_after("s3://")?keep_after("/"),
+                                getRegistryBucketRegion()
+                            ),
+                            []
                         ) +
                         s3ListPermission(getCodeBucket()) +
                         s3ReadPermission(getCodeBucket()) +

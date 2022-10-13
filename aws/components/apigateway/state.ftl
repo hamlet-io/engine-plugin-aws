@@ -408,6 +408,7 @@ created in either case.
             attributeIfContent("customDomains", customDomainResources) +
             attributeIfContent("accessLogStreaming", accessLogStreamingResources ) +
             attributeIfContent("wafLogStreaming", wafLogStreamResources),
+            "Images": constructAWSImageResource(occurrence, "openapi"),
             "Attributes" : {
                 "FQDN" : fqdn,
                 "URL" : "https://" + fqdn + stagePath,

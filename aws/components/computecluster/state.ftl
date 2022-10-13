@@ -3,7 +3,6 @@
 [#macro aws_computecluster_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution ]
-    [#local buildReference = getOccurrenceBuildReference(occurrence) ]
 
     [#local autoScaleGroupId = formatResourceId( AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, core.Id )]
     [#local securityGroupId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id )]
@@ -35,6 +34,8 @@
             [/#if]
         [/#list]
     [/#if]
+
+    [#local image = constructAWSImageResource(occurrence, "scripts", {}, "default")]
 
     [#assign componentState =
         {
@@ -88,7 +89,7 @@
                                 core.Id,
                                 [#-- changing the launch config logical Id forces a replacement of the autoscale group instances --]
                                 [#-- we only want this to happen when the build reference changes --]
-                                replaceAlphaNumericOnly(buildReference),
+                                replaceAlphaNumericOnly((image.default.Reference)!""),
                                 getCLORunId()
                             ),
                             formatResourceId(
@@ -96,12 +97,13 @@
                                 core.Id,
                                 [#-- changing the launch config logical Id forces a replacement of the autoscale group instances --]
                                 [#-- we only want this to happen when the build reference changes --]
-                                replaceAlphaNumericOnly(buildReference))
+                                replaceAlphaNumericOnly((image.default.Reference)!""))
                     ),
                     "Type" : AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE
                 }
             } +
             autoScaling,
+            "Images": image,
             "Attributes" : {
             },
             "Roles" : {

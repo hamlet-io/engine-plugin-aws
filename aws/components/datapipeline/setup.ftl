@@ -11,6 +11,7 @@
     [#local settings = occurrence.Configuration.Settings]
     [#local resources = occurrence.State.Resources ]
     [#local attributes = occurrence.State.Attributes ]
+    [#local image =  getOccurrenceImage(occurrence)]
 
     [#local pipelineId = resources["dataPipeline"].Id]
     [#local pipelineName = resources["dataPipeline"].Name]
@@ -46,33 +47,10 @@
         [#return]
     [/#if]
 
-    [#local buildReference = getOccurrenceBuildReference(occurrence)]
-    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
-
-    [#local imageSource = solution.Image.Source]
-
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
-    [/#if]
-
-    [#if deploymentSubsetRequired("pregeneration", false)]
-        [#if imageSource = "url" ]
-            [@addToDefaultBashScriptOutput
-                content=
-                    getImageFromUrlScript(
-                        getRegion(),
-                        productName,
-                        environmentName,
-                        segmentName,
-                        occurrence,
-                        solution.Image["Source:url"].Url,
-                        "pipeline",
-                        "pipeline.zip",
-                        solution.Image["Source:url"].ImageHash,
-                        true
-                    )
-            /]
-        [/#if]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=getAWSImageFromUrlScript(image, true)
+        /]
     [/#if]
 
     [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
@@ -284,14 +262,10 @@
     [#if deploymentSubsetRequired("epilogue", false) ]
         [@addToDefaultBashScriptOutput
             content=
-                getBuildScript(
+                getAWSImageBuildScript(
                     "pipelineFiles",
                     getRegion(),
-                    "pipeline",
-                    productName,
-                    occurrence,
-                    "pipeline.zip",
-                    buildUnit
+                    image
                 ) +
                 syncFilesToBucketScript(
                     "pipelineFiles",
