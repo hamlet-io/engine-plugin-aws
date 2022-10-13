@@ -13,25 +13,11 @@
     [@loadModule
         settingSets=[
             {
-                "Type" : "Settings",
-                "Scope" : "Accounts",
-                "Namespace" : "mockacct-shared",
-                "Settings" : {
-                    "Registries": {
-                        "scripts": {
-                            "EndPoint": "account-registry-abc123",
-                            "Prefix": "scripts/"
-                        }
-                    }
-                }
-            },
-            {
                 "Type" : "Builds",
                 "Scope" : "Products",
                 "Namespace" : "mockedup-integration-app-mobileappbase",
                 "Settings" : {
-                    "COMMIT" : "123456789#MockCommit#",
-                    "FORMATS" : ["scripts"]
+                    "COMMIT" : "123456789#MockCommit#"
                 }
             }
         ]

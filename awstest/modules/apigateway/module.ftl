@@ -35,25 +35,11 @@
         }
         settingSets=[
             {
-                "Type" : "Settings",
-                "Scope" : "Accounts",
-                "Namespace" : "mockacct-shared",
-                "Settings" : {
-                    "Registries": {
-                        "openapi": {
-                            "EndPoint": "account-registry-abc123",
-                            "Prefix": "openapi/"
-                        }
-                    }
-                }
-            },
-            {
                 "Type" : "Builds",
                 "Scope" : "Products",
                 "Namespace" : "mockedup-integration-app-apigatewaybase-apigateway",
                 "Settings" : {
-                    "COMMIT" : "123456789#MockCommit#",
-                    "FORMATS" : ["openapi"]
+                    "COMMIT" : "123456789#MockCommit#"
                 }
             },
             {
@@ -168,25 +154,11 @@
         }
         settingSets=[
             {
-                "Type" : "Settings",
-                "Scope" : "Accounts",
-                "Namespace" : "mockacct-shared",
-                "Settings" : {
-                    "Registries": {
-                        "openapi": {
-                            "EndPoint": "account-registry-abc123",
-                            "Prefix": "openapi/"
-                        }
-                    }
-                }
-            },
-            {
                 "Type" : "Builds",
                 "Scope" : "Products",
                 "Namespace" : "mockedup-integration-app-apigatewaydomain-apigateway",
                 "Settings" : {
-                    "COMMIT" : "123456789#MockCommit#",
-                    "FORMATS" : ["openapi"]
+                    "COMMIT" : "123456789#MockCommit#"
                 }
             },
             {
@@ -312,19 +284,6 @@
             }
         }
         settingSets=[
-            {
-                "Type" : "Settings",
-                "Scope" : "Accounts",
-                "Namespace" : "mockacct-shared",
-                "Settings" : {
-                    "Registries": {
-                        "openapi": {
-                            "EndPoint": "account-registry-abc123",
-                            "Prefix": "openapi/"
-                        }
-                    }
-                }
-            },
             {
                 "Type" : "Builds",
                 "Scope" : "Products",

@@ -14,25 +14,11 @@
     [@loadModule
         settingSets=[
             {
-                "Type" : "Settings",
-                "Scope" : "Accounts",
-                "Namespace" : "mockacct-shared",
-                "Settings" : {
-                    "Registries": {
-                        "dataset": {
-                            "EndPoint": "account-registry-abc123",
-                            "Prefix": "dataset/"
-                        }
-                    }
-                }
-            },
-            {
                 "Type" : "Builds",
                 "Scope" : "Products",
                 "Namespace" : "mockedup-integration-app-datasetbase_s3",
                 "Settings" : {
-                    "COMMIT" : "123456789#MockCommit#",
-                    "FORMATS" : ["dataset"]
+                    "COMMIT" : "123456789#MockCommit#"
                 }
             }
         ]

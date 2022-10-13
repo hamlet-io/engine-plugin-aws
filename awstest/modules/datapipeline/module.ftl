@@ -13,25 +13,11 @@
     [@loadModule
         settingSets=[
             {
-                "Type" : "Settings",
-                "Scope" : "Accounts",
-                "Namespace" : "mockacct-shared",
-                "Settings" : {
-                    "Registries": {
-                        "pipeline": {
-                            "EndPoint": "account-registry-abc123",
-                            "Prefix": "pipeline/"
-                        }
-                    }
-                }
-            },
-            {
                 "Type" : "Builds",
                 "Scope" : "Products",
                 "Namespace" : "mockedup-integration-app-datapipelinebase",
                 "Settings" : {
-                    "COMMIT" : "123456789#MockCommit#",
-                    "FORMATS" : ["pipeline"]
+                    "COMMIT" : "123456789#MockCommit#"
                 }
             }
         ]

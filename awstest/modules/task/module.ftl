@@ -14,24 +14,11 @@
     [@loadModule
         settingSets=[
             {
-                "Type" : "Settings",
-                "Scope" : "Accounts",
-                "Namespace" : "mockacct-shared",
-                "Settings" : {
-                    "Registries": {
-                        "docker": {
-                            "EndPoint": "123456789.ecr.awsamazon.com"
-                        }
-                    }
-                }
-            },
-            {
                 "Type" : "Builds",
                 "Scope" : "Products",
                 "Namespace" : "mockedup-integration-app-taskbase_ecs-taskbase",
                 "Settings" : {
-                    "COMMIT" : "123456789#MockCommit#",
-                    "FORMATS" : ["docker"]
+                    "COMMIT" : "123456789#MockCommit#"
                 }
             }
         ]

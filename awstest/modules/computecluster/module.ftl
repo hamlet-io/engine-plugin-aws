@@ -50,9 +50,9 @@
                         },
                         "JSON" : {
                             "NotEmpty" : [
-                                "Resources.launchConfigXappXcomputeclusterbaseXHamletFatalBuildreferencenotfound.Properties.ImageId",
-                                "Resources.launchConfigXappXcomputeclusterbaseXHamletFatalBuildreferencenotfound.Properties.InstanceType",
-                                "Resources.launchConfigXappXcomputeclusterbaseXHamletFatalBuildreferencenotfound.Properties.UserData",
+                                "Resources.launchConfigXappXcomputeclusterbase.Properties.ImageId",
+                                "Resources.launchConfigXappXcomputeclusterbase.Properties.InstanceType",
+                                "Resources.launchConfigXappXcomputeclusterbase.Properties.UserData",
                                 "Resources.asgXappXcomputeclusterbase.Metadata"
                             ]
                         }
