@@ -117,7 +117,7 @@
                 subSolution.RequestForwarding["Policy:Custom"].Methods,
                 subSolution.RequestForwarding["Policy:Custom"].Cookies,
                 combineEntities(
-                    _context.ForwardHeaders,
+                    _context.ForwardHeaders![],
                     subSolution.RequestForwarding["Policy:Custom"].Headers,
                     UNIQUE_COMBINE_BEHAVIOUR
                 ),
@@ -475,7 +475,7 @@
                         originLinkTargetCore.Type,
                         originConfig.RequestForwarding["Policy:Custom"].Methods,
                         originConfig.RequestForwarding["Policy:Custom"].Cookies,
-                        _context.ForwardHeaders,
+                        _context.ForwardHeaders![],
                         originConfig.RequestForwarding["Policy:Custom"].QueryParams
                     )
                 ) id=originRequestPolicy.Id name=originRequestPolicy.Name /]
