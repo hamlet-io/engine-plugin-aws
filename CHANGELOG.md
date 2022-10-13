@@ -1,6 +1,65 @@
 # Changelog
 
-## latest (2022-08-23)
+## latest (2022-10-13)
+
+#### New Features
+
+* (waf): add support for more wafv2 rules
+* (s3): disable public access by default
+* (module): add aws s3 service log datacatalog ([#647](https://github.com/hamlet-io/engine-plugin-aws/issues/647))
+* (cw): ensure lambda is deleted with canary
+* (userpool): add solution callback urls
+* (catalog): add base testing
+* (datacatalog): initial support using Glue
+* (network): add control over flowlog prefix ([#648](https://github.com/hamlet-io/engine-plugin-aws/issues/648))
+* (globaldb): add support for enabling indexes
+* add default header policy for placeholders
+* (cdn): add enable/disable for error responses
+* (cloudfront): complex cdn scenarios
+#### Fixes
+
+* (cdn): origin request policy headers ([#657](https://github.com/hamlet-io/engine-plugin-aws/issues/657))
+* engine case for rule lookup
+* (cdn): use cloudformation to find cdn id
+* (network): handle missing subnet lookup
+* (s3): oai permissions ([#653](https://github.com/hamlet-io/engine-plugin-aws/issues/653))
+* (windows): logContent setup for windows logging
+* SerDe naming
+* (cdn): Redirect processing ([#643](https://github.com/hamlet-io/engine-plugin-aws/issues/643))
+* (waf): various fixes in WAF Handling
+* (ecs): handle container tagging for ecs version
+* (mobileapp): lookup for firebase properties ([#641](https://github.com/hamlet-io/engine-plugin-aws/issues/641))
+* (mobileapp): testing updates
+* dynamic value setup for aws secrets
+* smtp user permissions in module
+* (filetransfer): log group name for subscription
+* remove app public attributes
+* fall through on missing network
+* remove redundant line from script
+* (image): use container repository for images
+* (ecs): skip lb processing when no lb port
+* (efs): correct tag format for access points
+* (cloudwatch): dependencies on subscription
+* (dnszone): add deployment subset check
+* typo in test module
+* (cdn): add type checks and fix resource name
+* (spa): cdn reference for path
+* (cw): update permissions for cw logs to kinesis ([#634](https://github.com/hamlet-io/engine-plugin-aws/issues/634))
+* (lambda): check deployment units on function
+#### Refactorings
+
+* (network): checks for networked tiers ([#645](https://github.com/hamlet-io/engine-plugin-aws/issues/645))
+* (mobileapp): build configuration updates
+* remove public app data prefixes
+* (network): remove use of segmentObject
+* (ec2): av migration to shared provider
+#### Others
+
+* (cdn): add testing and fixes
+
+Full set of changes: [`8.7.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.7.0...latest)
+
+## 8.7.0 (2022-08-23)
 
 #### New Features
 
@@ -36,8 +95,11 @@
 #### Refactorings
 
 * (ecs): lg pass handling ([#607](https://github.com/hamlet-io/engine-plugin-aws/issues/607))
+#### Others
 
-Full set of changes: [`8.6.2...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.6.2...latest)
+* update changelog ([#599](https://github.com/hamlet-io/engine-plugin-aws/issues/599))
+
+Full set of changes: [`8.6.2...8.7.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.6.2...8.7.0)
 
 ## 8.6.2 (2022-06-07)
 
