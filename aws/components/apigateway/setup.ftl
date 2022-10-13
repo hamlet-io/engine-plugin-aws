@@ -743,7 +743,7 @@
                     [],
                     [],
                     combineEntities(
-                        _context.ForwardHeaders,
+                        _context.ForwardHeaders![],
                         solution.CloudFront.CustomHeaders,
                         UNIQUE_COMBINE_BEHAVIOUR
                     ) +
