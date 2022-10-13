@@ -13,25 +13,11 @@
     [@loadModule
         settingSets=[
             {
-                "Type" : "Settings",
-                "Scope" : "Accounts",
-                "Namespace" : "mockacct-shared",
-                "Settings" : {
-                    "Registries": {
-                        "spa": {
-                            "EndPoint": "account-registry-abc123",
-                            "Prefix": "spa/"
-                        }
-                    }
-                }
-            },
-            {
                 "Type" : "Builds",
                 "Scope" : "Products",
                 "Namespace" : "mockedup-integration-web-cdnbase_spa",
                 "Settings" : {
-                    "COMMIT" : "123456789#MockCommit#",
-                    "FORMATS" : [ "spa" ]
+                    "COMMIT" : "123456789#MockCommit#"
                 }
             }
         ]

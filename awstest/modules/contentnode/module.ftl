@@ -15,25 +15,11 @@
     [@loadModule
         settingSets=[
             {
-                "Type" : "Settings",
-                "Scope" : "Accounts",
-                "Namespace" : "mockacct-shared",
-                "Settings" : {
-                    "Registries": {
-                        "contentnode": {
-                            "EndPoint": "account-registry-abc123",
-                            "Prefix": "contentnode/"
-                        }
-                    }
-                }
-            },
-            {
                 "Type" : "Builds",
                 "Scope" : "Products",
                 "Namespace" : "mockedup-integration-app-contentnodebase",
                 "Settings" : {
-                    "COMMIT" : "123456789#MockCommit#",
-                    "FORMATS" : [ "contentnode" ]
+                    "COMMIT" : "123456789#MockCommit#"
                 }
             }
         ]
