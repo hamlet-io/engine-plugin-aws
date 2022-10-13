@@ -82,6 +82,9 @@
 [#assign AWS_IDENTITY_SERVICE = "iam"]
 [@addService provider=AWS_PROVIDER service=AWS_IDENTITY_SERVICE /]
 
+[#assign AWS_IMAGE_SERVICE = "image"]
+[@addService provider=AWS_PROVIDER service=AWS_IMAGE_SERVICE /]
+
 [#assign AWS_KEY_MANAGEMENT_SERVICE = "kms"]
 [@addService provider=AWS_PROVIDER service=AWS_KEY_MANAGEMENT_SERVICE /]
 
