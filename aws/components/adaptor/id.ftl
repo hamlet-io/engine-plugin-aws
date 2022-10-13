@@ -1,12 +1,11 @@
 [#ftl]
 
 [@addResourceGroupInformation
-    type=IMAGE_COMPONENT_TYPE
+    type=ADAPTOR_COMPONENT_TYPE
+    attributes=[]
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
-    attributes=[]
     services=[
-        AWS_ELASTIC_CONTAINER_REGISTRY_SERVICE,
         AWS_IMAGE_SERVICE
     ]
 /]

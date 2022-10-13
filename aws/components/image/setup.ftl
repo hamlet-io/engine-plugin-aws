@@ -13,12 +13,12 @@
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources]
 
-    [#local image = resources["image"]]
+    [#local image =  getOccurrenceImage(occurrence)]
 
     [#local invalidImageFormatSource = false]
 
     [#if solution.Format == "docker" ]
-        [#local repository = resources["repository"]]
+        [#local repository = resources["containerRepository"]]
 
         [#if deploymentSubsetRequired(IMAGE_COMPONENT_TYPE, true)]
             [@createECRRepository
@@ -38,27 +38,15 @@
         [#case "lambda"]
         [#case "contentnode"]
         [#case "pipeline"]
+        [#case "openapi"]
 
             [#switch solution.Source]
-                [#case "Registry"]
+                [#case "registry"]
                     [#break]
-                [#case "URL"]
+                [#case "url"]
                     [#if deploymentSubsetRequired("epilogue", false)]
                         [@addToDefaultBashScriptOutput
-                            content=
-                                getImageFromUrlScript(
-                                    getRegion(),
-                                    productName,
-                                    environmentName,
-                                    segmentName,
-                                    occurrence,
-                                    solution.Image["source:URL"].URL,
-                                    solution.Format,
-                                    "${solution.Format}.zip",
-                                    occurrence.Core.RawName,
-                                    solution.Image["source:URL"].ImageHash,
-                                    true
-                                )
+                            content=getAWSImageFromUrlScript(image, true)
                         /]
                     [/#if]
                     [#break]
@@ -72,7 +60,7 @@
         [#case "docker"]
 
             [#switch solution.Source]
-                [#case "Registry"]
+                [#case "registry"]
                     [#break]
 
                 [#case "ContainerRegistry"]
@@ -82,13 +70,13 @@
                                 'source_image="${solution["Source:ContainerRegistry"]["Image"]}"',
                                 r'destination_repository_url="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + repository.Id + r'" "url" || return $?)"',
                                 r'destination_repository_name="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + repository.Id + r'" "ref" || return $?)"',
-                                r'tag="$(for i in $(docker inspect "${source_image}" --format ' + r"'{{join .RepoTags " + r'" "' + r"}}');" + r' do  [[ "${i}" =~ ^${source_image} ]] && echo "${i#*:}" && break; done)"',
                                 r'',
                                 r'if docker info &>/dev/null; then',
                                 '   aws --region "${getRegion()}" ecr get-login-password \\',
                                 r'    | docker login --username AWS \',
                                 r'       --password-stdin "${destination_repository_url%/*}" || return $?',
                                 r'  docker pull "${source_image}" || return $?',
+                                r'  tag="$(for i in $(docker inspect "${source_image}" --format ' + r"'{{join .RepoTags " + r'" "' + r"}}');" + r' do  [[ "${i}" =~ ^${source_image} ]] && echo "${i#*:}" && break; done)"',
                                 r'  docker tag "${source_image}" "${destination_repository_url}:${tag}" || return $?',
                                 r'  docker image push "${destination_repository_url}:${tag}" || return $?',
                                 r'  digest="$(aws ecr --region "' + "${getRegion()}" + r'" batch-get-image --repository-name "${destination_repository_name}" --image-ids "imageTag=${tag}" --query "images[0].imageId.imageDigest" --output text)"',
@@ -109,25 +97,12 @@
 
         [#case "lambda_jar" ]
             [#switch solution.Source]
-                [#case "Registry"]
+                [#case "registry"]
                     [#break]
-                [#case "URL"]
+                [#case "url"]
                     [#if deploymentSubsetRequired("epilogue", false)]
                         [@addToDefaultBashScriptOutput
-                            content=
-                                getImageFromUrlScript(
-                                    getRegion(),
-                                    productName,
-                                    environmentName,
-                                    segmentName,
-                                    occurrence,
-                                    solution.Image["source:URL"].URL,
-                                    solution.Format,
-                                    "${solution.Format}.jar",
-                                    occurrence.Core.RawName,
-                                    solution.Image["source:URL"].ImageHash,
-                                    false
-                                )
+                            content=getAWSImageFromUrlScript(image, false)
                         /]
                     [/#if]
                     [#break]
@@ -136,37 +111,6 @@
                      [#local invalidImageFormatSource = true]
             [/#switch]
 
-            [#break]
-
-        [#case "openapi"]
-            [#switch solution.Source]
-                [#case "Registry"]
-                    [#break]
-
-                [#case "URL"]
-                    [#if deploymentSubsetRequired("epilogue", false)]
-                        [@addToDefaultBashScriptOutput
-                            content=
-                                getImageFromUrlScript(
-                                    getRegion(),
-                                    productName,
-                                    environmentName,
-                                    segmentName,
-                                    occurrence,
-                                    solution.Image["source:URL"].URL,
-                                    solution.Format,
-                                    "${solution.Format}.zip",
-                                    occurrence.Core.RawName,
-                                    solution.Image["source:URL"].ImageHash,
-                                    true
-                                )
-                        /]
-                    [/#if]
-                    [#break]
-
-                [#default]
-                     [#local invalidImageFormatSource = true]
-            [/#switch]
             [#break]
     [/#switch]
 

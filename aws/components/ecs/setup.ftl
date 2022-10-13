@@ -1524,22 +1524,15 @@
         [/#if]
 
         [#list solution.Containers as id, container ]
-            [#local imageSource = container.Image.Source]
-
+            [#local image = getOccurrenceImage(subOccurrence, id) ]
             [#if deploymentSubsetRequired("pregeneration", false)
-                    && imageSource == "containerregistry" ]
+                    && image.Source == "containerregistry" ]
                 [@addToDefaultBashScriptOutput
                     content=
-                        getImageFromContainerRegistryScript(
-                                productName,
-                                environmentName,
-                                segmentName,
-                                subOccurrence,
-                                id,
-                                container.Image["Source:containerregistry"].Image,
-                                "docker",
-                                getRegistryEndPoint("docker", subOccurrence),
-                                "ecr",
+                        getAWSImageFromContainerRegistryScript(
+                                image.Name,
+                                image.SourceLocation,
+                                image.RegistryPath,
                                 getRegion()
                         )
                 /]

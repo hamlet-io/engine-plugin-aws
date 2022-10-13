@@ -20,7 +20,6 @@
                             )]
     [/#list]
 
-
     [#assign componentState =
         {
             "Resources" : {
@@ -29,6 +28,7 @@
                     "Type" : HAMLET_ADAPTOR_RESOURCE_TYPE
                 }
             },
+            "Images": constructAWSImageResource(occurrence, "scripts"),
             "Attributes" : attributes
         }
     ]

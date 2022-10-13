@@ -79,7 +79,9 @@
     ]
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
-    services=[]
+    services=[
+        AWS_IMAGE_SERVICE
+    ]
 
 /]
 
@@ -138,7 +140,9 @@
     ]
     provider=AWS_PROVIDER
     resourceGroup=DEFAULT_RESOURCE_GROUP
-    services=[]
+    services=[
+        AWS_IMAGE_SERVICE
+    ]
 /]
 
 [@addResourceGroupAttributeValues

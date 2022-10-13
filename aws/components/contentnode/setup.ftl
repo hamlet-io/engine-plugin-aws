@@ -9,39 +9,17 @@
     [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources]
+    [#local image =  getOccurrenceImage(occurrence)]
 
     [#local contentNodeId = resources["contentnode"].Id ]
     [#local pathObject = getContextPath(occurrence) ]
 
     [#local hubFound = false]
 
-    [#local buildReference = getOccurrenceBuildReference(occurrence)]
-    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
-
-    [#local imageSource = solution.Image.Source]
-
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
-    [/#if]
-
-    [#if deploymentSubsetRequired("pregeneration", false)]
-        [#if imageSource = "url" ]
-            [@addToDefaultBashScriptOutput
-                content=
-                    getImageFromUrlScript(
-                        getRegion(),
-                        productName,
-                        environmentName,
-                        segmentName,
-                        occurrence,
-                        solution.Image["Source:url"].Url,
-                        "contentnode",
-                        "contentnode.zip",
-                        solution.Image["Source:url"].ImageHash,
-                        true
-                    )
-            /]
-        [/#if]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=getAWSImageFromUrlScript(image, true)
+        /]
     [/#if]
 
     [#list solution.Links?values as link]
@@ -72,15 +50,9 @@
                                 "  # Fetch the spa zip file",
                                 "  copyFilesFromBucket" + " " +
                                     getRegion() + " " +
-                                    getRegistryEndPoint("contentnode", occurrence) + " " +
-                                    formatRelativePath(
-                                        getRegistryPrefix("contentnode", occurrence),
-                                        getOccurrenceBuildProduct(occurrence, productName),
-                                        getOccurrenceBuildScopeExtension(occurrence),
-                                        buildUnit,
-                                        buildReference
-                                    ) +
-                                    r'  "${tmpdir}" || return $?',
+                                    image.ImageLocation?keep_after("s3://")?keep_before("/") + " " +
+                                    image.ImageLocation?keep_after("s3://")?keep_after("/") + " " +
+                                r'  "${tmpdir}" || return $?',
                                 "  # Sync with the contentnode",
                                 "  copy_contentnode_file \"$\{tmpdir}/contentnode.zip\" " +
                                         "\"" + linkTargetAttributes.ENGINE + "\" " +

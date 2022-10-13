@@ -9,6 +9,7 @@
     [#local core = occurrence.Core ]
     [#local solution = occurrence.Configuration.Solution ]
     [#local resources = occurrence.State.Resources ]
+    [#local image = getOccurrenceImage(occurrence)]
 
     [#local templateId = resources["template"].Id ]
 
@@ -36,29 +37,9 @@
                                     ]
                                 }]
 
-    [#local buildReference = getOccurrenceBuildReference(occurrence)]
-    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
-
-    [#local imageSource = solution.Image.Source]
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
-    [/#if]
-
-    [#if deploymentSubsetRequired("pregeneration", false) && imageSource == "url" ]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
         [@addToDefaultBashScriptOutput
-            content=
-                getImageFromUrlScript(
-                    getRegion(),
-                    productName,
-                    environmentName,
-                    segmentName,
-                    occurrence,
-                    solution.Image.UrlSource.Url,
-                    "scripts",
-                    "scripts.zip",
-                    solution.Image.UrlSource.ImageHash,
-                    true
-                )
+            content=getAWSImageFromUrlScript(image, true)
         /]
     [/#if]
 
@@ -71,8 +52,8 @@
                     "scripts",
                     productName,
                     occurrence,
-                    "scripts.zip",
-                    buildUnit
+                    image.ImageFileName,
+                    image.Name
                 ) +
                 syncFilesToBucketScript(
                     "cfnTemplates",

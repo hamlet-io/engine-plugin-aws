@@ -329,15 +329,7 @@
             [
                 {
                     "Name" : container.Name,
-                    "Image" :
-                        formatRelativePath(
-                            container.RegistryEndPoint,
-                            container.Image +
-                                container.ImageVersion?has_content?then(
-                                    ":" + container.ImageVersion,
-                                    ""
-                                )
-                            ),
+                    "Image": container.Image,
                     "Essential" : container.Essential,
                     "MemoryReservation" : container.MemoryReservation,
                     "LogConfiguration" :
@@ -805,6 +797,7 @@
         [#local ingressRules = []]
         [#local egressRules = []]
 
+        [#local image = getOccurrenceImage(task, containerId) ]
         [#list container.Ports?values as port]
 
             [#local containerPortMapping =
@@ -1020,17 +1013,7 @@
             containerDetails +
             {
                 "Essential" : true,
-                "RegistryEndPoint" : getRegistryEndPoint("docker", task),
-                "Image" : formatRelativePath(
-                    formatName(
-                        getOccurrenceBuildProduct(task, productName),
-                        getOccurrenceBuildScopeExtension(task)
-                    ),
-                    formatName(
-                        getOccurrenceBuildUnit(task),
-                        getOccurrenceBuildReference(task)
-                    )
-                ),
+                "Image": image.ImageLocation,
                 "MemoryReservation" : container.MemoryReservation,
                 "Mode" : getContainerMode(container),
                 "LogDriver" : logDriver,
@@ -1056,7 +1039,6 @@
                 "InitProcess" : container.InitProcess
             } +
             attributeIfContent("LogGroup", containerLogGroup) +
-            attributeIfContent("ImageVersion", container.Version) +
             attributeIfContent("Cpu", container.Cpu) +
             attributeIfContent("Gpu", container.Gpu) +
             attributeIfTrue(
@@ -1079,29 +1061,6 @@
             attributeIfContent("PlacementConstraints", container.PlacementConstraints![] ) +
             attributeIfContent("Ulimits", container.Ulimits )
         ]
-
-        [#if container.Image.Source == "containerregistry" ]
-            [#local imageName = container.Image["Source:containerregistry"].Image]
-            [#if imageName?contains("/")]
-                [#local imageName = imageName?keep_after_last("/")]
-            [/#if]
-            [#if imageName?contains(":")]
-                [#local imageTag = imageName?keep_after_last(":") ]
-            [#else]
-                [#local imageTag = ""]
-            [/#if]
-
-            [#local _context += {
-                "Image" : (container.Image['Source:containerregistry'].Image)?remove_ending(":${imageTag}")
-            } +
-            (imageTag?has_content && ! ((container.ImageVersion)!"")?has_content)?then(
-                {
-                    "ImageVersion" : imageTag
-                },
-                {}
-            )]
-            [@debug message="SourceImage" context={"Image": _context.Image, "ImageVersion": _context.ImageVersion} enabled=true /]
-        [/#if]
 
         [#local linkIngressRules = [] ]
         [#list _context.Links as linkId,linkTarget]

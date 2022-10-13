@@ -67,6 +67,7 @@
 
     [#assign componentState =
         {
+            "Images": constructAWSImageResource(occurrence, "scripts"),
             "Resources" : {
                 "mobileapp" : {
                     "Id" : id,

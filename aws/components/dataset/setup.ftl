@@ -6,32 +6,12 @@
 [#macro aws_dataset_cf_deployment_application occurrence ]
 
     [#local solution = occurrence.Configuration.Solution]
+    [#local image =  getOccurrenceImage(occurrence)]
 
-    [#local buildUnit = getOccurrenceBuildUnit(occurrence)]
-
-    [#local imageSource = solution.Image.Source]
-    [#if imageSource == "url" ]
-        [#local buildUnit = occurrence.Core.Name ]
-    [/#if]
-
-    [#if deploymentSubsetRequired("pregeneration", false)]
-        [#if imageSource = "url" ]
-            [@addToDefaultBashScriptOutput
-                content=
-                    getImageFromUrlScript(
-                        getRegion(),
-                        productName,
-                        environmentName,
-                        segmentName,
-                        occurrence,
-                        solution.Image["Source:url"].Url,
-                        "dataset",
-                        "dataset.zip",
-                        solution.Image["Source:url"].ImageHash,
-                        true
-                    )
-            /]
-        [/#if]
+    [#if deploymentSubsetRequired("pregeneration", false) && image.Source == "url" ]
+        [@addToDefaultBashScriptOutput
+            content=getAWSImageFromUrlScript(image, true)
+        /]
     [/#if]
 
     [#if deploymentSubsetRequired("prologue", false)]

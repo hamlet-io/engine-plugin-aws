@@ -44,7 +44,7 @@
                                     r'mkdir -p /opt/hamlet/scripts',
                                     {
                                         "Fn::Sub" : [
-                                            r'aws --region "${Region}" s3 cp --quiet "s3://${ScriptsFile}" /opt/hamlet/scripts',
+                                            r'aws s3 cp --quiet "${ScriptsFile}" /opt/hamlet/scripts',
                                             {
                                                 "Region" : {
                                                     "Ref" : "AWS::Region"

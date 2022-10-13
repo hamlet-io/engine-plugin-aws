@@ -16,6 +16,7 @@
                     "Type" : HAMLET_CONTENTHUB_NODE_RESOURCE_TYPE
                 }
             },
+            "Images": constructAWSImageResource(occurrence, "scripts"),
             "Attributes" : {
                 "PATH" : getContextPath(occurrence)
             },

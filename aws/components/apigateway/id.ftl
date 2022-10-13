@@ -53,7 +53,8 @@
             AWS_ROUTE53_SERVICE,
             AWS_CERTIFICATE_MANAGER_SERVICE,
             AWS_KINESIS_SERVICE,
-            AWS_IDENTITY_SERVICE
+            AWS_IDENTITY_SERVICE,
+            AWS_IMAGE_SERVICE
         ]
     prefixed=false
 /]
