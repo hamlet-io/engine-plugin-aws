@@ -1,6 +1,15 @@
 # Changelog
 
-## latest (2022-10-13)
+## latest (2022-10-17)
+
+#### Fixes
+
+* (network): dns resolver resource references ([#661](https://github.com/hamlet-io/engine-plugin-aws/issues/661))
+* (datacatalog): add subset filter for resources
+
+Full set of changes: [`8.8.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.0...latest)
+
+## 8.8.0 (2022-10-13)
 
 #### New Features
 
@@ -55,9 +64,10 @@
 * (ec2): av migration to shared provider
 #### Others
 
+* update changelog ([#630](https://github.com/hamlet-io/engine-plugin-aws/issues/630))
 * (cdn): add testing and fixes
 
-Full set of changes: [`8.7.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.7.0...latest)
+Full set of changes: [`8.7.0...8.8.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.7.0...8.8.0)
 
 ## 8.7.0 (2022-08-23)
 
