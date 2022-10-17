@@ -177,7 +177,6 @@
                 "vpc" : {
                     "Legacy" : legacyVpc,
                     "Id" : legacyVpc?then(formatVPCId(), vpcId),
-                    "Legacy" : legacyVpc,
                     "ResourceId" : vpcId,
                     "Name" : vpcName,
                     "Address": networkCIDR,
