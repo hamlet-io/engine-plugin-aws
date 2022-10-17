@@ -207,7 +207,7 @@
             [@createRoute53ResolverLoggingAssociation
                 id=dnsQueryLoggerAssocId
                 resolverLoggingId=dnsQueryLoggerId
-                vpcId=vpcId
+                vpcId=vpcResourceId
             /]
         [/#if]
     [/#list]
