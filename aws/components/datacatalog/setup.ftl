@@ -13,11 +13,13 @@
 
     [#local database = resources["database"]]
 
-    [@createAWSGlueDatabase
-        id=database.Id
-        name=database.Name
-        description=(solution.Description)!""
-    /]
+    [#if deploymentSubsetRequired(DATACATALOG_COMPONENT_TYPE, true)]
+        [@createAWSGlueDatabase
+            id=database.Id
+            name=database.Name
+            description=(solution.Description)!""
+        /]
+    [/#if]
 
     [#list (occurrence.Occurrences![])?filter(
             x -> x.Configuration.Solution.Enabled
@@ -152,14 +154,16 @@
                     serDeParams
                 )]
 
-        [@createAWSGlueTable
-            id=table.Id
-            name=table.Name
-            databaseId=database.Id
-            partitionKeys=_context.PartitionKeys
-            storageDescriptor=tableStorageDescriptor
-            parameters=tableParams
-        /]
+        [#if deploymentSubsetRequired(DATACATALOG_COMPONENT_TYPE, true)]
+            [@createAWSGlueTable
+                id=table.Id
+                name=table.Name
+                databaseId=database.Id
+                partitionKeys=_context.PartitionKeys
+                storageDescriptor=tableStorageDescriptor
+                parameters=tableParams
+            /]
+        [/#if]
 
         [#if solution.Crawler.Enabled ]
             [#local crawler = resources["crawler"]]
@@ -219,20 +223,22 @@
                 ]
             }]
 
-            [@createAWSGlueCrawler
-                id=cralwer.Id
-                name=crawler.Name
-                roleId=crawlerRole.Id
-                targets=targets
-                description=(solution.Description)!""
-                crawlerSecurityConfigurationId=""
-                glueDatabaseId=database.Id
-                recrawlBehaviour=solution.Crawler.RecrawlingPolicy
-                scheduleExpression=solution.Crawler.Schedule
-                schemaChangeDeleteBehaviour=solution.Crawler.SchemaChanges.Delete
-                schemaChangeUpdateBehaviour=solution.Crawler.SchemaChanges.Update
-                tags=getOccurrenceTags(subOccurrence)
-            /]
+            [#if deploymentSubsetRequired(DATACATALOG_COMPONENT_TYPE, true)]
+                [@createAWSGlueCrawler
+                    id=cralwer.Id
+                    name=crawler.Name
+                    roleId=crawlerRole.Id
+                    targets=targets
+                    description=(solution.Description)!""
+                    crawlerSecurityConfigurationId=""
+                    glueDatabaseId=database.Id
+                    recrawlBehaviour=solution.Crawler.RecrawlingPolicy
+                    scheduleExpression=solution.Crawler.Schedule
+                    schemaChangeDeleteBehaviour=solution.Crawler.SchemaChanges.Delete
+                    schemaChangeUpdateBehaviour=solution.Crawler.SchemaChanges.Update
+                    tags=getOccurrenceTags(subOccurrence)
+                /]
+            [/#if]
         [/#if]
 
     [/#list]
