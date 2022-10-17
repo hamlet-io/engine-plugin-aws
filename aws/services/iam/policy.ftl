@@ -31,16 +31,6 @@
                 getExistingReference(baselineIds["OpsData"], NAME_ATTRIBUTE_TYPE),
                 getSettingsFilePrefix(occurrence),
                 getExistingReference(baselineIds["OpsData"], REGION_ATTRIBUTE_TYPE)
-            ) +
-
-            [#-- Support transition between FullRelativePath and FullRelativeRawPath --]
-            s3ReadPermission(baselineIds["OpsData"], occurrence.Core.FullRelativePath) +
-            s3ListPermission(baselineIds["OpsData"], occurrence.Core.FullRelativePath) +
-            s3EncryptionReadPermission(
-                baselineIds["Encryption"],
-                getExistingReference(baselineIds["OpsData"], NAME_ATTRIBUTE_TYPE),
-                occurrence.Core.FullRelativePath,
-                getExistingReference(baselineIds["OpsData"], REGION_ATTRIBUTE_TYPE)
             ),
             permissions.AsFile,
             []
