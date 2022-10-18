@@ -723,6 +723,12 @@
             [#local cachePolicy = cfResources["cachePolicy"] ]
             [#local originRequestPolicy = cfResources["originRequestPolicy"]]
 
+            [#-- Determine if the Authorization header is required for API authorization --]
+            [#local cacheHeaders=[] ]
+            [#if lambdaAuthorizers?has_content || cognitoPools?has_content || ((openapiIntegrations.Security.sigv4)??)]
+                [#local cacheHeaders=["Authorization"] ]
+            [/#if]
+
             [@createCFCachePolicy
                 id=cachePolicy.Id
                 name=cachePolicy.Name
@@ -731,7 +737,7 @@
                     "Max": 0,
                     "Default": 0
                 }
-                headerNames=[] cookieNames=[]
+                headerNames=cacheHeaders cookieNames=[]
                 queryStringNames=[] compressionProtocols=[]
             /]
 

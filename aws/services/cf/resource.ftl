@@ -525,6 +525,8 @@
     [#if policy == "LinkType" ]
         [#switch originLinkType ]
             [#case APIGATEWAY_COMPONENT_TYPE]
+                [#-- Note that the Authorization header, if required, must be included in the cache policy --]
+                [#-- An error is thrown if you attempt to add it in the origin request policy --]
                 [#local headerNames =
                     combineEntities(
                         [
@@ -532,7 +534,6 @@
                             "Accept-Charset",
                             "Accept-Datetime",
                             "Accept-Language",
-                            "Authorization",
                             "Origin",
                             "Referer"
                         ],
