@@ -308,7 +308,7 @@
                 [#break]
 
             [#case "SIG4ORIP" ]
-            [#case "aws:SIG4_OR_IP" ]
+            [#case "AWS:SIG4_OR_IP" ]
             [#case "AUTHORIZER_OR_IP" ]
             [#case "AUTHORISER_OR_IP" ]
                 [#-- Resource policy provides ALLOW on IP --]
@@ -343,7 +343,7 @@
                 [#break]
 
             [#case "SIG4ANDIP" ]
-            [#case "aws:SIG4_AND_IP" ]
+            [#case "AWS:SIG4_AND_IP" ]
             [#case "AUTHORIZER_AND_IP" ]
             [#case "AUTHORISER_AND_IP" ]
                 [#-- If IP doesn't match, EXPLICIT DENY regardless   --]
@@ -375,8 +375,10 @@
                         ]
                     ]
                 [/#if]
+                [#break]
 
-
+            [#default]
+                [@fatal message="Internal error: Unknown authorization model" context=apiPolicyAuth /]
                 [#break]
         [/#switch]
     [#else]
