@@ -525,9 +525,10 @@
     [#if policy == "LinkType" ]
         [#switch originLinkType ]
             [#case APIGATEWAY_COMPONENT_TYPE]
-                [#-- Note that the Authorization header, if required, must be included in the cache policy --]
-                [#-- An error is thrown if you attempt to add it in the origin request policy --]
-                [#local headerNames =
+                [#-- As of 2022-10-19, to get the Authorization header passed through without cacheing, --]
+                [#-- the AllViewer behaviour must be used (triggered by a header name of _all).         --]
+                [#-- TODO(mfl): revisit once AWS has responded to the numerous feedback it has received on this issue --]
+                [#--local headerNames =
                     combineEntities(
                         [
                             "Accept",
@@ -540,7 +541,7 @@
                         customHeaders,
                         UNIQUE_COMBINE_BEHAVIOUR
                     )
-                ]
+                --]
                 [#break]
 
             [#case MOBILEAPP_COMPONENT_TYPE]
