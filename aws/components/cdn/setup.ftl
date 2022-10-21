@@ -57,7 +57,8 @@
 
     [#local defaultTTLPolicy = {}]
 
-    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_ORIGIN_COMPONENT_TYPE) as subOccurrence]
+    [#list (occurrence.Occurrences![])?filter(
+            x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_ORIGIN_COMPONENT_TYPE) as subOccurrence]
 
         [#local subCore = subOccurrence.Core ]
         [#local subSolution = subOccurrence.Configuration.Solution ]
@@ -67,7 +68,7 @@
 
         [#local originRequestPolicy = subResources["originRequestPolicy"]]
 
-        [#local originLink = getLinkTarget(occurrence, subSolution.Link) ]
+        [#local originLink = getLinkTarget(occurrence, subSolution.OriginLink) ]
 
         [#if !originLink?has_content]
             [#continue]
@@ -142,7 +143,8 @@
 
     [/#list]
 
-    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_RESPONSE_POLICY_COMPONENT_TYPE) as subOccurrence]
+    [#list (occurrence.Occurrences![])?filter(
+            x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_RESPONSE_POLICY_COMPONENT_TYPE) as subOccurrence]
 
         [#local subCore = subOccurrence.Core ]
         [#local subSolution = subOccurrence.Configuration.Solution ]
@@ -166,7 +168,8 @@
         /]
     [/#list]
 
-    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_CACHE_POLICY_COMPONENT_TYPE) as subOccurrence]
+    [#list (occurrence.Occurrences![])?filter(
+            x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_CACHE_POLICY_COMPONENT_TYPE) as subOccurrence]
 
         [#local subCore = subOccurrence.Core ]
         [#local subSolution = subOccurrence.Configuration.Solution ]
@@ -189,7 +192,8 @@
 
     [/#list]
 
-    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_ROUTE_COMPONENT_TYPE)  as subOccurrence]
+    [#list (occurrence.Occurrences![])?filter(
+            x -> x.Configuration.Solution.Enabled && x.Core.Type == CDN_ROUTE_COMPONENT_TYPE)  as subOccurrence]
 
         [#local subCore = subOccurrence.Core ]
         [#local subSolution = subOccurrence.Configuration.Solution ]
@@ -450,7 +454,7 @@
         [/#list]
 
         [#if originConfig?has_content ]
-            [#local originLink = getLinkTarget(occurrence, originConfig.Link) ]
+            [#local originLink = getLinkTarget(occurrence, originConfig.OriginLink) ]
             [#if !originLink?has_content]
                 [#continue]
             [/#if]
