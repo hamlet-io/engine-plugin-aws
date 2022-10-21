@@ -258,8 +258,6 @@
     [/#if]
 
     [#if deploymentSubsetRequired("epilogue", false)]
-
-        [#local credentialsPseudoStackFile = "\"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE}\")-credentials-pseudo-stack.json\"" ]
         [@addToDefaultBashScriptOutput
             content=
             [
@@ -268,70 +266,50 @@
             ] +
             ( credentialFormats?seq_contains("system") && !(encryptedSystemPassword?has_content))?then(
                 [
-                    "# Generate IAM AccessKey",
-                    "function generate_iam_accesskey() {",
-                    "info \"Generating IAM AccessKey... \"",
-                    "access_key=\"$(create_iam_accesskey" +
-                    " \"" + getRegion() + "\" " +
-                    " \"" + userName + "\" || return $?)\"",
-                    "access_key_array=($access_key)",
-                    "encrypted_secret_key=\"$(encrypt_kms_string" +
-                    " \"" + getRegion() + "\" " +
-                    " \"$\{access_key_array[1]}\" " +
-                    " \"" + cmkKeyArn + "\" || return $?)\"",
-                    "smtp_password=\"$(get_iam_smtp_password \"$\{access_key_array[1]}\" )\"",
-                    "encrypted_smtp_password=\"$(encrypt_kms_string" +
-                    " \"" + getRegion() + "\" " +
-                    " \"$\{smtp_password}\" " +
-                    " \"" + cmkKeyArn + "\" || return $?)\""
+                    r'# Generate IAM AccessKey',
+                    r'function generate_iam_accesskey() {',
+                    r'  info "Generating IAM AccessKey"',
+                    r'  IFS=" " read -r -a access_key_pair <<< "$(create_iam_accesskey "' + getRegion() + r'" "' + userName + r'" || return $?)"',
+                    r'  encrypted_secret_key="$(encrypt_kms_string "' + getRegion() + r'" "${access_key_pair[1]}" "' + cmkKeyArn + r'" || return $?)"'
                 ] +
                 pseudoStackOutputScript(
                     "IAM User AccessKey",
                     {
-                        formatId(userId, "username") : "$\{access_key_array[0]}",
-                        formatId(userId, "password") : "$\{encrypted_secret_key}",
-                        formatId(userId, "key") : "$\{encrypted_smtp_password}"
+                        formatId(userId, "username") : r'${access_key_pair[0]}',
+                        formatId(userId, "password") : r'${encrypted_secret_key}'
                     },
-                    "creds-system"
+                    formatName(userName, "system-creds")
                 ) +
                 [
-                    "}",
-                    "generate_iam_accesskey || return $?"
+                    r'}',
+                    r'generate_iam_accesskey || return $?'
                 ],
                 []) +
             ( credentialFormats?seq_contains("console") && !(encryptedConsolePassword?has_content) )?then(
                 [
-                    "# Generate User Password",
-                    "function generate_user_password() {",
-                    "info \"Generating User Password... \"",
-                    "user_password=\"$(generateComplexString" +
-                    " \"" + userPasswordLength + "\" )\"",
-                    "encrypted_user_password=\"$(encrypt_kms_string" +
-                    " \"" + getRegion() + "\" " +
-                    " \"$\{user_password}\" " +
-                    " \"" + cmkKeyArn + "\" || return $?)\"",
-                    "info \"Setting User Password... \"",
-                    "manage_iam_userpassword" +
-                    " \"" + getRegion() + "\" " +
-                    " \"manage\" " +
-                    " \"" + userName + "\" " +
-                    " \"$\{user_password}\" || return $?"
+                    r'# Generate User Password',
+                    r'function generate_user_password() {',
+                    r'  info "Generating User Password"',
+                    r'  user_password="$(generateComplexString "' + userPasswordLength + r'" )"',
+                    r'  encrypted_user_password="$(encrypt_kms_string "' + getRegion() + r'" "${user_password}" "' + cmkKeyArn + r'" || return $?)"',
+                    r'  info "Setting User Password"',
+                    r'  manage_iam_userpassword "' + getRegion() + r'" "manage" "' + userName + r'" "${user_password}" || return $?'
                 ] +
                 pseudoStackOutputScript(
                     "IAM User Password",
                     {
-                        formatId(userId, "generatedpassword") : "$\{encrypted_user_password}"
+                        formatId(userId, "generatedpassword") : r'${encrypted_user_password}'
                     },
-                    "creds-console"
+                    formatName(userName, "console-creds")
                 ) +
                 [
-                    "}",
-                    "generate_user_password || return $?"
+                    r'}',
+                    r'generate_user_password || return $?'
                 ],
             []) +
             [
-                "       ;;",
-                "       esac"
+                r'       ;;',
+                r'       esac'
             ]
         /]
     [/#if]
