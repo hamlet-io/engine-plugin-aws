@@ -536,11 +536,10 @@
         [#break]
 
         [#case "v2"]
-            [#local defAction = defaultAction?lower_case?cap_first ]
             [#local properties=
                 {
                     "DefaultAction" : {
-                        defAction: {}
+                        defaultAction?lower_case?cap_first : {}
                     },
                     "Name": name,
                     "Rules" : aclRules,
@@ -564,20 +563,10 @@
 
 [#macro createWAFAclFromSecurityProfile id name metric wafSolution securityProfile occurrence={} regional=false version="v1"]
     [#if wafSolution.OWASP ]
-        [#local OWASPProfile = "OWASP2017"]
-        [#if securityProfile.WAFProfile != OWASPProfile]
-            [@fatal
-                message="WAF Profile can not be set when using OWASP mode for WAF - Update the security profile to use ${OWASPProfile} as the WAFProfile"
-                context={
-                    "Id": id,
-                    "Name":name,
-                    "SecurityProfile": securityProfile
-                }
-            /]
-        [/#if]
+        [#local wafProfile = getReferenceData(WAFPROFILE_REFERENCE_TYPE)[("OWASP2017")]!{}]
+    [#else]
+        [#local wafProfile = getReferenceData(WAFPROFILE_REFERENCE_TYPE)[(securityProfile.WAFProfile)]!{} ]
     [/#if]
-
-    [#local wafProfile = getReferenceData(WAFPROFILE_REFERENCE_TYPE)[(securityProfile.WAFProfile)]!{} ]
 
     [#local wafValueSet = resolveDynamicValues(
         getReferenceData(WAFVALUESET_REFERENCE_TYPE)[securityProfile.WAFValueSet!""]!{},
