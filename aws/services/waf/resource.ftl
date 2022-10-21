@@ -547,7 +547,7 @@
                     "Scope": regional?then("REGIONAL","CLOUDFRONT"),
                     "VisibilityConfig" : {
                         "CloudWatchMetricsEnabled" : true,
-                        "MetricName" : ruleName,
+                        "MetricName" : name,
                         "SampledRequestsEnabled" : true
                     }
                 }
@@ -563,11 +563,22 @@
 [/#macro]
 
 [#macro createWAFAclFromSecurityProfile id name metric wafSolution securityProfile occurrence={} regional=false version="v1"]
-    [#if wafSolution.OWASP]
-        [#local wafProfile = getReferenceData(WAFPROFILE_REFERENCE_TYPE)[securityProfile.WAFProfile!""]!{} ]
-    [#else]
-        [#local wafProfile = {"Rules" : [], "DefaultAction" : "ALLOW"} ]
+    [#if wafSolution.OWASP ]
+        [#local OWASPProfile = "OWASP2017"]
+        [#if securityProfile.WAFProfile != OWASPProfile]
+            [@fatal
+                message="WAF Profile can not be set when using OWASP mode for WAF - Update the security profile to use ${OWASPProfile} as the WAFProfile"
+                context={
+                    "Id": id,
+                    "Name":name,
+                    "SecurityProfile": securityProfile
+                }
+            /]
+        [/#if]
     [/#if]
+
+    [#local wafProfile = getReferenceData(WAFPROFILE_REFERENCE_TYPE)[(securityProfile.WAFProfile)]!{} ]
+
     [#local wafValueSet = resolveDynamicValues(
         getReferenceData(WAFVALUESET_REFERENCE_TYPE)[securityProfile.WAFValueSet!""]!{},
         {"occurrence": occurrence}
