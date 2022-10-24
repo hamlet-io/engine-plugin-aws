@@ -1,13 +1,34 @@
 # Changelog
 
-## latest (2022-10-17)
+## latest (2022-10-24)
+
+#### Fixes
+
+* (user): pseudo stack handling and ses removal
+* OWASP profile handling and action formatting
+* (waf): handle WAFProfiles and metric name
+* (db): BASH_SOURCE usage in bash scripts
+* (apigateway): authorization values ([#666](https://github.com/hamlet-io/engine-plugin-aws/issues/666))
+* (apigateway): Authorization header passthrough ([#665](https://github.com/hamlet-io/engine-plugin-aws/issues/665))
+* (apigateway): origin request policy ([#664](https://github.com/hamlet-io/engine-plugin-aws/issues/664))
+#### Refactorings
+
+* (cdn): Update origin link attribute name
+* (iam): remove transitional policy support ([#663](https://github.com/hamlet-io/engine-plugin-aws/issues/663))
+#### Others
+
+* update changelog ([#659](https://github.com/hamlet-io/engine-plugin-aws/issues/659))
+
+Full set of changes: [`8.8.1...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.1...latest)
+
+## 8.8.1 (2022-10-17)
 
 #### Fixes
 
 * (network): dns resolver resource references ([#661](https://github.com/hamlet-io/engine-plugin-aws/issues/661))
 * (datacatalog): add subset filter for resources
 
-Full set of changes: [`8.8.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.0...latest)
+Full set of changes: [`8.8.0...8.8.1`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.0...8.8.1)
 
 ## 8.8.0 (2022-10-13)
 
