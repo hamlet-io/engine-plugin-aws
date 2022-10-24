@@ -742,9 +742,9 @@
             [#local ddsFQDN = getExistingReference(ddsId, DNS_ATTRIBUTE_TYPE)]
             [#local ddsCA = getExistingReference(ddsId, "ca")]
 
-            [#local passwordPseudoStackFile = "\"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE}\")-password-pseudo-stack.json\"" ]
-            [#local urlPseudoStackFile = "\"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE}\")-url-pseudo-stack.json\""]
-            [#local caPseudoStackFile = "\"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE}\")-ca-pseudo-stack.json\""]
+            [#local passwordPseudoStackFile = "\"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE[0]}\")-password-pseudo-stack.json\"" ]
+            [#local urlPseudoStackFile = "\"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE[0]}\")-url-pseudo-stack.json\""]
+            [#local caPseudoStackFile = "\"$\{CF_DIR}/$(fileBase \"$\{BASH_SOURCE[0]}\")-ca-pseudo-stack.json\""]
             [@addToDefaultBashScriptOutput
                 content=
                 [
