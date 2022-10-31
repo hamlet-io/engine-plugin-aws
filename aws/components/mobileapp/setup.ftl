@@ -40,7 +40,7 @@
             "APPDATA_PREFIX"    : getAppDataFilePrefix(occurrence),
 
             "CODE_SRC_BUCKET" : (image.ImageLocation?remove_beginning("s3://")?keep_before("/"))!"",
-            "CODE_SRC_PREFIX" : (image.ImageLocation?remove_beginning("s3://")?keep_after("/"))!"",
+            "CODE_SRC_PREFIX" : (image.ImageLocation?remove_beginning("s3://")?keep_after("/")?keep_before_last("/"))!"",
             "APP_BUILD_FORMATS" : solution.BuildFormats?join(","),
             "KMS_PREFIX"        : solution.EncryptionPrefix,
 
