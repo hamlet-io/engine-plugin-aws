@@ -251,18 +251,6 @@
         [/#list]
     [/#if]
 
-    [#-- clear all environment variables for EDGE deployments --]
-    [#if deploymentType == "EDGE" ]
-        [#local _context += {
-            "DefaultEnvironment" : {},
-            "Environment" : {},
-            "DefaultCoreVariables" : false,
-            "DefaultEnvironmentVariables" : false,
-            "DefaultLinkVariables" : false,
-            "DefaultBaselineVariables" : false
-        }]
-    [/#if]
-
     [#local finalEnvironment = getFinalEnvironment(fn, _context, solution.Environment) ]
     [#local finalAsFileEnvironment = getFinalEnvironment(fn, _context, solution.Environment + {"AsFile" : false}) ]
     [#local asFileFormat = solution.Environment.FileFormat ]
@@ -447,9 +435,15 @@
             [/#list]
         [/#if]
 
+        [#if deploymentType == "EDGE" ]
+            [#local functionContext =  _context + {"Environment": {}} ]
+        [#else]
+            [#local functionContext = _context ]
+        [/#if]
+
         [@createLambdaFunction
             id=fnId
-            settings=_context +
+            settings=functionContext +
                 {
                     "Handler" : solution.Handler,
                     "RunTime" : solution.RunTime,
