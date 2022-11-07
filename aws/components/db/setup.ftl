@@ -629,7 +629,7 @@
                                     [#local scalingTargetResources = resources ]
                                 [/#if]
 
-                                [#local monitoredResources = getCWMonitoredResources(scalingTargetResources, scalingMetricTrigger.Resource)]
+                                [#local monitoredResources = getCWMonitoredResources(scalingTargetCore.Id, scalingTargetResources, scalingMetricTrigger.Resource)]
 
                                 [#if monitoredResources?keys?size > 1 ]
                                     [@fatal
@@ -783,8 +783,8 @@
 
                     [@createAutoScalingAppTarget
                         id=scalingTargetId
-                        minCount=processorCounts.MinCount
-                        maxCount=processorCounts.MaxCount
+                        minCount=processorCounts.MinCount - auroraCluster?then(1,0)
+                        maxCount=processorCounts.MaxCount - auroraCluster?then(1,0)
                         scalingResourceId=getAutoScalingRDSClusterResourceId(rdsId)
                         scalableDimension="rds:cluster:ReadReplicaCount"
                         resourceType=serviceResourceType
