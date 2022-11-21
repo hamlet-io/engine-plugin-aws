@@ -12,6 +12,8 @@
     [#local port = solution.Port!"mongodb" ]
     [#local family = "docdb"+engineVersion ]
 
+    [#local multiAZ = solution.MultiAZ]
+
     [#if (ports[port])?has_content]
         [#local portObject = ports[port] ]
     [#else]
