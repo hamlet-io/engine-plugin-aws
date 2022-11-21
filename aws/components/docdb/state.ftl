@@ -208,6 +208,7 @@
                         }
                     }
                 ]
+            [/#if]
         [/#list]
     [/#if]
     [#local resources = mergeObjects( resources, autoScaling )]
