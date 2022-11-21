@@ -220,7 +220,9 @@
         )]
 
         [#-- Calcuate the number of fixed instances required --]
-        [#if multiAZ!false ]
+        [#if multiAZ || (
+                solution.Cluster.ScalingPolicies?has_content &&
+                solution.Cluster.ScalingPolicies?values?map(x-> x.Enabled)?seq_contains(true)) ]
             [#local resourceZones = getZones() ]
         [#else]
             [#local resourceZones = [getZones()[0]] ]
@@ -244,10 +246,9 @@
         [/#if]
 
         [#local autoScaling = {}]
-        [#if solution.Cluster.ScalingPolicies?has_content ]
+        [#if solution.Cluster.ScalingPolicies?has_content &&
+            solution.Cluster.ScalingPolicies?values?map(x-> x.Enabled)?seq_contains(true) ]
 
-            [#-- Autoscaling requires 2 fixed instances at all times so we force it to be set --]
-            [#local resourceZones = getZones()[0..1]]
             [#local instancesPerZone = 1 ]
 
             [#local autoScaling +=
@@ -259,15 +260,17 @@
                 }
             ]
             [#list solution.Cluster.ScalingPolicies as name, scalingPolicy ]
-                [#local autoScaling +=
-                    {
-                        "scalingPolicy" + name : {
-                            "Id" : formatDependentAutoScalingAppPolicyId(id, name),
-                            "Name" : formatName(core.FullName, name),
-                            "Type" : AWS_AUTOSCALING_APP_POLICY_RESOURCE_TYPE
+                [#if scalingPolicy.Enabled ]
+                    [#local autoScaling +=
+                        {
+                            "scalingPolicy" + name : {
+                                "Id" : formatDependentAutoScalingAppPolicyId(id, name),
+                                "Name" : formatName(core.FullName, name),
+                                "Type" : AWS_AUTOSCALING_APP_POLICY_RESOURCE_TYPE
+                            }
                         }
-                    }
-                ]
+                    ]
+                [/#if]
             [/#list]
         [/#if]
         [#local resources = mergeObjects( resources, autoScaling )]
