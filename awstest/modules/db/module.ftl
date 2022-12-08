@@ -639,4 +639,86 @@
             }
         }
     /]
+
+    [#-- DBProxy  --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "db" : {
+                    "Components" : {
+                        "postgresdbproxy" : {
+                            "Type" : "db",
+                            "deployment:Unit" : "aws-db",
+                            "Engine" : "postgres",
+                            "EngineVersion" : "14",
+                            "Profiles" : {
+                                "Testing" : [ "postgresdbproxy" ]
+                            },
+                            "rootCredential:Source" : "SecretStore",
+                            "rootCredential:SecretStore" : {
+                                "Link" : {
+                                    "Tier" : "db",
+                                    "Component": "postgresdbproxy-secretstore"
+                                }
+                            },
+                            "Proxies" : {
+                                "reader": {
+                                    "AuthorisedUsers" : {
+                                        "root" : {
+                                            "Source": "DBRoot"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "postgresdbproxy-secretstore" : {
+                            "Type" : "secretstore",
+                            "deployment:Unit" : "aws-db",
+                            "Engine" : "aws:secretsmanager"
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "postgresdbproxy" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "rdsInstance" : {
+                                    "Name" : "rdsXdbXpostgresdbproxy",
+                                    "Type" : "AWS::RDS::DBInstance"
+                                },
+                                "secret" : {
+                                    "Name" : "secretXdbXpostgresdbproxyXRootCredentials",
+                                    "Type" : "AWS::SecretsManager::Secret"
+                                },
+                                "rdsProxy" : {
+                                    "Name" : "rdsProxyXdbXpostgresdbproxyXreader",
+                                    "Type" : "AWS::RDS::DBProxy"
+                                },
+                                "rdsProxyTargetGroup" : {
+                                    "Name" : "rdsProxyTargetGroupXdbXpostgresdbproxyXreader",
+                                    "Type" : "AWS::RDS::DBProxyTargetGroup"
+                                }
+                            },
+                            "Output" : [
+                                "rdsXdbXpostgresdbproxyXdns",
+                                "rdsXdbXpostgresdbproxyXport",
+                                "secretXdbXpostgresdbproxyXRootCredentialsXarn"
+                            ]
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "postgresdbproxy" : {
+                    "db" : {
+                        "TestCases" : [ "postgresdbproxy" ]
+                    }
+                }
+            }
+        }
+    /]
+
 [/#macro]

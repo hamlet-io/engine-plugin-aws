@@ -363,3 +363,269 @@
         outputs=RDS_EVENT_OUTPUT_MAPPINGS
     /]
 [/#macro]
+
+[#assign RDS_PROXY_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        },
+        ARN_ATTRIBUTE_TYPE : {
+            "Attribute": "DBProxyArn"
+        },
+        DNS_ATTRIBUTE_TYPE : {
+            "Attribute": "Endpoint"
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_RDS_PROXY_RESOURCE_TYPE
+    mappings=RDS_PROXY_OUTPUT_MAPPINGS
+/]
+
+
+[#function getRDSProxyAuthFormat authScheme="" description="" secretId="" userName="" iamAuthState=""  ]
+    [#if iamAuthState?has_content ]
+        [#switch iamAuthState?upper_case ]
+            [#case "ENABLED"]
+            [#case "DISABLED"]
+            [#case "REQUIRED"]
+                [#break]
+            [#default]
+                [@fatal
+                    message="Invlaid RDS Proxy Auth Format - IAMAuth"
+                    context={
+                        "Provided": iamAuthState,
+                        "Possible" : [
+                            "ENABLED",
+                            "DISABLED",
+                            "REQUIRED"
+                        ]
+                    }
+                /]
+        [/#switch]
+    [/#if]
+
+    [#if authScheme?has_content ]
+        [#switch authScheme?upper_case ]
+            [#case "SECRETS"]
+                [#break]
+            [#default]
+                [@fatal
+                    message="Invlaid RDS Proxy Auth Format - AuthScheme"
+                    context={
+                        "Provided": iamAuthState,
+                        "Possible" : [
+                            "ENABLED",
+                            "DISABLED",
+                            "REQUIRED"
+                        ]
+                    }
+                /]
+        [/#switch]
+    [/#if]
+
+    [#return {} +
+        attributeIfContent(
+            "AuthScheme",
+            authScheme?upper_case
+        ) +
+        attributeIfContent(
+            "Description",
+            description
+        ) +
+        attributeIfContent(
+            "IAMAuth",
+            iamAuthState?upper_case
+        ) +
+        attributeIfContent(
+            "SecretArn",
+            getArn(secretId)
+        ) +
+        attributeIfContent(
+            "UserName",
+            userName
+        )
+    ]
+[/#function]
+
+[#macro createRDSProxy id name
+        debugLogging
+        engineFamily
+        requireTLS
+        roleId
+        tags
+        authFormats=[]
+        idleClientTimeout=0
+        vpcSecurityGroupIds=[]
+        vpcSubnets=[]
+        dependencies=[] ]
+
+    [@cfResource
+        id=id
+        type="AWS::RDS::DBProxy"
+        properties={
+            "DBProxyName": name,
+            "DebugLogging": debugLogging,
+            "EngineFamily": engineFamily,
+            "RequireTLS": requireTLS,
+            "RoleArn": getArn(roleId)
+        } +
+        attributeIfContent(
+            "Auth",
+            asArray(authFormats)
+        ) +
+        attributeIfTrue(
+            "IdleClientTimeout",
+            idleClientTimeout > 0,
+            idleClientTimeout
+        ) +
+        attributeIfContent(
+            "VpcSecurityGroupIds",
+            vpcSecurityGroupIds,
+            getReferences(vpcSecurityGroupIds)
+        ) +
+        attributeIfContent(
+            "VpcSubnetIds",
+            vpcSubnets
+        )
+        tags=tags
+        outputs=RDS_PROXY_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#assign RDS_PROXY_ENDPOINT_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        },
+        ARN_ATTRIBUTE_TYPE: {
+            "Attribute" : "DBProxyEndpointArn"
+        },
+        DNS_ATTRIBUTE_TYPE: {
+            "Attribute" : "Endpoint"
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_RDS_PROXY_ENDPOINT_RESOURCE_TYPE
+    mappings=RDS_PROXY_ENDPOINT_OUTPUT_MAPPINGS
+/]
+
+[#macro createRDSProxyEndpoint id name
+        proxyId
+        tags
+        targetRole
+        vpcSecurityGroupIds
+        vpcSubnets
+        dependencies=[] ]
+
+    [#switch targetRole?upper_case ]
+        [#case "READONLY"]
+        [#case "READ_ONLY"]
+            [#local targetRole = "READ_ONLY"]
+            [#break]
+        [#case "READWRITE"]
+        [#case "READ_WRITE"]
+            [#local targetRole = "READ_WRITE"]
+            [#break]
+    [/#switch]
+
+    [@cfResource
+        id=id
+        type="AWS::RDS::DBProxyEndpoint"
+        properties={
+            "DBProxyEndpointName": name,
+            "DBProxyName" : getReference(proxyId),
+            "TargetRole" : targetRole,
+            "VpcSecurityGroupIds" : getReferences(vpcSecurityGroupIds),
+            "VpcSubnetIds": vpcSubnets
+        }
+        tags=tags
+        outputs=RDS_PROXY_ENDPOINT_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#assign RDS_PROXY_TARGET_GROUP_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_RDS_PROXY_TARGET_GROUP_RESOURCE_TYPE
+    mappings=RDS_PROXY_TARGET_GROUP_OUTPUT_MAPPINGS
+/]
+
+
+[#function getRDSProxyTargetGroupConnectionPoolConfig
+    connectionBorrowTimeout=0
+    initQuery=""
+    maxConnectionsPercent=0
+    maxIdleConnectionsPercent=0
+    sessionPinningFilters=[]
+]
+
+    [#return {} +
+        attributeIfTrue(
+            "ConnectionBorrowTimeout",
+            connectionBorrowTimeout > 0,
+            connectionBorrowTimeout
+        ) +
+        attributeIfContent(
+            "InitQuery",
+            initQuery
+        ) +
+        attributeIfTrue(
+            "MaxConnectionsPercent",
+            connectionBorrowTimeout > 0,
+            connectionBorrowTimeout
+        ) +
+        attributeIfTrue(
+            "MaxIdleConnectionsPercent",
+            maxIdleConnectionsPercent > 0,
+            maxIdleConnectionsPercent
+        ) +
+        attributeIfContent(
+            "SessionPinningFilters",
+            sessionPinningFilters
+        )]
+[/#function]
+
+[#macro createRDSProxyTargetGroup id name
+        proxyId
+        connectionPoolConfiguration
+        dbClusterIds=[]
+        dbInstanceIds=[]
+        dependencies=[]]
+
+    [@cfResource
+        id=id
+        type="AWS::RDS::DBProxyTargetGroup"
+        properties={
+            "TargetGroupName" : name,
+            "DBProxyName": getReference(proxyId)
+        } +
+        attributeIfContent(
+            "DBClusterIdentifiers",
+            dbClusterIds,
+            getReferences(dbClusterIds)
+        ) +
+        attributeIfContent(
+            "DBClusterIdentifiers",
+            dbInstanceIds,
+            getReferences(dbInstanceIds)
+        ) +
+        attributeIfContent(
+            "ConnectionPoolConfigurationInfo"
+            connectionPoolConfiguration
+        )
+        outputs=RDS_PROXY_TARGET_GROUP_OUTPUT_MAPPINGS
+        dependencies=dependencies
+    /]
+[/#macro]
