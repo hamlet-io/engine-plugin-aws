@@ -34,9 +34,10 @@
     [#-- Image Source Control --]
     [#switch (imageConfiguration.Source)!"none" ]
         [#case "link"]
-            [#local imageLink = getLinkTarget(occurrence, imageConfiguration.Source.Link)]
+            [#local imageLink = getLinkTarget(occurrence, imageConfiguration.Link, false )]
+            [#local image = {}]
             [#if imageLink?has_content]
-                [#local image = (asArray(imageLink.State.Images)?filter(x -> x.Format == imageFormat)[0])!{} ]
+                [#local image = ((imageLink.State.Images)?values?filter(x -> x.Format == imageFormat)[0])!{} ]
                 [#if !image?has_content ]
                     [@fatal
                         message="Link Image format doesn't match required image format"
@@ -47,8 +48,9 @@
                         }
                     /]
                 [/#if]
-                [#return { id: mergeObjects(image, {"Source": imageConfiguration.Source})}]
             [/#if]
+
+            [#return { id: mergeObjects(image, {"Source": imageConfiguration.Source})}]
             [#break]
 
         [#case "extension"]
@@ -57,6 +59,7 @@
             [#break]
 
         [#case "registry"]
+        [#case "Local"]
             [#-- Get Image Reference details --]
             [#local reference = getExistingReference(imageId)]
             [#local tag = getExistingReference(imageId, TAG_ATTRIBUTE_TYPE)]
@@ -250,7 +253,7 @@
                             resource.Name
                         )]
 
-                    [#local imageLocation = "${registryPath}:${resource.Reference}"]
+                    [#local imageLocation = "${registryPath}:${(resource.Reference)!''}"]
                     [#break]
             [/#switch]
 

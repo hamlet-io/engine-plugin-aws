@@ -250,7 +250,7 @@
                                     "Types" : [ "string" ]
                                 },
                                 "DockerImage": {
-                                    "Description" : "Local docker iamge to push",
+                                    "Description" : "The name and tag of a local docker image that you want to push",
                                     "Types" : [ "string" ]
                                 },
                                 "Reference" : {
@@ -278,10 +278,15 @@
                                     "Types" : [ "string" ],
                                     "Default" : ""
                                 },
-                                "Instance" : {
-                                    "Description" : "Instance Id of the component to assign the image to",
+                                "Version" : {
+                                    "Description" : "Version Id of the component to assign the image to",
                                     "Types" : [ "string" ],
                                     "Default" : ""
+                                },
+                                "ImageId": {
+                                    "Description" : "The Id of the image in the component the image is for",
+                                    "Types" : [ "string" ],
+                                    "Default" : "default"
                                 }
                             },
                             "Steps" : {

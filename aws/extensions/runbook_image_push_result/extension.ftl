@@ -14,11 +14,11 @@
 /]
 
 [#macro shared_extension_runbook_image_push_result_runbook_setup occurrence ]
-
-    [#local image = (_context.Links["image"])!{}]
-    [#if ! image?has_content]
+    [#local imageLink = (_context.Links["image"])!{}]
+    [#if ! imageLink?has_content ]
         [#return]
     [/#if]
+    [#local image = imageLink.State.Images[_context.Inputs["input:ImageId"]] ]
 
     [#assign _context = mergeObjects(
         _context,
@@ -27,9 +27,9 @@
                 "Value" : {
                     "Value": getJSON(
                         {
-                            "Name": image.State.Resources.image.Name,
-                            "RegistryType" : image.State.Resources.image.RegistryType,
-                            "Format" : image.Configuration.Solution.Format,
+                            "Name": (image.Name)!"",
+                            "RegistryType" : (image.RegistryType)!"",
+                            "Format" : (imageLink.Configuration.Solution.Format)!"",
                             "Reference": "__input:Reference__",
                             "Tag": "__input:Tag__",
                             "s3" : {

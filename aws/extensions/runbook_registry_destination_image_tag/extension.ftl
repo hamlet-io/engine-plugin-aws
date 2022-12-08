@@ -15,16 +15,17 @@
 
 [#macro shared_extension_runbook_registry_destination_image_tag_runbook_setup occurrence ]
 
-    [#local image = (_context.Links["image"])!{}]
-    [#if ! image?has_content]
+    [#local imageLink = (_context.Links["image"])!{}]
+    [#if ! imageLink?has_content ]
         [#return]
     [/#if]
+    [#local image = imageLink.State.Images[_context.Inputs["input:ImageId"]] ]
 
     [#assign _context = mergeObjects(
         _context,
         {
             "TaskParameters" : {
-                "DestinationImage" : ((image.State.Resources["image"].Registry)!"") + ":__input:Tag__"
+                "DestinationImage" : ((image.Registry)!"") + ":__input:Tag__"
             }
         }
     )]
