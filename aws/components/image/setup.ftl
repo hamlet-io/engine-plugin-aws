@@ -60,7 +60,8 @@
         [#case "docker"]
 
             [#switch solution.Source]
-                [#case "registry"]
+                [#case "Local"]
+                [#local "registry"]
                     [#break]
 
                 [#case "ContainerRegistry"]

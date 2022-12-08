@@ -15,17 +15,18 @@
 
 [#macro shared_extension_runbook_registry_destination_object_runbook_setup occurrence ]
 
-    [#local image = (_context.Links["image"])!{}]
-    [#if ! image?has_content]
+    [#local imageLink = (_context.Links["image"])!{}]
+    [#if ! imageLink?has_content ]
         [#return]
     [/#if]
+    [#local image = imageLink.State.Images[_context.Inputs["input:ImageId"]] ]
 
     [#assign _context = mergeObjects(
         _context,
         {
             "TaskParameters" : {
-                "BucketName" : ((image.State.Resources["image"].Location)!"")?replace("s3://", "")?keep_before("/"),
-                "Object": ((image.State.Resources["image"].Registry)!"")?replace("s3://", "")?keep_after("/")  + "/__input:Reference__/" +  (image.State.Resources["image"].ImageFileName)!""
+                "BucketName" : ((image.Location)!"")?replace("s3://", "")?keep_before("/"),
+                "Object": ((image.Registry)!"")?replace("s3://", "")?keep_after("/")  + "/__input:Reference__/" +  (image.ImageFileName)!""
             }
         }
     )]
