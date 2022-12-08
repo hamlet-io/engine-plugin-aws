@@ -1015,7 +1015,6 @@
                         [/#if]
                     [/#list]
 
-
                     [@createAutoScalingAppTarget
                         id=scalingTargetId
                         minCount=processorCounts.MinCount - auroraCluster?then(1,0)
@@ -1218,6 +1217,60 @@
                         [/#if]
                     [/#list]
                 [/#list]
+            [/#if]
+        [/#if]
+    [/#if]
+
+
+    [#if auroraCluster ]
+        [#if solution.Cluster.ScalingPolicies?has_content &&
+                solution.Cluster.ScalingPolicies?values?map(x-> x.Enabled)?seq_contains(true) ]
+
+            [#local scalingTargetId = resources["scalingTarget"].Id ]
+            [#local serviceResourceType = resources["dbCluster"].Type ]
+
+            [#if getExistingReference(scalingTargetId)?has_content
+                    && getExistingReference(rdsId)?has_content ]
+
+                [#if deploymentSubsetRequired("prologue", false)]
+                    [@addToDefaultBashScriptOutput
+                        content=
+                            [
+                                r'# Disable scaling activities before CFN Update',
+                                r'case ${STACK_OPERATION} in',
+                                r'  create|update)',
+                                '       service_namespace="rds"',
+                                '       resource_id="cluster:${getExistingReference(rdsId)}"',
+                                '       scalable_dimension="rds:cluster:ReadReplicaCount"',
+
+                                r'      aws application-autoscaling register-scalable-target --service-namespace "${service_namespace}" --resource-id "${resource_id}" --scalable-dimension "${scalable_dimension}"' +
+                                r'      --suspended-state "DynamicScalingInSuspended=true,DynamicScalingOutSuspended=true,ScheduledScalingSuspended=true"',
+                                r'      ;;',
+                                r'esac',
+                                r''
+                            ]
+                    /]
+                [/#if]
+
+                [#if deploymentSubsetRequired("epilogue", false)]
+                    [@addToDefaultBashScriptOutput
+                        content=
+                            [
+                                r'# Enable scaling activities after CFN Update',
+                                r'case ${STACK_OPERATION} in',
+                                r'  create|update)',
+                                '       service_namespace="rds"',
+                                '       resource_id="cluster:${getExistingReference(rdsId)}"',
+                                '       scalable_dimension="rds:cluster:ReadReplicaCount"',
+
+                                r'      aws application-autoscaling register-scalable-target --service-namespace "${service_namespace}" --resource-id "${resource_id}" --scalable-dimension "${scalable_dimension}"' +
+                                r'      --suspended-state "DynamicScalingInSuspended=false,DynamicScalingOutSuspended=false,ScheduledScalingSuspended=false"',
+                                r'      ;;',
+                                r'esac',
+                                r''
+                            ]
+                    /]
+                [/#if]
             [/#if]
         [/#if]
     [/#if]
