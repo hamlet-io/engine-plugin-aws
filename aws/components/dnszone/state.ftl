@@ -13,7 +13,8 @@
         ) +
         attributeIfTrue(
             "IncludeInDomain",
-            solution.IncludeInDomain.Configured
+            solution.IncludeInDomain.Configured,
+            solution.IncludeInDomain
         )
     )]
 
