@@ -27,7 +27,14 @@
             allow,
             sid
         ) +
-        secretsManagerKMSStatement(["kms:Decrypt"], kmsKeyId, id, getReference(id, REGION_ATTRIBUTE_TYPE))
+        secretsManagerKMSStatement(
+            [
+                "kms:Decrypt"
+            ],
+            kmsKeyId,
+            id,
+            getReference(id, REGION_ATTRIBUTE_TYPE)
+        )
     ]
 [/#function]
 

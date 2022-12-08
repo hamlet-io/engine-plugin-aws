@@ -1,5 +1,27 @@
 [#ftl]
 
+[#function getDBPortNameFromEngine engine ]
+    [#switch engine]
+        [#case "mysql"]
+            [#return "mysql" ]
+            [#break]
+
+        [#case "postgres"]
+        [#case "aurora-postgresql"]
+            [#return "postgresql"]
+            [#break]
+
+        [#case "sqlserver-ee"]
+        [#case "sqlserver-se"]
+        [#case "sqlserver-ex"]
+        [#case "sqlserver-web"]
+            [#return "sqlsvr"]
+    [/#switch]
+
+    [#return ""]
+[/#function]
+
+
 [#macro aws_db_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
@@ -19,13 +41,11 @@
         [#case "mysql"]
             [#local family = "mysql" + engineVersion]
             [#local scheme = "mysql" ]
-            [#local port = solution.Port!"mysql" ]
             [#break]
 
         [#case "postgres" ]
             [#local family = "postgres" + engineVersion]
             [#local scheme = "postgres" ]
-            [#local port = solution.Port!"postgresql" ]
             [#break]
 
         [#case "sqlserver-ee"]
@@ -34,14 +54,12 @@
         [#case "sqlserver-web"]
             [#local family = engine + "-" + engineVersion?remove_ending("0")]
             [#local scheme = engine ]
-            [#local port = solution.Port!"sqlsvr" ]
             [#break]
 
         [#case "aurora-postgresql" ]
             [#local family = "aurora-postgresql" + engineVersion]
             [#local scheme = "postgres" ]
             [#local auroraCluster = true ]
-            [#local port = solution.Port!"postgresql"]
             [#break]
 
         [#default]
@@ -49,6 +67,8 @@
             [#local scheme = engine ]
             [#local port = (solution.Port)!"" ]
     [/#switch]
+
+    [#local port = (solution.Port)!getDBPortNameFromEngine(engine) ]
 
     [#if (ports[port])?has_content]
         [#local portObject = ports[port] ]
@@ -377,6 +397,85 @@
                     }
                 }
             )
+        }
+    ]
+[/#macro]
+
+[#macro aws_dbproxy_cf_state occurrence parent={} ]
+    [#local core = occurrence.Core]
+    [#local solution = occurrence.Configuration.Solution]
+
+    [#local endpointId = formatResourceId(AWS_RDS_PROXY_ENDPOINT_RESOURCE_TYPE, occurrence.Core.Id)]
+    [#local secGroupId = formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, occurrence.Core.Id)]
+
+
+    [#-- AWS DB Proxy has locked ports for what it will use --]
+    [#local port = getDBPortNameFromEngine(parent.Configuration.Solution.Engine)]
+
+    [#if (ports[port])?has_content]
+        [#local portObject = ports[port] ]
+    [#else]
+        [@fatal
+            message="Unknown Port for db component"
+            context={
+                "Id": occurrence.Core.RawId,
+                "Port" : port
+            }
+        /]
+    [/#if]
+
+    [#assign componentState =
+        {
+            "Resources" : {
+                "rdsProxy": {
+                    "Id": formatResourceId(AWS_RDS_PROXY_RESOURCE_TYPE, occurrence.Core.Id),
+                    "Name" : occurrence.Core.FullName,
+                    "Type" : AWS_RDS_PROXY_RESOURCE_TYPE
+                },
+                "targetGroup" : {
+                    "Id" : formatResourceId(AWS_RDS_PROXY_TARGET_GROUP_RESOURCE_TYPE, occurrence.Core.Id),
+                    [#-- Currently only the name "default" is supported --]
+                    "Name": "default",
+                    "Type" : AWS_RDS_PROXY_TARGET_GROUP_RESOURCE_TYPE
+                },
+                "rdsProxyRole" : {
+                    "Id": formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, occurrence.Core.Id),
+                    "Name": formatName(occurrence.Core.FullName),
+                    "Type" : AWS_IAM_ROLE_RESOURCE_TYPE
+                },
+                "endpoint" : {
+                    "Id": endpointId,
+                    "Name" : occurrence.Core.FullName,
+                    "Type" : AWS_RDS_PROXY_ENDPOINT_RESOURCE_TYPE
+                },
+                "secGroup" : {
+                    "Id" : secGroupId,
+                    "Name": occurrence.Core.FullName,
+                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+                }
+            },
+            "Attributes" : mergeObjects(
+                parent.State.Attributes,
+                {
+                    "FQDN" : getExistingReference(endpointId, HOSTNAME_ATTRIBUTE_SET),
+                    "PORT": (portObject.Port)!""
+                }
+            ),
+            "Roles" : {
+                "Inbound" : {
+                    "networkacl" : {
+                        "SecurityGroups" : secGroupId,
+                        "Description" : core.FullName
+                    }
+                },
+                "Outbound" : {
+                    "networkacl" : {
+                        "Ports" : [ port ],
+                        "SecurityGroups" : secGroupId,
+                        "Description" : core.FullName
+                    }
+                }
+            }
         }
     ]
 [/#macro]
