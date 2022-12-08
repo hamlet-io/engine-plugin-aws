@@ -104,7 +104,7 @@
 [#function secretsManagerKMSStatement actions keyId secretId secretRegion ]
 
     [#-- Handle empty region value if attribute is not set --]
-    [#if ! secretRegion?has_content ]
+    [#if ! secretRegion?has_content || secretRegion?is_hash ]
         [#local secretRegion = getRegion()]
     [/#if]
 

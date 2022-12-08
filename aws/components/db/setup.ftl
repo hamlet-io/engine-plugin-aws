@@ -22,7 +22,7 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local cmkKeyId = baselineComponentIds["Encryption"]!"" ]
-    [#local cmkKeyArn = getReference(cmkKeyId, ARN_ATTRIBUTE_TYPE)]
+    [#local cmkKeyArn = getArn(cmkKeyId)]
 
     [#local networkLink = getOccurrenceNetwork(occurrence).Link!{} ]
     [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
@@ -117,6 +117,8 @@
             "",
             solution.DatabaseName!productName)]
 
+
+    [#local secretId = ""]
     [#-- Root Credential Management --]
     [#switch credentialSource]
         [#case "Generated"]
@@ -540,6 +542,235 @@
                     [#break]
                 [/#switch]
             [/#list]
+        [/#list]
+
+        [#list (occurrence.Occurrences![])?filter(
+            x -> x.Configuration.Solution.Enabled )?filter(
+                x -> x.Core.Type == DB_PROXY_COMPONENT_TYPE
+            ) as subOccurrence]
+
+            [#local dbProxy = subOccurrence.State.Resources["rdsProxy"]]
+            [#local dbProxyRole = subOccurrence.State.Resources["rdsProxyRole"]]
+            [#local dbProxyTargetGroup = subOccurrence.State.Resources["targetGroup"]]
+            [#local dbProxySecGroup = subOccurrence.State.Resources["secGroup"]]
+
+            [#local dbProxyEndpoint = subOccurrence.State.Resources["endpoint"]]
+            [#local proxyNetworkProfile = getNetworkProfile(subOccurrence)]
+
+            [#local dbProxyPort = getDBPortNameFromEngine(engine)]
+
+            [#local engineFamily = "HamletFatal: Unknown engine family for RDS proxy"]
+            [#if engine?lower_case?contains("mysql")]
+                [#local engineFamily = "MYSQL"]
+            [#elseif engine?lower_case?contains("postgres")]
+                [#local engineFamily = "POSTGRESQL" ]
+            [#elseif engine?lower_case?contains("sqlserver")]
+                [#local engineFamily = "SQLSERVER"]
+            [/#if]
+
+            [#local dbProxyRolePolicies = []]
+
+            [#-- ensure that the Proxy can get to the RDS services --]
+            [@createSecurityGroupIngressFromNetworkRule
+                occurrence=occurrence
+                groupId=rdsSecurityGroupId
+                networkRule={
+                    "Ports" : [ port ],
+                    "SecurityGroups": [ dbProxySecGroup.Id ]
+                }
+            /]
+
+            [@createSecurityGroupEgressFromNetworkRule
+                occurrence=occurrence
+                groupId=dbProxySecGroup.Id
+                networkRule={
+                    "Ports" : [ port ],
+                    "SecurityGroups": [ rdsSecurityGroupId ]
+                }
+            /]
+
+            [@createSecurityGroupIngressFromNetworkRule
+                occurrence=occurrence
+                groupId=dbProxySecGroup.Id
+                networkRule={
+                    "Ports" : [ dbProxyPort ],
+                    "IPAddressGroups" : subOccurrence.Configuration.Solution.IPAddressGroups
+                }
+            /]
+
+            [#-- General Security group setup --]
+            [@createSecurityGroup
+                id=dbProxySecGroup.Id
+                name=dbProxySecGroup.Name
+                vpcId=vpcId
+                tags=getOccurrenceTags(occurrence)
+            /]
+
+            [@createSecurityGroupRulesFromNetworkProfile
+                occurrence=subOccurrence
+                groupId=dbProxySecGroup.Id
+                networkProfile=proxyNetworkProfile
+                inboundPorts=[ dbProxyPort ]
+            /]
+
+            [#list subOccurrence.Configuration.Solution.Links as id, link]
+                [#local linkTarget = getLinkTarget(subOccurrence, link)]
+                [#if ! linkTarget?has_content]
+                    [#continue]
+                [/#if]
+                [@createSecurityGroupRulesFromLink
+                    occurrence=subOccurrence
+                    groupId=dbProxySecGroup.Id
+                    linkTarget=linkTarget
+                    inboundPorts=[ dbProxyPort ]
+                    networkProfile=proxyNetworkProfile
+                /]
+            [/#list]
+
+            [#local authFormats = []]
+            [#list subOccurrence.Configuration.Solution.AuthorisedUsers as id, user ]
+                [#switch user.Source ]
+                    [#case "DBRoot" ]
+                        [#if ! secretId?has_content ]
+                            [@fatal
+                                message="To use a db Proxy you must use a secret for the db credentials"
+                                context={
+                                    "Name" : occurrence.Core.FullName,
+                                    "CredentialSource" : credentialSource
+                                }
+                            /]
+                        [/#if]
+
+                        [#local dbProxyRolePolicies =
+                            combineEntities(
+                                dbProxyRolePolicies,
+                                secretsManagerReadPermission(secretId, cmkKeyId),
+                                APPEND_COMBINE_BEHAVIOUR
+                            )
+                        ]
+
+                        [#local authFormats = combineEntities(
+                            authFormats,
+                            [
+                                getRDSProxyAuthFormat("", "", secretId, "", "")
+                            ]
+                        )]
+                        [#break]
+
+                    [#case "Secret"]
+                        [#local secretLink = getLinkTarget(subOccurrence, user["Source:Secret"].Link) ]
+                        [#if ! secretLink?has_content ]
+                            [#continue ]
+                        [/#if]
+
+                        [#if secretLink.Core.Type != SECRETSTORE_SECRET_COMPONENT_TYPE ]
+                            [@fatal
+                                message="Invalid link for Authorised User Secret"
+                                detail="Link must be to a {SECRETSTORE_SECRET_COMPONENT_TYPE} component type"
+                                context={
+                                    "user" : user,
+                                    "Link" : {
+                                        "Name" : secretLink.Core.FullName,
+                                        "Type" : secretLink.Core.Type
+                                    }
+                                }
+                            /]
+                        [/#if]
+
+                        [#local authorisedUserSecretId = secretLink.State.Resources.secret.Id]
+
+                        [#local authFormats = combineEntities(
+                            authFormats,
+                            [
+                                getRDSProxyAuthFormat(
+                                    "",
+                                    secretLink.Core.FullName,
+                                    authorisedUserSecretId,
+                                    (user["Source:Secret"].Username)!"",
+                                    ""
+                                )
+                            ],
+                            APPEND_COMBINE_BEHAVIOUR
+                        )]
+
+                        [#local dbProxyRolePolicies =
+                            combineEntities(
+                                dbProxyRolePolicies,
+                                secretsManagerReadPermission(authorisedUserSecretId, cmkKeyId),
+                                APPEND_COMBINE_BEHAVIOUR
+                            )
+                        ]
+                        [#break]
+                [/#switch]
+            [/#list]
+
+            [@createRDSProxy
+                id=dbProxy.Id
+                name=dbProxy.Name
+                debugLogging=false
+                engineFamily=engineFamily
+                requireTLS=true
+                roleId=dbProxyRole.Id
+                authFormats=authFormats
+                vpcSubnets=getSubnets(core.Tier, networkResources)
+                vpcSecurityGroupIds=[dbProxySecGroup.Id]
+                tags=getOccurrenceTags(occurrence)
+            /]
+
+            [#local targetGroupConnectionConfig =
+                getRDSProxyTargetGroupConnectionPoolConfig(
+                    (subOccurrence.Configuration.Solution.ConnectionBorrowTimeout)!0,
+                    subOccurrence.Configuration.Solution.InitProxy,
+                    (subOccurrence.Configuration.Solution.MaxConnectionsPercent)!0,
+                    (subOccurrence.Configuration.Solution.MaxIdleConnectionsPercent)!0
+                )
+            ]
+
+            [@createRDSProxyTargetGroup
+                id=dbProxyTargetGroup.Id
+                name=dbProxyTargetGroup.Name
+                proxyId=dbProxy.Id
+                connectionPoolConfiguration=targetGroupConnectionConfig
+                dbClusterIds=auroraCluster?then([rdsId], [])
+                dbInstanceIds=auroraCluster?then([], [rdsId])
+                dependencies=auroraCluster?then(rdsClusterDbInstances?values?map(x -> x.Id), [])
+            /]
+
+            [#if ! subOccurrence.Configuration.Solution.TargetTypes?seq_contains("ReadWrite")]
+                [@fatal
+                    message="ReadWrite Endpoint must be included in AWS proxy Target Types"
+                    detail="The ReadWrite endpoints is always included as the default endpoint and can't be removed"
+                    context={
+                        "Occurrence" : subOccurrence.Core.FullName,
+                        "TargetTypes": subOccurrence.Configuration.Solution.TargetTypes
+                    }
+                /]
+            [/#if]
+
+            [#if subOccurrence.Configuration.Solution.TargetTypes?seq_contains("ReadOnly") ]
+                [@createRDSProxyEndpoint
+                    id=dbProxyEndpoint.Id
+                    name=dbProxyEndpoint.Name
+                    proxyId=dbProxy.Id
+                    tags=getOccurrenceTags(subOccurrence)
+                    targetRole="ReadOnly"
+                    vpcSecurityGroupIds=[dbProxySecGroup.Id]
+                    vpcSubnets=getSubnets(core.Tier, networkResources)
+                /]
+            [/#if]
+
+            [@createRole
+                id=dbProxyRole.Id
+                trustedServices=[
+                    "rds.amazonaws.com"
+                ]
+                policies=getPolicyDocument(
+                    dbProxyRolePolicies,
+                    "dbProxy"
+                )
+                tags=getOccurrenceTags(occurrence)
+            /]
+
         [/#list]
 
         [#switch getCLODeploymentUnitAlternative() ]
