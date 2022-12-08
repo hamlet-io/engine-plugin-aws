@@ -7,6 +7,7 @@
     service=AWS_RELATIONAL_DATABASE_SERVICE
     resource=AWS_RDS_RESOURCE_TYPE
 /]
+
 [#assign AWS_RDS_SUBNET_GROUP_RESOURCE_TYPE = "rdsSubnetGroup" ]
 [@addServiceResource
     provider=AWS_PROVIDER
@@ -20,12 +21,14 @@
     service=AWS_RELATIONAL_DATABASE_SERVICE
     resource=AWS_RDS_PARAMETER_GROUP_RESOURCE_TYPE
 /]
+
 [#assign AWS_RDS_OPTION_GROUP_RESOURCE_TYPE = "rdsOptionGroup" ]
 [@addServiceResource
     provider=AWS_PROVIDER
     service=AWS_RELATIONAL_DATABASE_SERVICE
     resource=AWS_RDS_OPTION_GROUP_RESOURCE_TYPE
 /]
+
 [#assign AWS_RDS_SNAPSHOT_RESOURCE_TYPE = "rdsSnapShot" ]
 [@addServiceResource
     provider=AWS_PROVIDER
@@ -46,11 +49,33 @@
     service=AWS_RELATIONAL_DATABASE_SERVICE
     resource=AWS_RDS_CLUSTER_RESOURCE_TYPE
 /]
+
 [#assign AWS_RDS_CLUSTER_PARAMETER_GROUP_RESOURCE_TYPE = "rdsClusterParameterGroup" ]
 [@addServiceResource
     provider=AWS_PROVIDER
     service=AWS_RELATIONAL_DATABASE_SERVICE
     resource=AWS_RDS_CLUSTER_PARAMETER_GROUP_RESOURCE_TYPE
+/]
+
+[#assign AWS_RDS_PROXY_RESOURCE_TYPE = "rdsProxy" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_RELATIONAL_DATABASE_SERVICE
+    resource=AWS_RDS_PROXY_RESOURCE_TYPE
+/]
+
+[#assign AWS_RDS_PROXY_ENDPOINT_RESOURCE_TYPE = "rdsProxyEndpoint" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_RELATIONAL_DATABASE_SERVICE
+    resource=AWS_RDS_PROXY_ENDPOINT_RESOURCE_TYPE
+/]
+
+[#assign AWS_RDS_PROXY_TARGET_GROUP_RESOURCE_TYPE = "rdsProxyTargetGroup" ]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_RELATIONAL_DATABASE_SERVICE
+    resource=AWS_RDS_PROXY_TARGET_GROUP_RESOURCE_TYPE
 /]
 
 [#function formatDependentRDSSnapshotId resourceId extensions... ]
