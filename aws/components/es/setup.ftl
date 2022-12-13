@@ -85,6 +85,19 @@
 
     [#local storageProfile = getStorage(occurrence, ES_COMPONENT_TYPE)]
     [#local volume = (storageProfile.Volumes["data"])!{}]
+
+    [#if ! volume.Size?? ]
+        [@fatal
+            message="ES Storage Profile doesn't have size for data Volume"
+            detail="Update the storage profile to include a size for the ElasticSearch Data Volume"
+            context={
+                "Component" : occurrence.Core.FullName,
+                "StorageProfile": solution.Profiles.Storage,
+                "StorageConfiguration" : storageProfile
+            }
+        /]
+    [/#if]
+
     [#local esCIDRs = getGroupCIDRs(solution.IPAddressGroups, true, occurrence) ]
 
     [#if !esCIDRs?has_content && !(esAuthentication == "SIG4ORIP") ]
@@ -442,7 +455,7 @@
                     volume,
                     {
                         "EBSEnabled" : true,
-                        "VolumeSize" : (volume.Size)?number,
+                        "VolumeSize" : ((volume.Size)!"0")?number,
                         "VolumeType" : volume.Type
                     } +
                     attributeIfTrue(

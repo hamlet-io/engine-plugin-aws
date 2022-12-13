@@ -141,6 +141,10 @@
                                 "Provider" : "awstest",
                                 "Name" : "ecs"
                             },
+                            "es" : {
+                                "Provider" : "awstest",
+                                "Name" : "es"
+                            },
                             "db" : {
                                 "Provider" : "awstest",
                                 "Name" : "db"
