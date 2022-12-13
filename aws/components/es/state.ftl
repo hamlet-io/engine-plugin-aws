@@ -84,7 +84,8 @@
                     solution.Logging,
                     {
                         "Id" : formatLogGroupId(core.Id),
-                        "Name" : core.FullAbsolutePath,
+                        [#-- Include elasticsearch prefix for log policy alignment --]
+                        "Name" : formatAbsolutePath("elasticsearch", core.FullAbsoluteRawPath),
                         "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
                         "IncludeInDeploymentState" : false
                     }

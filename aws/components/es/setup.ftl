@@ -60,6 +60,15 @@
     [/#if]
 
     [#local loggingProfile = getLoggingProfile(occurrence)]
+
+    [#if solution.Logging &&
+            ! getExistingReference(formatAccountResourceId(AWS_CLOUDWATCH_LOG_RESOURCE_POLICY_RESOURCE_TYPE, "es"))?has_content ]
+        [@fatal
+            message="Account level CloudWatch access policy required for logging"
+            detail="Run an account level deployment for the es deployment unit"
+        /]
+    [/#if]
+
     [#local processorProfile = getProcessor(occurrence, ES_COMPONENT_TYPE)]
     [#local dataNodeCount = multiAZ?then(
                                     processorProfile.CountPerZone * getZones()?size,
@@ -485,8 +494,10 @@
                     "LogPublishingOptions",
                     solution.Logging,
                     {
-                        "Enabled" : true,
-                        "CloudWatchLogsLogGroupArn" : getReference(lgId, ARN_ATTRIBUTE_TYPE)
+                        "ES_APPLICATION_LOGS" : {
+                            "Enabled" : true,
+                            "CloudWatchLogsLogGroupArn" : getReference(lgId, ARN_ATTRIBUTE_TYPE)
+                        }
                     }
                 ) +
                 attributeIfTrue(
