@@ -499,6 +499,7 @@
             {
                 "Cluster" : getExistingReference(ecsId),
                 "TaskDefinition" : getReference(taskId),
+                "PropagateTags": "SERVICE",
                 "DeploymentConfiguration" :
                     (desiredCount > 1)?then(
                         {
@@ -870,7 +871,7 @@
             [/#if]
 
             [#if port.IPAddressGroups?has_content]
-                [#if solution.NetworkMode == "awsvpc" || !port.LB.Configured ]
+                [#if ["awsvpc", "aws:awsvpc" ]?seq_contains(solution.NetworkMode) ]
                     [#list getGroupCIDRs(port.IPAddressGroups, true, task ) as cidr]
                         [#local ingressRules += [ {
                             "port" : port.DynamicHostPort?then(0,contentIfContent(
