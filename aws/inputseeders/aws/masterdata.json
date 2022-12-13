@@ -412,7 +412,7 @@
                     }
                 }
             },
-            "ElasticSearch": {},
+            "es": {},
             "ComputeCluster": {},
             "bastion": {}
         },
