@@ -61,8 +61,8 @@
                                     "Path"  : "Resources.esXappXesbase.Properties.EBSOptions.VolumeSize",
                                     "Value" : 100
                                 },
-                                "loggingEnabled" : {
-                                    "Path": "Resources.esXappXesbase.Properties.LogPublishingOptions.Enabled",
+                                "errorLoggingEnabled" : {
+                                    "Path": "Resources.esXappXesbase.Properties.LogPublishingOptions.ES_APPLICATION_LOGS.Enabled",
                                     "Value" : true
                                 }
                             }
@@ -92,6 +92,14 @@
                 }
             }
         }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "account-es",
+                "logpolicyXaccountXes": "account-es"
+            }
+        ]
     /]
 
 [/#macro]
