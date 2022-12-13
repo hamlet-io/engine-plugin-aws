@@ -61,7 +61,7 @@
 
             [#switch solution.Source]
                 [#case "Local"]
-                [#local "registry"]
+                [#case "registry"]
                     [#break]
 
                 [#case "ContainerRegistry"]
