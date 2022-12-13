@@ -312,7 +312,7 @@
 
     [#if solution.Logging ]
         [@setupLogGroup
-            occurrence=subOccurrence
+            occurrence=occurrence
             logGroupId=lgId
             logGroupName=lgName
             loggingProfile=loggingProfile
