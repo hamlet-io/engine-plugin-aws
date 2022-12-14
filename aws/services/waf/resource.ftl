@@ -29,10 +29,16 @@
                 "UriPath": {}
             }]
         [#break]
+        [#case "METHOD"]
+            [#local retVal += {
+                "Method": {}
+            }]
+        [#break]
         [#case "BODY"]
             [#local retVal += {
                 "JsonBody": {
                     "InvalidFallbackBehavior" : "EVALUATE_AS_STRING",
+                    "OversizeHandling" : "CONTINUE",
                     "MatchPattern" : {
                         "All" : {}
                     },
