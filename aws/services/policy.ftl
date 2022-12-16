@@ -2,12 +2,25 @@
 
 [#-- Policy Structure --]
 
-[#function getPolicyStatement actions resources="*" principals="" conditions="" allow=true sid="" notprincipals=""]
+[#function getPolicyStatement actions=[] resources="*" principals="" conditions="" allow=true sid="" notprincipals="" notActions=[]]
+    [#if ! ( actions?has_content || notActions?has_content) ]
+        [@fatal
+            message="AWS Policy Statement must have actions or notActions defined"
+            context={
+                "actions": actions,
+                "notActions": notActions,
+                "Sid": sid,
+                "principals" : principals
+            }
+        /]
+    [/#if]
+
     [#return
         {
-            "Effect" : allow?then("Allow", "Deny"),
-            "Action" : actions
+            "Effect" : allow?then("Allow", "Deny")
         } +
+        attributeIfContent("Action", actions)+
+        attributeIfContent("NotAction", notActions) +
         attributeIfContent("Sid", sid) +
         attributeIfContent("Resource", resources) +
         attributeIfContent("Principal", principals) +
@@ -54,4 +67,3 @@
         }
     ]
 [/#function]
-
