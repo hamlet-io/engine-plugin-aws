@@ -31,6 +31,9 @@
 [#assign AWS_CLOUDMAP_SERVICE = "cloudmap"]
 [@addService provider=AWS_PROVIDER service=AWS_CLOUDMAP_SERVICE /]
 
+[#assign AWS_CLOUDTRAIL_SERVICE = "cloudtrail"]
+[@addService provider=AWS_PROVIDER service=AWS_CLOUDTRAIL_SERVICE /]
+
 [#assign AWS_CLOUDWATCH_SERVICE = "cw"]
 [@addService provider=AWS_PROVIDER service=AWS_CLOUDWATCH_SERVICE /]
 
