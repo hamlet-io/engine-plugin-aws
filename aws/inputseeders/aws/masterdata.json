@@ -1402,6 +1402,11 @@
                     "deployment:Priority" : 100,
                     "GroupDeploymentUnit" : false
                 },
+                "cloudtrail" : {
+                    "deployment:Unit" : "cloudtrail",
+                    "deployment:Priority" : 100,
+                    "GroupDeploymentUnit" : false
+                },
                 "console" : {
                     "deployment:Unit" : "console",
                     "deployment:Priority" : 100,
