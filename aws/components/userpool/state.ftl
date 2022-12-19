@@ -52,7 +52,7 @@
         [#local region = existingUserPoolRegionId?has_content?then(existingUserPoolRegionId,getRegion()) ]
 
         [#local certificateArn = ""]
-        [#if certificatePresent ]
+        [#if solution.HostedUI.Enabled && certificatePresent ]
             [#local certificateObject = getCertificateObject(solution.HostedUI.Certificate!"")]
             [#local certificateDomains = getCertificateDomains(certificateObject) ]
             [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
