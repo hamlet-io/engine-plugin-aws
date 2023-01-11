@@ -371,9 +371,6 @@
                                     "Task" : {
                                         "Type": "aws_s3_upload_object",
                                         "Parameters" : {
-                                            "BucketName" : {
-                                                "Value" : "__context:Environment.IMAGE_REGISTRY_BUCKET_NAME__"
-                                            },
                                             "LocalPath" : {
                                                 "Value" : "__output:zip_path:destination_path__"
                                             },

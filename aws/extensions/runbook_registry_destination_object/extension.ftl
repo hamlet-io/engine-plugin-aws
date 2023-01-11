@@ -25,8 +25,8 @@
         _context,
         {
             "TaskParameters" : {
-                "BucketName" : ((image.Location)!"")?replace("s3://", "")?keep_before("/"),
-                "Object": ((image.Registry)!"")?replace("s3://", "")?keep_after("/")  + "/__input:Reference__/" +  (image.ImageFileName)!""
+                "BucketName" : ((image.RegistryPath)!"")?replace("s3://", "")?keep_before("/"),
+                "Object": ((image.RegistryPath)!"")?replace("s3://", "")?keep_after("/")  + "/__input:Reference__/" +  (image.ImageFileName)!""
             }
         }
     )]

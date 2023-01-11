@@ -63,6 +63,9 @@
             [#-- Get Image Reference details --]
             [#local reference = getExistingReference(imageId)]
             [#local tag = getExistingReference(imageId, TAG_ATTRIBUTE_TYPE)]
+            [#if reference?has_content ]
+                [#local referenceSource = "output"]
+            [/#if]
 
             [#if getOccurrenceBuildReference(occurrence, true)?has_content ]
                 [#local reference = getOccurrenceBuildReference(occurrence) ]
