@@ -87,7 +87,7 @@
                     "replicadestination" : s3ReplicaDestinationPermission(id) + s3AllEncryptionPolicy,
                     "replicasource" : {},
                     "datafeed" : s3KinesesStreamPermission(id) + s3AllEncryptionPolicy
-            }
+                }
             }
         }
     ]

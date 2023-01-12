@@ -1,11 +1,11 @@
 [#ftl]
 
 [#function formatAthenaWorkGroupArn workgroupName ]
-    [#return 
+    [#return
         formatRegionalArn(
             "athena",
             formatRelativePath(
-                "athena",
+                "workgroup",
                 workgroupName
             )
         )]
@@ -42,7 +42,7 @@
             "*",
             principals,
             conditions
-        ) + 
+        ) +
         getAthenaStatement(
             [
                 "athena:StartQueryExecution",
@@ -56,8 +56,8 @@
                 "athena:CreateNamedQuery",
                 "athena:GetQueryExecution",
                 "athena:BatchGetNamedQuery",
-                "athena:BatchGetQueryExecution", 
-                "athena:GetWorkGroup" 
+                "athena:BatchGetQueryExecution",
+                "athena:GetWorkGroup"
             ],
             workgroupName,
             principals,

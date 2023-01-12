@@ -144,6 +144,12 @@
                     }
                 },
                 "Outbound" : {
+                    "default" : {},
+                    "all" : s3AllPermission(bucketId) + s3AllEncryptionPolicy,
+                    "produce" : s3ProducePermission(bucketId) + s3AllEncryptionPolicy,
+                    "consume" : s3ConsumePermission(bucketId) + s3ReadEncryptionPolicy,
+                    "replicadestination" : s3ReplicaDestinationPermission(bucketId) + s3AllEncryptionPolicy,
+                    "replicasource" : {},
                     "datafeed" : s3KinesesStreamPermission(bucketId) + s3AllEncryptionPolicy
                 }
             }
