@@ -239,6 +239,47 @@
     ]
 [/#function]
 
+[#function getS3ReplicationRuleFilter prefix="" tags={} ]
+
+    [#if (prefix?has_content && tags?has_content) || tags?values?size > 1 ]
+
+        [#return {
+            "And": {} +
+                attributeIfContent(
+                    "Prefix",
+                    prefix
+                )
+                +
+                attributeIfContent(
+                    "TagFilters",
+                    tags,
+                    tags?keys?map(
+                        x -> {
+                            "Key": x,
+                            "Value": tags[x]
+                        }
+                    )
+                )
+        }]
+    [#else]
+        [#return {} +
+            attributeIfContent(
+                "Prefix",
+                prefix
+            ) +
+            attributeIfContent(
+                "TagFilter",
+                tags,
+                tags?keys?map(
+                    x -> {
+                        "Key": x,
+                        "Value": tags[x]
+                    }
+                )[0]
+            )]
+    [/#if]
+[/#function]
+
 [#function getS3ReplicationRule
     destinationBucket
     enabled
@@ -246,6 +287,8 @@
     encryptReplica
     replicaKMSKeyId=""
     replicationDestinationAccountId=""
+    filter={}
+    priority=0
 ]
 
     [#local destinationEncryptionConfiguration = {}]
@@ -263,6 +306,10 @@
 
     [#return
         {
+            "Status" : enabled?then(
+                "Enabled",
+                "Disabled"
+            ),
             "Destination" : {
                 "Bucket" : getArn(destinationBucket)
             } +
@@ -281,11 +328,6 @@
                 "Account",
                 crossAccountReplication,
                 replicationDestinationAccountId
-            ),
-            "Prefix" : prefix,
-            "Status" : enabled?then(
-                "Enabled",
-                "Disabled"
             )
         } +
         encryptReplica?then(
@@ -297,6 +339,19 @@
                 }
             },
             {}
+        ) +
+        attributeIfContent(
+            "Prefix",
+            prefix
+        ) +
+        attributeIfContent(
+            "Filter",
+            filter
+        ) +
+        attributeIfTrue(
+            "Priority",
+            priority > 0,
+            priority
         )
     ]
 [/#function]
