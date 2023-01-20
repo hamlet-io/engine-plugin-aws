@@ -290,6 +290,14 @@
     filter={}
     priority=0
 ]
+    [#local deleteMarkerReplication = "NotRequired" ]
+    [#if filter?has_content ]
+        [#if (filter.And.TagFilter)?? || (filter.TagFilter)?? ]
+            [#local deleteMarkerReplication = "Disabled"]
+        [#elseif (filter.And.Prefix)?? || (filter.Prefix)?? ]
+            [#local deleteMarkerReplication = "Enabled"]
+        [/#if]
+    [/#if]
 
     [#local destinationEncryptionConfiguration = {}]
     [#if encryptReplica && replicaKMSKeyId?has_content]
@@ -352,6 +360,13 @@
             "Priority",
             priority > 0,
             priority
+        ) +
+        attributeIfTrue(
+            "DeleteMarkerReplication",
+            deleteMarkerReplication != "NotRequired",
+            {
+                "Status": deleteMarkerReplication
+            }
         )
     ]
 [/#function]
