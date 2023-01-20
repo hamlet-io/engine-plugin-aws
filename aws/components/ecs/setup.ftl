@@ -715,6 +715,15 @@
             [#local executionRoleRequired = true]
         [/#if]
 
+        [#local containersHaveSecrets = ((containers?map(
+            x -> x.Links?values?map(
+                x -> x.Core.Type == SECRETSTORE_SECRET_COMPONENT_TYPE )
+            )[0])![])?seq_contains(true)]
+
+        [#if containersHaveSecrets ]
+            [#local executionRoleRequired = true ]
+        [/#if]
+
         [#local useCapacityProvider = true ]
 
         [#-- Provides warning for hosting updates this will still deploy but using fixed launch type --]
