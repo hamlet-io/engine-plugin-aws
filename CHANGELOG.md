@@ -1,6 +1,42 @@
 # Changelog
 
-## latest (2022-10-24)
+## latest (2023-01-20)
+
+#### New Features
+
+* (s3): add support for replication v2 ([#690](https://github.com/hamlet-io/engine-plugin-aws/issues/690))
+* (userpool): control hosted ui setup ([#686](https://github.com/hamlet-io/engine-plugin-aws/issues/686))
+* (cloudtrail): Add support for cloudtrail ([#687](https://github.com/hamlet-io/engine-plugin-aws/issues/687))
+* (iam): add support for not actions on policies ([#688](https://github.com/hamlet-io/engine-plugin-aws/issues/688))
+* oversize handling and method fieldtotest ([#685](https://github.com/hamlet-io/engine-plugin-aws/issues/685))
+* (ecs): propagate service tags to tasks ([#682](https://github.com/hamlet-io/engine-plugin-aws/issues/682))
+* (db): add support for RDS Proxies ([#678](https://github.com/hamlet-io/engine-plugin-aws/issues/678))
+* (images): add support for images on components
+* (image): Adds aws image component
+#### Fixes
+
+* (s3): add delete marker replication handling ([#693](https://github.com/hamlet-io/engine-plugin-aws/issues/693))
+* (ecs): handle secrets on ec2 tasks ([#692](https://github.com/hamlet-io/engine-plugin-aws/issues/692))
+* athena s3 policy ([#691](https://github.com/hamlet-io/engine-plugin-aws/issues/691))
+* (images): output based reference handling ([#689](https://github.com/hamlet-io/engine-plugin-aws/issues/689))
+* (es): logging configuration ([#684](https://github.com/hamlet-io/engine-plugin-aws/issues/684))
+* (image): case handling for image sources ([#681](https://github.com/hamlet-io/engine-plugin-aws/issues/681))
+* (es): log group setup for occurrence ([#683](https://github.com/hamlet-io/engine-plugin-aws/issues/683))
+* (image): update image push runbooks ([#679](https://github.com/hamlet-io/engine-plugin-aws/issues/679))
+* (dnszone): add domain configuration if setup ([#680](https://github.com/hamlet-io/engine-plugin-aws/issues/680))
+* update shared release workflow version
+* bugfix for aurora scaling
+* (lambda): remove env vars for lambda@edge
+* (images): remove filename from CODE_SRC_PREFIX config for mobileapp component ([#673](https://github.com/hamlet-io/engine-plugin-aws/issues/673))
+#### Refactorings
+
+* allow manual trigger of release
+* github actions
+* (images): Update testing
+
+Full set of changes: [`8.8.2...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.2...latest)
+
+## 8.8.2 (2022-10-27)
 
 #### Fixes
 
@@ -17,9 +53,10 @@
 * (iam): remove transitional policy support ([#663](https://github.com/hamlet-io/engine-plugin-aws/issues/663))
 #### Others
 
+* update changelog ([#662](https://github.com/hamlet-io/engine-plugin-aws/issues/662))
 * update changelog ([#659](https://github.com/hamlet-io/engine-plugin-aws/issues/659))
 
-Full set of changes: [`8.8.1...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.1...latest)
+Full set of changes: [`8.8.1...8.8.2`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.1...8.8.2)
 
 ## 8.8.1 (2022-10-17)
 
