@@ -229,7 +229,7 @@
 
             [#case EXTERNALSERVICE_COMPONENT_TYPE]
                 [#local fromArn = linkTargetAttributes["FROM_ADDRESS_ARN"]!"" ]
-                [#local from = fromArn?keep_after("/") ]
+                [#local from = linkTargetAttributes["FROM_ADDRES"]!(fromArn?keep_after("/")) ]
                 [#local replyTo = linkTargetAttributes["REPLY_ADDRESS"]!"" ]
 
                 [#if fromArn?has_content ]
