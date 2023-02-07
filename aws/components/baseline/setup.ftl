@@ -89,7 +89,7 @@
                     "Policy" : []
                 }
             ]
-            [#local _context = invokeExtensions(occurrence, _context )]
+            [#local _context = invokeExtensions(subOccurrence, _context )]
 
             [#if ( deploymentSubsetRequired(BASELINE_COMPONENT_TYPE, true) && legacyS3 == false ) ||
                 ( deploymentSubsetRequired("s3") && legacyS3 == true) ]
