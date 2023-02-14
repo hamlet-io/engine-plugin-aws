@@ -88,7 +88,7 @@
                                 }
                             }
                         },
-                        "baseline_kms-encrypt" : {
+                        "kms_encrypt" : {
                             "Description" : "Encrypt a string or filepath with the baseline kms key",
                             "Type" : "runbook",
                             "Engine" : "hamlet",
@@ -174,7 +174,7 @@
                                 }
                             }
                         },
-                        "baseline_kms-decrypt" : {
+                        "kms_decrypt" : {
                             "Description" : "Decrypt a base64 encoded kms ciphertext object",
                             "Type" : "runbook",
                             "Engine" : "hamlet",
@@ -241,7 +241,8 @@
                                 }
                             }
                         },
-                        "baseline_push-image": {
+                        "image_push": {
+                            "Description" : "Push an image to the hamlet registry and update the image references",
                             "Type": "runbook",
                             "Engine": "hamlet",
                             "Inputs" : {
@@ -514,6 +515,181 @@
                                 "output_result" : {
                                     "Priority" : 900,
                                     "Extensions" : [ "_runbook_image_push_result" ],
+                                    "Task" : {
+                                        "Type" : "output_echo",
+                                        "Parameters" : {
+                                            "Format" : {
+                                                "Value" : "json"
+                                            }
+                                        }
+                                    },
+                                    "Links" : {
+                                        "image" : {
+                                            "Tier": "__input:Tier__",
+                                            "Component": "__input:Component__",
+                                            "Instance": "__input:Instance__",
+                                            "Version": "__input:Version__"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "image_pull": {
+                            "Description" : "Pull an image from the Hamlet registry",
+                            "Type": "runbook",
+                            "Engine": "hamlet",
+                            "Inputs" : {
+                                "LocalPath" : {
+                                    "Description" : "The path to place the image if a file based image is used",
+                                    "Types" : [ "string" ],
+                                    "Default" : "./"
+                                },
+                                "Reference" : {
+                                    "Description" : "The image reference to pull down - _latest is the current one",
+                                    "Types" : [ "string" ],
+                                    "Default": "_latest"
+                                },
+                                "Tier" : {
+                                    "Description" : "Tier id of the component to assign the image to",
+                                    "Types" : [ "string" ],
+                                    "Mandatory" : true
+                                },
+                                "Component" : {
+                                    "Description" : "Component id of the component to assign the image to",
+                                    "Types" : [ "string" ],
+                                    "Mandatory" : true
+                                },
+                                "Instance" : {
+                                    "Description" : "Instance Id of the component to assign the image to",
+                                    "Types" : [ "string" ],
+                                    "Default" : ""
+                                },
+                                "Version" : {
+                                    "Description" : "Version Id of the component to assign the image to",
+                                    "Types" : [ "string" ],
+                                    "Default" : ""
+                                },
+                                "ImageId": {
+                                    "Description" : "The Id of the image in the component the image is for",
+                                    "Types" : [ "string" ],
+                                    "Default" : "default"
+                                }
+                            },
+                            "Steps" : {
+                                "aws_login" : {
+                                    "Priority" : 5,
+                                    "Extensions" : [ "_runbook_get_provider_id" ],
+                                    "Task" : {
+                                        "Type" : "set_provider_credentials",
+                                        "Parameters" : {
+                                            "AccountId" : {
+                                                "Value" : "__setting:ACCOUNT__"
+                                            }
+                                        }
+                                    }
+                                },
+                                "registry_s3_pull" : {
+                                    "Priority" : 100,
+                                    "Extensions" : [
+                                        "_runbook_get_region",
+                                        "_runbook_registry_source_object",
+                                        "_runbook_registry_type_condition"
+                                    ],
+                                    "Conditions" : {
+                                        "registry_type" : {
+                                            "Value": "s3",
+                                            "Match": "Equals"
+                                        }
+                                    },
+                                    "Task" : {
+                                        "Type": "aws_s3_download_object",
+                                        "Parameters" : {
+                                            "LocalPath" : {
+                                                "Value" : "__input:LocalPath__"
+                                            },
+                                            "AWSAccessKeyId" : {
+                                                "Value" : "__output:aws_login:aws_access_key_id__"
+                                            },
+                                            "AWSSecretAccessKey" : {
+                                                "Value" : "__output:aws_login:aws_secret_access_key__"
+                                            },
+                                            "AWSSessionToken" : {
+                                                "Value" : "__output:aws_login:aws_session_token__"
+                                            }
+                                        }
+                                    },
+                                    "Links" : {
+                                        "image" : {
+                                            "Tier": "__input:Tier__",
+                                            "Component": "__input:Component__",
+                                            "Instance": "__input:Instance__",
+                                            "Version": "__input:Version__"
+                                        }
+                                    }
+                                },
+                                "registry_ecr_login" : {
+                                    "Priority" : 50,
+                                    "Conditions" : {
+                                        "registry_type" : {
+                                            "Value": "docker",
+                                            "Match": "Equals"
+                                        }
+                                    },
+                                    "Extensions" : [
+                                        "_runbook_get_region",
+                                        "_runbook_get_provider_id",
+                                        "_runbook_registry_type_condition"
+                                    ],
+                                    "Task" : {
+                                        "Type": "aws_ecr_docker_login",
+                                        "Parameters" : {
+                                            "AWSAccessKeyId" : {
+                                                "Value" : "__output:aws_login:aws_access_key_id__"
+                                            },
+                                            "AWSSecretAccessKey" : {
+                                                "Value" : "__output:aws_login:aws_secret_access_key__"
+                                            },
+                                            "AWSSessionToken" : {
+                                                "Value" : "__output:aws_login:aws_session_token__"
+                                            }
+                                        }
+                                    },
+                                    "Links" : {
+                                        "image" : {
+                                            "Tier": "__input:Tier__",
+                                            "Component": "__input:Component__",
+                                            "Instance": "__input:Instance__",
+                                            "Version": "__input:Version__"
+                                        }
+                                    }
+                                },
+                                "registry_ecr_pull" : {
+                                    "Priority" : 50,
+                                    "Conditions" : {
+                                        "registry_type" : {
+                                            "Value": "docker",
+                                            "Match": "Equals"
+                                        }
+                                    },
+                                    "Extensions" : [
+                                        "_runbook_registry_type_condition",
+                                        "_runbook_registry_source_container"
+                                    ],
+                                    "Task" : {
+                                        "Type": "docker_pull_image"
+                                    },
+                                    "Links" : {
+                                        "image" : {
+                                            "Tier": "__input:Tier__",
+                                            "Component": "__input:Component__",
+                                            "Instance": "__input:Instance__",
+                                            "Version": "__input:Version__"
+                                        }
+                                    }
+                                },
+                                "output_result" : {
+                                    "Priority" : 900,
+                                    "Extensions" : [ "_runbook_image_pull_result" ],
                                     "Task" : {
                                         "Type" : "output_echo",
                                         "Parameters" : {

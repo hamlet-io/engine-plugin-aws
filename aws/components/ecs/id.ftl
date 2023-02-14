@@ -57,6 +57,18 @@
                     ]
                 }
             ]
+        },
+        {
+            "Names" : "Monitoring",
+            "Description" : "Enable monitoring services for the cluster",
+            "Children" : [
+                {
+                    "Names" : "ContainerInsights",
+                    "Description" : "Enable the ECS Container Insights service",
+                    "Types": BOOLEAN_TYPE,
+                    "Default" : true
+                }
+            ]
         }
     ]
 /]
