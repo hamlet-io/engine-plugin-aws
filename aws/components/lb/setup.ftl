@@ -1258,6 +1258,8 @@
                         bucket=operationsBucket
                         idleTimeout=idleTimeout
                         tags=getOccurrenceTags(occurrence)
+                        dropInvalidHeaders=solution["aws:engine:application"].DropInvalidHeaders
+                        deletionProtection=solution["deployment:Locks"].Delete
                     /]
 
                     [#if resources["apiGatewayLink"]?has_content ]
