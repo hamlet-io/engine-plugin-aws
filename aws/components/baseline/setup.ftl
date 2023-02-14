@@ -317,6 +317,36 @@
 
                 [#-- role based bucket policies --]
                 [#local bucketPolicy = []]
+
+                [#if subSolution.Encryption.Transit.Enabled ]
+                    [#local bucketPolicy += [
+                        getPolicyStatement(
+                            [
+                                "s3:*"
+                            ],
+                            [
+                                getArn(bucketId),
+                                {
+                                    "Fn::Join": [
+                                        "/",
+                                        [
+                                            getArn(bucketId),
+                                            "*"
+                                        ]
+                                    ]
+                                }
+                            ],
+                            "*",
+                            {
+                                "Bool": {
+                                    "aws:SecureTransport": "false"
+                                }
+                            },
+                            false
+                        )
+                    ]]
+                [/#if]
+
                 [#switch subSolution.Role ]
                     [#case "operations" ]
 
