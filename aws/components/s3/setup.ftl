@@ -158,6 +158,35 @@
 
     [#local policyStatements = [] ]
 
+    [#if solution.Encryption.Transit.Enabled ]
+        [#local policyStatements += [
+            getPolicyStatement(
+                [
+                    "s3:*"
+                ],
+                [
+                    getArn(s3Id),
+                    {
+                        "Fn::Join": [
+                            "/",
+                            [
+                                getArn(s3Id),
+                                "*"
+                            ]
+                        ]
+                    }
+                ],
+                "*",
+                {
+                    "Bool": {
+                        "aws:SecureTransport": "false"
+                    }
+                },
+                false
+            )
+        ]]
+    [/#if]
+
     [#local publicPolicyRequired = false]
     [#list solution.PublicAccess?values?filter(x -> x.Enabled ) as publicAccessConfiguration]
         [#local publicPolicyRequired = true ]
