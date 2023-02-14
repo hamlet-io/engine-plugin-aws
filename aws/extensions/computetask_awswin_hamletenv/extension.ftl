@@ -45,8 +45,6 @@
         "hamlet_environment" : environmentId,
         "hamlet_tier" : occurrence.Core.Tier.Id ,
         "hamlet_component" : occurrence.Core.Component.Id,
-        "hamlet_credentials" : getCredentialsBucket(),
-        "hamlet_code" : getCodeBucket(),
         "hamlet_logs" : operationsBucket,
         "hamlet_backups" : dataBucket
     }
