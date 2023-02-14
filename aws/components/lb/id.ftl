@@ -15,6 +15,25 @@
         ]
 /]
 
+[@addResourceGroupAttributeValues
+    type=LB_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names" : "engine:application",
+            "Description" : "When handling HTTP Traffic apply the following configuration",
+            "Children" : [
+                {
+                    "Names" : "DropInvalidHeaders",
+                    "Description" : "Drop any headers which do not comply with header standards",
+                    "Types": BOOLEAN_TYPE,
+                    "Default" : true
+                }
+            ]
+        }
+    ]
+/]
+
 [@addResourceGroupInformation
     type=LB_PORT_COMPONENT_TYPE
     attributes=[]

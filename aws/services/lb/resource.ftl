@@ -141,14 +141,26 @@
     networkResources
     logs=false
     bucket=""
+    dropInvalidHeaders=true
+    deletionProtection=false
     tags={}]
 
     [#assign loadBalancerAttributes =
+        [
+            {
+                "Key": "deletion_protection.enabled",
+                "Value": deletionProtection
+            }
+        ] +
         ( type == "application" )?then(
             [
                 {
                     "Key" : "idle_timeout.timeout_seconds",
                     "Value" : idleTimeout?c
+                },
+                {
+                    "Key": "routing.http.drop_invalid_header_fields.enabled",
+                    "Value": dropInvalidHeaders?then("true", "false")
                 }
             ],
             []

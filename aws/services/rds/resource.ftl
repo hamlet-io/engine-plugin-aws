@@ -152,6 +152,8 @@
     deletionPolicy="Snapshot"
     updateReplacePolicy="Snapshot"
     maintenanceWindow=""
+    copyTagsToSnapshot=false
+    deletionProtection=false
 ]
     [@cfResource
     id=id
@@ -185,7 +187,9 @@
                 "DBInstanceIdentifier": name,
                 "VPCSecurityGroups": asArray( getReference(securityGroupId)),
                 "Port" : port?c?string,
-                "EngineVersion": engineVersion
+                "EngineVersion": engineVersion,
+                "CopyTagsToSnapshot": copyTagsToSnapshot,
+                "DeletionProtection": deletionProtection
             },
             ( !clusterMember ),
             {
@@ -281,6 +285,8 @@
     deletionPolicy="Snapshot"
     updateReplacePolicy="Snapshot"
     maintenanceWindow=""
+    copyTagsToSnapshot=false
+    deletionProtection=false
 ]
 
     [@cfResource
@@ -298,7 +304,9 @@
                 "AvailabilityZones" : getCFAWSAzReferences(getZones()?map(x -> x.Id)),
                 "Engine" : engine,
                 "EngineVersion" : engineVersion,
-                "BackupRetentionPeriod" : retentionPeriod
+                "BackupRetentionPeriod" : retentionPeriod,
+                "CopyTagsToSnapshot": copyTagsToSnapshot,
+                "DeletionProtection": deletionProtection
             } +
             attributeIfContent(
                 "PreferredMaintenanceWindow",

@@ -778,6 +778,8 @@
                 [#local multiAZ = false]
                 [#local deletionPolicy = "Delete" ]
                 [#local updateReplacePolicy = "Delete" ]
+                [#local deletionProtection = false ]
+
                 [#local rdsFullName=formatName(rdsFullName, "backup") ]
                 [#if rdsManualSnapshot?has_content ]
                     [#local snapshotArn = rdsManualSnapshot ]
@@ -794,6 +796,8 @@
             [#break]
 
             [#case "replace2"]
+                [#local deletionProtection = solution["deployment:Locks"].Delete ]
+
                 [#if rdsManualSnapshot?has_content ]
                     [#local snapshotArn = rdsManualSnapshot ]
                 [#else]
@@ -805,6 +809,8 @@
             [#break]
 
             [#default]
+                [#local deletionProtection = solution["deployment:Locks"].Delete ]
+
                 [#if rdsManualSnapshot?has_content ]
                     [#local snapshotArn = rdsManualSnapshot ]
                 [#else]
@@ -1047,6 +1053,8 @@
                     tags=mergeObjects(rdsTags, backupTags)
                     deletionPolicy=deletionPolicy
                     updateReplacePolicy=updateReplacePolicy
+                    copyTagsToSnapshot=true
+                    deletionProtection=deletionProtection
                     maintenanceWindow=
                         solution.MaintenanceWindow.Configured?then(
                             getAmazonRdsMaintenanceWindow(
@@ -1111,6 +1119,7 @@
                         autoMinorVersionUpgrade=autoMinorVersionUpgrade
                         deleteAutomatedBackups=solution.Backup.DeleteAutoBackups
                         clusterMember=true
+                        copyTagsToSnapshot=false
                         clusterId=rdsId
                         clusterPromotionTier=dbInstance?index
                         tags=rdsTags
@@ -1170,6 +1179,8 @@
                     enhancedMonitoringRoleId=monitoringRoleId!""
                     performanceInsights=solution.Monitoring.QueryPerformance.Enabled
                     performanceInsightsRetention=solution.Monitoring.QueryPerformance.RetentionPeriod
+                    copyTagsToSnapshot=true
+                    deletionProtection=deletionProtection
                     maintenanceWindow=
                         solution.MaintenanceWindow.Configured?then(
                             getAmazonRdsMaintenanceWindow(
