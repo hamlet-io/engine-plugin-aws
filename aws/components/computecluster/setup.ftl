@@ -26,7 +26,6 @@
     [#local processorProfile = getProcessor(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
     [#local storageProfile   = getStorage(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
     [#local logFileProfile   = getLogFileProfile(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
-    [#local bootstrapProfile = getBootstrapProfile(occurrence, COMPUTECLUSTER_COMPONENT_TYPE)]
     [#local networkProfile   = getNetworkProfile(occurrence)]
     [#local loggingProfile   = getLoggingProfile(occurrence)]
 
@@ -117,7 +116,6 @@
             "Directories" : {},
             "StorageProfile" : storageProfile,
             "LogFileProfile" : logFileProfile,
-            "BootstrapProfile" : bootstrapProfile,
             "InstanceLogGroup" : computeClusterLogGroupName,
             "InstanceOSPatching" : osPatching,
             "ScriptsFile" : (image.ImageLocation)!""
@@ -286,13 +284,6 @@
                                 getRegistryBucketRegion()
                             ),
                             []
-                        ) +
-                        s3ListPermission(getCodeBucket()) +
-                        s3ReadPermission(getCodeBucket()) +
-                        s3AccountEncryptionReadPermission(
-                            getCodeBucket(),
-                            "*",
-                            getCodeBucketRegion()
                         ) +
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +

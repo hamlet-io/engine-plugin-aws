@@ -68,7 +68,6 @@
 
     [#local storageProfile      = getStorage(occurrence, BASTION_COMPONENT_TYPE)]
     [#local logFileProfile      = getLogFileProfile(occurrence, BASTION_COMPONENT_TYPE)]
-    [#local bootstrapProfile    = getBootstrapProfile(occurrence, BASTION_COMPONENT_TYPE)]
     [#local processorProfile    = getProcessor(occurrence, BASTION_COMPONENT_TYPE)]
     [#local networkProfile      = getNetworkProfile(occurrence)]
     [#local loggingProfile      = getLoggingProfile(occurrence)]
@@ -118,7 +117,6 @@
             "Directories" : {},
             "StorageProfile" : storageProfile,
             "LogFileProfile" : logFileProfile,
-            "BootstrapProfile" : bootstrapProfile,
             "InstanceLogGroup" : bastionLgName,
             "InstanceOSPatching" : osPatching,
             "ElasticIPs" : asArray(bastionEIPId)?filter(x -> x?has_content)
@@ -191,13 +189,6 @@
                             ec2AutoScaleGroupLifecyclePermission(bastionAutoScaleGroupName) +
                             ec2IPAddressUpdatePermission() +
                             ec2ReadTagsPermission() +
-                            s3ListPermission(getCodeBucket()) +
-                            s3ReadPermission(getCodeBucket()) +
-                            s3AccountEncryptionReadPermission(
-                                getCodeBucket(),
-                                "*",
-                                getCodeBucketRegion()
-                            ) +
                             cwMetricsProducePermission("CWAgent") +
                             cwLogsProducePermission(bastionLgName),
                             "basic"

@@ -34,7 +34,6 @@
     [#local processorProfile       = getProcessor(occurrence, EC2_COMPONENT_TYPE)]
     [#local storageProfile         = getStorage(occurrence, EC2_COMPONENT_TYPE)]
     [#local logFileProfile         = getLogFileProfile(occurrence, EC2_COMPONENT_TYPE)]
-    [#local bootstrapProfile       = getBootstrapProfile(occurrence, EC2_COMPONENT_TYPE)]
     [#local networkProfile         = getNetworkProfile(occurrence)]
     [#local loggingProfile         = getLoggingProfile(occurrence)]
 
@@ -118,7 +117,6 @@
             "VolumeMounts" : {},
             "StorageProfile" : storageProfile,
             "LogFileProfile" : logFileProfile,
-            "BootstrapProfile" : bootstrapProfile,
             "InstanceLogGroup" : ec2LogGroupName,
             "InstanceOSPatching" : osPatching
         }
@@ -273,13 +271,6 @@
                 [
                     getPolicyDocument(
                         ec2ReadTagsPermission() +
-                        s3ListPermission(getCodeBucket()) +
-                        s3ReadPermission(getCodeBucket()) +
-                        s3AccountEncryptionReadPermission(
-                            getCodeBucket(),
-                            "*",
-                            getCodeBucketRegion()
-                        ) +
                         s3ListPermission(operationsBucket) +
                         s3WritePermission(operationsBucket, "DOCKERLogs") +
                         s3WritePermission(operationsBucket, "Backups") +

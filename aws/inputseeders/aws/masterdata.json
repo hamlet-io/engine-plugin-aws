@@ -881,22 +881,6 @@
             ]
         }
     },
-    "BootstrapProfiles": {
-        "default": {
-            "EC2": {
-                "Bootstraps": []
-            },
-            "ECS": {
-                "Bootstraps": []
-            },
-            "ComputeCluster": {
-                "Bootstraps": []
-            },
-            "bastion": {
-                "Bootstraps": []
-            }
-        }
-    },
     "LogFilters": {
         "_sns-success": {
             "Pattern": "{ $.status = \"SUCCESS\" }"

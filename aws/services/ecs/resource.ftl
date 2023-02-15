@@ -108,6 +108,7 @@
 [#macro createECSCluster
             id
             name=""
+            containerInsights=false
             tags={}
             dependencies=[] ]
 
@@ -118,6 +119,12 @@
             tags=tags
             dependencies=dependencies
             properties={
+                "ClusterSettings": [
+                    {
+                        "Name": "containerInsights",
+                        "Value": containerInsights?then("enabled", "disabled")
+                    }
+                ]
             } +
             attributeIfContent(
                 "ClusterName",
