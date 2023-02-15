@@ -1,5 +1,18 @@
 [#ftl]
 
+[#assign IMAGE_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {},
+        NAME_ATTRIBUTE_TYPE : {}
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=HAMLET_IMAGE_RESOURCE_TYPE
+    mappings=IMAGE_OUTPUT_MAPPINGS
+/]
+
 [#function constructAWSImageResource occurrence imageFormat imageConfiguration={} id="default"]
 
     [#local imageId = formatResourceId(HAMLET_IMAGE_RESOURCE_TYPE, occurrence.Core.Id, id)]

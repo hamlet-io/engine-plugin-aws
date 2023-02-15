@@ -27,7 +27,8 @@
         encryptionKeyId=""
         encryptionType=""
         name=""
-        mutableTags=true
+        immutableTags=false
+        lifecyclePolicy={}
         tags=[]
         dependencies=[] ]
 
@@ -35,7 +36,7 @@
     [#if encryptionEnabled ]
         [#switch encryptionType ]
             [#case "AES256"]
-                [#local encryptionType = mergeObjects(
+                [#local encryptionConfig = mergeObjects(
                     encryptionConfig,
                     {
                         "EncryptionType" : encryptionType
@@ -52,11 +53,11 @@
                         }
                     /]
                 [/#if]
-                [#local encryptionType = mergeObjects(
+                [#local encryptionConfig = mergeObjects(
                     encryptionConfig,
                     {
                         "EncryptionType" : encryptionType,
-                        "KmsKey" : getReference(encryptionKeyId)
+                        "KmsKey" : getArn(encryptionKeyId)
                     }
                 )]
                 [#break]
@@ -76,7 +77,7 @@
         id=id
         type="AWS::ECR::Repository"
         properties={
-            "ImageTagMutability" : mutableTags?then("MUTABLE", "IMMUTABLE")
+            "ImageTagMutability" : immutableTags?then("IMMUTABLE", "MUTABLE")
         } +
         attributeIfContent(
             "RepositoryName",
@@ -92,6 +93,13 @@
             scanOnPush,
             {
                 "ScanOnPush" : scanOnPush
+            }
+        ) +
+        attributeIfContent(
+            "LifecyclePolicy",
+            lifecyclePolicy,
+            {
+                "LifecyclePolicyText" : getJSON(lifecyclePolicy)
             }
         )
         tags=tags

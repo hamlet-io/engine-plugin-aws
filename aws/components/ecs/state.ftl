@@ -156,8 +156,7 @@
                         COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
                         COMPUTE_TASK_AWS_ECS_AGENT_SETUP,
                         COMPUTE_TASK_USER_ACCESS,
-                        COMPUTE_TASK_EFS_MOUNT,
-                        COMPUTE_TASK_USER_BOOTSTRAP
+                        COMPUTE_TASK_EFS_MOUNT
                     ]
                 },
                 "launchConfig" : {

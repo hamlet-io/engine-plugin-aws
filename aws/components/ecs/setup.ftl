@@ -50,7 +50,6 @@
     [#local processorProfile        = getProcessor(occurrence, ECS_COMPONENT_TYPE)]
     [#local storageProfile          = getStorage(occurrence, ECS_COMPONENT_TYPE)]
     [#local logFileProfile          = getLogFileProfile(occurrence, ECS_COMPONENT_TYPE)]
-    [#local bootstrapProfile        = getBootstrapProfile(occurrence, ECS_COMPONENT_TYPE)]
     [#local networkProfile          = getNetworkProfile(occurrence)]
     [#local loggingProfile          = getLoggingProfile(occurrence)]
     [#local computeProviderProfile  = getComputeProviderProfile(occurrence)]
@@ -107,7 +106,6 @@
             "Directories" : {},
             "StorageProfile" : storageProfile,
             "LogFileProfile" : logFileProfile,
-            "BootstrapProfile" : bootstrapProfile,
             "InstanceLogGroup" : ecsInstanceLogGroupName,
             "InstanceOSPatching" : osPatching,
             "ElasticIPs" : ecsEIPs?values?map( eip -> eip.Id )
@@ -164,22 +162,9 @@
                     getPolicyDocument(
                             ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
                             ec2ReadTagsPermission() +
-                            s3ListPermission(getCodeBucket()) +
-                            s3ReadPermission(getCredentialsBucket(), accountId + "/alm/docker") +
-                            s3AccountEncryptionReadPermission(
-                                getCredentialsBucket(),
-                                "*",
-                                getCredentialsBucketRegion()
-                            ) +
                             fixedIP?then(
                                 ec2IPAddressUpdatePermission(),
                                 []
-                            ) +
-                            s3ReadPermission(getCodeBucket()) +
-                            s3AccountEncryptionReadPermission(
-                                getCodeBucket(),
-                                "*",
-                                getCodeBucketRegion()
                             ) +
                             s3ListPermission(operationsBucket) +
                             s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
@@ -533,6 +518,7 @@
 
         [@createECSCluster
             id=ecsId
+            containerInsights=solution["aws:Monitoring"].ContainerInsights
             tags=getOccurrenceTags(occurrence)
         /]
 
