@@ -48,7 +48,7 @@
                         name=secret.Name
                         tags=getOccurrenceTags(subOccurrence)
                         kmsKeyId=cmkKeyId
-                        description=""
+                        description=solution.Description
                         generateSecret=(solution.Source == "generated")
                         generateSecretPolicy=generationPolicy
                         secretString=secretString
