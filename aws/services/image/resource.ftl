@@ -98,7 +98,12 @@
 
         [#case "ContainerRegistry"]
         [#case "containerregistry"]
-            [#local tag = (imageConfiguration["Source:ContainerRegistry"]["Image"])?keep_after_last("/")?keep_after(":")]
+            [#local image = imageConfiguration["Source:ContainerRegistry"]["Image"]]
+            [#local tag = image?contains("/")?then(
+                    image?keep_after_last("/"),
+                    image
+                )?keep_after(":")]
+
             [#local reference = tag?has_content?then(tag, "latest")]
             [#local resource = mergeObjects(
                 resource,
