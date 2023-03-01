@@ -708,6 +708,86 @@
                                     }
                                 }
                             }
+                        },
+                        "image_set_reference": {
+                            "Description" : "Override the reference for an image",
+                            "Type": "runbook",
+                            "Engine": "hamlet",
+                            "Inputs" : {
+                                "Reference" : {
+                                    "Description" : "Unique reference for this image",
+                                    "Types" : [ "string" ],
+                                    "Mandatory" : true
+                                },
+                                "Tag" : {
+                                    "Description" : "A human friednly tag to apply to the image",
+                                    "Types" : [ "string" ],
+                                    "Default" : ""
+                                },
+                                "Tier" : {
+                                    "Description" : "Tier id of the component to assign the image to",
+                                    "Types" : [ "string" ],
+                                    "Mandatory" : true
+                                },
+                                "Component" : {
+                                    "Description" : "Component id of the component to assign the image to",
+                                    "Types" : [ "string" ],
+                                    "Mandatory" : true
+                                },
+                                "Instance" : {
+                                    "Description" : "Instance Id of the component to assign the image to",
+                                    "Types" : [ "string" ],
+                                    "Default" : ""
+                                },
+                                "Version" : {
+                                    "Description" : "Version Id of the component to assign the image to",
+                                    "Types" : [ "string" ],
+                                    "Default" : ""
+                                },
+                                "ImageId": {
+                                    "Description" : "The Id of the image in the component the image is for",
+                                    "Types" : [ "string" ],
+                                    "Default" : "default"
+                                }
+                            },
+                            "Steps" : {
+                                "cmdb_write_reference" : {
+                                    "Priority" : 200,
+                                    "Extensions" : [
+                                        "_runbook_image_reference_output",
+                                        "_runbook_district_context"
+                                    ],
+                                    "Task": {
+                                        "Type" : "cmdb_write_stack_output"
+                                    },
+                                    "Links" : {
+                                        "image" : {
+                                            "Tier": "__input:Tier__",
+                                            "Component": "__input:Component__",
+                                            "Instance": "__input:Instance__",
+                                            "Version": "__input:Version__"
+                                        }
+                                    }
+                                },
+                                "output_result" : {
+                                    "Priority" : 900,
+                                    "Task" : {
+                                        "Type" : "output_echo",
+                                        "Parameters" : {
+                                            "Format" : {
+                                                "Value" : "json"
+                                            },
+                                            "Value" : {
+                                                "Value" : getJSON(
+                                                    {
+                                                        "Reference": "__input:Reference__"
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
