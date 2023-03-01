@@ -57,10 +57,10 @@
                     "Type" : AWS_CLOUDFRONT_ORIGIN_RESOURCE_TYPE
                 },
                 "wafacl" : {
-                    "Id" : formatDependentWAFAclId(solution.WAF.Version, cfId),
-                    "Arn": (solution.WAF.Version == "v2")?then({ "Fn::GetAtt" : [ formatDependentWAFAclId(solution.WAF.Version, cfId), "Arn" ] }, ""),
+                    "Id" : formatDependentWAFAclId(cfId),
+                    "Arn": { "Fn::GetAtt" : [ formatDependentWAFAclId(cfId), "Arn" ]},
                     "Name" : formatComponentWAFAclName(core.Tier, core.Component, occurrence),
-                    "Type" : AWS_WAF_ACL_RESOURCE_TYPE
+                    "Type" : AWS_WAFV2_ACL_RESOURCE_TYPE
                 }
             } +
             attributeIfContent("wafLogStreaming", wafLogStreamResources),

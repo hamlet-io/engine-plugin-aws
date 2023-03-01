@@ -6,15 +6,6 @@
 [#-- If they end up needing custom attributes, then individual --]
 [#-- reousrce type definitions will be needed here but for now --]
 [#-- AWs hasn't defined any of interest                        --]
-[#assign AWS_WAF_RULE_RESOURCE_TYPE = "wafRule" ]
-[#assign AWS_WAF_ACL_RESOURCE_TYPE = "wafAcl" ]
-[#assign AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE = "wafAssoc" ]
-[#assign AWS_WAF_IPSET_RESOURCE_TYPE = "wafIpSet" ]
-[#assign AWS_WAF_BYTE_MATCH_SET_RESOURCE_TYPE = "wafByteMatchSet" ]
-[#assign AWS_WAF_SIZE_CONSTRAINT_RESOURCE_TYPE = "wafSizeConstraintSet" ]
-[#assign AWS_WAF_SQL_INJECTION_RESOURCE_TYPE = "wafSqlInjectionMatchSet" ]
-[#assign AWS_WAF_XSS_MATCH_SET_RESOURCE_TYPE = "wafXssMatchSet" ]
-
 [#assign AWS_WAFV2_RULE_RESOURCE_TYPE = "wafv2Rule" ]
 [#assign AWS_WAFV2_ACL_RESOURCE_TYPE = "wafv2Acl" ]
 [#assign AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE = "wafv2Assoc" ]
@@ -37,15 +28,7 @@
         [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
             [#return
                 {
-                    "ResourceType" : {
-                        "v1": {
-                            "hamlet": AWS_WAF_BYTE_MATCH_SET_RESOURCE_TYPE,
-                            "cfn" : {
-                                "global": "AWS::WAF::ByteMatchSet",
-                                "regional": "AWS::WAFRegional::ByteMatchSet"
-                            }
-                        }
-                    },
+                    "ResourceType" : {},
                     "TuplesAttributeKey" : "ByteMatchTuples"
                 }
             ]
@@ -64,17 +47,8 @@
             [#return
                 {
                     "ResourceType" : {
-                        "v1": {
-                            "hamlet": AWS_WAF_IPSET_RESOURCE_TYPE,
-                            "cfn": {
-                                "global" : "AWS::WAF::IPSet",
-                                "regional": "AWS::WAFRegional::ByteMatchSet"
-                            }
-                        },
-                        "v2": {
-                            "hamlet": AWS_WAFV2_IPSET_RESOURCE_TYPE,
-                            "cfn": "AWS::WAFv2::IPSet"
-                        }
+                        "hamlet": AWS_WAFV2_IPSET_RESOURCE_TYPE,
+                        "cfn": "AWS::WAFv2::IPSet"
                     },
                     "TuplesAttributeKey" : "IPSetDescriptors"
                 }
@@ -85,10 +59,8 @@
             [#return
                 {
                     "ResourceType": {
-                        "v2": {
-                            "hamlet": AWS_WAFV2_REGEX_PATTERN_SET_RESOURCE_TYPE,
-                            "cfn": "AWS::WAFv2::RegexPatternSet"
-                        }
+                        "hamlet": AWS_WAFV2_REGEX_PATTERN_SET_RESOURCE_TYPE,
+                        "cfn": "AWS::WAFv2::RegexPatternSet"
                     }
                 }
             ]
@@ -98,15 +70,7 @@
         [#case AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
             [#return
                 {
-                    "ResourceType" : {
-                        "v1": {
-                            "hamlet": AWS_WAF_SIZE_CONSTRAINT_RESOURCE_TYPE,
-                            "cfn": {
-                                "global" : "AWS::WAF::SizeConstraintSet",
-                                "regional": "AWS::WAFRegional::SizeConstraintSet"
-                            }
-                        }
-                    },
+                    "ResourceType" : {},
                     "TuplesAttributeKey" : "SizeConstraints"
                 }
             ]
@@ -115,15 +79,7 @@
         [#case AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
             [#return
                 {
-                    "ResourceType" : {
-                        "v1": {
-                            "hamlet": AWS_WAF_SQL_INJECTION_RESOURCE_TYPE,
-                            "cfn": {
-                                "global": "AWS::WAF::SqlInjectionMatchSet",
-                                "regional": "AWS::WAFRegional::SqlInjectionMatchSet"
-                            }
-                        }
-                    },
+                    "ResourceType" : {},
                     "TuplesAttributeKey" : "SqlInjectionMatchTuples"
                 }
             ]
@@ -132,15 +88,7 @@
         [#case AWS_WAF_XSS_MATCH_CONDITION_TYPE]
             [#return
                 {
-                    "ResourceType" : {
-                        "v1": {
-                            "hamlet": AWS_WAF_XSS_MATCH_SET_RESOURCE_TYPE,
-                            "cfn": {
-                                "global": "AWS::WAF::XssMatchSet",
-                                "regional": "AWS::WAFRegional::XssMatchSet"
-                            }
-                        }
-                    },
+                    "ResourceType" : {},
                     "TuplesAttributeKey" : "XssMatchTuples"
                 }
             ]
@@ -149,14 +97,6 @@
 [/#function]
 
 [#list [
-    AWS_WAF_RULE_RESOURCE_TYPE,
-    AWS_WAF_ACL_RESOURCE_TYPE,
-    AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE,
-    AWS_WAF_IPSET_RESOURCE_TYPE,
-    AWS_WAF_BYTE_MATCH_SET_RESOURCE_TYPE,
-    AWS_WAF_SIZE_CONSTRAINT_RESOURCE_TYPE,
-    AWS_WAF_SQL_INJECTION_RESOURCE_TYPE,
-    AWS_WAF_XSS_MATCH_SET_RESOURCE_TYPE,
 
     AWS_WAFV2_RULE_RESOURCE_TYPE,
     AWS_WAFV2_ACL_RESOURCE_TYPE,
@@ -168,23 +108,6 @@
         provider=AWS_PROVIDER
         service=AWS_WEB_APPLICATION_FIREWALL_SERVICE
         resource=resource
-    /]
-[/#list]
-
-[#list [
-        AWS_WAF_BYTE_MATCH_SET_RESOURCE_TYPE,
-        AWS_WAF_SIZE_CONSTRAINT_RESOURCE_TYPE,
-        AWS_WAF_SQL_INJECTION_RESOURCE_TYPE,
-        AWS_WAF_XSS_MATCH_SET_RESOURCE_TYPE
-    ] as wafV1matchSetResourceType ]
-        [@addOutputMapping
-        provider=AWS_PROVIDER
-        resourceType=wafV1matchSetResourceType
-        mappings={
-            REFERENCE_ATTRIBUTE_TYPE : {
-                "UseRef" : true
-            }
-        }
     /]
 [/#list]
 
@@ -207,8 +130,8 @@
     /]
 [/#list]
 
-[#function formatDependentWAFConditionId version type resourceId extensions...]
-    [#local matchSetResourceType = (getWAFConditionSetMappings(type)["ResourceType"][version]["hamlet"])!"" ]
+[#function formatDependentWAFConditionId type resourceId extensions...]
+    [#local matchSetResourceType = (getWAFConditionSetMappings(type)["ResourceType"]["hamlet"])!"" ]
     [#return
         formatDependentResourceId(
             matchSetResourceType?has_content?then(
@@ -221,32 +144,23 @@
     ]
 [/#function]
 
-[#function formatDependentWAFRuleId version resourceId extensions...]
+[#function formatDependentWAFRuleId resourceId extensions...]
     [#return formatDependentResourceId(
-            (version == "v2")?then(
-                AWS_WAFV2_RULE_RESOURCE_TYPE,
-                AWS_WAF_RULE_RESOURCE_TYPE
-            ),
+            AWS_WAFV2_RULE_RESOURCE_TYPE,
             resourceId,
             extensions)]
 [/#function]
 
-[#function formatDependentWAFAclId version resourceId extensions...]
+[#function formatDependentWAFAclId resourceId extensions...]
     [#return formatDependentResourceId(
-            (version == "v2")?then(
-                AWS_WAFV2_ACL_RESOURCE_TYPE,
-                AWS_WAF_ACL_RESOURCE_TYPE
-            ),
+            AWS_WAFV2_ACL_RESOURCE_TYPE
             resourceId,
             extensions)]
 [/#function]
 
-[#function formatDependentWAFAclAssociationId version resourceId extensions...]
+[#function formatDependentWAFAclAssociationId resourceId extensions...]
     [#return formatDependentResourceId(
-        (version == "v2")?then(
-            AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE,
-            AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE
-        ),
+        AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE
         resourceId,
         extensions
     )]

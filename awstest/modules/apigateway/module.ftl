@@ -378,4 +378,124 @@
         }
     /]
 
+    [#-- WAF --]
+    [@loadModule
+        definitions={
+            "appXapigatewaywaf" : {
+                "swagger": "2.0",
+                "info": {
+                    "version": "v1.0.0",
+                    "title": "Proxy",
+                    "description": "Pass all requests through to the implementation."
+                },
+                "paths": {
+                    "/{proxy+}": {
+                        "x-amazon-apigateway-any-method": {
+                        }
+                    }
+                },
+                "definitions": {
+                    "Empty": {
+                        "type": "object",
+                        "title": "Empty Schema"
+                    }
+                }
+            }
+        }
+        settingSets=[
+            {
+                "Type" : "Builds",
+                "Scope" : "Products",
+                "Namespace" : "mockedup-integration-app-apigatewaywaf-apigateway",
+                "Settings" : {
+                    "COMMIT" : "123456789#MockCommit#"
+                }
+            },
+            {
+                "Type" : "Settings",
+                "Scope" : "Products",
+                "Namespace" : "mockedup-integration-app-apigatewaywaf-apigateway",
+                "Settings" : {
+                    "apigw": {
+                        "Internal": true,
+                        "Value": {
+                            "Type": "lambda",
+                            "Proxy": false,
+                            "BinaryTypes": ["*/*"],
+                            "ContentHandling": "CONVERT_TO_TEXT",
+                            "Variable": "LAMBDA_API_LAMBDA"
+                        }
+                    }
+                }
+            }
+        ]
+        blueprint={
+            "Tiers" : {
+                "app" : {
+                    "Components" : {
+                        "apigatewaywaf" : {
+                            "deployment:Unit": "aws-apigateway",
+                            "Type": "apigateway",
+                            "Certificate": {},
+                            "Image" : {
+                                "Source" : "none"
+                            },
+                            "WAF": {
+                                "Enabled": true
+                            },
+                            "IPAddressGroups" : [ "_global" ],
+                            "Profiles" : {
+                                "Testing" : [ "apigatewaywaf" ]
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "apigatewaywaf" : {
+                    "apigateway" : {
+                        "TestCases" : [ "apigatewaywaf" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            },
+            "TestCases" : {
+                "apigatewaywaf" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "RestApi" : {
+                                    "Name" : "apigatewayXappXapigatewaywaf",
+                                    "Type" : "AWS::ApiGateway::RestApi"
+                                },
+                                "WafACL": {
+                                    "Name": "wafv2AclXapigatewayXappXapigatewaywaf",
+                                    "Type": "AWS::WAFv2::WebACL"
+                                },
+                                "WafAssoc" : {
+                                    "Name": "wafv2AssocXapigatewayXappXapigatewaywaf",
+                                    "Type" : "AWS::WAFv2::WebACLAssociation"
+                                }
+                            },
+                            "Output" : [
+                                "apigatewayXappXapigatewaywaf"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "WafDepends" : {
+                                    "Path"  : "Resources.wafv2AssocXapigatewayXappXapigatewaywaf.DependsOn[0]",
+                                    "Value" : "apiStageXappXapigatewaywaf"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    /]
+
 [/#macro]

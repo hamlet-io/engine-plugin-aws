@@ -9,6 +9,21 @@
 
 [#macro awstest_module_cdn ]
 
+
+    [@loadModule
+        blueprint={
+            "PlacementProfiles": {
+                "cdn": {
+                    "default": {
+                        "Provider": "aws",
+                        "Region": "us-east-1",
+                        "DeploymentFramework": "cf"
+                    }
+                }
+            }
+        }
+    /]
+
     [#-- Base setup --]
     [@loadModule
         settingSets=[
@@ -407,5 +422,118 @@
                 }
             }
         }
+    /]
+
+    [#-- WAF --]
+    [#-- Disabled until we can support changing regions in modules --]
+    [@loadModule
+        settingSets=[
+            {
+                "Type" : "Builds",
+                "Scope" : "Products",
+                "Namespace" : "mockedup-integration-web-cdnbase_spa",
+                "Settings" : {
+                    "COMMIT" : "123456789#MockCommit#"
+                }
+            }
+        ]
+        blueprint={
+            "Tiers" : {
+                "web" : {
+                    "Components" : {
+                        "cdnwaf": {
+                            "Type": "cdn",
+                            "Enabled": false,
+                            "deployment:Unit": "aws-cdn",
+                            "Routes" : {
+                                "default" : {
+                                    "PathPattern" : "_default",
+                                    "Origin" : {
+                                        "Link" : {
+                                            "Tier" : "web",
+                                            "Component" : "cdnwaf_spa"
+                                        }
+                                    }
+                                }
+                            },
+                            "WAF" : {
+                                "Enabled": true
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "cdnwaf" ],
+                                "Placement" : "cdn"
+                            }
+                        },
+                        "cdnwaf_spa": {
+                            "Type": "spa",
+                            "Enabled": false,
+                            "deployment:Unit": "aws-cdn",
+                            "Links": {
+                                "cdn": {
+                                    "Tier": "web",
+                                    "Component": "cdnwaf",
+                                    "Route": "default",
+                                    "Direction": "inbound"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "cdnwaf" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "cfXwebXcdnwaf" : {
+                                    "Name" : "cfXwebXcdnwaf",
+                                    "Type" : "AWS::CloudFront::Distribution"
+                                },
+                                "WafACL": {
+                                    "Name": "wafv2AclXcfXwebXcdnwaf",
+                                    "Type": "AWS::WAFv2::WebACL"
+                                },
+                                "WafAssoc" : {
+                                    "Name": "wafv2AssocXcfXwebXcdnwaf",
+                                    "Type" : "AWS::WAFv2::WebACLAssociation"
+                                }
+                            },
+                            "Output" : [
+                                "cfXwebXcdnwafXdns",
+                                "cfXwebXcdnwaf",
+                                "wafv2AclXcfXwebXcdnwaf"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "WafDepends" : {
+                                    "Path"  : "Resources.wafv2AssocXcfXwebXcdnwaf.DependsOn[0]",
+                                    "Value" : "cfXwebXcdnwaf"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "cdnwaf" : {
+                    "cdn" : {
+                        "TestCases" : [ "cdnwaf" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "us-east-1",
+                "DeploymentUnit" : "aws-cdn",
+                "cfXwebXcdnwaf": "abc123def"
+            }
+        ]
     /]
 [/#macro]

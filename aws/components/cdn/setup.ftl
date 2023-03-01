@@ -14,10 +14,9 @@
     [#local cfName              = resources["cf"].Name]
 
     [#local wafPresent          = isPresent(solution.WAF) ]
-    [#local wafVersion          = (solution.WAF.Version)!"v1" ]
     [#local wafAclId            = resources["wafacl"].Id]
     [#local wafAclArn           = resources["wafacl"].Arn]
-    [#local wafAclLink          = resources["wafacl"][(wafVersion == "v1")?then("Id","Arn")]]
+    [#local wafAclLink          = resources["wafacl"].Arn]
     [#local wafAclName          = resources["wafacl"].Name]
 
     [#local wafLogStreamingResources = resources["wafLogStreaming"]!{} ]
@@ -804,7 +803,6 @@
                 bucketPrefix="WAF"
                 cloudwatchEnabled=true
                 cmkKeyId=kmsKeyId
-                version=solution.WAF.Version
                 loggingProfile=loggingProfile
             /]
 
@@ -815,7 +813,6 @@
                 deliveryStreamId=wafLogStreamingResources["stream"].Id
                 deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
                 regional=false
-                version=solution.WAF.Version
             /]
         [/#if]
 
@@ -828,13 +825,12 @@
                 wafSolution=solution.WAF
                 securityProfile=securityProfile
                 occurrence=occurrence
-                version=solution.WAF.Version
             /]
         [/#if]
     [/#if]
 
     [#if deploymentSubsetRequired("epilogue", false)]
-        [#if invalidationPaths?has_content && getExistingReference(cfId)?has_content && (wafVersion == "v1") ]
+        [#if invalidationPaths?has_content && getExistingReference(cfId)?has_content ]
             [@addToDefaultBashScriptOutput
                 [
                     r'case ${STACK_OPERATION} in',
