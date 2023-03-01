@@ -281,14 +281,14 @@ created in either case.
         [#local wafResources =
             {
                 "acl" : {
-                    "Id" : formatDependentWAFAclId(solution.WAF.Version, apiId),
-                    "Arn": (solution.WAF.Version == "v2")?then({ "Fn::GetAtt" : [ formatDependentWAFAclId(solution.WAF.Version, apiId), "Arn" ] }, ""),
+                    "Id" : formatDependentWAFAclId(apiId),
+                    "Arn": { "Fn::GetAtt" : [ formatDependentWAFAclId(apiId), "Arn" ] },
                     "Name" : formatComponentWAFAclName(core.Tier, core.Component, occurrence),
-                    "Type" : AWS_WAF_ACL_RESOURCE_TYPE
+                    "Type" : AWS_WAFV2_ACL_RESOURCE_TYPE
                 },
                 "association" : {
-                    "Id" : formatDependentWAFAclAssociationId(solution.WAF.Version, apiId),
-                    "Type" : AWS_WAF_ACL_ASSOCIATION_RESOURCE_TYPE
+                    "Id" : formatDependentWAFAclAssociationId(apiId),
+                    "Type" : AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE
                 }
             } ]
 

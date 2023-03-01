@@ -1,8 +1,8 @@
 [#ftl]
 
 [#-- Regional resource types replicate global ones --]
-[#function formatWAFResourceType baseResourceType regional version="v1" ]
-    [#return "AWS::" + (version == "v2")?then("WAFv2::",regional?then("WAFRegional::","WAF::")) + baseResourceType ]
+[#function formatWAFResourceType baseResourceType regional ]
+    [#return "AWS::WAFv2::" + baseResourceType ]
 [/#function]
 
 [#function formatV2TextTransformations textTransformations valueSet={}]
@@ -152,7 +152,7 @@
                         {
                             "IPSetReferenceStatement": {
                                 "Arn": getArn(
-                                    formatDependentWAFConditionId("v2", condition.Type, id, "c" + condition?counter?c)
+                                    formatDependentWAFConditionId(condition.Type, id, "c" + condition?counter?c)
                                 )
                             }
                         }
@@ -186,26 +186,13 @@
 [/#function]
 
 [#-- Capture similarity between conditions --]
-[#macro createWAFMatchSetFromCondition id name conditionType filters=[] valueSet={} regional=false version="v1"]
+[#macro createWAFMatchSetFromCondition id name conditionType filters=[] valueSet={} regional=false]
 
     [#local wafConditionDetails = getWAFConditionSetMappings(conditionType)]
-    [#if ((wafConditionDetails.ResourceType[version])!{})?has_content]
+    [#if ((wafConditionDetails.ResourceType)!{})?has_content]
 
-        [#local hamletResourceType = wafConditionDetails["ResourceType"][version]["hamlet"]]
-        [#local cfnResourceType = ""]
-
-        [#switch version ]
-            [#case "v1"]
-                [#if regional ]
-                    [#local cfnResourceType = wafConditionDetails["ResourceType"][version]["cfn"]["regional"]]
-                [#else]
-                    [#local cfnResourceType = wafConditionDetails["ResourceType"][version]["cfn"]["global"]]
-                [/#if]
-                [#break]
-            [#case "v2"]
-                [#local cfnResourceType = wafConditionDetails["ResourceType"][version]["cfn"] ]
-                [#break]
-        [/#switch]
+        [#local hamletResourceType = wafConditionDetails["ResourceType"]["hamlet"]]
+        [#local cfnResourceType = wafConditionDetails["ResourceType"]["cfn"]]
 
         [#local result = [] ]
         [#list asArray(filters) as filter]
@@ -217,7 +204,7 @@
                     [#local result += formatWAFGeoMatchTuples(filter, valueSet) ]
                     [#break]
                 [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFIPMatchTuples(filter, valueSet, version) ]
+                    [#local result += formatWAFIPMatchTuples(filter, valueSet) ]
                     [#break]
                 [#case AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
                     [#local result += formatWAFSizeConstraintTuples(filter, valueSet) ]
@@ -236,15 +223,10 @@
             type=cfnResourceType
             properties=
                 {
-                    "Name": name
+                    "Name": name,
+                    "Scope" : regional?then("REGIONAL","CLOUDFRONT")
                 } +
-                (version == "v2")?then(
-                    {
-                        "Scope" : regional?then("REGIONAL","CLOUDFRONT")
-                    },
-                    {}
-                )+
-                ((conditionType == "IPMatch") && (version == "v2"))?then(
+                (conditionType == "IPMatch")?then(
                     {
                         "IPAddressVersion" : "IPV4"
                     },
@@ -252,7 +234,7 @@
                 )+
                 contentIfContent(
                     attributeIfContent(
-                        ((conditionType == "IPMatch") && (version == "v2"))?then(
+                        (conditionType == "IPMatch")?then(
                             "Addresses",
                             wafConditionDetails.TuplesAttributeKey!""
                         ),
@@ -266,7 +248,7 @@
 
 
 [#-- Creates the WAF Rule along with any MatchSets required for the conditions of the rule --]
-[#macro setupWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit="" version="v1"]
+[#macro setupWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit="" ]
     [#local predicates = [] ]
     [#list asArray(conditions) as condition]
         [#local rateBased = (rateKey?has_content && rateLimit?has_content)]
@@ -274,7 +256,7 @@
         [#local conditionName = condition.Name!conditionId]
         [#-- Generate id/name from rule equivalents if not provided --]
         [#if !conditionId?has_content]
-            [#local conditionId = formatDependentWAFConditionId(version, condition.Type, id, "c" + condition?counter?c)]
+            [#local conditionId = formatDependentWAFConditionId(condition.Type, id, "c" + condition?counter?c)]
         [/#if]
         [#if !conditionName?has_content]
             [#local conditionName = formatName(name,"c" + condition?counter?c,condition.Type)]
@@ -288,7 +270,6 @@
                 filters=condition.Filters
                 valueSet=valueSet
                 regional=regional
-                version=version
             /]
         [/#if]
         [#local predicates +=
@@ -302,27 +283,12 @@
         ]
     [/#list]
 
-    [#if version == "v1"]
-        [@cfResource
-            id=id
-            type=formatWAFResourceType(rateBased?then("RateBasedRule", "Rule"), regional)
-            properties=
-                {
-                    "MetricName" : metric?replace("-","X"),
-                    "Name": name
-                } +
-                attributeIfTrue("MatchPredicates", rateBased, predicates) +
-                attributeIfTrue("Predicates", (!rateBased), predicates) +
-                attributeIfContent("RateKey", rateKey) +
-                attributeIfContent("RateLimit", rateLimit)
-        /]
-    [/#if]
 [/#macro]
 
 [#-- Rules are grouped into bands. Bands are sorted into ascending alphabetic --]
 [#-- order, with rules within a band ordered based on occurrence in the rules --]
 [#-- array. Rules without a band are put into the default band.               --]
-[#macro setupWAFAcl id name metric defaultAction rules=[] valueSet={} regional=false bandDefault="default" version="v1" ]
+[#macro setupWAFAcl id name metric defaultAction rules=[] valueSet={} regional=false bandDefault="default" ]
     [#-- Determine the bands --]
     [#local bands = [] ]
     [#list asArray(rules) as rule]
@@ -345,7 +311,7 @@
             [#-- Rule to be created with the acl --]
             [#-- Generate id/name/metric from acl equivalents if not provided --]
             [#if !ruleId?has_content]
-                [#local ruleId = formatDependentWAFRuleId(version, id,"r" + rule?counter?c)]
+                [#local ruleId = formatDependentWAFRuleId(id,"r" + rule?counter?c)]
             [/#if]
             [#if !ruleName?has_content]
                 [#local ruleName = formatName(name,"r" + rule?counter?c,rule.NameSuffix!"")]
@@ -365,209 +331,159 @@
                     rateLimit=rule.RateLimit!""
                     version=version /]
             [/#if]
-            [#switch version]
 
-                [#case "v1"]
-                    [#switch rule.Engine ]
-                        [#case "Conditional" ]
-                            [#break]
-                        [#default]
-                            [@fatal
-                                message="Unsupported engine for WAF V1 - Only the conditional engine is available"
-                                context={
-                                    "WafId": id,
-                                    "Rule": rule
-                                }
-                            /]
-                    [/#switch]
-                    [#local aclRules +=
-                        [
-                            {
-                                "RuleId" : getReference(ruleId),
-                                "Priority" : nextRulePriority,
-                                "Action" : {
-                                    "Type" : rule.Action
-                                }
+            [#local v2OverrideAction = ""]
+            [#local v2Action = (rule.Action)?lower_case?cap_first]
+            [#local v2Statement = formatV2Conditions(rule.Conditions, valueSet, ruleId) ]
+
+            [#local rateLimitRule = {}]
+            [#switch rule.Engine ]
+                [#case "Conditional" ]
+                    [#break]
+
+                [#case "RateLimit"]
+                    [#if ! (rule["Engine:RateLimit"].Limit)?has_content]
+                        [@fatal
+                            message="Limit required when RateLimit is enabled for WAF Condition"
+                            context={
+                                "WafId": id,
+                                "Rule": rule
                             }
-                        ]
-                    ]
-                [#break]
+                        /]
+                        [#continue]
+                    [/#if]
 
-                [#case "v2"]
-                    [#local v2OverrideAction = ""]
-                    [#local v2Action = (rule.Action)?lower_case?cap_first]
-                    [#local v2Statement = formatV2Conditions(rule.Conditions, valueSet, ruleId) ]
-
-                    [#local rateLimitRule = {}]
-                    [#switch rule.Engine ]
-                        [#case "Conditional" ]
-                            [#break]
-
-                        [#case "RateLimit"]
-                            [#if ! (rule["Engine:RateLimit"].Limit)?has_content]
-                                [@fatal
-                                    message="Limit required when RateLimit is enabled for WAF Condition"
-                                    context={
-                                        "WafId": id,
-                                        "Rule": rule
-                                    }
-                                /]
-                                [#continue]
-                            [/#if]
-
-                            [#local rateLimitRule = {
-                                "AggregateKeyType": (rule["Engine:RateLimit"].IPAddressSource == "ClientIP")?then(
-                                    "IP",
-                                    "FORWARDED_IP"
-                                ),
-                                "Limit": (rule["Engine:RateLimit"].Limit)!0
-                            } +
-                            attributeIfTrue(
-                                "ForwardedIPConfig",
-                                rule["Engine:RateLimit"].IPAddressSource == "HTTPHeader",
-                                {
-                                    "HeaderName": rule["Engine:RateLimit"]["IPAddressSource:HTTPHeader"].HeaderName,
-                                    "FallbackBehavior": (rule["Engine:RateLimit"]["IPAddressSource:HTTPHeader"].ApplyLimitWhenMissing)?then(
-                                        "MATCH",
-                                        "NO_MATCH"
-                                    )
-                                }
-                            )]
-
-                            [#local v2Statement = {
-                                "RateBasedStatement" : rateLimitRule +
-                                    attributeIfTrue(
-                                        "ScopeDownStatement",
-                                        v2Statement?has_content,
-                                        v2Statement
-                                    )
-                            }]
-                            [#break]
-
-                        [#case "VendorManaged"]
-                            [#if ! ( (rule["Engine:VendorManaged"].Vendor)?has_content || (rule["Engine:VendorManaged"].RuleName)?has_content )]
-                                [@fatal
-                                    message="Engine:VendorManaged.Vendor and Engine:VendorManaged.RuleName required when using a Vendor Managed Rule"
-                                    context={
-                                        "WafId": id,
-                                        "Rule": rule
-                                    }
-                                /]
-                                [#continue]
-                            [/#if]
-
-                            [#-- Actions are controlled by the indvidual rules within a vendor managed group --]
-                            [#local v2Action = ""]
-                            [#-- The recommendation from AWS is to always use None and then add overrides for particular rules in the group --]
-                            [#-- https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-wafv2-webacl-overrideaction.html --]
-                            [#local v2OverrideAction =
-                                {
-                                    "None": {}
-                                }
-                            ]
-
-                            [#local vendorManagedRule = {
-                                "Name": (rule["Engine:VendorManaged"].RuleName)!"",
-                                "VendorName": (rule["Engine:VendorManaged"].Vendor)!""
-                            } +
-                            attributeIfContent(
-                                "Version",
-                                 (rule["Engine:VendorManaged"].RuleVersion)!""
-                            ) +
-                            attributeIfContent(
-                                "ManagedRuleGroupConfigs",
-                                (rule["Engine:VendorManaged"].Parameters)!{},
-                                asArray(rule["Engine:VendorManaged"].Parameters)
-                            ) +
-                            attributeIfContent(
-                                "ExcludedRules",
-                                rule["Engine:VendorManaged"].DisabledRules
-                            )]
-
-                            [#local v2Statement = {
-                                "ManagedRuleGroupStatement" : vendorManagedRule +
-                                    attributeIfTrue(
-                                        "ScopeDownStatement",
-                                        v2Statement?has_content,
-                                        v2Statement
-                                    )
-                            }]
-                            [#break]
-                    [/#switch]
-
-                    [#local aclRules +=
-                        [
-                            {
-                                "Name" : ruleName,
-                                "Priority" : nextRulePriority,
-                                "Statement" : v2Statement,
-                                "VisibilityConfig" : {
-                                    "CloudWatchMetricsEnabled" : true,
-                                    "MetricName" : ruleName,
-                                    "SampledRequestsEnabled" : true
-                                }
-                            } +
-                            attributeIfContent(
-                                "Action",
-                                v2Action,
-                                {
-                                    v2Action: {}
-                                }
-                            ) +
-                            attributeIfContent(
-                                "OverrideAction",
-                                v2OverrideAction
+                    [#local rateLimitRule = {
+                        "AggregateKeyType": (rule["Engine:RateLimit"].IPAddressSource == "ClientIP")?then(
+                            "IP",
+                            "FORWARDED_IP"
+                        ),
+                        "Limit": (rule["Engine:RateLimit"].Limit)!0
+                    } +
+                    attributeIfTrue(
+                        "ForwardedIPConfig",
+                        rule["Engine:RateLimit"].IPAddressSource == "HTTPHeader",
+                        {
+                            "HeaderName": rule["Engine:RateLimit"]["IPAddressSource:HTTPHeader"].HeaderName,
+                            "FallbackBehavior": (rule["Engine:RateLimit"]["IPAddressSource:HTTPHeader"].ApplyLimitWhenMissing)?then(
+                                "MATCH",
+                                "NO_MATCH"
                             )
-                        ]
+                        }
+                    )]
+
+                    [#local v2Statement = {
+                        "RateBasedStatement" : rateLimitRule +
+                            attributeIfTrue(
+                                "ScopeDownStatement",
+                                v2Statement?has_content,
+                                v2Statement
+                            )
+                    }]
+                    [#break]
+
+                [#case "VendorManaged"]
+                    [#if ! ( (rule["Engine:VendorManaged"].Vendor)?has_content || (rule["Engine:VendorManaged"].RuleName)?has_content )]
+                        [@fatal
+                            message="Engine:VendorManaged.Vendor and Engine:VendorManaged.RuleName required when using a Vendor Managed Rule"
+                            context={
+                                "WafId": id,
+                                "Rule": rule
+                            }
+                        /]
+                        [#continue]
+                    [/#if]
+
+                    [#-- Actions are controlled by the indvidual rules within a vendor managed group --]
+                    [#local v2Action = ""]
+                    [#-- The recommendation from AWS is to always use None and then add overrides for particular rules in the group --]
+                    [#-- https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-wafv2-webacl-overrideaction.html --]
+                    [#local v2OverrideAction =
+                        {
+                            "None": {}
+                        }
                     ]
-                [#break]
+
+                    [#local vendorManagedRule = {
+                        "Name": (rule["Engine:VendorManaged"].RuleName)!"",
+                        "VendorName": (rule["Engine:VendorManaged"].Vendor)!""
+                    } +
+                    attributeIfContent(
+                        "Version",
+                            (rule["Engine:VendorManaged"].RuleVersion)!""
+                    ) +
+                    attributeIfContent(
+                        "ManagedRuleGroupConfigs",
+                        (rule["Engine:VendorManaged"].Parameters)!{},
+                        asArray(rule["Engine:VendorManaged"].Parameters)
+                    ) +
+                    attributeIfContent(
+                        "ExcludedRules",
+                        rule["Engine:VendorManaged"].DisabledRules
+                    )]
+
+                    [#local v2Statement = {
+                        "ManagedRuleGroupStatement" : vendorManagedRule +
+                            attributeIfTrue(
+                                "ScopeDownStatement",
+                                v2Statement?has_content,
+                                v2Statement
+                            )
+                    }]
+                    [#break]
             [/#switch]
+
+            [#local aclRules +=
+                [
+                    {
+                        "Name" : ruleName,
+                        "Priority" : nextRulePriority,
+                        "Statement" : v2Statement,
+                        "VisibilityConfig" : {
+                            "CloudWatchMetricsEnabled" : true,
+                            "MetricName" : ruleName,
+                            "SampledRequestsEnabled" : true
+                        }
+                    } +
+                    attributeIfContent(
+                        "Action",
+                        v2Action,
+                        {
+                            v2Action: {}
+                        }
+                    ) +
+                    attributeIfContent(
+                        "OverrideAction",
+                        v2OverrideAction
+                    )
+                ]
+            ]
             [#local nextRulePriority += 1]
         [/#list]
     [/#list]
 
-    [#local properties={}]
-    [#switch version]
-        [#case "v1"]
-            [#local properties=
-                {
-                    "DefaultAction" : {
-                        "Type" : defaultAction
-                    },
-                    "MetricName" : metric?replace("-","X"),
-                    "Name": name,
-                    "Rules" : aclRules
-                }
-            ]
-        [#break]
-
-        [#case "v2"]
-            [#local properties=
-                {
-                    "DefaultAction" : {
-                        defaultAction?lower_case?cap_first : {}
-                    },
-                    "Name": name,
-                    "Rules" : aclRules,
-                    "Scope": regional?then("REGIONAL","CLOUDFRONT"),
-                    "VisibilityConfig" : {
-                        "CloudWatchMetricsEnabled" : true,
-                        "MetricName" : name,
-                        "SampledRequestsEnabled" : true
-                    }
-                }
-            ]
-        [#break]
-    [/#switch]
+    [#local properties={
+        "DefaultAction" : {
+            defaultAction?lower_case?cap_first : {}
+        },
+        "Name": name,
+        "Rules" : aclRules,
+        "Scope": regional?then("REGIONAL","CLOUDFRONT"),
+        "VisibilityConfig" : {
+            "CloudWatchMetricsEnabled" : true,
+            "MetricName" : name,
+            "SampledRequestsEnabled" : true
+        }
+    }]
 
     [@cfResource
         id=id
-        type=formatWAFResourceType("WebACL", regional, version)
+        type=formatWAFResourceType("WebACL", regional)
         properties=properties
     /]
 [/#macro]
 
-[#macro createWAFAclFromSecurityProfile id name metric wafSolution securityProfile occurrence={} regional=false version="v1"]
+[#macro createWAFAclFromSecurityProfile id name metric wafSolution securityProfile occurrence={} regional=false ]
     [#if wafSolution.OWASP ]
         [#local wafProfile = getReferenceData(WAFPROFILE_REFERENCE_TYPE)[("OWASP2017")]!{}]
     [#else]
@@ -589,10 +505,10 @@
                     [
                         {
                         "Rule" : "whitelistips",
-                        "Action" : (version == "v1")?then("ALLOW","Allow")
+                        "Action" : "Allow"
                         }
                     ],
-                "DefaultAction" : (version == "v1")?then("BLOCK","Block")
+                "DefaultAction" : "Block"
             } ]
     [/#if]
 
@@ -607,10 +523,10 @@
                     [
                         {
                         "Rule" : "whitelistcountries",
-                        "Action" : (version == "v1")?then("ALLOW","Allow")
+                        "Action" : "Allow"
                         }
                     ],
-                "DefaultAction" : (version == "v1")?then("BLOCK","Block")
+                "DefaultAction" : "Block"
             } ]
     [/#if]
 
@@ -625,10 +541,10 @@
                     [
                         {
                         "Rule" : "blacklistcountries",
-                        "Action" : (version == "v1")?then("BLOCK","Block")
+                        "Action" : "Block"
                         }
                     ],
-                "DefaultAction" : (version == "v1")?then("ALLOW","Allow")
+                "DefaultAction" : "Allow"
             } ]
     [/#if]
     [#local rules = getWAFProfileRules(
@@ -658,7 +574,7 @@
                                     "Negated" : false
                                 }
                             ],
-                            "Action" : (version == "v1")?then("BLOCK","Block")
+                            "Action" : "Block"
                         }
                     ],
                     ADD_COMBINE_BEHAVIOUR
@@ -677,31 +593,25 @@
         valueSet=wafValueSet
         regional=regional
         bandDefault=wafProfile.BandDefault!"default"
-        version=version /]
+    /]
 [/#macro]
 
 [#-- Associations are only relevant for regional endpoints --]
-[#macro createWAFAclAssociation id wafaclId endpointId dependencies=[] version="v1" ]
+[#macro createWAFAclAssociation id wafaclId endpointId dependencies=[]  ]
     [@cfResource
         id=id
-        type=formatWAFResourceType("WebACLAssociation", true, version)
+        type=formatWAFResourceType("WebACLAssociation", true)
         properties=
             {
-                "ResourceArn" : getArn(endpointId)
-            } + (version == "v1")?then(
-                    {
-                        "WebACLId" : getReference(wafaclId)
-                    },
-                    {
-                        "WebACLArn" : wafaclId
-                    }
-                )
+                "ResourceArn" : getArn(endpointId),
+                "WebACLArn" : wafaclId
+            }
         dependencies=dependencies
     /]
 [/#macro]
 
 
-[#macro enableWAFLogging wafaclId wafaclArn componentSubset deliveryStreamId="" deliveryStreamArns=[] regional=false version="v1" ]
+[#macro enableWAFLogging wafaclId wafaclArn componentSubset deliveryStreamId="" deliveryStreamArns=[] regional=false ]
 
     [#if regional ]
         [#local wafType = "regional" ]
@@ -709,64 +619,15 @@
         [#local wafType = "global" ]
     [/#if]
 
-    [#switch version]
-        [#case "v1"]
-            [#if deliveryStreamId?has_content]
-                [#if deploymentSubsetRequired("epilogue", false) ]
-                    [@addToDefaultBashScriptOutput
-                        content=[
-                            r' case ${STACK_OPERATION} in',
-                            r'   create|update)',
-                            r'       manage_waf_logging ' +
-                            r'          "' + getRegion() + r'"' +
-                            r'          "' + wafaclId + r'"' +
-                            r'          "' + wafType + r'"' +
-                            r'          "enable"' +
-                            r'          "' + deliveryStreamId + r'"' +
-                            r'          || return $?',
-                            r'       ;;',
-                            r'    delete)',
-                            r'       manage_waf_logging ' +
-                            r'          "' + getRegion() + r'"' +
-                            r'          "' + wafaclId + r'"' +
-                            r'          "' + wafType + r'"' +
-                            r'          "disable"' +
-                            r'          || return $?',
-                            r' esac'
-                        ]
-                    /]
-                [/#if]
-            [#else]
-                [#if deploymentSubsetRequired("epilogue", false) ]
-                    [@addToDefaultBashScriptOutput
-                        content=[
-                            r' case ${STACK_OPERATION} in',
-                            r'    create|update|delete)',
-                            r'       manage_waf_logging ' +
-                            r'          "' + getRegion() + r'"' +
-                            r'          "' + wafaclId + r'"' +
-                            r'          "' + wafType + r'"' +
-                            r'          "disable"' +
-                            r'          || return $?',
-                            r' esac'
-                        ]
-                    /]
-                [/#if]
-            [/#if]
-        [#break]
-
-        [#case "v2"]
-            [#if deploymentSubsetRequired(componentSubset, true) ]
-                [@cfResource
-                    id=wafaclId+"Xlogconf"
-                    type="AWS::WAFv2::LoggingConfiguration"
-                    properties=
-                            {
-                                "LogDestinationConfigs": deliveryStreamArns,
-                                "ResourceArn": wafaclArn
-                            }
-                /]
-            [/#if]
-        [#break]
-    [/#switch]
+    [#if deploymentSubsetRequired(componentSubset, true) ]
+        [@cfResource
+            id=formatResourceId(wafaclId, "logconf")
+            type="AWS::WAFv2::LoggingConfiguration"
+            properties=
+                {
+                    "LogDestinationConfigs": deliveryStreamArns,
+                    "ResourceArn": wafaclArn
+                }
+        /]
+    [/#if]
 [/#macro]

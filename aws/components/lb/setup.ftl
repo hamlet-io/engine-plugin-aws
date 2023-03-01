@@ -1206,7 +1206,6 @@
                         bucketPrefix="WAF"
                         cloudwatchEnabled=true
                         cmkKeyId=kmsKeyId
-                        version=solution.WAF.Version
                         loggingProfile=loggingProfile
                     /]
 
@@ -1217,7 +1216,6 @@
                         deliveryStreamId=wafLogStreamingResources["stream"].Id
                         deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
                         regional=true
-                        version=solution.WAF.Version
                     /]
                 [/#if]
                 [#if wafAclResources?has_content ]
@@ -1231,13 +1229,11 @@
                             securityProfile=securityProfile
                             occurrence=occurrence
                             regional=true
-                            version=solution.WAF.Version
                         /]
                         [@createWAFAclAssociation
                             id=wafAclResources.association.Id
                             wafaclId=(solution.WAF.Version == "v1")?then(wafAclResources.acl.Id, wafAclResources.acl.Arn)
                             endpointId=getReference(lbId)
-                            version=solution.WAF.Version
                         /]
                     [/#if]
                 [/#if]
