@@ -74,7 +74,7 @@
                     "Type" : AWS_WAFV2_ACL_RESOURCE_TYPE
                 },
                 "association" : {
-                    "Id" : formatDependentWAFAclAssociationId(solution.WAF.Version, id),
+                    "Id" : formatDependentWAFAclAssociationId(id),
                     "Type" : AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE
                 }
             } ]
