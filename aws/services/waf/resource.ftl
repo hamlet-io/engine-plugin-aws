@@ -328,8 +328,7 @@
                     valueSet=valueSet
                     regional=regional
                     rateKey=rule.RateKey!""
-                    rateLimit=rule.RateLimit!""
-                    version=version /]
+                    rateLimit=rule.RateLimit!""/]
             [/#if]
 
             [#local v2OverrideAction = ""]
