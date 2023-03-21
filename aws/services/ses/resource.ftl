@@ -77,6 +77,87 @@
     /]
 [/#macro]
 
+[#assign AWS_SES_CONFIGSET_DEST_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_SES_CONFIGSET_DEST_RESOURCE_TYPE
+    mappings=AWS_SES_CONFIGSET_DEST_OUTPUT_MAPPINGS
+/]
+
+[#macro createSesConfigSetEventDestination
+        id
+        configSetId
+        matchingEventTypes
+        destinationType
+        name=""
+        topicId=""
+        firehoseId=""
+        firehoseDeliveryRoleId=""
+        dependencies=[]
+]
+
+    [#local eventDestination = {
+            "MatchingEventTypes": matchingEventTypes
+        } +
+        attributeIfContent(
+            "Name",
+            name
+        )
+    ]
+
+    [#switch destinationType ]
+        [#case "sns" ]
+            [#local eventDestination = mergeObjects(
+                eventDestination,
+                {
+                    "SnsDestination": {
+                        "TopicARN": getArn(topicId)
+                    }
+                }
+            )]
+            [#break]
+
+        [#case "firehose"]
+            [#local eventDestination = mergeObjects(
+                eventDestination,
+                    {
+                    "KinesisFirehoseDestination": {
+                        "DeliveryStreamARN": getArn(firehoseId),
+                        "IAMRoleARN": getArn(firehoseDeliveryRoleId)
+                    }
+                }
+            )]
+            [#break]
+
+        [#default]
+            [@fatal
+                message="Invalid SNS Event Destination"
+                context={
+                    "ResourceId": id,
+                    "DestinationType" : destinationType
+                }
+            /]
+    [/#switch]
+
+    [@cfResource
+        id=id
+        type="AWS::SES::ConfigurationSetEventDestination"
+        properties={
+            "ConfigurationSetName": getReference(configSetId),
+            "EventDestination" : eventDestination
+        }
+        dependencies=dependencies
+        outputs=AWS_SES_CONFIGSET_DEST_OUTPUT_MAPPINGS
+    /]
+[/#macro]
+
 [#macro createSESReceiptRule id name ruleSetName actions=[] afterRuleName="" recipients=[] enabled=true scanEnabled=true tlsRequired=false dependencies=[] ]
     [@cfResource
         id=id

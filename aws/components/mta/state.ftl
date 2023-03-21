@@ -45,6 +45,7 @@
                 {
                     "Attributes" : {
                         "REGION" : getRegion(),
+                        "MAIL_DOMAIN" : formatDomainName(primaryDomainObject),
                         "FROM" : hostName + "@" + formatDomainName(primaryDomainObject),
                         "ENDPOINT" : formatDomainName("email", getRegion(), "amazonaws", "com")
                     },
@@ -134,6 +135,22 @@
         [#break]
 
         [#case "send"]
+
+            [#local configSetDestinations = {}]
+
+            [#list occurrence.Configuration.Solution.Links as linkId,link ]
+                [#local configSetDestinations = mergeObjects(
+                    configSetDestinations,
+                    {
+                        linkId : {
+                            "Id": formatResourceId(AWS_SES_CONFIGSET_DEST_RESOURCE_TYPE, occurrence.Core.Id, linkId),
+                            "Name": formatName(occurrence.Core.RawFullName, linkId),
+                            "Type" : AWS_SES_CONFIGSET_DEST_RESOURCE_TYPE
+                        }
+                    }
+                )]
+            [/#list]
+
             [#assign componentState +=
                 {
                     "Resources" : {
@@ -141,7 +158,8 @@
                             "Id" : formatResourceId(AWS_SES_CONFIGSET_RESOURCE_TYPE, core.Id),
                             "Name" : occurrence.Core.FullName,
                             "Type" : AWS_SES_CONFIGSET_RESOURCE_TYPE
-                        }
+                        },
+                        "configSetDestinations" : configSetDestinations
                     }
                 }
             ]

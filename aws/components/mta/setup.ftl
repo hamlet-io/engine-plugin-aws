@@ -79,8 +79,6 @@
 
                 [#switch solution.Action]
                     [#case "log"]
-                        [#local encryptionEnabled = isPresent(solution["aws:Encryption"]) ]
-
                         [#-- Look for any link to a topic --]
                         [#list solution.Links as linkId, link]
                             [#if link?is_hash]
@@ -107,37 +105,16 @@
                                             /]
                                         [/#if]
 
-                                        [#if deploymentSubsetRequired("epilogue", false) ]
-                                            [#local configJSON = {
-                                                    "Name": linkId,
-                                                    "Enabled": true,
-                                                    "MatchingEventTypes": asArray(eventTypes),
-                                                    "SNSDestination": {
-                                                        "TopicARN": linkTarget.State.Attributes.ARN
-                                                    }
-                                                }]
-
-                                            [@addToDefaultBashScriptOutput
-                                                content=
-                                                [
-                                                    r'case ${STACK_OPERATION} in',
-                                                    r'  create|update)',
-                                                    r'    info "Adding event destination for rule link: ' + linkId + r'"',
-                                                    r'    # ensure that the config set is available',
-                                                    r'    config_set_name="$(get_cloudformation_stack_output "' + getRegion() + r'" "${STACK_NAME}" "' + configSet.Id + r'" "name" || return $?)"',
-                                                    r'    if [[ "$(aws --region "' +  getRegion() + r'" ses describe-configuration-set --configuration-set-name "$config_set_name" --configuration-set-attribute-names eventDestinations --query ' + r"'EventDestinations[?Name==`" + linkId + r"`].Name'" + r')" == "null" ]]; then',
-                                                    r'      aws --region "' + getRegion() + r'" ses create-configuration-set-event-destination --configuration-set-name "${config_set_name}" --event-destination ' + '\'${getJSON(configJSON)}\'',
-                                                    r'    else',
-                                                    r'      aws --region "' + getRegion() + r'" ses update-configuration-set-event-destination --configuration-set-name "${config_set_name}" --event-destination ' + '\'${getJSON(configJSON)}\'',
-                                                    r'    fi',
-                                                    r'    ;;'
-                                                    r'esac'
-                                                ]
+                                        [#if deploymentSubsetRequired(MTA_COMPONENT_TYPE, true) ]
+                                            [@createSesConfigSetEventDestination
+                                                id=resources["configSetDestinations"][linkId].Id
+                                                configSetId=configSet.Id
+                                                matchingEventTypes=asArray(eventTypes)
+                                                destinationType="sns"
+                                                name=resources["configSetDestinations"][linkId].Name
+                                                topicId=linkTarget.State.Attributes.ARN
                                             /]
-
-                                            [#break]
                                         [/#if]
-
                                     [#break]
 
                                 [/#switch]

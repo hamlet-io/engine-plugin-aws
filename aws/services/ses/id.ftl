@@ -51,13 +51,3 @@
     service=AWS_SIMPLE_EMAIL_SERVICE
     resource=AWS_SES_CONFIGSET_DEST_RESOURCE_TYPE
 /]
-
-[#function formatSESConfigSetId ]
-    [#return formatResourceId(AWS_SES_CONFIGSET_RESOURCE_TYPE) ]
-[/#function]
-
-[#function formatSESConfigDestinationId extensions...]
-    [#return formatResourceId(
-                AWS_SES_CONFIGSET_DEST_RESOURCE_TYPE,
-                extensions)]
-[/#function]
