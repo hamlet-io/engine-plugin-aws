@@ -37,7 +37,22 @@
     }
 /]
 
-[#macro createSQSQueue id name delay="" maximumSize="" retention=1209600 receiveWait="" visibilityTimeout="" dlq="" dlqReceives=1 fifoQueue=false tags="" dependencies=""]
+[#macro createSQSQueue
+    id name
+    delay=""
+    maximumSize=""
+    retention=1209600
+    receiveWait=""
+    visibilityTimeout=""
+    dlq=""
+    dlqReceives=1
+    fifoQueue=false
+    kmsKeyId=""
+    kmsReuseKeyTime=0
+    tags=""
+    dependencies=[]
+]
+
     [@cfResource
         id=id
         type="AWS::SQS::Queue"
@@ -61,6 +76,16 @@
                 "FifoQueue",
                 fifoQueue,
                 fifoQueue
+            ) +
+            attributeIfContent(
+                "KmsMasterKeyId",
+                kmsKeyId,
+                getArn(kmsKeyId)
+            ) +
+            attributeIfTrue(
+                "KmsDataKeyReusePeriodSeconds",
+                kmsReuseKeyTime > 0,
+                kmsReuseKeyTime
             )
         tags=tags
         outputs=SQS_OUTPUT_MAPPINGS

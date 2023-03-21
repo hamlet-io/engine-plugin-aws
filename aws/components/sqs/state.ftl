@@ -40,6 +40,10 @@
         [#local dlqName = formatName(name, "dlq")]
         [#local dlqReplaceName = formatName(dlqName, "replace")]
 
+
+        [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ], true, false)]
+        [#local baselineIds = getBaselineComponentIds(baselineLinks)]
+
         [#-- fifo Queues require specific naming --]
         [#switch solution.Ordering ]
             [#case "FirstInFirstOut" ]
@@ -104,8 +108,29 @@
                     "Outbound" : {
                         "all" : sqsAllPermission(id),
                         "event" : sqsConsumePermission(id),
-                        "produce" : sqsProducePermission(id),
-                        "consume" : sqsConsumePermission(id)
+                        "produce" : sqsProducePermission(id) +
+                            (solution.Encryption.Enabled)?then(
+                                sqsEncryptionStatement(
+                                    [
+                                        "kms:GenerateDataKey",
+                                        "kms:Decrypt"
+                                    ],
+                                    baselineIds["Encryption"],
+                                    getExistingReference(id, REGION_ATTRIBUTE_TYPE)
+                                ),
+                                []
+                            ),
+                        "consume" : sqsConsumePermission(id) +
+                            (solution.Encryption.Enabled)?then(
+                                sqsEncryptionStatement(
+                                    [
+                                        "kms:Decrypt"
+                                    ],
+                                    baselineIds["Encryption"],
+                                    getExistingReference(id, REGION_ATTRIBUTE_TYPE)
+                                ),
+                                []
+                            )
                     }
                 }
             }

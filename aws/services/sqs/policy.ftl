@@ -95,3 +95,20 @@
                 }
             })]
 [/#function]
+
+[#function sqsEncryptionStatement actions keyId queueRegion ]
+    [#return
+        [
+            getPolicyStatement(
+                asArray(actions),
+                getArn(keyId, false, queueRegion),
+                "",
+                {
+                    "StringEquals" : {
+                        "kms:ViaService" : formatDomainName( "sqs", ququeRegion, "amazonaws.com" )
+                    }
+                }
+            )
+        ]
+    ]
+[/#function]

@@ -19,6 +19,11 @@
         [#local solution = occurrence.Configuration.Solution ]
         [#local resources = occurrence.State.Resources ]
 
+        [#-- Baseline component lookup --]
+        [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
+        [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
+        [#local cmkKeyId = baselineComponentIds["Encryption"] ]
+
         [#local sqsId = resources["queue"].Id ]
         [#local sqsName = resources["queue"].Name ]
 
@@ -73,8 +78,53 @@
                 receiveWait=20
                 tags=getOccurrenceTags(occurrence, {}, ["dlq"])
                 fifoQueue=fifoQueue
+                kmsKeyId=(solution.Encryption.Enabled)?then(
+                    cmkKeyId
+                    ""
+                )
+                kmsReuseKeyTime=(solution.Encryption.Enabled)?then(
+                    solution.Encryption.KeyReuseTime,
+                    0
+                )
             /]
         [/#if]
+
+        [#if solution.Encryption.Transit.Enabled ]
+            [#local queuePolicyStatements += [
+                getPolicyStatement(
+                    [
+                        "sqs:*"
+                    ],
+                    getArn(sqsId),
+                    "*",
+                    {
+                        "Bool": {
+                            "aws:SecureTransport": "false"
+                        }
+                    },
+                    false
+                )
+            ]]
+
+            [#if dlqRequired ]
+                [#local queuePolicyStatements += [
+                    getPolicyStatement(
+                        [
+                            "sqs:*"
+                        ],
+                        getArn(dlqId),
+                        "*",
+                        {
+                            "Bool": {
+                                "aws:SecureTransport": "false"
+                            }
+                        },
+                        false
+                    )
+                ]]
+            [/#if]
+        [/#if]
+
 
         [@createSQSQueue
             id=sqsId
@@ -92,6 +142,14 @@
                 (environmentObject.Operations.DeadLetterQueue.MaxReceives)!3)
             tags=getOccurrenceTags(occurrence)
             fifoQueue=fifoQueue
+            kmsKeyId=(solution.Encryption.Enabled)?then(
+                cmkKeyId
+                ""
+            )
+            kmsReuseKeyTime=(solution.Encryption.Enabled)?then(
+                solution.Encryption.KeyReuseTime,
+                0
+            )
         /]
 
         [#list (solution.Alerts?values)?filter(x -> x.Enabled) as alert ]
