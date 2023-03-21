@@ -26,7 +26,13 @@
                 {
                     "Service" : "sns.amazonaws.com"
                 },
-                "",
+                {
+                    "StringEquals": {
+                        "aws:SourceAccount" : {
+                            "Ref": "AWS::AccountId"
+                        }
+                    }
+                },
                 true,
                 "SNS Service Principal Access"
             )
