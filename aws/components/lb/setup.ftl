@@ -1232,7 +1232,7 @@
                         /]
                         [@createWAFAclAssociation
                             id=wafAclResources.association.Id
-                            wafaclId=(solution.WAF.Version == "v1")?then(wafAclResources.acl.Id, wafAclResources.acl.Arn)
+                            wafaclId=wafAclResources.acl.Arn
                             endpointId=getReference(lbId)
                         /]
                     [/#if]
