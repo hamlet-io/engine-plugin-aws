@@ -1,33 +1,30 @@
 [#ftl]
 
 [@addExtension
-    id="cmk_ses_access"
+    id="cmk_sqs_access"
     aliases=[
-        "_cmk_ses_access"
+        "_cmk_sqs_access"
     ]
     description=[
-        "Allows SES to access KMS for S3 storage"
+        "Grants access to a CMK from the SQS Service"
     ]
     supportedTypes=[
         BASELINE_KEY_COMPONENT_TYPE
     ]
 /]
 
-[#macro shared_extension_cmk_ses_access_deployment_setup occurrence ]
+[#macro shared_extension_cmk_sqs_access_deployment_setup occurrence ]
 
     [@Policy
         [
             getPolicyStatement(
                 [
-                    "kms:Encrypt",
-                    "kms:Decrypt",
-                    "kms:ReEncrypt*",
                     "kms:GenerateDataKey*",
-                    "kms:DescribeKey"
+                    "kms:Decrypt"
                 ],
                 "*"
                 {
-                    "Service" : "ses.amazonaws.com"
+                    "Service" : "sqs.amazonaws.com"
                 },
                 {
                     "StringEquals": {
@@ -37,7 +34,7 @@
                     }
                 },
                 true,
-                "SES Access to CMK"
+                "SQS Service Principal Access"
             )
         ]
     /]
