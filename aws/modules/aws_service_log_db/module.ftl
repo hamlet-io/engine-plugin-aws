@@ -797,6 +797,75 @@
                                             }
                                         }
                                     }
+                                },
+                                "ses_send_events": {
+                                    "Source": {
+                                        "Link" : {
+                                            "Tier": "mgmt",
+                                            "Component": "baseline",
+                                            "SubComponent": "opsdata",
+                                            "Instance": "",
+                                            "Version": "",
+                                            "Type": "baselinedata"
+                                        },
+                                        "Prefix": "SES/SendEvent/"
+                                    },
+                                    "Layout": {
+                                        "Columns": {
+                                            "eventType": {
+                                                "Type": "string"
+                                            },
+                                            "complaint": {
+                                                "Type": "struct<arrivaldate:string,complainedrecipients:array<struct<emailaddress:string>>,complaintfeedbacktype:string,feedbackid:string,timestamp:string,useragent:string>"
+                                            },
+                                            "bounce": {
+                                                "Type": "struct<bouncedrecipients:array<struct<action:string,diagnosticcode:string,emailaddress:string,status:string>>,bouncesubtype:string,bouncetype:string,feedbackid:string,reportingmta:string,timestamp:string>"
+                                            },
+                                            "mail": {
+                                                "Type": "struct<timestamp:string,source:string,sourceArn:string,sendingAccountId:string,messageId:string,destination:string,headersTruncated:boolean,headers:array<struct<name:string,value:string>>,commonHeaders:struct<from:array<string>,to:array<string>,messageId:string,subject:string>,tags:struct<ses_configurationset:string,ses_source_ip:string,ses_outgoing_ip:string,ses_from_domain:string,ses_caller_identity:string>>"
+                                            },
+                                            "send": {
+                                                "Type": "string"
+                                            },
+                                            "delivery": {
+                                                "Type": "struct<processingtimemillis:int,recipients:array<string>,reportingmta:string,smtpresponse:string,timestamp:string>"
+                                            },
+
+                                            "open": {
+                                                "Type": "struct<ipaddress:string,timestamp:string,userAgent:string>"
+                                            },
+                                            "reject": {
+                                                "Type": "struct<reason:string>"
+                                            },
+                                            "click": {
+                                                "Type": "struct<ipAddress:string,timestamp:string,userAgent:string,link:string>"
+                                            }
+                                        }
+                                    },
+                                    "Format" : {
+                                        "Input": "org.apache.hadoop.mapred.TextInputFormat",
+                                        "Output": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+                                        "Serialisation": {
+                                            "Library": "org.openx.data.jsonserde.JsonSerDe",
+                                            "Parameters": {
+                                                "mapping.ses_configurationset": {
+                                                    "Value": "ses:configuration-set"
+                                                },
+                                                "mapping.ses_source_ip": {
+                                                    "Value": "ses:source-ip"
+                                                },
+                                                "mapping.ses_from_domain": {
+                                                    "Value": "ses:from-domain"
+                                                },
+                                                "mapping.ses_caller_identity": {
+                                                    "Value": "ses:caller-identity"
+                                                },
+                                                "mapping.ses_outgoing_ip": {
+                                                    "Value": "ses:outgoing-ip"
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
