@@ -205,7 +205,7 @@
                                         },
                                         "baseline_ops": {
                                             "Enabled" : logToOps,
-                                            "Tier": tier,
+                                            "Tier": "mgmt",
                                             "Component": "baseline",
                                             "SubComponent": "opsdata",
                                             "Role": "produce"
