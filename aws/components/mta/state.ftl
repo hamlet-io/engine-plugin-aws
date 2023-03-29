@@ -47,7 +47,8 @@
                         "REGION" : getRegion(),
                         "MAIL_DOMAIN" : formatDomainName(primaryDomainObject),
                         "FROM" : hostName + "@" + formatDomainName(primaryDomainObject),
-                        "ENDPOINT" : formatDomainName("email", getRegion(), "amazonaws", "com")
+                        "ENDPOINT" : formatDomainName("email", getRegion(), "amazonaws", "com"),
+                        "SMTP_ENDPOINT" : formatDomainName("email-smtp", getRegion(), "amazonaws", "com")
                     },
                     "Roles" : {
                         "Outbound" : {
