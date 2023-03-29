@@ -75,3 +75,14 @@
             AWS_VIRTUAL_PRIVATE_CLOUD_SERVICE
         ]
 /]
+
+[@addResourceGroupAttributeValues
+    type=LB_BACKEND_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names" : "TargetType",
+            "Values" : [ "shared:ip", "shared:instance", "alb", "lambda"]
+        }
+    ]
+/]

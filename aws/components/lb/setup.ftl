@@ -396,7 +396,8 @@
                 [/#if]
 
                 [#if ["instance", "ip"]?seq_contains(solution.Forward.TargetType) &&
-                        ! ["HTTP", "HTTPS", "TCP"]?seq_contains(destinationPort.Protocol) ]
+                        ! ["HTTP", "HTTPS", "TCP"]?seq_contains(destinationPort.Protocol) && 
+                        ! isPresent(solution.Backend) ]
 
                     [@fatal
                         message="Invalid destination port protocol - supports HTTP,HTTPS or TCP Protocols"
@@ -426,7 +427,8 @@
                 [/#if]
 
                 [#if ["instance", "ip"]?seq_contains(solution.Forward.TargetType) &&
-                        ! ["HTTP", "HTTPS"]?seq_contains(destinationPort.Protocol) ]
+                        ! ["HTTP", "HTTPS"]?seq_contains(destinationPort.Protocol) &&
+                        ! isPresent(solution.Backend) ]
 
                     [@fatal
                         message="Invalid destination port protocol - supports HTTP or HTTPS Protocols"
@@ -440,7 +442,8 @@
                 [/#if]
 
                 [#if ["aws:alb"]?seq_contains(solution.Forward.TargetType) &&
-                        ! ["TCP"]?seq_contains(destinationPort.Protocol) ]
+                        ! ["TCP"]?seq_contains(destinationPort.Protocol) && 
+                        ! isPresent(solution.Backend)]
 
                     [@fatal
                         message="Invalid destination port protocol - supports HTTP or HTTPS Protocols"
