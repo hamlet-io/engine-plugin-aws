@@ -79,7 +79,9 @@
                                         "Extensions": [
                                             "_cmk_s3_access",
                                             "_cmk_ses_access",
-                                            "_cmk_cloudfront_access"
+                                            "_cmk_cloudfront_access",
+                                            "_cmk_sns_access",
+                                            "_cmk_sqs_access"
                                         ]
                                     },
                                     "oai": {
