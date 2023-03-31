@@ -102,4 +102,90 @@
         ]
     /]
 
+    [#-- Custom Endpoint --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "app" : {
+                    "Components" : {
+                        "eshostname": {
+                            "Type": "es",
+                            "deployment:Unit": "aws-es",
+                            "Profiles" : {
+                                "Testing" : [ "eshostname" ]
+                            },
+                            "Version" : "7.1",
+                            "IPAddressGroups" : [ "_localnet" ],
+                            "Certificate" : {}
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "eshostname" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "esDomain" : {
+                                    "Name" : "esXappXeshostname",
+                                    "Type" : "AWS::Elasticsearch::Domain"
+                                }
+                            },
+                            "Output" : [
+                                "esXappXesbaseXdns"
+                            ]
+                        },
+                        "JSON": {
+                            "Match": {
+                                "customEndpointEnabled" : {
+                                    "Path"  : "Resources.esXappXeshostname.Properties.DomainEndpointOptions.CustomEndpointEnabled",
+                                    "Value" : true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Storage": {
+                "default": {
+                    "es": {
+                        "Volumes" : {
+                            "data": {
+                                "Size" : 100
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "esbase" : {
+                    "es" : {
+                        "TestCases" : [ "esbase" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                },
+                "eshostname" : {
+                    "es" : {
+                        "TestCases" : [ "eshostname" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+        stackOutputs=[
+            {
+                "Account" : "0123456789",
+                "Region" : "mock-region-1",
+                "DeploymentUnit" : "account-es",
+                "logpolicyXaccountXes": "account-es"
+            }
+        ]
+    /]
+
+
 [/#macro]
