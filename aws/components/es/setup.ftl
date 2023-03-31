@@ -13,8 +13,11 @@
 
     [#local esId = resources["es"].Id]
     [#local esName = resources["es"].Name]
+    [#local esHostName = (resources["es"].customHostName)!"" ]
     [#local esServiceRoleId = resources["servicerole"].Id]
     [#local esSnapshotRoleId = resources["snapshotrole"].Id]
+
+    [#local certificate = (resources["certificate"])!{}]
 
     [#local lgId = (resources["lg"].Id)!"" ]
     [#local lgName = (resources["lg"].Name)!"" ]
@@ -22,6 +25,8 @@
     [#local vpcAccess = solution.VPCAccess]
 
     [#local multiAZ = solution.MultiAZ]
+
+    [#local securityProfile = getSecurityProfile(occurrence, core.Type)]
 
     [#local networkConfiguration = {} ]
     [#if vpcAccess ]
@@ -455,10 +460,33 @@
                             {
                                 "ZoneAwarenessEnabled" : false
                             }
-                        )
+                        ),
+                    "DomainEndpointOptions": {
+                        "EnforceHTTPS": (securityProfile.ProtocolPolicy == "https-only"),
+                        "TLSSecurityPolicy": securityProfile.HTTPSProfile
+                    } + 
+                    attributeIfContent(
+                        "CustomEndpoint",
+                        esHostName
+                    ) + 
+                    attributeIfContent(
+                        "CustomEndpointEnabled",
+                        esHostName,
+                        true
+                    ) +
+                    attributeIfContent(
+                        "CustomEndpointCertificateArn",
+                        certificate,
+                        getArn((certificate.Id)!"")
+                    )
                 } +
                 attributeIfContent("AdvancedOptions", esAdvancedOptions) +
                 attributeIfContent("SnapshotOptions", solution.Snapshot.Hour, solution.Snapshot.Hour) +
+                attributeIfTrue(
+                    "NodeToNodeEncryptionOptions", 
+                    (securityProfile.NodeTransitEncryption)!false, 
+                    {"Enabled": securityProfile.NodeTransitEncryption} 
+                ) + 
                 attributeIfContent(
                     "EBSOptions",
                     volume,
