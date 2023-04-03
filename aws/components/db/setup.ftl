@@ -51,21 +51,27 @@
     [#-- Default is that engine version = major version --]
     [#local engineVersion = concatenate([majorVersion, minorVersion],".")]
 
+    [#local cloudWatchLogExports = []]
+
     [#switch engine]
         [#case "mysql"]
+            [#local cloudWatchLogExports = ["audit", "error", "general", "slowquery"]]
             [#break]
 
         [#case "postgres"]
+            [#local cloudWatchLogExports = ["postgresql", "upgrade" ]]
             [#break]
 
         [#case "aurora-postgresql" ]
             [#local auroraCluster = true ]
+            [#local cloudWatchLogExports = ["postgresql"]]
             [#break]
 
         [#case "sqlserver-ee"]
         [#case "sqlserver-se"]
         [#case "sqlserver-ex"]
         [#case "sqlserver-web"]
+            [#local cloudWatchLogExports = ["agent", "error"]]
             [#break]
 
         [#default]
@@ -79,6 +85,14 @@
 
             [#break]
     [/#switch]
+
+    [#if solution.Logging.Enabled ]
+        [#if ! solution.Logging.ExportedLogs?seq_contains("_all")]
+            [#local cloudWatchLogExports = solution.Logging.ExportedLogs ]
+        [/#if]
+    [#else]
+        [#local cloudWatchLogExports = []]
+    [/#if]
 
     [#local credentialSource = solution["rootCredential:Source"] ]
     [#if isPresent(solution["rootCredential:Generated"]) && credentialSource != "Generated"]
@@ -1055,6 +1069,7 @@
                     updateReplacePolicy=updateReplacePolicy
                     copyTagsToSnapshot=true
                     deletionProtection=deletionProtection
+                    cloudWatchLogExports=cloudWatchLogExports
                     maintenanceWindow=
                         solution.MaintenanceWindow.Configured?then(
                             getAmazonRdsMaintenanceWindow(
@@ -1181,6 +1196,7 @@
                     performanceInsightsRetention=solution.Monitoring.QueryPerformance.RetentionPeriod
                     copyTagsToSnapshot=true
                     deletionProtection=deletionProtection
+                    cloudWatchLogExports=cloudWatchLogExports
                     maintenanceWindow=
                         solution.MaintenanceWindow.Configured?then(
                             getAmazonRdsMaintenanceWindow(
