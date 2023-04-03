@@ -218,7 +218,11 @@
                             "NumCacheNodes" : processorProfile.CountPerZone
                         }
                     ) +
-                    attributeIfContent("SnapshotRetentionLimit", solution.Backup.RetentionPeriod)
+                    attributeIfTrue(
+                        "SnapshotRetentionLimit", 
+                        solution.Backup.RetentionPeriod > 0,
+                        solution.Backup.RetentionPeriod
+                    )
                 tags=getOccurrenceTags(occurrence)
                 outputs=engine?switch(
                     "memcached", MEMCACHED_OUTPUT_MAPPINGS,
