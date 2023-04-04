@@ -128,6 +128,7 @@
     performanceInsightsRetention
     tags
     caCertificate
+    cloudWatchLogExports=[]
     engineVersion=""
     clusterMember=false
     clusterId=""
@@ -156,111 +157,115 @@
     deletionProtection=false
 ]
     [@cfResource
-    id=id
-    type="AWS::RDS::DBInstance"
-    deletionPolicy=deletionPolicy
-    updateReplacePolicy=updateReplacePolicy
-    properties=
-        {
-            "Engine": engine,
-            "DBInstanceClass" : processor,
-            "AutoMinorVersionUpgrade": autoMinorVersionUpgrade,
-            "AllowMajorVersionUpgrade" : allowMajorVersionUpgrade,
-            "DeleteAutomatedBackups" : deleteAutomatedBackups,
-            "DBSubnetGroupName": getReference(subnetGroupId),
-            "DBParameterGroupName": getReference(parameterGroupId),
-            "OptionGroupName": getReference(optionGroupId),
-            "CACertificateIdentifier" : caCertificate
-        } +
-        attributeIfContent(
-            "PreferredMaintenanceWindow",
-            maintenanceWindow
-        ) +
-        valueIfTrue(
+        id=id
+        type="AWS::RDS::DBInstance"
+        deletionPolicy=deletionPolicy
+        updateReplacePolicy=updateReplacePolicy
+        properties=
             {
-                "AllocatedStorage": size?is_string?then(
-                                        size,
-                                        size?c?string
-                                    ),
-                "StorageType" : "gp2",
-                "BackupRetentionPeriod" : retentionPeriod,
-                "DBInstanceIdentifier": name,
-                "VPCSecurityGroups": asArray( getReference(securityGroupId)),
-                "Port" : port?c?string,
-                "EngineVersion": engineVersion,
-                "CopyTagsToSnapshot": copyTagsToSnapshot,
-                "DeletionProtection": deletionProtection
-            },
-            ( !clusterMember ),
-            {
-                "DBClusterIdentifier" : getReference(clusterId),
-                "PromotionTier" : clusterPromotionTier
-            }
-
-        ) +
-        valueIfTrue(
-            {
-                "MultiAZ": true
-            },
-            ( multiAZ && !clusterMember ),
-            {
-                "AvailabilityZone" : getCFAWSAzReference(zoneId)
-            }
-        ) +
-        valueIfTrue(
-            {
-                "StorageEncrypted" : true,
-                "KmsKeyId" : getArn(kmsKeyId)
-            },
-            ( (!(snapshotArn?has_content) && encrypted) && !clusterMember )
-        ) +
-        [#-- If restoring from a snapshot the database details will be provided by the snapshot --]
-        valueIfTrue(
+                "Engine": engine,
+                "DBInstanceClass" : processor,
+                "AutoMinorVersionUpgrade": autoMinorVersionUpgrade,
+                "AllowMajorVersionUpgrade" : allowMajorVersionUpgrade,
+                "DeleteAutomatedBackups" : deleteAutomatedBackups,
+                "DBSubnetGroupName": getReference(subnetGroupId),
+                "DBParameterGroupName": getReference(parameterGroupId),
+                "OptionGroupName": getReference(optionGroupId),
+                "CACertificateIdentifier" : caCertificate
+            } +
+            attributeIfContent(
+                "PreferredMaintenanceWindow",
+                maintenanceWindow
+            ) +
             valueIfTrue(
                 {
-                    "DBSnapshotIdentifier" : snapshotArn
+                    "AllocatedStorage": size?is_string?then(
+                                            size,
+                                            size?c?string
+                                        ),
+                    "StorageType" : "gp2",
+                    "BackupRetentionPeriod" : retentionPeriod,
+                    "DBInstanceIdentifier": name,
+                    "VPCSecurityGroups": asArray( getReference(securityGroupId)),
+                    "Port" : port?c?string,
+                    "EngineVersion": engineVersion,
+                    "CopyTagsToSnapshot": copyTagsToSnapshot,
+                    "DeletionProtection": deletionProtection
                 },
-                snapshotArn?has_content,
+                ( !clusterMember ),
                 {
-                    "DBName" : databaseName,
-                    "MasterUsername": masterUsername,
-                    "MasterUserPassword": getDbMasterPasswordRef(id, masterPasswordSource, masterPassword)
+                    "DBClusterIdentifier" : getReference(clusterId),
+                    "PromotionTier" : clusterPromotionTier
                 }
-            ),
-            !clusterMember
-        ) +
-        performanceInsights?then(
-            {
-                "EnablePerformanceInsights" : performanceInsights,
-                "PerformanceInsightsRetentionPeriod" : performanceInsightsRetention,
-                "PerformanceInsightsKMSKeyId" : getArn(kmsKeyId)
-            },
-            {}
-        ) +
-        enhancedMonitoring?then(
-            {
-                "MonitoringInterval" : enhancedMonitoringInterval,
-                "MonitoringRoleArn" : getArn(enhancedMonitoringRoleId)
-            },
-            {}
-        )
-    tags=tags
-    outputs=
-        RDS_OUTPUT_MAPPINGS +
-        attributeIfContent(
-            DATABASENAME_ATTRIBUTE_TYPE,
-            databaseName,
-            {
-                "Value" : databaseName
-            }
-        ) +
-        attributeIfContent(
-            LASTRESTORE_ATTRIBUTE_TYPE,
-            snapshotArn,
-            {
-                "Value" : snapshotArn
-            }
-        )
+
+            ) +
+            attributeIfContent(
+                "EnableCloudwatchLogsExports",
+                cloudWatchLogExports
+            ) + 
+            valueIfTrue(
+                {
+                    "MultiAZ": true
+                },
+                ( multiAZ && !clusterMember ),
+                {
+                    "AvailabilityZone" : getCFAWSAzReference(zoneId)
+                }
+            ) +
+            valueIfTrue(
+                {
+                    "StorageEncrypted" : true,
+                    "KmsKeyId" : getArn(kmsKeyId)
+                },
+                ( (!(snapshotArn?has_content) && encrypted) && !clusterMember )
+            ) +
+            [#-- If restoring from a snapshot the database details will be provided by the snapshot --]
+            valueIfTrue(
+                valueIfTrue(
+                    {
+                        "DBSnapshotIdentifier" : snapshotArn
+                    },
+                    snapshotArn?has_content,
+                    {
+                        "DBName" : databaseName,
+                        "MasterUsername": masterUsername,
+                        "MasterUserPassword": getDbMasterPasswordRef(id, masterPasswordSource, masterPassword)
+                    }
+                ),
+                !clusterMember
+            ) +
+            performanceInsights?then(
+                {
+                    "EnablePerformanceInsights" : performanceInsights,
+                    "PerformanceInsightsRetentionPeriod" : performanceInsightsRetention,
+                    "PerformanceInsightsKMSKeyId" : getArn(kmsKeyId)
+                },
+                {}
+            ) +
+            enhancedMonitoring?then(
+                {
+                    "MonitoringInterval" : enhancedMonitoringInterval,
+                    "MonitoringRoleArn" : getArn(enhancedMonitoringRoleId)
+                },
+                {}
+            )
+        tags=tags
+        outputs=
+            RDS_OUTPUT_MAPPINGS +
+            attributeIfContent(
+                DATABASENAME_ATTRIBUTE_TYPE,
+                databaseName,
+                {
+                    "Value" : databaseName
+                }
+            ) +
+            attributeIfContent(
+                LASTRESTORE_ATTRIBUTE_TYPE,
+                snapshotArn,
+                {
+                    "Value" : snapshotArn
+                }
+            )
     /]
 [/#macro]
 
@@ -280,6 +285,7 @@
     snapshotArn
     securityGroupId
     tags
+    cloudWatchLogExports=[]
     dependencies=""
     outputId=""
     deletionPolicy="Snapshot"
@@ -308,6 +314,10 @@
                 "CopyTagsToSnapshot": copyTagsToSnapshot,
                 "DeletionProtection": deletionProtection
             } +
+            attributeIfContent(
+                "EnableCloudwatchLogsExports",
+                cloudWatchLogExports
+            ) + 
             attributeIfContent(
                 "PreferredMaintenanceWindow",
                 maintenanceWindow
