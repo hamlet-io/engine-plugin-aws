@@ -186,6 +186,7 @@
             cookieNames=subSolution.Cookies
             headerNames=subSolution.Headers
             queryStringNames=subSolution.QueryParams
+            queryStringExclude=subSolution.QueryParamExclude
             compressionProtocols=subSolution.CompressionEncoding
         /]
 
