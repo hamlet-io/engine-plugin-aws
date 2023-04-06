@@ -295,6 +295,7 @@
         cookieNames=[]
         headerNames=[]
         queryStringNames=[]
+        queryStringExclude=false
         compressionProtocols=[]  ]
 
     [@cfResource
@@ -336,7 +337,7 @@
                             "QueryStringBehavior" : queryStringNames?has_content?then(
                                 queryStringNames?seq_contains("_all")?then(
                                     "all",
-                                    "whitelist"
+                                    queryStringExclude?then("allExcept","whitelist")
                                 ),
                                 "none"
                             )
