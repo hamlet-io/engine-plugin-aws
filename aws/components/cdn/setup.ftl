@@ -444,7 +444,8 @@
 
                     [#local eventHandlers += getCFEventHandler(
                                                 eventHandler.Action,
-                                                eventHandlerResources["version"].Id) ]
+                                                eventHandlerResources["version"].Id,
+                                                eventHandler.IncludeBody) ]
             [#else]
                 [@fatal
                     description="Invalid Event Handler Component - Must be Lambda - EDGE"

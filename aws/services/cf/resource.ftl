@@ -115,13 +115,18 @@
     ]
 [/#function]
 
-[#function getCFEventHandler type lambdaVersionId ]
+[#function getCFEventHandler type lambdaVersionId includeBody=false ]
     [#return
         [
           {
               "EventType" : type,
               "LambdaFunctionARN" : getArn(lambdaVersionId, false, "us-east-1")
-          }
+          } +
+          attributeIfTrue(
+            "IncludeBody",
+            includeBody,
+            includeBody
+          )
         ]
     ]
 [/#function]
