@@ -41,7 +41,7 @@
                                 (solution.Encrypted)?then(
                                     snsEncryptionStatement(
                                         [ "kms:GenerateDataKey*" ],
-                                        baselineIds["Encryption"],
+                                        (baselineIds["Encryption"])!"",
                                         getExistingReference(topicId, REGION_ATTRIBUTE_TYPE)
                                     ),
                                     []

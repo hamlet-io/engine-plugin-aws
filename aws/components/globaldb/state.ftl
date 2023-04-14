@@ -13,6 +13,26 @@
         [#local globalSecondaryIndexes += [value.Name] ]
     [/#list]
 
+    [#local kmsPolicy = []]
+    [#if solution.Table.Encrypted ]
+        [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ], true, false)]
+        [#local baselineIds = getBaselineComponentIds(baselineLinks)]
+
+        [#local kmsPolicy = dynamoDbEncryptionStatement(
+            [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey",
+                "kms:CreateGrant"
+            ],
+            baselineIds["Encryption"],
+            getReference(baselineIds["Encryption"], getRegion()),
+            core.FullName
+        )]
+    [/#if]
+
     [#assign componentState =
         {
             "Resources" : {
@@ -49,12 +69,14 @@
                     "stream" : arrayIfTrue(
                                     dynamodbStreamRead(
                                         getReference(id, ARN_ATTRIBUTE_TYPE)
-                                    ),
+                                    ) +
+                                    kmsPolicy,
                                     solution.ChangeStream.Enabled
                                 ),
                     "consume" : dynamoDbViewerPermission(
                                     getReference(id, ARN_ATTRIBUTE_TYPE)
                                 ) +
+                                kmsPolicy +
                                 arrayIfContent(
                                     dynamoDbViewerPermission(
                                         getReference(id, ARN_ATTRIBUTE_TYPE),
@@ -71,6 +93,7 @@
                     "produce" : dynamodbProducePermission(
                                     getReference(id, ARN_ATTRIBUTE_TYPE)
                                 ) +
+                                kmsPolicy +
                                 arrayIfContent(
                                     dynamodbProducePermission(
                                         getReference(id, ARN_ATTRIBUTE_TYPE),
@@ -83,6 +106,7 @@
                     "all"     : dynamodbAllPermission(
                                     getReference(id,ARN_ATTRIBUTE_TYPE)
                                 ) +
+                                kmsPolicy +
                                 arrayIfContent(
                                     dynamodbAllPermission(
                                         getReference(id, ARN_ATTRIBUTE_TYPE),

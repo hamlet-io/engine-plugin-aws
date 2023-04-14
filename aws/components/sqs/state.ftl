@@ -115,7 +115,7 @@
                                         "kms:GenerateDataKey",
                                         "kms:Decrypt"
                                     ],
-                                    baselineIds["Encryption"],
+                                    (baselineIds["Encryption"])!"",
                                     getExistingReference(id, REGION_ATTRIBUTE_TYPE)
                                 ),
                                 []
@@ -126,7 +126,7 @@
                                     [
                                         "kms:Decrypt"
                                     ],
-                                    baselineIds["Encryption"],
+                                    (baselineIds["Encryption"])!"",
                                     getExistingReference(id, REGION_ATTRIBUTE_TYPE)
                                 ),
                                 []
