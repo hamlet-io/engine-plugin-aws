@@ -532,7 +532,7 @@
 
     [#local CORSRules = [] ]
     [#list CORSBehaviours as behaviour ]
-        [#local CORSBehaviour = CORSProfiles[behaviour] ]
+        [#local CORSBehaviour = getReferenceData(CORSPROFILE_REFERENCE_TYPE)[behaviour] ]
         [#if CORSBehaviour?has_content ]
             [#local CORSRules += [
                 {

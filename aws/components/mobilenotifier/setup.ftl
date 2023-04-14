@@ -149,7 +149,7 @@
                     id=logMetric.Id
                     name=logMetric.Name
                     logGroup=logMetric.LogGroupName
-                    filter=logFilters[logMetric.LogFilter].Pattern
+                    filter=getReferenceData(LOGFILTER_REFERENCE_TYPE)[logMetric.LogFilter].Pattern
                     namespace=getCWResourceMetricNamespace(logMetric.Type)
                     value=1
                     dependencies=logMetric.LogGroupId
