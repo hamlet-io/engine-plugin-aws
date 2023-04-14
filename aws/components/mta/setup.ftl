@@ -241,10 +241,71 @@
                         [/#list]
                         [#break]
 
+                    [#case "receive-bounce"]
+
+                        [#local bounce_params = [
+                            expandSESRecipients("mailer", mailDomains)[0]
+                        ]]
+                        [#switch solution["Action:receive-bounce"].BounceType ]
+                            [#case "no_address_found"]
+                                [#local bounce_params += [
+                                    "The email account that you tried to reach does not exist.",
+                                    "550",
+                                    "5.1.1"
+                                ]]
+                                [#break]
+
+                            [#case "unauthorised"]
+                                [#local bounce_params += [
+                                    "The user or domain that you are sending to (or from) has a policy that prohibited the mail that you sent.",
+                                    "550",
+                                    "5.7.1"
+                                ]]
+                                [#break]
+
+                            [#case "custom" ]
+                                [#local bounce_params += [
+                                    solution["Action:receive-bounce"]["BounceType:custom"].Message,
+                                    solution["Action:receive-bounce"]["BounceType:custom"].SmtpReplyCode,
+                                    solution["Action:receive-bounce"]["BounceType:custom"].SmtpStatusCode
+                                ]]
+
+                            [#default]
+                                [@fatal
+                                    message="Unknown bounce type for receive bounce action"
+                                    context={
+                                        "BounceType" : solution["Action:receive-bounce"].BounceType,
+                                        "Rule" : {
+                                            "Id": ruleId,
+                                            "Name": ruleName
+                                        },
+                                        "Occurrence" : core.RawFullName
+                                    }
+                                /]
+                        [/#switch]
+
+                        [#if topicArns?has_content ]
+                            [#list topicArns as topicArn ]
+                                [#local actions += getSESReceiptBounceAction?with_args(bounce_params)(topicArn)]
+                            [/#list]
+                        [#else]
+                            [#local actions += getSESReceiptBounceAction?with_args(bounce_params)()]
+                        [/#if]
+                        [#break]
+
                     [#case "drop"]
                         [#list topicArns as topicArn]
                             [#local actions += getSESReceiptStopAction("RuleSet", topicArn) ]
                         [/#list]
+
+                        [#if topicArns?has_content ]
+                            [#list topicArns as topicArn ]
+                                [#local actions += getSESReceiptStopAction("RuleSet", topicArn)]
+                            [/#list]
+                        [#else]
+                            [#local actions += getSESReceiptStopAction("RuleSet")]
+                        [/#if]
+
                         [#break]
                 [/#switch]
 
