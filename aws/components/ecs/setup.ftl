@@ -448,7 +448,7 @@
                 id=logMetric.Id
                 name=logMetric.Name
                 logGroup=logMetric.LogGroupName
-                filter=logFilters[logMetric.LogFilter].Pattern
+                filter=getReferenceData(LOGFILTER_REFERENCE_TYPE)[logMetric.LogFilter].Pattern
                 namespace=getCWResourceMetricNamespace(logMetric.Type)
                 value=1
                 dependencies=logMetric.LogGroupId
@@ -1550,7 +1550,7 @@
                                 AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
                                 formatName(core.ShortFullName, container.Name) )]
 
-                        [#local logFilter = logFilters[logMetric.LogFilter].Pattern ]
+                        [#local logFilter = getReferenceData(LOGFILTER_REFERENCE_TYPE)[logMetric.LogFilter].Pattern ]
 
                         [#local resources += {
                             "logMetrics" : resources.LogMetrics!{} + {
@@ -1575,7 +1575,7 @@
                     id=logMetric.Id
                     name=logMetric.Name
                     logGroup=logMetric.LogGroupName
-                    filter=logFilters[logMetric.LogFilter].Pattern
+                    filter=getReferenceData(LOGFILTER_REFERENCE_TYPE)[logMetric.LogFilter].Pattern
                     namespace=getCWResourceMetricNamespace(logMetric.Type)
                     value=1
                     dependencies=logMetric.LogGroupId

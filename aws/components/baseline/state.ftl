@@ -81,7 +81,7 @@
             [#break]
     [/#switch]
 
-    [#local baselineProfile = baselineProfiles[occurrence.Configuration.Solution.Profiles.Baseline] ]
+    [#local baselineProfile = getReferenceData(BASELINEPROFILE_REFERENCE_TYPE)[occurrence.Configuration.Solution.Profiles.Baseline] ]
     [#local kmsKeyComponentId = baselineProfile["Encryption"] ]
 
     [#-- This relies on these components being "siblings" and allows us to get around the issue of not being able to do occurrence lookups inside the same component --]

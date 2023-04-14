@@ -426,7 +426,7 @@
                     id=logMetric.Id
                     name=logMetric.Name
                     logGroup=logMetric.LogGroupName
-                    filter=logFilters[logMetric.LogFilter].Pattern
+                    filter=getReferenceData(LOGFILTER_REFERENCE_TYPE)[logMetric.LogFilter].Pattern
                     namespace=getCWResourceMetricNamespace(logMetric.Type)
                     value=1
                     dependencies=logMetric.LogGroupId
@@ -534,7 +534,7 @@
 
         [#list solution.LogWatchers as logWatcherName,logwatcher ]
 
-            [#local logFilter = logFilters[logwatcher.LogFilter].Pattern ]
+            [#local logFilter = getReferenceData(LOGFILTER_REFERENCE_TYPE)[logwatcher.LogFilter].Pattern ]
 
             [#list logwatcher.Links as logWatcherLinkName,logWatcherLink ]
                 [#local logWatcherLinkTarget = getLinkTarget(fn, logWatcherLink) ]
