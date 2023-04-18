@@ -96,6 +96,7 @@
         configSetId
         matchingEventTypes
         destinationType
+        enabled=true
         name=""
         topicId=""
         firehoseId=""
@@ -104,6 +105,7 @@
 ]
 
     [#local eventDestination = {
+            "Enabled": enabled,
             "MatchingEventTypes": matchingEventTypes
         } +
         attributeIfContent(
@@ -216,6 +218,22 @@
                 "LambdaAction" : {
                     "FunctionArn" : getArn(lambdaId),
                     "InvocationType" : valueIfTrue("Event", event, "RequestResponse")
+                } +
+                attributeIfContent("TopicArn", topicIdOrArn, getArn(topicIdOrArn))
+            }
+        ]
+    ]
+[/#function]
+
+[#function getSESReceiptBounceAction sender message smtpyReplyCode statusCode topicIdOrArn="" ]
+    [#return
+        [
+            {
+                "BounceAction" : {
+                    "Message" : message,
+                    "Sender" : sender,
+                    "SmtpReplyCode" : smtpyReplyCode,
+                    "StatusCode": statusCode
                 } +
                 attributeIfContent("TopicArn", topicIdOrArn, getArn(topicIdOrArn))
             }
