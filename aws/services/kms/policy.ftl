@@ -123,3 +123,25 @@
         ]
     ]
 [/#function]
+
+
+[#function dynamoDbEncryptionStatement actions keyId keyRegion tableName ]
+    [#return
+        [
+            getPolicyStatement(
+                asArray(actions),
+                getArn(keyId, false, keyRegion),
+                "",
+                {
+                    "StringLike" : {
+                        "kms:ViaService": "dynamodb.*.amazonaws.com"
+                    },
+                    "StringEquals": {
+                        "kms:EncryptionContext:aws:dynamodb:tableName": tableName,
+                        "kms:EncryptionContext:aws:dynamodb:subscriberId" : { "Ref" : "AWS::AccountId" }
+                    }
+                }
+            )
+        ]
+    ]
+[/#function]
