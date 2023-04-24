@@ -186,8 +186,9 @@
                                 [#case TOPIC_COMPONENT_TYPE]
                                 [#case S3_COMPONENT_TYPE ]
                                 [#case MTA_RULE_COMPONENT_TYPE ]
+                                [#case LB_COMPONENT_TYPE ]
                                 [#case LB_PORT_COMPONENT_TYPE]
-                                [#case LB_ORIGIN_COMPONENT_TYPE]
+                                [#case LB_BACKEND_COMPONENT_TYPE]
                                     [@createLambdaPermission
                                         id=formatLambdaPermissionId(fn, "link", linkName)
                                         targetId=targetFunctionId

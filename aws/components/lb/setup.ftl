@@ -273,6 +273,12 @@
                     "slow_start.duration_seconds" : solution.SlowStartTime
                 },
                 {}
+            ) +
+            (solution.TargetType == "aws:lambda" && solution["aws:TargetType:lambda"].MultiValueHeaders )?then(
+                {
+                    "lambda.multi_value_headers.enabled": true
+                },
+                {}
             )]
 
         [@createTargetGroup
@@ -396,7 +402,7 @@
                 [/#if]
 
                 [#if ["instance", "ip"]?seq_contains(solution.Forward.TargetType) &&
-                        ! ["HTTP", "HTTPS", "TCP"]?seq_contains(destinationPort.Protocol) && 
+                        ! ["HTTP", "HTTPS", "TCP"]?seq_contains(destinationPort.Protocol) &&
                         ! isPresent(solution.Backend) ]
 
                     [@fatal
@@ -442,7 +448,7 @@
                 [/#if]
 
                 [#if ["aws:alb"]?seq_contains(solution.Forward.TargetType) &&
-                        ! ["TCP"]?seq_contains(destinationPort.Protocol) && 
+                        ! ["TCP"]?seq_contains(destinationPort.Protocol) &&
                         ! isPresent(solution.Backend)]
 
                     [@fatal
@@ -982,7 +988,14 @@
                             "slow_start.duration_seconds" : solution.Forward.SlowStartTime
                         },
                         {}
-                    )]
+                    ) +
+                    (solution.Forward.TargetType == "aws:lambda" && solution.Forward["aws:TargetType:lambda"].MultiValueHeaders )?then(
+                        {
+                            "lambda.multi_value_headers.enabled": true
+                        },
+                        {}
+                    )
+                ]
 
                 [#-- This is to handle the migration from creating listener rules via the cli into Cloudformation --]
                 [#if firstMappingForPort ]

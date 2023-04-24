@@ -145,7 +145,15 @@
                 "INTERNAL_FQDN" : getExistingReference(id, DNS_ATTRIBUTE_TYPE)
             },
             "Roles" : {
-                "Inbound" : {},
+                "Inbound" : {
+                    "invoke" : {
+                        "Principal" : "elasticloadbalancing.amazonaws.com",
+                        "SourceArn" : formatRegionalArn(
+                            "elasticloadbalancing",
+                            "targetgroup/*"
+                        )
+                    }
+                },
                 "Outbound" : {}
             }
         }
