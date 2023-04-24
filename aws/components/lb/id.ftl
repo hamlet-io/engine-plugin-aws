@@ -58,6 +58,17 @@
                 {
                     "Names" : "TargetType",
                     "Values" : [ "shared:ip", "shared:instance", "alb", "lambda"]
+                },
+                {
+                    "Names": "TargetType:lambda",
+                    "Children" : [
+                        {
+                            "Names" : "MultiValueHeaders",
+                            "Description" : "Send lists for header values to support multiple instances of the same header key",
+                            "Types": BOOLEAN_TYPE,
+                            "Default" : false
+                        }
+                    ]
                 }
             ]
         }
@@ -83,6 +94,17 @@
         {
             "Names" : "TargetType",
             "Values" : [ "shared:ip", "shared:instance", "alb", "lambda"]
+        },
+        {
+            "Names": "TargetType:lambda",
+            "Children" : [
+                {
+                    "Names" : "MultiValueHeaders",
+                    "Description" : "Send lists for header values to support multiple instances of the same header key",
+                    "Types": BOOLEAN_TYPE,
+                    "Default" : false
+                }
+            ]
         }
     ]
 /]
