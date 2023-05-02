@@ -29,7 +29,7 @@
                 "Object": ((image.RegistryPath)!"")?replace("s3://", "")?keep_after("/")
                     + (_context.Inputs["input:Reference"] == "_latest")?then(
                         image.Reference,
-                        "/__input:Reference__/"
+                        _context.Inputs["input:Reference"]
                     )
                     + (image.ImageFileName)!""
             }

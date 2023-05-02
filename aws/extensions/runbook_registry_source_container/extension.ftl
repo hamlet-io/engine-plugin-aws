@@ -27,7 +27,7 @@
             "TaskParameters" : {
                 "Image": (_context.Inputs["input:Reference"] == "_latest")?then(
                         image.ImageLocation,
-                        (image.ImageLocation)?replace(image.Reference, "/__input:Reference__/")
+                        (image.ImageLocation)?replace(image.Reference, _context.Inputs["input:Reference"])
                     )
             }
         }
