@@ -241,9 +241,9 @@
 
     [#local path = ""]
 
-    [#if solution.Path?is_string ]
+    [#if solution.Path?is_string && solution.Path != "default" ]
         [#local path = solution.Path]
-    [#else]
+    [#elseif solution.Path?is_sequence ]
         [#local path = solution.Path[0]]
     [/#if]
 
