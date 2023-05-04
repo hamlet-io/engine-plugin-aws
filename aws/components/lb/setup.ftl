@@ -356,7 +356,7 @@
         [#local firstMappingForPort = !listenerPortsSeen?seq_contains(listenerId) ]
         [#switch engine ]
             [#case "application"]
-                [#if solution.Path != "default" ]
+                [#if solution.Path?is_sequence || solution.Path != "default" ]
                     [#-- Only create the listener for default mappings      --]
                     [#-- The ordering of ports changes with their naming    --]
                     [#-- so it isn't sufficient to use the first occurrence --]
@@ -478,20 +478,25 @@
         [#-- Path processing --]
         [#switch engine ]
             [#case "application"]
-                [#if solution.Path == "default" ]
-                    [#local path = "*"]
-                [#else]
-                    [#if solution.Path?ends_with("/") && solution.Path != "/" ]
-                        [#local path = solution.Path?ensure_ends_with("*")]
-                    [#else]
-                        [#local path = solution.Path ]
-                    [/#if]
-                [/#if]
+                [#if solution.Path?is_string]
 
+                    [#if solution.Path == "default" ]
+                        [#local path = "*"]
+                    [#else]
+                        [#if solution.Path?ends_with("/") && solution.Path != "/" ]
+                            [#local path = solution.Path?ensure_ends_with("*")]
+                        [#else]
+                            [#local path = solution.Path ]
+                        [/#if]
+                    [/#if]
+
+                [#elseif solution.Path?is_sequence]
+                    [#local path = solution.Path]
+                [/#if]
 
                 [#if listenerRulePriority?is_string &&
                             listenerRulePriority == "default" ]
-                    [#if solution.HostFilter || solution.Path != "default" ]
+                    [#if solution.HostFilter || (! solution.Path?is_string &&  solution.Path != "default") ]
                         [@fatal
                             message="Request conditions can not be used for default rules"
                             context={

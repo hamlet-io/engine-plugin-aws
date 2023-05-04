@@ -241,12 +241,14 @@
 
     [#local path = ""]
 
-    [#if solution.Path != "default" ]
-        [#if (solution.Path)?ends_with("*") ]
-            [#local path = solution.Path?remove_ending("*")?ensure_ends_with("/") ]
-        [#else]
-            [#local path = solution.Path ]
-        [/#if]
+    [#if solution.Path?is_string ]
+        [#local path = solution.Path]
+    [#else]
+        [#local path = solution.Path[0]]
+    [/#if]
+
+    [#if path != "default" && path?ends_with("*") ]
+        [#local path = path?remove_ending("*")?ensure_ends_with("/") ]
     [/#if]
 
     [#local url = scheme + "://" + fqdn  ]
