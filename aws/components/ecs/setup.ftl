@@ -1626,6 +1626,8 @@
                 dependencies=dependencies
                 fixedName=solution.FixedName
                 tags=getOccurrenceTags(subOccurrence)
+                cpu=solution.Cpu
+                memory=solution.Memory
             /]
 
             [#if containers?size < 1 ]

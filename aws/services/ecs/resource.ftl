@@ -139,6 +139,8 @@
     engine
     executionRoleRequired
     executionRole=""
+    cpu=0
+    memory=0
     networkMode=""
     fixedName=false
     role=""
@@ -367,7 +369,8 @@
                 attributeIfContent("Command", container.Command![]) +
                 attributeIfContent("HealthCheck", container.HealthCheck!{}) +
                 attributeIfContent("Hostname", container.Hostname!"") +
-                attributeIfContent("Ulimits", ulimits )
+                attributeIfContent("Ulimits", ulimits ) +
+                attributeIfContent("DependsOn", container.DependsOn)
             ]
         ]
     [/#list]
@@ -383,6 +386,31 @@
                 ]]
     [/#list]
 
+
+    [#-- Allow for explicit override of the cpu/memory limits for the task --]
+    [#if cpu > 0 ]
+        [#local cpuTotal = cpu]
+    [/#if]
+
+    [#if memory > 0]
+        [#local memoryTotal = memory ]
+    [/#if]
+
+    [#local validFargateCPU = [ 256, 512, 1024, 2048, 4096, 8192, 16384 ] ]
+    [#if engine == "fargate" && !(validFargateCPU?seq_contains(cpuTotal) )  ]
+        [@fatal
+            message="Invalid CPU allocation for fargate container - Ensure the total container allocation is in the valid range or set a shared allocation at the service/task level"
+            context={
+                "Task": {
+                    "Id": id,
+                    "Name": name
+                },
+                "TotalAllocation": cpuTotal,
+                "ValidAllocation": validFargateCPU
+            }
+        /]
+    [/#if]
+
     [#local taskProperties = {
         "ContainerDefinitions" : definitions
         } +
@@ -393,13 +421,21 @@
         attributeIfTrue("ExecutionRoleArn", executionRoleRequired, getArn(executionRole)) +
         valueIfTrue(
             {
-                "RequiresCompatibilities" : [ engine?upper_case ],
-                "Cpu" : cpuTotal,
-                "Memory" : memoryTotal
+                "RequiresCompatibilities" : [ engine?upper_case ]
             },
             (engine == "fargate")
         ) +
-        attributeIfContent("PlacementConstraints", placementConstraintProps)
+        attributeIfContent("PlacementConstraints", placementConstraintProps) +
+        attributeIfTrue(
+            "Cpu",
+            cpuTotal > 0,
+            cpuTotal
+        ) +
+        attributeIfTrue(
+            "Memory",
+            memoryTotal > 0,
+            memoryTotal
+        )
     ]
 
     [@cfResource
@@ -1017,10 +1053,26 @@
             }
         )]
 
+        [#local dependsOn = []]
+        [#list container.DependsOn as k,v ]
+            [#local dependsOn += [
+                    {
+                        "ContainerName" : (v.ContainerName)!k,
+                        "Condition" : v.Condition
+                    }
+                ]
+            ]
+        [/#list]
+
+        [#local containerOccurrence = mergeObjects(
+            containerOccurrence,
+            constructOccurrenceImageSettings(containerOccurrence)
+        )]
+
         [#local _context =
             containerDetails +
             {
-                "Essential" : true,
+                "Essential" : container.Essential,
                 "Image": image.ImageLocation,
                 "MemoryReservation" : container.MemoryReservation,
                 "Mode" : getContainerMode(container),
@@ -1044,7 +1096,8 @@
                 "LogMetrics" : container.LogMetrics,
                 "Alerts" : container.Alerts,
                 "Container" : container,
-                "InitProcess" : container.InitProcess
+                "InitProcess" : container.InitProcess,
+                "DependsOn" : dependsOn
             } +
             attributeIfContent("LogGroup", containerLogGroup) +
             attributeIfContent("Cpu", container.Cpu) +
@@ -1067,7 +1120,12 @@
             attributeIfContent("RunCapabilities", container.RunCapabilities) +
             attributeIfContent("ContainerNetworkLinks", container.ContainerNetworkLinks) +
             attributeIfContent("PlacementConstraints", container.PlacementConstraints![] ) +
-            attributeIfContent("Ulimits", container.Ulimits )
+            attributeIfContent("Ulimits", container.Ulimits ) +
+            attributeIfTrue(
+                "ReadonlyRootFilesystem",
+                container.ReadonlyRootFilesystem,
+                container.ReadonlyRootFilesystem
+            )
         ]
 
         [#local linkIngressRules = [] ]
@@ -1191,11 +1249,6 @@
         [#if solution.Engine == "fargate" ]
             [#local fargateInvalidConfig = false ]
             [#local fargateInvalidConfigMessage = [] ]
-
-            [#if !( [ 256, 512, 1024, 2048, 4096 ]?seq_contains(_context.Cpu) )  ]
-                [#local fargateInvalidConfig = true ]
-                [#local fargateInvalidConfigMessage += [ "CPU quota is not valid ( must be divisible by 256 )" ] ]
-            [/#if]
 
             [#if !( _context.MaximumMemory?has_content )  ]
                 [#local fargateInvalidConfig = true ]
