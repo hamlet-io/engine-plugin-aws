@@ -404,6 +404,44 @@
     ]
 [/#function]
 
+[#function getS3ObjectOwnershipConfiguration
+    ownership=""
+    ]
+
+    [#local result = {} ]
+    [#if ownership?has_content]
+        [#switch ownership ]
+            [#case "owner" ]
+                [#local objectOwner = "BucketOwnerEnforced" ]
+                [#break]
+
+            [#case "ownerpreferred" ]
+                [#local objectOwner = "BucketOwnerPreferred" ]
+                [#break]
+
+            [#case "writer" ]
+                [#local objectOwner = "ObjectWriter" ]
+                [#break]
+
+            [#default]
+                [#local objectOwner = "HamletFatal: Unsupported bucket object ownership of " + ownership]
+        [/#switch]
+
+        [#local result =
+            {
+                "Rules" : [
+                    {
+                        "ObjectOwnership" : objectOwner
+                    }
+                ]
+            }
+        ]
+
+    [/#if]
+
+    [#return result]
+[/#function]
+
 [#assign S3_OUTPUT_MAPPINGS =
     {
         REFERENCE_ATTRIBUTE_TYPE : {
@@ -468,6 +506,7 @@
         cannedACL=""
         CORSBehaviours=[]
         inventoryReports=[]
+        objectOwnershipConfiguration={}
         dependencies=""
         outputId=""
         tags={}
@@ -617,6 +656,10 @@
             attributeIfContent(
                 "PublicAccessBlockConfiguration",
                 publicAccessBlockConfiguration
+            ) +
+            attributeIfContent(
+                "OwnershipControls",
+                objectOwnershipConfiguration
             )
         tags=tags
         outputs=S3_OUTPUT_MAPPINGS

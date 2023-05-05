@@ -519,6 +519,9 @@
         [/#switch]
     [/#list]
 
+    [#local objectOwnership = solution.ObjectOwnership!""]
+
+
     [#if deploymentSubsetRequired("s3", true)]
 
         [#if _context.Policy?has_content ]
@@ -556,6 +559,9 @@
             tags=mergeObjects(getOccurrenceTags(occurrence), backupTags)
             publicAccessBlockConfiguration=(
                 getPublicAccessBlockConfiguration( ! publicPolicyRequired)
+            )
+            objectOwnershipConfiguration=(
+                getS3ObjectOwnershipConfiguration(objectOwnership)
             )
         /]
     [/#if]
