@@ -370,7 +370,12 @@
                 attributeIfContent("HealthCheck", container.HealthCheck!{}) +
                 attributeIfContent("Hostname", container.Hostname!"") +
                 attributeIfContent("Ulimits", ulimits ) +
-                attributeIfContent("DependsOn", container.DependsOn)
+                attributeIfContent("DependsOn", container.DependsOn) +
+                attributeIfTrue(
+                    "ReadonlyRootFilesystem",
+                    container.ReadonlyRootFilesystem,
+                    container.ReadonlyRootFilesystem
+                )
             ]
         ]
     [/#list]
@@ -1097,7 +1102,8 @@
                 "Alerts" : container.Alerts,
                 "Container" : container,
                 "InitProcess" : container.InitProcess,
-                "DependsOn" : dependsOn
+                "DependsOn" : dependsOn,
+                "ReadonlyRootFilesystem": container.ReadonlyRootFilesystem
             } +
             attributeIfContent("LogGroup", containerLogGroup) +
             attributeIfContent("Cpu", container.Cpu) +
@@ -1120,12 +1126,7 @@
             attributeIfContent("RunCapabilities", container.RunCapabilities) +
             attributeIfContent("ContainerNetworkLinks", container.ContainerNetworkLinks) +
             attributeIfContent("PlacementConstraints", container.PlacementConstraints![] ) +
-            attributeIfContent("Ulimits", container.Ulimits ) +
-            attributeIfTrue(
-                "ReadonlyRootFilesystem",
-                container.ReadonlyRootFilesystem,
-                container.ReadonlyRootFilesystem
-            )
+            attributeIfContent("Ulimits", container.Ulimits )
         ]
 
         [#local linkIngressRules = [] ]
