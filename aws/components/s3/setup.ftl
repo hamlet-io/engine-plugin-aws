@@ -558,7 +558,7 @@
             dependencies=dependencies
             tags=mergeObjects(getOccurrenceTags(occurrence), backupTags)
             publicAccessBlockConfiguration=(
-                getPublicAccessBlockConfiguration( ! publicPolicyRequired)
+                getPublicAccessBlockConfiguration( !publicPolicyRequired, true, true, !publicPolicyRequired)
             )
             objectOwnershipConfiguration=(
                 getS3ObjectOwnershipConfiguration(objectOwnership)
