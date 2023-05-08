@@ -37,7 +37,7 @@
                                 "RemotePath": "__output:registry_s3_pull:s3_path__"
                             },
                             "docker" : {
-                                "ImageName" : "${image.RegistryPath}:__intput:Reference__"
+                                "ImageName" : "${image.RegistryPath}:__input:Reference__"
                             }
                         }
                     )
