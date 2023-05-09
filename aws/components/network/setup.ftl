@@ -428,23 +428,40 @@
                     [#local ruleId = rule.Id ]
                     [#local ruleConfig = solution.Rules[id] ]
 
+                    [#if ! ((ports[ruleConfig.Destination.Port])!"")?has_content
+                            || ! ((ports[ruleConfig.Source.Port])!"")?has_content ]
+                        [@fatal
+                            message="Invalid NetworkACL Ports"
+                            context={
+                                "Destination": {
+                                    "Name": (ruleConfig.Destination.Port)!"",
+                                    "Details": (ports[ruleConfig.Destination.Port])!{}
+                                },
+                                "Source": {
+                                    "Name": (ruleConfig.Source.Port)!"",
+                                    "Details": (ports[ruleConfig.Source.Port])!{}
+                                }
+                            }
+                        /]
+                    [/#if]
+
                     [#if (ruleConfig.Source.IPAddressGroups)?seq_contains("_localnet")
                             && (getUniqueArrayElements(ruleConfig.Source.IPAddressGroups))?size == 1 ]
 
                         [#local direction = "outbound" ]
                         [#local forwardIpAddresses = getGroupCIDRs(ruleConfig.Destination.IPAddressGroups, true, occurrence)]
-                        [#local forwardPort = ports[ruleConfig.Destination.Port]]
+                        [#local forwardPort = (ports[ruleConfig.Destination.Port])!{} ]
                         [#local returnIpAddresses = getGroupCIDRs(ruleConfig.Destination.IPAddressGroups, true, occurrence)]
-                        [#local returnPort = ports[ruleConfig.Source.Port]]
+                        [#local returnPort = (ports[ruleConfig.Source.Port])!{}]
 
                     [#elseif (ruleConfig.Destination.IPAddressGroups)?seq_contains("_localnet")
                                 && (getUniqueArrayElements(ruleConfig.Source.IPAddressGroups))?size == 1 ]
 
                         [#local direction = "inbound" ]
                         [#local forwardIpAddresses = getGroupCIDRs(ruleConfig.Source.IPAddressGroups, true, occurrence)]
-                        [#local forwardPort = ports[ruleConfig.Destination.Port]]
+                        [#local forwardPort = (ports[ruleConfig.Destination.Port])!{}]
                         [#local returnIpAddresses = [ "0.0.0.0/0" ]]
-                        [#local returnPort = ports[ruleConfig.Destination.Port]]
+                        [#local returnPort = (ports[ruleConfig.Destination.Port])!{}]
 
                     [#else]
                         [@fatal
@@ -453,42 +470,46 @@
                         /]
                     [/#if]
 
-                    [#list forwardIpAddresses![] as ipAddress ]
-                        [#local ruleOrder =  ruleConfig.Priority + ipAddress?index ]
-                        [#local networkRule = {
-                                "RuleNumber" : ruleOrder,
-                                "Allow" : (ruleConfig.Action == "allow"),
-                                "CIDRBlock" : ipAddress
-                            }]
-                        [@createNetworkACLEntry
-                            id=formatId(ruleId,direction,ruleOrder)
-                            networkACLId=networkACLId
-                            outbound=(direction=="outbound")
-                            rule=networkRule
-                            port=forwardPort
-                        /]
-                    [/#list]
-
-                    [#if ruleConfig.ReturnTraffic ]
-                        [#local direction = (direction=="inbound")?then("outbound", "inbound")]
-
-                        [#list returnIpAddresses![] as ipAddress ]
-                            [#local ruleOrder = ruleConfig.Priority + ipAddress?index]
-
+                    [#if forwardPort?has_content ]
+                        [#list forwardIpAddresses![] as ipAddress ]
+                            [#local ruleOrder =  ruleConfig.Priority + ipAddress?index ]
                             [#local networkRule = {
-                                "RuleNumber" : ruleOrder,
-                                "Allow" : (ruleConfig.Action == "allow"),
-                                "CIDRBlock" : ipAddress
+                                    "RuleNumber" : ruleOrder,
+                                    "Allow" : (ruleConfig.Action == "allow"),
+                                    "CIDRBlock" : ipAddress
                                 }]
-
                             [@createNetworkACLEntry
                                 id=formatId(ruleId,direction,ruleOrder)
                                 networkACLId=networkACLId
                                 outbound=(direction=="outbound")
                                 rule=networkRule
-                                port=returnPort
+                                port=forwardPort
                             /]
                         [/#list]
+                    [/#if ]
+
+                    [#if returnPort?has_content ]
+                        [#if ruleConfig.ReturnTraffic ]
+                            [#local direction = (direction=="inbound")?then("outbound", "inbound")]
+
+                            [#list returnIpAddresses![] as ipAddress ]
+                                [#local ruleOrder = ruleConfig.Priority + ipAddress?index]
+
+                                [#local networkRule = {
+                                    "RuleNumber" : ruleOrder,
+                                    "Allow" : (ruleConfig.Action == "allow"),
+                                    "CIDRBlock" : ipAddress
+                                    }]
+
+                                [@createNetworkACLEntry
+                                    id=formatId(ruleId,direction,ruleOrder)
+                                    networkACLId=networkACLId
+                                    outbound=(direction=="outbound")
+                                    rule=networkRule
+                                    port=returnPort
+                                /]
+                            [/#list]
+                        [/#if]
                     [/#if]
                 [/#list]
             [/#if]
