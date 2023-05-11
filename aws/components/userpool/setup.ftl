@@ -169,13 +169,15 @@
 
     [#local schema = []]
     [#list solution.Schema as key,schemaAttribute ]
-        [#local schema +=  getUserPoolSchemaObject(
-                            key,
-                            schemaAttribute.DataType,
-                            schemaAttribute.Mutable,
-                            schemaAttribute.Required,
-                            schemaAttribute.Constraints
-        )]
+        [#if schemaAttribute.Enabled ]
+            [#local schema +=  getUserPoolSchemaObject(
+                                key,
+                                schemaAttribute.DataType,
+                                schemaAttribute.Mutable,
+                                schemaAttribute.Required,
+                                schemaAttribute.Constraints
+            )]
+        [/#if]
     [/#list]
 
     [#if ((mfaRequired) || ( solution.VerifyPhone))]
