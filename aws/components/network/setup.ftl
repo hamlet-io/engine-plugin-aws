@@ -15,10 +15,14 @@
     [#local vpcName = resources["vpc"].Name]
     [#local vpcCIDR = resources["vpc"].Address]
 
+    [#local defaultSecurityGroup = resources["defaultSecurityGroup"] ]
+    [#local defaultNetworkACL = resources["defaultNetworkACL"] ]
+
     [#local dnsSupport = (network.DNSSupport)!solution.DNS.UseProvider ]
     [#local dnsHostnames = (network.DNSHostnames)!solution.DNS.GenerateHostNames ]
 
     [#local loggingProfile = getLoggingProfile(occurrence)]
+    [#local networkProfile = getNetworkProfile(occurrence)]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
@@ -221,6 +225,40 @@
             dnsHostnames=dnsHostnames
             tags=getOccurrenceTags(occurrence)
         /]
+
+        [#-- Catch the Default groups so we can reference them --]
+        [@cfOutput
+            formatId(defaultSecurityGroup.Id, REFERENCE_ATTRIBUTE_TYPE),
+            {
+                "Fn::GetAtt": [
+                    vpcResourceId,
+                    "DefaultSecurityGroup"
+                ]
+            }
+        /]
+
+        [@cfOutput
+            formatId(defaultNetworkACL.Id, REFERENCE_ATTRIBUTE_TYPE),
+            {
+                "Fn::GetAtt": [
+                    vpcResourceId,
+                    "DefaultNetworkAcl"
+                ]
+            }
+        /]
+
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=occurrence
+            groupId={
+                "Fn::GetAtt": [
+                    vpcResourceId,
+                    "DefaultSecurityGroup"
+                ]
+            }
+            networkProfile=networkProfile
+            inboundPorts=[]
+        /]
+
     [/#if]
 
     [#local legacyIGWId = "" ]
@@ -418,11 +456,23 @@
             [#local networkACLRules = resources["rules"]]
 
             [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
-                [@createNetworkACL
-                    id=networkACLId
-                    vpcId=vpcResourceId
-                    tags=getOccurrenceTags(occurrence)
-                /]
+
+                [#if ! resources["networkACL"].DefaultACL ]
+                    [@createNetworkACL
+                        id=networkACLId
+                        vpcId=vpcResourceId
+                        tags=getOccurrenceTags(occurrence)
+                    /]
+                [/#if]
+
+                [#if resources["networkACL"].DefaultACL ]
+                    [#local networkACLId = {
+                        "Fn::GetAtt": [
+                            vpcResourceId,
+                            "DefaultNetworkAcl"
+                        ]
+                    }]
+                [/#if]
 
                 [#list networkACLRules as id, rule ]
                     [#local ruleId = rule.Id ]
@@ -461,7 +511,7 @@
                         [#local forwardIpAddresses = getGroupCIDRs(ruleConfig.Source.IPAddressGroups, true, occurrence)]
                         [#local forwardPort = (ports[ruleConfig.Destination.Port])!{}]
                         [#local returnIpAddresses = [ "0.0.0.0/0" ]]
-                        [#local returnPort = (ports[ruleConfig.Destination.Port])!{}]
+                        [#local returnPort = (ports[ruleConfig.Source.Port])!{}]
 
                     [#else]
                         [@fatal

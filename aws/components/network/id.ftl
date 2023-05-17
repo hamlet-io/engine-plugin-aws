@@ -24,6 +24,20 @@
         ]
 /]
 
+[@addResourceGroupAttributeValues
+    type=NETWORK_ACL_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names": "DefaultACL",
+            "Description" : "Apply the rules for this ACL to the default VPC ACL",
+            "Types" : BOOLEAN_TYPE,
+            "Default": false
+        }
+    ]
+/]
+
+
 [@addResourceGroupInformation
     type=NETWORK_ROUTE_TABLE_COMPONENT_TYPE
     attributes=[]
