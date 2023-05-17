@@ -159,6 +159,22 @@
                     ]]
                 [#break]
 
+                [#case AWS_WAF_REGEX_MATCH_CONDITION_TYPE]
+                    [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
+                        [#local v2WkStatement += [
+                            {
+                                "RegexPatternSetReferenceStatement": {
+                                    "Arn": getArn(
+                                        formatDependentWAFConditionId(condition.Type, id, "c" + condition?counter?c)
+                                    ),
+                                    "FieldToMatch": formatV2FieldMatch(field),
+                                    "TextTransformations": formatV2TextTransformations(filter.Transformations)
+                                }
+                            }
+                        ]]
+                    [/#list]
+                [#break]
+
                 [#default]
                     [#local v2WkStatement += [ { "HamletFatal:UnknownStatement": condition } ]]
                     [@fatal message="Unknown WAF statement type" context=filter /]
@@ -186,7 +202,7 @@
 [/#function]
 
 [#-- Capture similarity between conditions --]
-[#macro createWAFMatchSetFromCondition id name conditionType filters=[] valueSet={} regional=false]
+[#macro createWAFSetFromCondition id name conditionType filters=[] valueSet={} regional=false]
 
     [#local wafConditionDetails = getWAFConditionSetMappings(conditionType)]
     [#if ((wafConditionDetails.ResourceType)!{})?has_content]
@@ -194,55 +210,42 @@
         [#local hamletResourceType = wafConditionDetails["ResourceType"]["hamlet"]]
         [#local cfnResourceType = wafConditionDetails["ResourceType"]["cfn"]]
 
-        [#local result = [] ]
-        [#list asArray(filters) as filter]
-            [#switch conditionType]
-                [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFByteMatchTuples(filter, valueSet) ]
-                    [#break]
-                [#case AWS_WAF_GEO_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFGeoMatchTuples(filter, valueSet) ]
-                    [#break]
-                [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFIPMatchTuples(filter, valueSet) ]
-                    [#break]
-                [#case AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
-                    [#local result += formatWAFSizeConstraintTuples(filter, valueSet) ]
-                    [#break]
-                [#case AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFSqlInjectionMatchTuples(filter, valueSet) ]
-                    [#break]
-                [#case AWS_WAF_XSS_MATCH_CONDITION_TYPE]
-                    [#local result += formatWAFXssMatchTuples(filter, valueSet) ]
-                    [#break]
-            [/#switch]
-        [/#list]
+        [#switch hamletResourceType ]
+            [#case AWS_WAFV2_IPSET_RESOURCE_TYPE]
+                [@cfResource
+                    id=id
+                    type=cfnResourceType
+                    properties=
+                        {
+                            "Name": name,
+                            "Scope" : regional?then("REGIONAL","CLOUDFRONT"),
+                            "IPAddressVersion" : "IPV4",
+                            "Addresses": asFlattenedArray(
+                                filters?map(
+                                    getWAFValueList(filter.Targets, valueSet)
+                                )
+                            )
+                        }
+                /]
+                [#break]
 
-        [@cfResource
-            id=id
-            type=cfnResourceType
-            properties=
-                {
-                    "Name": name,
-                    "Scope" : regional?then("REGIONAL","CLOUDFRONT")
-                } +
-                (conditionType == "IPMatch")?then(
-                    {
-                        "IPAddressVersion" : "IPV4"
-                    },
-                    {}
-                )+
-                contentIfContent(
-                    attributeIfContent(
-                        (conditionType == "IPMatch")?then(
-                            "Addresses",
-                            wafConditionDetails.TuplesAttributeKey!""
-                        ),
-                        result
-                    ),
-                    result
-                )
-        /]
+            [#case AWS_WAFV2_REGEX_PATTERN_SET_RESOURCE_TYPE]
+                [@cfResource
+                    id=id
+                    type=cfnResourceType
+                    properties=
+                        {
+                            "Name": name,
+                            "Scope" : regional?then("REGIONAL","CLOUDFRONT"),
+                            "RegularExpressionList": asFlattenedArray(
+                                filters?map(filter ->
+                                    getWAFValueList(filter.Targets, valueSet)
+                                )
+                            )
+                        }
+                /]
+                [#break]
+        [/#switch]
     [/#if]
 [/#macro]
 
@@ -263,7 +266,7 @@
         [/#if]
         [#if condition.Filters?has_content]
             [#-- Condition to be created with the rule --]
-            [@createWAFMatchSetFromCondition
+            [@createWAFSetFromCondition
                 id=conditionId
                 name=conditionName
                 conditionType=condition.Type
