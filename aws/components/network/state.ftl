@@ -182,6 +182,14 @@
                     "Address": networkCIDR,
                     "Type" : AWS_VPC_RESOURCE_TYPE
                 },
+                "defaultSecurityGroup": {
+                    "Id": formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id, "default"),
+                    "Type": AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+                },
+                "defaultNetworkACL": {
+                    "Id": formatResourceId(AWS_VPC_NETWORK_ACL_RESOURCE_TYPE, core.Id, "default"),
+                    "Type" : AWS_VPC_NETWORK_ACL_RESOURCE_TYPE
+                },
                 "subnets" : subnets
             } +
             legacyVpc?then(
@@ -289,17 +297,24 @@
         [#local networkACLName = formatNetworkACLName(core.Name)]
     [/#if]
 
+    [#if solution["aws:DefaultACL"] ]
+        [#local networkACLId = parent.State.Resources.defaultNetworkACL ]
+        [#local networkACLName = "default" ]
+    [/#if]
+
     [#local networkACLRules = {}]
     [#list solution.Rules as id, rule]
-        [#local networkACLRules += {
-            rule.Id : {
-                "Id" :  formatDependentResourceId(
-                            AWS_VPC_NETWORK_ACL_RULE_RESOURCE_TYPE,
-                            networkACLId,
-                            rule.Id),
-                "Type" : AWS_VPC_NETWORK_ACL_RULE_RESOURCE_TYPE
-            }
-        }]
+        [#if rule.Enabled ]
+            [#local networkACLRules += {
+                rule.Id : {
+                    "Id" :  formatDependentResourceId(
+                                AWS_VPC_NETWORK_ACL_RULE_RESOURCE_TYPE,
+                                networkACLId,
+                                rule.Id),
+                    "Type" : AWS_VPC_NETWORK_ACL_RULE_RESOURCE_TYPE
+                }
+            }]
+        [/#if]
     [/#list]
 
     [#assign componentState =
@@ -308,7 +323,8 @@
                 "networkACL" : {
                     "Id" : networkACLId,
                     "Name" : networkACLName,
-                    "Type" : AWS_VPC_NETWORK_ACL_RESOURCE_TYPE
+                    "Type" : AWS_VPC_NETWORK_ACL_RESOURCE_TYPE,
+                    "DefaultACL": (solution["aws:DefaultACL"])!false
                 },
                 "rules" : networkACLRules
             },

@@ -286,7 +286,7 @@
         type="AWS::EC2::SecurityGroupEgress"
         properties=
             {
-                "GroupId" : getReference(groupId)
+                "GroupId" : groupId?is_string?then(getReference(groupId), groupId)
             } +
             getSecurityGroupRules(port, cidr, group, "egress", description )[0]
         outputs={}
@@ -776,7 +776,7 @@
         properties=
             properties +
             {
-                "NetworkAclId" : getReference(networkACLId),
+                "NetworkAclId" : networkACLId?is_string?then(getReference(networkACLId), networkACLId),
                 "Egress" : outbound,
                 "RuleNumber" : rule.RuleNumber,
                 "RuleAction" : rule.Allow?string("allow","deny"),
