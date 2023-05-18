@@ -457,14 +457,6 @@
 
             [#if deploymentSubsetRequired(NETWORK_COMPONENT_TYPE, true)]
 
-                [#if ! resources["networkACL"].DefaultACL ]
-                    [@createNetworkACL
-                        id=networkACLId
-                        vpcId=vpcResourceId
-                        tags=getOccurrenceTags(occurrence)
-                    /]
-                [/#if]
-
                 [#if resources["networkACL"].DefaultACL ]
                     [#local networkACLId = {
                         "Fn::GetAtt": [
@@ -472,6 +464,13 @@
                             "DefaultNetworkAcl"
                         ]
                     }]
+                [#else ]
+
+                    [@createNetworkACL
+                        id=networkACLId
+                        vpcId=vpcResourceId
+                        tags=getOccurrenceTags(occurrence)
+                    /]
                 [/#if]
 
                 [#list networkACLRules as id, rule ]
