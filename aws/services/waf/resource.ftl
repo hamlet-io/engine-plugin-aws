@@ -221,7 +221,7 @@
                             "Scope" : regional?then("REGIONAL","CLOUDFRONT"),
                             "IPAddressVersion" : "IPV4",
                             "Addresses": asFlattenedArray(
-                                filters?map(
+                                filters?map(filter ->
                                     getWAFValueList(filter.Targets, valueSet)
                                 )
                             )
