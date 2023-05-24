@@ -63,7 +63,7 @@
 [/#function]
 
 [#function formatV2Conditions conditions valueSet={} id=""]
-    [#local v2Statements = []]
+    [#local statements = []]
     [#list conditions as condition]
         [#local v2WkStatement = []]
 
@@ -187,18 +187,18 @@
         [/#if]
 
         [#if condition.Negated]
-            [#local v2Statements += [ { "NotStatement": {"Statement": v2WkStatement[0] }}] ]
+            [#local statements += [ { "NotStatement": {"Statement": v2WkStatement[0] }}] ]
         [#else]
-            [#local v2Statements += v2WkStatement]
+            [#local statements += v2WkStatement]
         [/#if]
     [/#list]
 
-    [#if v2Statements?size > 1]
-        [#local v2Statements = { "AndStatement": { "Statements": v2Statements}}]
+    [#if statements?size > 1]
+        [#local statements = { "AndStatement": { "Statements": statements}}]
     [#else]
-        [#local v2Statements = (v2Statements[0])!{} ]
+        [#local statements = (statements[0])!{} ]
     [/#if]
-    [#return v2Statements]
+    [#return statements]
 [/#function]
 
 [#-- Capture similarity between conditions --]
@@ -251,10 +251,9 @@
 
 
 [#-- Creates the WAF Rule along with any MatchSets required for the conditions of the rule --]
-[#macro setupWAFRule id name metric conditions=[] valueSet={} regional=false rateKey="" rateLimit="" ]
+[#macro setupWAFMatchSetsFromConditions id name conditions=[] valueSet={} regional=false ]
     [#local predicates = [] ]
     [#list asArray(conditions) as condition]
-        [#local rateBased = (rateKey?has_content && rateLimit?has_content)]
         [#local conditionId = condition.Id!""]
         [#local conditionName = condition.Name!conditionId]
         [#-- Generate id/name from rule equivalents if not provided --]
@@ -275,17 +274,7 @@
                 regional=regional
             /]
         [/#if]
-        [#local predicates +=
-            [
-                {
-                    "DataId" : getReference(conditionId),
-                    "Negated" : (condition.Negated)!false,
-                    "Type" : rateBased?then("IPMatch", condition.Type)
-                }
-            ]
-        ]
     [/#list]
-
 [/#macro]
 
 [#-- Rules are grouped into bands. Bands are sorted into ascending alphabetic --]
@@ -301,6 +290,8 @@
 
     [#-- Priorities based on band order --]
     [#local aclRules = [] ]
+    [#local customResponseBodies = {}]
+
     [#local nextRulePriority = 1]
     [#list bands as band]
         [#list asArray(rules) as rule]
@@ -311,6 +302,7 @@
             [#local ruleId = rule.Id!""]
             [#local ruleName = rule.Name!ruleId]
             [#local ruleMetric = rule.Metric!ruleName]
+
             [#-- Rule to be created with the acl --]
             [#-- Generate id/name/metric from acl equivalents if not provided --]
             [#if !ruleId?has_content]
@@ -322,21 +314,87 @@
             [#if !ruleMetric?has_content]
                 [#local ruleMetric = formatId(metric,"r" + rule?counter?c)]
             [/#if]
+
             [#if rule.Conditions?has_content]
-                [@setupWAFRule
+                [@setupWAFMatchSetsFromConditions
                     id=ruleId
                     name=ruleName
-                    metric=ruleMetric
                     conditions=rule.Conditions
                     valueSet=valueSet
                     regional=regional
-                    rateKey=rule.RateKey!""
-                    rateLimit=rule.RateLimit!""/]
+                /]
             [/#if]
 
-            [#local v2OverrideAction = ""]
-            [#local v2Action = (rule.Action)?lower_case?cap_first]
-            [#local v2Statement = formatV2Conditions(rule.Conditions, valueSet, ruleId) ]
+            [#local overrideAction = ""]
+            [#local action = (rule.Action)?lower_case?cap_first ]
+            [#local actionExtensions = {} ]
+
+            [#local blockCustomResponse = rule["Action:BLOCK"].CustomResponse]
+            [#if action == "Block" && blockCustomResponse.Enabled ]
+
+                [#local responseBodyContentType = ""]
+                [#switch blockCustomResponse.Body.ContentType ]
+                    [#case "application/json"]
+                        [#local responseBodyContentType = "APPLICATION_JSON"]
+                        [#break]
+                    [#case "text/html"]
+                        [#local responseBodyContentType = "TEXT_HTML"]
+                        [#break]
+                    [#case "text/plain"]
+                        [#local responseBodyContentType = "TEXT_PLAIN"]
+                        [#break]
+                    [#default]
+                        [@fatal
+                            message="Invalid Content Type for Block response"
+                            context={
+                                "Rule": rule.Id,
+                                "ContentType": blockCustomResponse.Body.ContentType
+                            }
+                        /]
+                [/#switch]
+
+                [#local customResponseBodies = mergeObjects(
+                    customResponseBodies,
+                    {
+                        ruleName : {
+                            "Content": blockCustomResponse.Body.Content,
+                            "ContentType": responseBodyContentType
+                        }
+                    }
+                )]
+
+                [#local blockCustomResponeHeaders = [] ]
+                [#if (blockCustomResponse.Headers)?has_content ]
+                    [#list blockCustomResponeHeaders as k,v ]
+                        [#local blockCustomResponeHeaders = combineEntities(
+                            blockCustomResponeHeaders,
+                            [
+                                {
+                                    "Name": (v.Key)!k,
+                                    "Value": v.Value
+                                }
+                            ],
+                            UNIQUE_COMBINE_BEHAVIOUR
+                        )]
+                    [/#list]
+                [/#if]
+
+                [#local actionExtensions = mergeObjects(
+                    actionExtensions,
+                    {
+                        "CustomResponse": {
+                            "CustomResponseBodyKey": ruleName,
+                            "ResponseCode": blockCustomResponse.StatusCode
+                        } +
+                        attributeIfContent(
+                            "ResponseHeaders",
+                            blockCustomResponeHeaders
+                        )
+                    }
+                )]
+            [/#if]
+
+            [#local statement = formatV2Conditions(rule.Conditions, valueSet, ruleId) ]
 
             [#local rateLimitRule = {}]
             [#switch rule.Engine ]
@@ -374,12 +432,12 @@
                         }
                     )]
 
-                    [#local v2Statement = {
+                    [#local statement = {
                         "RateBasedStatement" : rateLimitRule +
                             attributeIfTrue(
                                 "ScopeDownStatement",
-                                v2Statement?has_content,
-                                v2Statement
+                                statement?has_content,
+                                statement
                             )
                     }]
                     [#break]
@@ -397,10 +455,10 @@
                     [/#if]
 
                     [#-- Actions are controlled by the indvidual rules within a vendor managed group --]
-                    [#local v2Action = ""]
+                    [#local action = ""]
                     [#-- The recommendation from AWS is to always use None and then add overrides for particular rules in the group --]
                     [#-- https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-wafv2-webacl-overrideaction.html --]
-                    [#local v2OverrideAction =
+                    [#local overrideAction =
                         {
                             "None": {}
                         }
@@ -424,12 +482,12 @@
                         rule["Engine:VendorManaged"].DisabledRules
                     )]
 
-                    [#local v2Statement = {
+                    [#local statement = {
                         "ManagedRuleGroupStatement" : vendorManagedRule +
                             attributeIfTrue(
                                 "ScopeDownStatement",
-                                v2Statement?has_content,
-                                v2Statement
+                                statement?has_content,
+                                statement
                             )
                     }]
                     [#break]
@@ -440,7 +498,7 @@
                     {
                         "Name" : ruleName,
                         "Priority" : nextRulePriority,
-                        "Statement" : v2Statement,
+                        "Statement" : statement,
                         "VisibilityConfig" : {
                             "CloudWatchMetricsEnabled" : true,
                             "MetricName" : ruleName,
@@ -449,14 +507,14 @@
                     } +
                     attributeIfContent(
                         "Action",
-                        v2Action,
+                        action,
                         {
-                            v2Action: {}
+                            action: actionExtensions
                         }
                     ) +
                     attributeIfContent(
                         "OverrideAction",
-                        v2OverrideAction
+                        overrideAction
                     )
                 ]
             ]
@@ -476,7 +534,11 @@
             "MetricName" : name,
             "SampledRequestsEnabled" : true
         }
-    }]
+    } +
+    attributeIfContent(
+        "CustomResponseBodies",
+        customResponseBodies
+    )]
 
     [@cfResource
         id=id
