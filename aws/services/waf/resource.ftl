@@ -329,9 +329,8 @@
             [#local action = (rule.Action)?lower_case?cap_first ]
             [#local actionExtensions = {} ]
 
-            [#local blockCustomResponse = rule["Action:BLOCK"].CustomResponse]
-            [#if action == "Block" && blockCustomResponse.Enabled ]
-
+            [#if action == "Block" && (rule["Action:BLOCK"].CustomResponse.Enabled)!false ]
+                [#local blockCustomResponse = rule["Action:BLOCK"].CustomResponse]
                 [#local responseBodyContentType = ""]
                 [#switch blockCustomResponse.Body.ContentType ]
                     [#case "application/json"]
@@ -561,36 +560,36 @@
 
     [#if getGroupCIDRs(wafSolution.IPAddressGroups, true, occurrence, true) ]
         [#local wafValueSet += {
-                "whitelistedips" : getGroupCIDRs(wafSolution.IPAddressGroups, true, occurrence)
-            } ]
+            "whitelistedips" : getGroupCIDRs(wafSolution.IPAddressGroups, true, occurrence)
+        }]
         [#local wafProfile += {
                 "Rules" :
                     wafProfile.Rules +
                     [
                         {
-                        "Rule" : "whitelistips",
-                        "Action" : "Allow"
+                            "Rule" : "whitelistips",
+                            "Action" : "ALLOW"
                         }
                     ],
-                "DefaultAction" : "Block"
+                "DefaultAction" : "BLOCK"
             } ]
     [/#if]
 
     [#local whitelistedCountryCodes = getGroupCountryCodes(wafSolution.CountryGroups, false) ]
     [#if whitelistedCountryCodes?has_content]
         [#local wafValueSet += {
-                "whitelistedcountrycodes" : whitelistedCountryCodes
-            } ]
+            "whitelistedcountrycodes" : whitelistedCountryCodes
+        }]
         [#local wafProfile += {
                 "Rules" :
                     wafProfile.Rules +
                     [
                         {
-                        "Rule" : "whitelistcountries",
-                        "Action" : "Allow"
+                            "Rule" : "whitelistcountries",
+                            "Action" : "ALLOW"
                         }
                     ],
-                "DefaultAction" : "Block"
+                "DefaultAction" : "BLOCK"
             } ]
     [/#if]
 
@@ -598,17 +597,22 @@
     [#if blacklistedCountryCodes?has_content]
         [#local wafValueSet += {
                 "blacklistedcountrycodes" : blacklistedCountryCodes
-            } ]
+        }]
         [#local wafProfile += {
                 "Rules" :
                     wafProfile.Rules +
                     [
                         {
-                        "Rule" : "blacklistcountries",
-                        "Action" : "Block"
+                            "Rule" : "blacklistcountries",
+                            "Action" : "BLOCK",
+                            "Action:BLOCK": {
+                                "CustomResponse": {
+                                    "Enabled": false
+                                }
+                            }
                         }
                     ],
-                "DefaultAction" : "Allow"
+                "DefaultAction" : "ALLOW"
             } ]
     [/#if]
     [#local rules = getWAFProfileRules(
