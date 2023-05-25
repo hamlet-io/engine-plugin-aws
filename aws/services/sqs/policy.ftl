@@ -105,7 +105,7 @@
                 "",
                 {
                     "StringEquals" : {
-                        "kms:ViaService" : formatDomainName( "sqs", ququeRegion, "amazonaws.com" )
+                        "kms:ViaService" : formatDomainName( "sqs", queueRegion, "amazonaws.com" )
                     }
                 }
             )
