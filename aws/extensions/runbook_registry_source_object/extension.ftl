@@ -26,14 +26,15 @@
         {
             "TaskParameters" : {
                 "BucketName" : ((image.RegistryPath)!"")?replace("s3://", "")?keep_before("/"),
-                "Object": ((image.RegistryPath)!"")?replace("s3://", "")?keep_after("/")
-                    + (_context.Inputs["input:Reference"] == "_latest")?then(
+                "Object": formatRelativePath(
+                    ((image.RegistryPath)!"")?replace("s3://", "")?keep_after("/"),
+                    (_context.Inputs["input:Reference"] == "_latest")?then(
                         image.Reference,
                         _context.Inputs["input:Reference"]
-                    )
-                    + (image.ImageFileName)!""
+                    ),
+                    (image.ImageFileName)!""
+                )
             }
         }
     )]
-
 [/#macro]
