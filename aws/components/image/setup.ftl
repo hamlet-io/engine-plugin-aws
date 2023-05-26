@@ -170,7 +170,7 @@
         [#case "openapi"]
 
             [#switch solution.Source]
-                [#case "registry"]
+                [#case "Local"]
                     [#break]
                 [#case "url"]
                     [#if deploymentSubsetRequired("epilogue", false)]
@@ -190,7 +190,6 @@
 
             [#switch solution.Source]
                 [#case "Local"]
-                [#case "registry"]
                     [#break]
 
                 [#case "ContainerRegistry"]
@@ -230,7 +229,7 @@
 
         [#case "lambda_jar" ]
             [#switch solution.Source]
-                [#case "registry"]
+                [#case "Local"]
                     [#break]
                 [#case "url"]
                     [#if deploymentSubsetRequired("epilogue", false)]
