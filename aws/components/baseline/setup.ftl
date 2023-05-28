@@ -301,6 +301,8 @@
                 [@createS3Bucket
                     id=bucketId
                     name=bucketName
+                    cannedACL="LogDeliveryWrite"
+                    objectOwnershipConfiguration=getS3ObjectOwnershipConfiguration("ownerpreferred")
                     versioning=versioningEnabled
                     lifecycleRules=lifecycleRules
                     notifications=notifications
