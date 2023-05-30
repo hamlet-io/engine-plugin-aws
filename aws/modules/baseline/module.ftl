@@ -543,9 +543,9 @@
                             "Engine": "hamlet",
                             "Inputs" : {
                                 "LocalPath" : {
-                                    "Description" : "The path to place the image if a file based image is used",
+                                    "Description" : "The full local path to save the image",
                                     "Types" : [ "string" ],
-                                    "Default" : "./"
+                                    "Default" : "./image.zip"
                                 },
                                 "Reference" : {
                                     "Description" : "The image reference to pull down - _latest is the current one",
