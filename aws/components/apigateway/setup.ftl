@@ -1161,7 +1161,7 @@
             /]
         [/#if]
 
-        [#if image.Source == "url" || image.Source == "registry" ]
+        [#if image.Source == "url" || ["registry", "Local"]?seq_contains(image.Source) ]
             [@addToDefaultBashScriptOutput
                 content=
                     getAWSImageBuildScript(
