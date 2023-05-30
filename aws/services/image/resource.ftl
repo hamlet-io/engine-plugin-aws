@@ -75,7 +75,13 @@
         [#case "Local"]
             [#-- Get Image Reference details --]
             [#local reference = getExistingReference(imageId)]
+
+            [#-- TODO(mfl): once the executor starts generating image stacks using the tag attribute, --]
+            [#-- the extra check for NAME_ATTRIBUTE_TYPE can be removed --]
             [#local tag = getExistingReference(imageId, TAG_ATTRIBUTE_TYPE)]
+            [#if ! tag?has_content]
+              [#local tag = getExistingReference(imageId, NAME_ATTRIBUTE_TYPE)]
+            [/#if]
             [#if reference?has_content ]
                 [#local referenceSource = "output"]
             [/#if]
