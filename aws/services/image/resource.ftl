@@ -321,7 +321,7 @@
             "copyFilesFromBucket" + " " +
                 region + " " +
                 image.ImageLocation?keep_after("s3://")?keep_before("/") + " " +
-                image.ImageLocation?keep_after("s3://")?keep_after("/") + " " +
+                image.ImageLocation?keep_after("s3://")?keep_after("/")?keep_before_last("/") + " " +
                 "\"$\{tmpdir}\" || return $?",
             "#",
             "addToArray" + " " +
