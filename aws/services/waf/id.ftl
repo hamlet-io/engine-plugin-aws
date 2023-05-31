@@ -12,50 +12,23 @@
 [#assign AWS_WAFV2_IPSET_RESOURCE_TYPE = "wafv2IpSet" ]
 [#assign AWS_WAFV2_REGEX_PATTERN_SET_RESOURCE_TYPE = "wafv2RegexPatternSet" ]
 
-[#-- Condition types --]
-[#assign AWS_WAF_BYTE_MATCH_CONDITION_TYPE = "ByteMatch" ]
-[#assign AWS_WAF_GEO_MATCH_CONDITION_TYPE = "GeoMatch" ]
-[#assign AWS_WAF_IP_MATCH_CONDITION_TYPE = "IPMatch" ]
-[#assign AWS_WAF_REGEX_MATCH_CONDITION_TYPE = "RegexMatch" ]
-[#assign AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE = "SizeConstraint" ]
-[#assign AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE = "SqlInjectionMatch" ]
-[#assign AWS_WAF_XSS_MATCH_CONDITION_TYPE = "XssMatch" ]
-
 
 [#-- Capture the variability between the various conditions --]
 [#function getWAFConditionSetMappings conditionType ]
     [#switch conditionType]
-        [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
-            [#return
-                {
-                    "ResourceType" : {},
-                    "TuplesAttributeKey" : "ByteMatchTuples"
-                }
-            ]
-            [#break]
 
-        [#case AWS_WAF_GEO_MATCH_CONDITION_TYPE]
-            [#return
-                {
-                    "ResourceType" : {},
-                    "TuplesAttributeKey" : "GeoMatchConstraints"
-                }
-            ]
-            [#break]
-
-        [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
+        [#case WAF_IP_MATCH_CONDITION_TYPE]
             [#return
                 {
                     "ResourceType" : {
                         "hamlet": AWS_WAFV2_IPSET_RESOURCE_TYPE,
                         "cfn": "AWS::WAFv2::IPSet"
-                    },
-                    "TuplesAttributeKey" : "IPSetDescriptors"
+                    }
                 }
             ]
             [#break]
 
-        [#case AWS_WAF_REGEX_MATCH_CONDITION_TYPE]
+        [#case WAF_REGEX_MATCH_CONDITION_TYPE]
             [#return
                 {
                     "ResourceType": {
@@ -66,38 +39,34 @@
             ]
             [#break]
 
-
-        [#case AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
+        [#case WAF_GEO_MATCH_CONDITION_TYPE]
+        [#case WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
+        [#case WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
+        [#case WAF_BYTE_MATCH_CONDITION_TYPE]
+        [#case WAF_XSS_MATCH_CONDITION_TYPE]
+        [#case WAF_LABEL_MATCH_CONDITION_TYPE]
             [#return
                 {
-                    "ResourceType" : {},
-                    "TuplesAttributeKey" : "SizeConstraints"
-                }
-            ]
-            [#break]
-
-        [#case AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
-            [#return
-                {
-                    "ResourceType" : {},
-                    "TuplesAttributeKey" : "SqlInjectionMatchTuples"
-                }
-            ]
-            [#break]
-
-        [#case AWS_WAF_XSS_MATCH_CONDITION_TYPE]
-            [#return
-                {
-                    "ResourceType" : {},
-                    "TuplesAttributeKey" : "XssMatchTuples"
+                    "ResourceType" : {}
                 }
             ]
             [#break]
     [/#switch]
+
+    [@fatal
+        message="Invalid WAF Condition Type"
+        context={
+            "Type": conditionType
+        }
+    /]
+    [#return
+        {
+            "ResourceType" : {}
+        }
+    ]
 [/#function]
 
 [#list [
-
     AWS_WAFV2_RULE_RESOURCE_TYPE,
     AWS_WAFV2_ACL_RESOURCE_TYPE,
     AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE,
