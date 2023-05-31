@@ -69,7 +69,7 @@
 
         [#list condition.Filters as filter]
             [#switch condition.Type]
-                [#case AWS_WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
+                [#case WAF_SQL_INJECTION_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#local v2WkStatement += [
                             {
@@ -82,7 +82,7 @@
                     [/#list]
                 [#break]
 
-                [#case AWS_WAF_XSS_MATCH_CONDITION_TYPE]
+                [#case WAF_XSS_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#local v2WkStatement += [
                             {
@@ -95,7 +95,7 @@
                     [/#list]
                 [#break]
 
-                [#case AWS_WAF_BYTE_MATCH_CONDITION_TYPE]
+                [#case WAF_BYTE_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#list getWAFValueList(filter.Constraints, valueSet) as constraint]
                             [#list getWAFValueList(filter.Targets, valueSet) as target]
@@ -114,7 +114,7 @@
                     [/#list]
                 [#break]
 
-                [#case AWS_WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
+                [#case WAF_SIZE_CONSTRAINT_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#list getWAFValueList(filter.Operators, valueSet) as operator]
                             [#list getWAFValueList(filter.Sizes, valueSet) as size]
@@ -133,7 +133,7 @@
                     [/#list]
                 [#break]
 
-                [#case AWS_WAF_GEO_MATCH_CONDITION_TYPE]
+                [#case WAF_GEO_MATCH_CONDITION_TYPE]
                     [#local v2WkGeo = []]
                     [#list getWAFValueList(filter.Targets, valueSet) as target]
                         [#local v2WkGeo += [ target] ]
@@ -147,7 +147,7 @@
                     ]]
                 [#break]
 
-                [#case AWS_WAF_IP_MATCH_CONDITION_TYPE]
+                [#case WAF_IP_MATCH_CONDITION_TYPE]
                     [#local v2WkStatement += [
                         {
                             "IPSetReferenceStatement": {
@@ -159,7 +159,7 @@
                     ]]
                 [#break]
 
-                [#case AWS_WAF_REGEX_MATCH_CONDITION_TYPE]
+                [#case WAF_REGEX_MATCH_CONDITION_TYPE]
                     [#list getWAFValueList(filter.FieldsToMatch, valueSet) as field]
                         [#local v2WkStatement += [
                             {
@@ -169,6 +169,19 @@
                                     ),
                                     "FieldToMatch": formatV2FieldMatch(field),
                                     "TextTransformations": formatV2TextTransformations(filter.Transformations)
+                                }
+                            }
+                        ]]
+                    [/#list]
+                [#break]
+
+                [#case WAF_LABEL_MATCH_CONDITION_TYPE]
+                    [#list getWAFValueList(filter.Targets, valueSet) as target]
+                        [#local v2WkStatement += [
+                            {
+                                "LabelMatchStatement": {
+                                    "Key": target,
+                                    "Scope": filter["Type:LabelMatch"]["Scope"]
                                 }
                             }
                         ]]
@@ -331,8 +344,25 @@
 
             [#if action == "Block" && (rule["Action:BLOCK"].CustomResponse.Enabled)!false ]
                 [#local blockCustomResponse = rule["Action:BLOCK"].CustomResponse]
+
+                [#local responseBodyContent = ""]
+                [#if (rule["Action:BLOCK"].CustomResponse.Body.Content)?? ]
+                    [#local responseBodyContent = rule["Action:BLOCK"].CustomResponse.Body.Content ]
+                [#elseif (rule["Action:BLOCK"].CustomResponse.Body.ContentWAFValue)?? ]
+                    [#local responseBodyContent = getWAFValueList(asArray(rule["Action:BLOCK"].CustomResponse.Body.ContentWAFValue), valueSet)?join("\n") ]
+                [#else]
+                    [@fatal
+                        message="Missing custom block response body"
+                        detail="Provider either a Body.Content or Body.ContentWAFValue entry"
+                        context={
+                            "Rule": ruleId,
+                            "CustomReponse": blockCustomResponse
+                        }
+                    /]
+                [/#if]
+
                 [#local responseBodyContentType = ""]
-                [#switch blockCustomResponse.Body.ContentType ]
+                [#switch rule["Action:BLOCK"].CustomResponse.Body.ContentType ]
                     [#case "application/json"]
                         [#local responseBodyContentType = "APPLICATION_JSON"]
                         [#break]
@@ -346,25 +376,26 @@
                         [@fatal
                             message="Invalid Content Type for Block response"
                             context={
-                                "Rule": rule.Id,
-                                "ContentType": blockCustomResponse.Body.ContentType
+                                "Rule": ruleId,
+                                "ContentType": rule["Action:BLOCK"].CustomResponse.Body.ContentType
                             }
                         /]
                 [/#switch]
 
                 [#local customResponseBodies = mergeObjects(
-                    customResponseBodies,
-                    {
-                        ruleName : {
-                            "Content": blockCustomResponse.Body.Content,
-                            "ContentType": responseBodyContentType
+                        customResponseBodies,
+                        {
+                            ruleName : {
+                                "Content": responseBodyContent,
+                                "ContentType": responseBodyContentType
+                            }
                         }
-                    }
-                )]
+                    )
+                ]
 
                 [#local blockCustomResponeHeaders = [] ]
                 [#if (blockCustomResponse.Headers)?has_content ]
-                    [#list blockCustomResponeHeaders as k,v ]
+                    [#list blockCustomResponse.Headers as k,v ]
                         [#local blockCustomResponeHeaders = combineEntities(
                             blockCustomResponeHeaders,
                             [
@@ -481,12 +512,46 @@
                         rule["Engine:VendorManaged"].DisabledRules
                     )]
 
+                    [#local ruleActionOverrides = []]
+                    [#list rule["Engine:VendorManaged"].ActionOverrides as k, override ]
+                        [#local ruleActionOverrideRawName = (override.Name)!k ]
+
+                        [#local ruleActionOverrideName = formatName(ruleName, ruleActionOverrideRawName) ]
+                        [#local ruleActionOverrideId = formatId(ruleId, ruleActionOverrideRawName) ]
+
+                        [#local ruleActionOverride = {}]
+
+                        [#switch override.Action]
+                            [#case "BLOCK"]
+                            [#case "ALLOW"]
+                            [#case "COUNT"]
+                                [#local ruleActionOverride = { (override.Action)?lower_case?cap_first : {}}]
+                                [#break]
+                        [/#switch]
+
+                        [#local ruleActionOverrides = combineEntities(
+                            ruleActionOverrides,
+                            [
+                                {
+                                    "Name": ruleActionOverrideRawName,
+                                    "ActionToUse": ruleActionOverride
+                                }
+                            ],
+                            APPEND_COMBINE_BEHAVIOUR
+                        )]
+
+                    [/#list]
+
                     [#local statement = {
                         "ManagedRuleGroupStatement" : vendorManagedRule +
                             attributeIfTrue(
                                 "ScopeDownStatement",
                                 statement?has_content,
                                 statement
+                            ) +
+                            attributeIfContent(
+                                "RuleActionOverrides",
+                                ruleActionOverrides
                             )
                     }]
                     [#break]
