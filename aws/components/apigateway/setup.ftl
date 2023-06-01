@@ -1163,7 +1163,7 @@
 
         [#if
             ["url", "registry", "Local"]?seq_contains(image.Source) ||
-            ((image.Source == "link") && (RegistryType == "s3")) ]
+            ((image.Source == "link") && (image.RegistryType == "s3")) ]
             [@addToDefaultBashScriptOutput
                 content=
                     getAWSImageBuildScript(
