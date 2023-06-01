@@ -260,14 +260,18 @@
                     [/#if]
                     [#break]
 
+                [#case CDN_COMPONENT_TYPE]
                 [#case CDN_ROUTE_COMPONENT_TYPE ]
 
-                    [#local originPath = (linkTargetConfiguration.Solution.Origin.BasePath)?remove_ending("/") ]
+                    [#local cdnBaselineLinks = getBaselineLinks(linkTarget, [ "CDNOriginKey" ])]
+                    [#local cdnBaselineComponentIds = getBaselineComponentIds(cdnBaselineLinks)]
+                    [#local cdnCFAccessId  = getExistingReference(cdnBaselineComponentIds["CDNOriginKey"]!"", CANONICAL_ID_ATTRIBUTE_TYPE) ]
+
                     [#if linkDirection == "inbound" ]
                         [#local policyStatements +=
                             s3ReadPermission(
                                 s3Name,
-                                originPath,
+                                "",
                                 "*",
                                 {
                                     "CanonicalUser": cfAccessId
@@ -275,7 +279,7 @@
                             ) +
                             s3ListPermission(
                                 s3Name,
-                                originPath,
+                                "",
                                 "*",
                                 {
                                     "CanonicalUser": cfAccessId
