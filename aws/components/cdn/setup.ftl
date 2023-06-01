@@ -304,8 +304,6 @@
                         "Tier" : subOccurrence.Core.Tier.Id,
                         "Component" : subOccurrence.Core.Component.RawId,
                         "SubComponent" : subSolution["CachePolicy:Custom"].Id,
-                        "Instance" : subSolution["CachePolicy:Custom"].Instance,
-                        "Version": subSolution["CachePolicy:Custom"].Version,
                         "Type" : CDN_CACHE_POLICY_COMPONENT_TYPE
                     },
                     false
