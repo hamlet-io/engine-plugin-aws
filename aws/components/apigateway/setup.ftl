@@ -12,8 +12,15 @@
     [#local resources = occurrence.State.Resources ]
     [#local attributes = occurrence.State.Attributes ]
     [#local image =  getOccurrenceImage(occurrence)]
-    [#local buildSettings = occurrence.Configuration.Settings.Build ]
-    [#local buildRegistry = (buildSettings["BUILD_FORMATS"].Value[0])!"HamletFatal No build format defined" ]
+    [#local buildReference =
+        contentIfContent(
+            image.Tag!"",
+            contentIfContent(
+                image.Reference!"",
+                "HamletFatal No build reference defined"
+            )
+        ) ]
+    [#local buildRegistry = image.Format!"HamletFatal No build format defined" ]
     [#local roles = occurrence.State.Roles]
 
     [#local definitionsObject =  getDefinitions() ]
@@ -1211,7 +1218,7 @@
                         "FQDN" : attributes["FQDN"],
                         "Scheme" : attributes["SCHEME"],
                         "BasePath" : attributes["BASE_PATH"],
-                        "BuildReference" : ((buildSettings["APP_REFERENCE"].Value)!buildSettings["BUILD_REFERENCE"].Value)!"",
+                        "BuildReference" : buildReference,
                         "Name" : apiName
                     } ]
 
