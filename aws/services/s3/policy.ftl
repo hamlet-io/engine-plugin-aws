@@ -187,7 +187,7 @@
     ]
 [/#function]
 
-[#function s3ListBucketPermission bucket]
+[#function s3ListBucketPermission bucket principals="" conditions={}]
     [#return
         getS3BucketStatement(
             [
@@ -195,7 +195,11 @@
                 "s3:GetBucketLocation",
                 "s3:GetBucketLocation"
             ],
-            bucket)]
+            bucket,
+            "",
+            "",
+            principals,
+            conditions)]
 [/#function]
 
 [#function s3ReadBucketACLPermission bucket principals="" conditions={}]
