@@ -353,6 +353,7 @@
                     [#case "operations" ]
 
                         [#local bucketPolicy +=
+                            [#-- Permission for ELB to write access logs to s3 --]
                             s3WritePermission(
                                 bucketName,
                                 "AWSLogs",
@@ -361,17 +362,85 @@
                                     "AWS": "arn:aws:iam::" + getRegionObject().Accounts["ELB"] + ":root"
                                 }
                             ) +
-                            s3ReadBucketACLPermission(
+                            [#-- Permission to export cloudwatch logs to S3 in the same account (logs.amazonaws.com) --]
+                             s3ReadBucketACLPermission(
                                 bucketName,
-                                { "Service": "logs." + getRegion() + ".amazonaws.com" }
+                                { "Service": "logs." + getRegion() + ".amazonaws.com" },
+                                {
+                                    "StringEquals" : {
+                                        "aws:SourceAccount": [ {"Ref" : "AWS::AccountId"} ]
+                                    },
+                                    "ArnLike": {
+                                        "aws:SourceArn" : [
+                                            formatArn("aws", "logs", getRegion(), {"Ref" : "AWS::AccountId"}, "log-group:*")
+                                        ]
+                                    }
+                                }
                             ) +
                             s3WritePermission(
                                 bucketName,
                                 "",
                                 "*",
                                 { "Service": "logs." + getRegion() + ".amazonaws.com" },
-                                { "StringEquals": { "s3:x-amz-acl": "bucket-owner-full-control" } }
+                                {
+                                    "StringEquals": {
+                                        "s3:x-amz-acl": "bucket-owner-full-control",
+                                        "aws:SourceAccount": [ {"Ref" : "AWS::AccountId"} ]
+                                    },
+                                    "ArnLike": {
+                                        "aws:SourceArn" : [
+                                            formatArn("aws", "logs", getRegion(), {"Ref" : "AWS::AccountId"}, "log-group:*")
+                                        ]
+                                    }
+                                }
                             ) +
+                            [#-- Permission for various services to deliver logs to s3 (delivery.logs.amazonaws.com) --]
+                             s3ReadBucketACLPermission(
+                                bucketName,
+                                { "Service": "delivery.logs.amazonaws.com" },
+                                {
+                                    "StringEquals" : {
+                                        "aws:SourceAccount": [ {"Ref" : "AWS::AccountId"} ]
+                                    },
+                                    "ArnLike": {
+                                        "aws:SourceArn" : [
+                                            formatArn("aws", "logs", getRegion(), {"Ref" : "AWS::AccountId"}, "*")
+                                        ]
+                                    }
+                                }
+                            ) +
+                             s3ListBucketPermission(
+                                bucketName,
+                                { "Service": "delivery.logs.amazonaws.com" },
+                                {
+                                    "StringEquals" : {
+                                        "aws:SourceAccount": [ {"Ref" : "AWS::AccountId"} ]
+                                    },
+                                    "ArnLike": {
+                                        "aws:SourceArn" : [
+                                            formatArn("aws", "logs", getRegion(), {"Ref" : "AWS::AccountId"}, "*")
+                                        ]
+                                    }
+                                }
+                            ) +
+                            s3WritePermission(
+                                bucketName,
+                                "",
+                                "*",
+                                { "Service": "delivery.logs.amazonaws.com" },
+                                {
+                                    "StringEquals": {
+                                        "s3:x-amz-acl": "bucket-owner-full-control",
+                                        "aws:SourceAccount": [ {"Ref" : "AWS::AccountId"} ]
+                                    },
+                                    "ArnLike": {
+                                        "aws:SourceArn" : [
+                                            formatArn("aws", "logs", getRegion(), {"Ref" : "AWS::AccountId"}, "*")
+                                        ]
+                                    }
+                                }
+                            ) +
+                            [#-- Permission for CloudFront OAIs to access the bucket --]
                             valueIfContent(
                                 s3ReadPermission(
                                     bucketName,
