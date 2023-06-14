@@ -17,7 +17,7 @@
     [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption"] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
 
-    [#local cmkKeyId = baselineComponentIds["Encryption" ]]
+    [#local cmkKeyId = (baselineComponentIds["Encryption"])!"HamletWarning:MissingKey"]
 
     [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled ) as subOccurrence]
 
