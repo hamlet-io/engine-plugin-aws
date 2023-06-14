@@ -353,13 +353,34 @@
                     [#case "operations" ]
 
                         [#local bucketPolicy +=
-                            [#-- Permission for ELB to write access logs to s3 --]
-                            s3WritePermission(
+                            [#-- Permission for LB to write access logs to s3 --]
+                            getS3Statement(
+                                [
+                                    "s3:PutObject"
+                                ],
                                 bucketName,
                                 "AWSLogs",
                                 "*",
                                 {
                                     "AWS": "arn:aws:iam::" + getRegionObject().Accounts["ELB"] + ":root"
+                                }
+                            ) +
+                            [#-- LB logging for new regions --]
+                            [#-- https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html#attach-bucket-policy --]
+                            getS3Statement(
+                                [
+                                    "s3:PutObject"
+                                ],
+                                bucketName,
+                                "AWSLogs",
+                                "*",
+                                {
+                                    "Service": "logdelivery.elasticloadbalancing.amazonaws.com"
+                                },
+                                {
+                                    "StringEquals" : {
+                                        "aws:SourceAccount": [ {"Ref" : "AWS::AccountId"} ]
+                                    }
                                 }
                             ) +
                             [#-- Permission to export cloudwatch logs to S3 in the same account (logs.amazonaws.com) --]
@@ -377,7 +398,10 @@
                                     }
                                 }
                             ) +
-                            s3WritePermission(
+                            getS3Statement(
+                                [
+                                    "s3:PutObject"
+                                ],
                                 bucketName,
                                 "",
                                 "*",
@@ -423,7 +447,10 @@
                                     }
                                 }
                             ) +
-                            s3WritePermission(
+                            getS3Statement(
+                                [
+                                    "s3:PutObject"
+                                ],
                                 bucketName,
                                 "",
                                 "*",
