@@ -112,6 +112,11 @@
                         "deployment:Unit": "baseline",
                         "DataBuckets": {
                             "opsdata": {
+                                "Extensions" : [
+                                    "_s3_elb_log_delivery_access",
+                                    "_s3_cw_log_export_access",
+                                    "_s3_log_delivery_access"
+                                ],
                                 "Role": "operations",
                                 "Encryption": {
                                     "EncryptionSource": "LocalService"
