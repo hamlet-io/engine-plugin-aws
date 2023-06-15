@@ -31,12 +31,82 @@
     [#local lgId = formatLogGroupId(core.Id) ]
     [#local lgName = core.FullAbsolutePath ]
 
+    [#local computeProviderProfile  = getComputeProviderProfile(occurrence)]
+
+    [#local asgEnabled = computeProviderProfile.Containers.Providers?seq_contains("_autoscalegroup")]
     [#local autoScaleGroupId = formatEC2AutoScaleGroupId(core.Tier, core.Component)]
 
-    [#local lgInstanceLogId = formatLogGroupId(core.Id, "instancelog") ]
-    [#local lgInstanceLogName = formatAbsolutePath( core.FullAbsolutePath, "instancelog") ]
+    [#-- Always include the ASG so that we can still handle managed termination when disabling the asg --]
+    [#local asgResources = {
+        "autoScaleGroup" : {
+            "Id" : autoScaleGroupId,
+            "Name" : core.FullName,
+            "Type" : AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
+            "Deployed": false
+        }
+    }]
 
-    [#local sgGroupId = formatComponentSecurityGroupId(core.Tier, core.Component)]
+    [#if asgEnabled ]
+
+        [#local lgInstanceLogId = formatLogGroupId(core.Id, "instancelog") ]
+        [#local lgInstanceLogName = formatAbsolutePath( core.FullAbsolutePath, "instancelog") ]
+
+        [#local sgGroupId = formatComponentSecurityGroupId(core.Tier, core.Component)]
+
+        [#local asgResources += {
+            "securityGroup" : {
+                "Id" : sgGroupId,
+                "Name" : formatComponentFullName(core.Tier, core.Component ),
+                "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
+            },
+            "role" : {
+                "Id" : formatComponentRoleId(core.Tier, core.Component),
+                "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
+                "IncludeInDeploymentState" : false
+            },
+            "instanceProfile" : {
+                "Id" : formatEC2InstanceProfileId(core.Tier, core.Component),
+                "Type" : AWS_EC2_INSTANCE_PROFILE_RESOURCE_TYPE
+            },
+            "autoScaleGroup" : {
+                "Id" : autoScaleGroupId,
+                "Name" : core.FullName,
+                "Type" : AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
+                "ComputeTasks" : [
+                    COMPUTE_TASK_RUN_STARTUP_CONFIG,
+                    COMPUTE_TASK_AWS_CFN_SIGNAL,
+                    COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL,
+                    COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
+                    COMPUTE_TASK_FILE_DIR_CREATION,
+                    COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
+                    COMPUTE_TASK_OS_SECURITY_PATCHING,
+                    COMPUTE_TASK_ANTIVIRUS_CONFIG,
+                    COMPUTE_TASK_AWS_CLI,
+                    COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
+                    COMPUTE_TASK_AWS_ECS_AGENT_SETUP,
+                    COMPUTE_TASK_USER_ACCESS,
+                    COMPUTE_TASK_EFS_MOUNT
+                ]
+            },
+            "launchConfig" : {
+                "Id" : solution.AutoScaling.AlwaysReplaceOnUpdate?then(
+                        formatEC2LaunchConfigId(core.Tier, core.Component, getCLORunId()),
+                        formatEC2LaunchConfigId(core.Tier, core.Component)
+                ),
+                "Type" : AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE
+            },
+            "lgInstanceLog" : {
+                "Id" : lgInstanceLogId,
+                "Name" : lgInstanceLogName,
+                "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
+                "IncludeInDeploymentState" : false
+            },
+            "ecsASGCapacityProvider" : {
+                "Id" : formatResourceId(AWS_ECS_CAPACITY_PROVIDER_RESOURCE_TYPE, core.Id, "asg" ),
+                "Type" : AWS_ECS_CAPACITY_PROVIDER_RESOURCE_TYPE
+            }
+        }]
+    [/#if]
 
     [#local logMetrics = {} ]
     [#list solution.LogMetrics as name,logMetric ]
@@ -48,71 +118,82 @@
                 "LogGroupName" : lgName,
                 "LogGroupId" : lgId,
                 "LogFilter" : logMetric.LogFilter
-            },
-            "lgMetric" + name + "instancelog": {
-                "Id" : formatDependentLogMetricId( lgInstanceLogId, logMetric.Id ),
-                "Name" : formatName(getCWMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),  "instancelog"),
-                "Type" : AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
-                "LogGroupName" : lgInstanceLogName,
-                "LogGroupId" : lgInstanceLogId,
-                "LogFilter" : logMetric.LogFilter
             }
-        }]
+        } +
+        asgEnabled?then(
+            {
+                "lgMetric" + name + "instancelog": {
+                    "Id" : formatDependentLogMetricId( lgInstanceLogId, logMetric.Id ),
+                    "Name" : formatName(getCWMetricName( logMetric.Name, AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE, core.ShortFullName ),  "instancelog"),
+                    "Type" : AWS_CLOUDWATCH_LOG_METRIC_RESOURCE_TYPE,
+                    "LogGroupName" : lgInstanceLogName,
+                    "LogGroupId" : lgInstanceLogId,
+                    "LogFilter" : logMetric.LogFilter
+                }
+            },
+            {}
+        )]
     [/#list]
 
     [#local autoScaling = {}]
-    [#if solution.HostScalingPolicies?has_content ]
-        [#list solution.HostScalingPolicies as name, scalingPolicy ]
 
-            [#if scalingPolicy.Type == "scheduled" ]
-                [#local autoScaling +=
-                    {
-                        "scalingPolicy" + name : {
-                            "Id" : formatDependentAutoScalingEc2ScheduleId(autoScaleGroupId, name),
-                            "Name" : formatName(core.FullName, name),
-                            "Type" : AWS_AUTOSCALING_EC2_SCHEDULE_RESOURCE_TYPE
-                        }
-                    }
-                ]
-            [#else]
-                [#local autoScaling +=
-                    {
-                        "scalingPolicy" + name : {
-                            "Id" : formatDependentAutoScalingEc2PolicyId(autoScaleGroupId, name),
-                            "Name" : formatName(core.FullName, name),
-                            "Type" : AWS_AUTOSCALING_EC2_POLICY_RESOURCE_TYPE
-                        }
-                    }
-                ]
-            [/#if]
-        [/#list]
-    [/#if]
+    [#if asgEnabled ]
+        [#if solution.HostScalingPolicies?has_content ]
+            [#list solution.HostScalingPolicies as name, scalingPolicy ]
 
-    [#local processorProfile = getProcessor(occurrence, ECS_COMPONENT_TYPE)]
-    [#if processorProfile.MaxCount?has_content]
-        [#local maxSize = processorProfile.MaxCount ]
-    [#else]
-        [#local maxSize = processorProfile.MaxPerZone]
-        [#if solution.MultiAZ]
-            [#local maxSize = maxSize * getZones()?size]
+                [#if scalingPolicy.Type == "scheduled" ]
+                    [#local autoScaling +=
+                        {
+                            "scalingPolicy" + name : {
+                                "Id" : formatDependentAutoScalingEc2ScheduleId(autoScaleGroupId, name),
+                                "Name" : formatName(core.FullName, name),
+                                "Type" : AWS_AUTOSCALING_EC2_SCHEDULE_RESOURCE_TYPE
+                            }
+                        }
+                    ]
+                [#else]
+                    [#local autoScaling +=
+                        {
+                            "scalingPolicy" + name : {
+                                "Id" : formatDependentAutoScalingEc2PolicyId(autoScaleGroupId, name),
+                                "Name" : formatName(core.FullName, name),
+                                "Type" : AWS_AUTOSCALING_EC2_POLICY_RESOURCE_TYPE
+                            }
+                        }
+                    ]
+                [/#if]
+            [/#list]
         [/#if]
     [/#if]
 
-    [#local fixedIP = solution.FixedIP ]
     [#local eipResources = {} ]
-    [#if fixedIP]
-        [#list 1..maxSize as index]
-            [#local eipResources +=
-                {
-                    index : {
-                        "eip" : {
-                            "Id" : formatResourceId(AWS_EIP_RESOURCE_TYPE, core.Id, index),
-                            "Type" : AWS_EIP_RESOURCE_TYPE
+
+    [#local fixedIP = solution.FixedIP ]
+    [#if asgEnabled && fixedIP]
+        [#local processorProfile = getProcessor(occurrence, ECS_COMPONENT_TYPE)]
+        [#if processorProfile.MaxCount?has_content]
+            [#local maxSize = processorProfile.MaxCount ]
+        [#else]
+            [#local maxSize = processorProfile.MaxPerZone]
+            [#if solution.MultiAZ]
+                [#local maxSize = maxSize * getZones()?size]
+            [/#if]
+        [/#if]
+
+        [#if fixedIP]
+            [#list 1..maxSize as index]
+                [#local eipResources +=
+                    {
+                        index : {
+                            "eip" : {
+                                "Id" : formatResourceId(AWS_EIP_RESOURCE_TYPE, core.Id, index),
+                                "Type" : AWS_EIP_RESOURCE_TYPE
+                            }
                         }
                     }
-                }
-            ]
-        [/#list]
+                ]
+            [/#list]
+        [/#if]
     [/#if]
 
     [#-- TODO(mfl): Use formatDependentRoleId() for roles --]
@@ -125,88 +206,46 @@
                     "Type" : AWS_ECS_RESOURCE_TYPE,
                     "Monitored" : true
                 },
-                "securityGroup" : {
-                    "Id" : sgGroupId,
-                    "Name" : formatComponentFullName(core.Tier, core.Component ),
-                    "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
-                },
-                "role" : {
-                    "Id" : formatComponentRoleId(core.Tier, core.Component),
-                    "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
-                    "IncludeInDeploymentState" : false
-                },
-                "instanceProfile" : {
-                    "Id" : formatEC2InstanceProfileId(core.Tier, core.Component),
-                    "Type" : AWS_EC2_INSTANCE_PROFILE_RESOURCE_TYPE
-                },
-                "autoScaleGroup" : {
-                    "Id" : autoScaleGroupId,
-                    "Name" : core.FullName,
-                    "Type" : AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
-                    "ComputeTasks" : [
-                        COMPUTE_TASK_RUN_STARTUP_CONFIG,
-                        COMPUTE_TASK_AWS_CFN_SIGNAL,
-                        COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL,
-                        COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
-                        COMPUTE_TASK_FILE_DIR_CREATION,
-                        COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
-                        COMPUTE_TASK_OS_SECURITY_PATCHING,
-                        COMPUTE_TASK_ANTIVIRUS_CONFIG,
-                        COMPUTE_TASK_AWS_CLI,
-                        COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
-                        COMPUTE_TASK_AWS_ECS_AGENT_SETUP,
-                        COMPUTE_TASK_USER_ACCESS,
-                        COMPUTE_TASK_EFS_MOUNT
-                    ]
-                },
-                "launchConfig" : {
-                    "Id" : solution.AutoScaling.AlwaysReplaceOnUpdate?then(
-                            formatEC2LaunchConfigId(core.Tier, core.Component, getCLORunId()),
-                            formatEC2LaunchConfigId(core.Tier, core.Component)
-                    ),
-                    "Type" : AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE
-                },
                 "lg" : {
                     "Id" : lgId,
                     "Name" : lgName,
                     "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
                     "IncludeInDeploymentState" : false
                 },
-                "lgInstanceLog" : {
-                    "Id" : lgInstanceLogId,
-                    "Name" : lgInstanceLogName,
-                    "Type" : AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
-                    "IncludeInDeploymentState" : false
-                },
                 "ecsCapacityProviderAssociation" : {
                     "Id" : formatResourceId(AWS_ECS_CAPACITY_PROVIDER_ASSOCIATION_RESOURCE_TYPE, core.Id),
                     "Type" : AWS_ECS_CAPACITY_PROVIDER_ASSOCIATION_RESOURCE_TYPE
-                },
-                "ecsASGCapacityProvider" : {
-                    "Id" : formatResourceId(AWS_ECS_CAPACITY_PROVIDER_RESOURCE_TYPE, core.Id, "asg" ),
-                    "Type" : AWS_ECS_CAPACITY_PROVIDER_RESOURCE_TYPE
                 }
             } +
             attributeIfContent("logMetrics", logMetrics) +
             attributeIfContent("eips", eipResources) +
-            autoScaling,
+            autoScaling +
+            asgResources,
             "Attributes" : {
                 "ARN" : getExistingReference(clusterId, ARN_ATTRIBUTE_TYPE)
             },
             "Roles" : {
-                "Inbound" : {
-                    "networkacl" : {
-                        "SecurityGroups" : sgGroupId,
-                        "Description" : core.FullName
-                    }
-                },
-                "Outbound" : {
-                    "networkacl" : {
-                        "Ports" : solution.ComputeInstance.ManagementPorts,
-                        "SecurityGroups" : sgGroupId,
-                        "Description" : core.FullName
-                    }
-                }
+                "Inbound" : {} +
+                    asgEnabled?then(
+                        {
+                            "networkacl" : {
+                                "SecurityGroups" : sgGroupId,
+                                "Description" : core.FullName
+                            }
+                        },
+                        {}
+                    ),
+                "Outbound" : {} +
+                    asgEnabled?then(
+                        {
+                            "networkacl" : {
+                                "Ports" : solution.ComputeInstance.ManagementPorts,
+                                "SecurityGroups" : sgGroupId,
+                                "Description" : core.FullName
+                            }
+                        },
+                        {}
+                    )
             }
         }
     ]
@@ -391,6 +430,9 @@
     [#local parentResources = parent.State.Resources ]
     [#local ecsId = parentResources["cluster"].Id ]
 
+    [#local computeProviderProfile  = getComputeProviderProfile(parent)]
+    [#local computeProviders = computeProviderProfile.Containers.Providers]
+
     [#local taskId = formatResourceId(AWS_ECS_TASK_RESOURCE_TYPE, core.Id) ]
     [#local taskName = core.Name]
     [#local taskRoleId = formatDependentRoleId(taskId)]
@@ -491,7 +533,9 @@
         core.RawId,
         solution.Engine,
         mergeObjects({"Default" : {"Weight" : 1, "RequiredCount" : 1}, "Additional" : {}}, solution.Placement.ComputeProvider),
-        parentResources["ecsASGCapacityProvider"].Id
+        (parentResources["ecsASGCapacityProvider"].Id)!"",
+        computeProviders
+
     )[0].CapacityProvider ]
 
     [#assign componentState =

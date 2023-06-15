@@ -673,7 +673,7 @@
     /]
 [/#macro]
 
-[#function getECSCapacityProviderStrategy rawId engine computeProviderPlacement ecsASGCapacityProviderId ]
+[#function getECSCapacityProviderStrategy rawId engine computeProviderPlacement ecsASGCapacityProviderId computeProviders ]
     [#local capacityProviderStrategy = []]
 
     [#local baseCapacityProvider = computeProviderPlacement.Default ]
@@ -681,6 +681,17 @@
 
     [#switch engine ]
         [#case "ec2"]
+            [#if ! computeProviders?seq_contains("_autoscalegroup")]
+                [@fatal
+                    message="_autoscalegroup group compute provider required for ecs component"
+                    detail="Update the ComputeProviders profile for the ecs host"
+                    context={
+                        "Engine" : engine,
+                        "ComputeProviders": computeProviders
+                    }
+                /]
+            [/#if]
+
             [#if baseCapacityProvider.Provider == "_engine" ]
                 [#local capacityProviderStrategy += [
                     getECSCapacityProviderStrategyRule(
@@ -713,6 +724,17 @@
 
         [#case "aws:fargate"]
         [#case "fargate"]
+            [#if ! computeProviders?seq_contains("aws:fargate") || ! computeProviders?seq_contains("aws:fargatespot") ]
+                [@fatal
+                    message="aws:fargate or aws:fargatespot compute provider required for ecs component"
+                    detail="Update the ComputeProviders profile for the ecs host"
+                    context={
+                        "Engine" : engine,
+                        "ComputeProviders": computeProviders
+                    }
+                /]
+            [/#if]
+
             [#if baseCapacityProvider.Provider == "_engine" ]
                 [#local capacityProviderStrategy += [
                     getECSCapacityProviderStrategyRule(
