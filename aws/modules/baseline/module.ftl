@@ -20,6 +20,11 @@
                                 "DataBuckets": {
                                     "opsdata": {
                                         "Role": "operations",
+                                        "Extensions" : [
+                                            "_s3_elb_log_delivery_access",
+                                            "_s3_cw_log_export_access",
+                                            "_s3_log_delivery_access"
+                                        ],
                                         "Encryption": {
                                             "EncryptionSource": "LocalService"
                                         },
