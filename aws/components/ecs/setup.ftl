@@ -11,50 +11,20 @@
     [#local resources = occurrence.State.Resources ]
     [#local links = solution.Links ]
 
-    [#local ecsId = resources["cluster"].Id ]
-    [#local ecsName = resources["cluster"].Name ]
-    [#local ecsRoleId = resources["role"].Id ]
-    [#local ecsInstanceProfileId = resources["instanceProfile"].Id ]
-    [#local ecsAutoScaleGroupId = resources["autoScaleGroup"].Id ]
-    [#local ecsAutoScaleGroupName = resources["autoScaleGroup"].Name ]
-    [#local ecsLaunchConfigId = resources["launchConfig"].Id ]
-    [#local ecsSecurityGroupId = resources["securityGroup"].Id ]
-    [#local ecsSecurityGroupName = resources["securityGroup"].Name ]
-    [#local ecsLogGroupId = resources["lg"].Id ]
-    [#local ecsLogGroupName = resources["lg"].Name ]
-    [#local ecsInstanceLogGroupId = resources["lgInstanceLog"].Id]
-    [#local ecsInstanceLogGroupName = resources["lgInstanceLog"].Name]
-    [#local ecsEIPs = (resources["eips"])!{} ]
-    [#local ecsOS = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
-
-    [#local ecsCapacityProvierAssociationId = resources["ecsCapacityProviderAssociation"].Id ]
-    [#local ecsASGCapacityProviderId = resources["ecsASGCapacityProvider"].Id]
-
-    [#local cliAutoScaleGroupId = formatId(ecsAutoScaleGroupId, "cli" ) ]
-    [#local cliECSClusterId = formatId(ecsId, "cli") ]
-
-    [#local commandUpdateAutoScaleGroup = "updateAutoScaleGroup" ]
-
-    [#local defaultLogDriver = solution.LogDriver ]
-    [#local fixedIP = solution.FixedIP ]
-
-    [#local cliRequired = false ]
-
-    [#local managedTermination = false ]
-    [#local autoScalingConfig = solution.AutoScaling ]
-
-    [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
-
-    [#local multiAZ = solution.MultiAZ ]
-
-    [#local processorProfile        = getProcessor(occurrence, ECS_COMPONENT_TYPE)]
-    [#local storageProfile          = getStorage(occurrence, ECS_COMPONENT_TYPE)]
-    [#local logFileProfile          = getLogFileProfile(occurrence, ECS_COMPONENT_TYPE)]
-    [#local networkProfile          = getNetworkProfile(occurrence)]
     [#local loggingProfile          = getLoggingProfile(occurrence)]
     [#local computeProviderProfile  = getComputeProviderProfile(occurrence)]
+    [#local asgEnabled = computeProviderProfile.Containers.Providers?seq_contains("_autoscalegroup")]
 
-    [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
+    [#local ecsId = resources["cluster"].Id ]
+    [#local ecsName = resources["cluster"].Name ]
+    [#local ecsLogGroupId = resources["lg"].Id ]
+    [#local ecsLogGroupName = resources["lg"].Name ]
+    [#local ecsCapacityProvierAssociationId = resources["ecsCapacityProviderAssociation"].Id ]
+
+    [#local defaultLogDriver = solution.LogDriver ]
+
+    [#local ecsAutoScaleGroupId = resources["autoScaleGroup"].Id ]
+    [#local ecsAutoScaleGroupName = resources["autoScaleGroup"].Name ]
 
     [#-- Baseline component lookup --]
     [#local baselineLinks = getBaselineLinks(occurrence, [ "OpsData", "AppData", "Encryption", "SSHKey" ] )]
@@ -62,154 +32,178 @@
 
     [#local operationsBucket = getExistingReference(baselineComponentIds["OpsData"]) ]
     [#local dataBucket = getExistingReference(baselineComponentIds["AppData"])]
-    [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
     [#local kmsKeyId = baselineComponentIds["Encryption"]]
 
-    [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
-    [#local networkLink = occurrenceNetwork.Link!{} ]
+    [#local managedTermination = false ]
 
-    [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
+    [#if asgEnabled ]
 
-    [#if ! networkLinkTarget?has_content ]
-        [@fatal message="Network could not be found" context=networkLink /]
-        [#return]
-    [/#if]
+        [#local ecsRoleId = resources["role"].Id ]
+        [#local ecsInstanceProfileId = resources["instanceProfile"].Id ]
 
-    [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
-    [#local networkResources = networkLinkTarget.State.Resources ]
+        [#local ecsLaunchConfigId = resources["launchConfig"].Id ]
+        [#local ecsSecurityGroupId = resources["securityGroup"].Id ]
+        [#local ecsSecurityGroupName = resources["securityGroup"].Name ]
+        [#local ecsInstanceLogGroupId = resources["lgInstanceLog"].Id]
+        [#local ecsInstanceLogGroupName = resources["lgInstanceLog"].Name]
+        [#local ecsEIPs = (resources["eips"])!{} ]
+        [#local ecsOS = (solution.ComputeInstance.OperatingSystem.Family)!"linux"]
+        [#local ecsASGCapacityProviderId = resources["ecsASGCapacityProvider"].Id]
 
-    [#local vpcId = networkResources["vpc"].Id ]
+        [#local fixedIP = solution.FixedIP ]
 
-    [#local routeTableLinkTarget = getLinkTarget(occurrence, networkLink + { "RouteTable" : occurrenceNetwork.RouteTable })]
-    [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
-    [#local publicRouteTable = routeTableConfiguration.Public ]
+        [#local autoScalingConfig = solution.AutoScaling ]
 
-    [#local environmentVariables = {}]
+        [#local hibernate = solution.Hibernate.Enabled && isOccurrenceDeployed(occurrence)]
 
-    [#local efsMountPoints = {}]
+        [#local multiAZ = solution.MultiAZ ]
 
-    [#local contextLinks = getLinkTargets(occurrence, links) ]
-    [#local _context =
-        {
-            "DefaultEnvironment" : defaultEnvironment(occurrence, contextLinks, baselineLinks),
-            "Environment" : {},
-            "Links" : contextLinks,
-            "BaselineLinks" : baselineLinks,
-            "DefaultCoreVariables" : true,
-            "DefaultEnvironmentVariables" : true,
-            "DefaultLinkVariables" : true,
-            "DefaultBaselineVariables" : true,
-            "Policy" : iamStandardPolicies(occurrence, baselineComponentIds),
-            "ManagedPolicy" : [],
-            "ComputeTasks" : [],
-            "Files" : {},
-            "Directories" : {},
-            "StorageProfile" : storageProfile,
-            "LogFileProfile" : logFileProfile,
-            "InstanceLogGroup" : ecsInstanceLogGroupName,
-            "InstanceOSPatching" : osPatching,
-            "ElasticIPs" : ecsEIPs?values?map( eip -> eip.Id )
-        }
-    ]
+        [#local processorProfile        = getProcessor(occurrence, ECS_COMPONENT_TYPE)]
+        [#local storageProfile          = getStorage(occurrence, ECS_COMPONENT_TYPE)]
+        [#local logFileProfile          = getLogFileProfile(occurrence, ECS_COMPONENT_TYPE)]
+        [#local networkProfile          = getNetworkProfile(occurrence)]
 
-    [#-- Add in extension specifics including override of defaults --]
-    [#local _context = invokeExtensions( occurrence, _context )]
+        [#local osPatching = mergeObjects(environmentObject.OSPatching, solution.ComputeInstance.OSPatching )]
 
-    [#local environmentVariables += getFinalEnvironment(occurrence, _context).Environment ]
+        [#local sshKeyPairId = baselineComponentIds["SSHKey"]!"HamletFatal: sshKeyPairId not found" ]
 
-    [#local configSetName = occurrence.Core.Type]
+        [#local occurrenceNetwork = getOccurrenceNetwork(occurrence) ]
+        [#local networkLink = occurrenceNetwork.Link!{} ]
 
-    [#local componentComputeTasks = resources["autoScaleGroup"].ComputeTasks]
-    [#local userComputeTasks = solution.ComputeInstance.ComputeTasks.UserTasksRequired ]
-    [#local computeTaskExtensions = solution.ComputeInstance.ComputeTasks.Extensions ]
-    [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, ecsAutoScaleGroupId, _context, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
+        [#local networkLinkTarget = getLinkTarget(occurrence, networkLink ) ]
 
-    [#if deploymentSubsetRequired("iam", true) &&
-            isPartOfCurrentDeploymentUnit(ecsRoleId)]
-        [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
+        [#if ! networkLinkTarget?has_content ]
+            [@fatal message="Network could not be found" context=networkLink /]
+            [#return]
+        [/#if]
 
-        [#-- Add policies for external log group access --]
-        [#list ((logFileProfile.LogFileGroups)![])?map(
-                    x -> (getReferenceData(LOGFILEGROUP_REFERENCE_TYPE)[x])!{}
-                )?filter(
-                    x -> x?has_content && x.LogStore.Destination == "link" ) as logFileGroup ]
+        [#local networkConfiguration = networkLinkTarget.Configuration.Solution]
+        [#local networkResources = networkLinkTarget.State.Resources ]
 
-            [#local linkPolicies = combineEntities(
-                linkPolicies,
-                getLinkTargetsOutboundRoles(
-                    getLinkTargets(
-                        occurrence,
-                        {
-                            "logstore": mergeObjects(
-                                {"Name" : "logstore", "Id": "logstore"},
-                                logFileGroup.LogStore.Link
-                            )
-                        }
-                    )
-                ),
-                APPEND_COMBINE_BEHAVIOUR
-            )]
-        [/#list]
+        [#local vpcId = networkResources["vpc"].Id ]
 
-        [@createRole
-            id=ecsRoleId
-            trustedServices=["ec2.amazonaws.com" ]
-            managedArns=
-                ["arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"] +
-                _context.ManagedPolicy
-            policies=
-                [
-                    getPolicyDocument(
-                            ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
-                            ec2ReadTagsPermission() +
-                            fixedIP?then(
-                                ec2IPAddressUpdatePermission(),
-                                []
-                            ) +
-                            s3ListPermission(operationsBucket) +
-                            s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
-                            s3WritePermission(operationsBucket, "DOCKERLogs") +
-                            cwMetricsProducePermission("CWAgent") +
-                            cwLogsProducePermission(ecsLogGroupName) +
-                            (solution.VolumeDrivers?seq_contains("ebs"))?then(
-                                ec2EBSVolumeUpdatePermission(),
-                                []
-                            ),
-                        "docker"
+        [#local routeTableLinkTarget = getLinkTarget(occurrence, networkLink + { "RouteTable" : occurrenceNetwork.RouteTable })]
+        [#local routeTableConfiguration = routeTableLinkTarget.Configuration.Solution ]
+        [#local publicRouteTable = routeTableConfiguration.Public ]
+
+        [#local environmentVariables = {}]
+
+        [#local efsMountPoints = {}]
+
+        [#local contextLinks = getLinkTargets(occurrence, links) ]
+        [#local _context =
+            {
+                "DefaultEnvironment" : defaultEnvironment(occurrence, contextLinks, baselineLinks),
+                "Environment" : {},
+                "Links" : contextLinks,
+                "BaselineLinks" : baselineLinks,
+                "DefaultCoreVariables" : true,
+                "DefaultEnvironmentVariables" : true,
+                "DefaultLinkVariables" : true,
+                "DefaultBaselineVariables" : true,
+                "Policy" : iamStandardPolicies(occurrence, baselineComponentIds),
+                "ManagedPolicy" : [],
+                "ComputeTasks" : [],
+                "Files" : {},
+                "Directories" : {},
+                "StorageProfile" : storageProfile,
+                "LogFileProfile" : logFileProfile,
+                "InstanceLogGroup" : ecsInstanceLogGroupName,
+                "InstanceOSPatching" : osPatching,
+                "ElasticIPs" : ecsEIPs?values?map( eip -> eip.Id )
+            }
+        ]
+
+        [#-- Add in extension specifics including override of defaults --]
+        [#local _context = invokeExtensions( occurrence, _context )]
+
+        [#local environmentVariables += getFinalEnvironment(occurrence, _context).Environment ]
+
+        [#local configSetName = occurrence.Core.Type]
+
+        [#local componentComputeTasks = resources["autoScaleGroup"].ComputeTasks]
+        [#local userComputeTasks = solution.ComputeInstance.ComputeTasks.UserTasksRequired ]
+        [#local computeTaskExtensions = solution.ComputeInstance.ComputeTasks.Extensions ]
+        [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, ecsAutoScaleGroupId, _context, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
+
+        [#if deploymentSubsetRequired("iam", true) &&
+                isPartOfCurrentDeploymentUnit(ecsRoleId)]
+            [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
+
+            [#-- Add policies for external log group access --]
+            [#list ((logFileProfile.LogFileGroups)![])?map(
+                        x -> (getReferenceData(LOGFILEGROUP_REFERENCE_TYPE)[x])!{}
+                    )?filter(
+                        x -> x?has_content && x.LogStore.Destination == "link" ) as logFileGroup ]
+
+                [#local linkPolicies = combineEntities(
+                    linkPolicies,
+                    getLinkTargetsOutboundRoles(
+                        getLinkTargets(
+                            occurrence,
+                            {
+                                "logstore": mergeObjects(
+                                    {"Name" : "logstore", "Id": "logstore"},
+                                    logFileGroup.LogStore.Link
+                                )
+                            }
+                        )
                     ),
-                    getPolicyDocument(
-                        ssmSessionManagerPermission(ecsOS),
-                        "ssm"
-                    )
-                ] +
-                arrayIfContent(
-                    [getPolicyDocument(_context.Policy, "extension")],
-                    _context.Policy) +
-                arrayIfContent(
-                    [getPolicyDocument(linkPolicies, "links")],
-                    linkPolicies)
-            tags=getOccurrenceTags(occurrence)
-        /]
+                    APPEND_COMBINE_BEHAVIOUR
+                )]
+            [/#list]
 
-    [/#if]
+            [@createRole
+                id=ecsRoleId
+                trustedServices=["ec2.amazonaws.com" ]
+                managedArns=
+                    ["arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"] +
+                    _context.ManagedPolicy
+                policies=
+                    [
+                        getPolicyDocument(
+                                ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
+                                ec2ReadTagsPermission() +
+                                fixedIP?then(
+                                    ec2IPAddressUpdatePermission(),
+                                    []
+                                ) +
+                                s3ListPermission(operationsBucket) +
+                                s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
+                                s3WritePermission(operationsBucket, "DOCKERLogs") +
+                                cwMetricsProducePermission("CWAgent") +
+                                cwLogsProducePermission(ecsLogGroupName) +
+                                (solution.VolumeDrivers?seq_contains("ebs"))?then(
+                                    ec2EBSVolumeUpdatePermission(),
+                                    []
+                                ),
+                            "docker"
+                        ),
+                        getPolicyDocument(
+                            ssmSessionManagerPermission(ecsOS),
+                            "ssm"
+                        )
+                    ] +
+                    arrayIfContent(
+                        [getPolicyDocument(_context.Policy, "extension")],
+                        _context.Policy) +
+                    arrayIfContent(
+                        [getPolicyDocument(linkPolicies, "links")],
+                        linkPolicies)
+                tags=getOccurrenceTags(occurrence)
+            /]
 
-    [#if solution.ClusterLogGroup ]
+        [/#if]
+
         [@setupLogGroup
             occurrence=occurrence
-            logGroupId=ecsLogGroupId
-            logGroupName=ecsLogGroupName
+            logGroupId=ecsInstanceLogGroupId
+            logGroupName=ecsInstanceLogGroupName
             loggingProfile=loggingProfile
             kmsKeyId=kmsKeyId
         /]
-    [/#if]
 
-    [@setupLogGroup
-        occurrence=occurrence
-        logGroupId=ecsInstanceLogGroupId
-        logGroupName=ecsInstanceLogGroupName
-        loggingProfile=loggingProfile
-        kmsKeyId=kmsKeyId
-    /]
+    [/#if]
 
     [#local capacityProviderScalingPolicy = { "managedScaling" : false, "managedTermination" : false } ]
 
@@ -226,7 +220,7 @@
                                 "targetCapacity" : scalingPolicy.ComputeProvider.TargetCapacity,
                                 "managedTermination" : scalingPolicy.ComputeProvider.ManageTermination
                         }]
-                        [#local managedTermination = scalingPolicy.ComputeProvider.ManageTermination ]
+                        [#local managedTermination = scalingPolicy.ComputeProvider.ManageTermination]
                         [#if managedTermination
                                 && !(autoScalingConfig.ReplaceCluster)
                                 && !(autoScalingConfig.AlwaysReplaceOnUpdate)]
@@ -409,37 +403,61 @@
         [/#list]
     [/#if]
 
-    [#if deploymentSubsetRequired("ecs", true)]
 
-        [#list _context.Links as linkId,linkTarget]
-            [#local linkTargetCore = linkTarget.Core ]
-            [#local linkTargetConfiguration = linkTarget.Configuration ]
-            [#local linkTargetResources = linkTarget.State.Resources ]
-            [#local linkTargetAttributes = linkTarget.State.Attributes ]
-            [#local linkTargetRoles = linkTarget.State.Roles]
+    [#if solution.ClusterLogGroup ]
+        [@setupLogGroup
+            occurrence=occurrence
+            logGroupId=ecsLogGroupId
+            logGroupName=ecsLogGroupName
+            loggingProfile=loggingProfile
+            kmsKeyId=kmsKeyId
+        /]
+    [/#if]
 
-            [@createSecurityGroupRulesFromLink
-                occurrence=occurrence
-                groupId=ecsSecurityGroupId
-                linkTarget=linkTarget
-                inboundPorts=solution.ComputeInstance.ManagementPorts
-                networkProfile=networkProfile
-            /]
+    [#if deploymentSubsetRequired("ecs", true) ]
 
+        [#local defaultCapacityProviderStrategies = [
+            getECSCapacityProviderStrategyRule(
+                computeProviderProfile.Containers.Default,
+                ecsASGCapacityProviderId
+            )
+        ]]
+
+        [#list (computeProviderProfile.Containers.Additional)?values as providerRule ]
+            [#local defaultCapacityProviderStrategies +=
+                [
+                    getECSCapacityProviderStrategyRule(
+                        providerRule,
+                        ecsASGCapacityProviderId
+                    )
+                ]
+            ]
         [/#list]
 
-        [@createSecurityGroup
-            id=ecsSecurityGroupId
-            name=ecsSecurityGroupName
-            vpcId=vpcId
+        [@createECSCluster
+            id=ecsId
+            containerInsights=solution["aws:Monitoring"].ContainerInsights
             tags=getOccurrenceTags(occurrence)
         /]
 
-        [@createSecurityGroupRulesFromNetworkProfile
-            occurrence=occurrence
-            groupId=ecsSecurityGroupId
-            networkProfile=networkProfile
-            inboundPorts=solution.ComputeInstance.ManagementPorts
+        [#local capacityProviders =
+            [
+                "FARGATE",
+                "FARGATE_SPOT"
+            ]+
+            asgEnabled?then(
+                [
+                    getReference(ecsASGCapacityProviderId)
+                ],
+                []
+            )
+        ]
+
+        [@createECSCapacityProviderAssociation
+            id=ecsCapacityProvierAssociationId
+            clusterId=ecsId
+            capacityProviders=capacityProviders
+            defaultCapacityProviderStrategies=defaultCapacityProviderStrategies
         /]
 
         [#list resources.logMetrics!{} as logMetricName,logMetric ]
@@ -488,6 +506,41 @@
                 [/#switch]
             [/#list]
         [/#list]
+    [/#if]
+
+
+    [#if deploymentSubsetRequired("ecs", true) && asgEnabled]
+
+        [#list _context.Links as linkId,linkTarget]
+            [#local linkTargetCore = linkTarget.Core ]
+            [#local linkTargetConfiguration = linkTarget.Configuration ]
+            [#local linkTargetResources = linkTarget.State.Resources ]
+            [#local linkTargetAttributes = linkTarget.State.Attributes ]
+            [#local linkTargetRoles = linkTarget.State.Roles]
+
+            [@createSecurityGroupRulesFromLink
+                occurrence=occurrence
+                groupId=ecsSecurityGroupId
+                linkTarget=linkTarget
+                inboundPorts=solution.ComputeInstance.ManagementPorts
+                networkProfile=networkProfile
+            /]
+
+        [/#list]
+
+        [@createSecurityGroup
+            id=ecsSecurityGroupId
+            name=ecsSecurityGroupName
+            vpcId=vpcId
+            tags=getOccurrenceTags(occurrence)
+        /]
+
+        [@createSecurityGroupRulesFromNetworkProfile
+            occurrence=occurrence
+            groupId=ecsSecurityGroupId
+            networkProfile=networkProfile
+            inboundPorts=solution.ComputeInstance.ManagementPorts
+        /]
 
         [#if processorProfile.MaxCount?has_content]
             [#local maxSize = processorProfile.MaxCount ]
@@ -498,49 +551,10 @@
             [/#if]
         [/#if]
 
-        [#local defaultCapacityProviderStrategies = [
-            getECSCapacityProviderStrategyRule(
-                computeProviderProfile.Containers.Default,
-                ecsASGCapacityProviderId
-            )
-        ]]
-
-        [#list (computeProviderProfile.Containers.Additional)?values as providerRule ]
-            [#local defaultCapacityProviderStrategies +=
-                [
-                    getECSCapacityProviderStrategyRule(
-                        providerRule,
-                        ecsASGCapacityProviderId
-                    )
-                ]
-            ]
-        [/#list]
-
-        [@createECSCluster
-            id=ecsId
-            containerInsights=solution["aws:Monitoring"].ContainerInsights
-            tags=getOccurrenceTags(occurrence)
-        /]
-
-        [#local capacityProviders =
-            [
-                "FARGATE",
-                "FARGATE_SPOT",
-                getReference(ecsASGCapacityProviderId)
-            ]
-        ]
-
         [@createECSCapacityProvider?with_args(capacityProviderScalingPolicy)
             id=ecsASGCapacityProviderId
             asgId=ecsAutoScaleGroupId
             tags=getOccurrenceTags(occurrence)
-        /]
-
-        [@createECSCapacityProviderAssociation
-            id=ecsCapacityProvierAssociationId
-            clusterId=ecsId
-            capacityProviders=capacityProviders
-            defaultCapacityProviderStrategies=defaultCapacityProviderStrategies
         /]
 
         [@cfResource
@@ -594,6 +608,7 @@
         /]
     [/#if]
 
+
     [#-- prologue deprecation - ensures that old prologue scripts are removed --]
     [#if deploymentSubsetRequired("prologue", false)]
         [@addToDefaultBashScriptOutput
@@ -625,9 +640,11 @@
 
     [#local ecsId = parentResources["cluster"].Id ]
     [#local ecsClusterName = parentResources["cluster"].Name ]
-    [#local ecsSecurityGroupId = parentResources["securityGroup"].Id ]
-    [#local ecsASGCapacityProviderId = parentResources["ecsASGCapacityProvider"].Id]
-    [#local essASGCapacityProviderAssociationId = parentResources["ecsCapacityProviderAssociation"].Id ]
+    [#local ecsSecurityGroupId = (parentResources["securityGroup"].Id)!"" ]
+    [#local ecsASGCapacityProviderId = (parentResources["ecsASGCapacityProvider"].Id)!"" ]
+    [#local essASGCapacityProviderAssociationId = (parentResources["ecsCapacityProviderAssociation"].Id)!"" ]
+    [#local computeProviderProfile  = getComputeProviderProfile(occurrence)]
+    [#local computeProviders = computeProviderProfile.Containers.Providers]
 
     [#if deploymentSubsetRequired("ecs", true) &&
         (! (getExistingReference(ecsId)?has_content)) ]
@@ -1245,7 +1262,6 @@
 
                 [/#if]
 
-
                 [@createECSService
                     id=serviceId
                     ecsId=ecsId
@@ -1263,7 +1279,8 @@
                             core.RawId,
                             engine,
                             solution.Placement.ComputeProvider,
-                            ecsASGCapacityProviderId
+                            ecsASGCapacityProviderId,
+                            computeProviders
                         ),
                         []
                     )
