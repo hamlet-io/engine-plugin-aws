@@ -1,9 +1,36 @@
 # Changelog
 
-## latest (2023-01-20)
+## latest (2023-06-15)
 
 #### New Features
 
+* (ecs): control if ec2 asg should be created
+* (waf): label matching and vendor overrides
+* (network): support default sg nacl control
+* support for custom body block responses
+* (waf): add support for regex pattern set
+* (userpool): enable support for schema attr
+* (ecs): task cpu, depends on, readonly
+* add support for multiple paths on lb ([#729](https://github.com/hamlet-io/engine-plugin-aws/issues/729))
+* (lb): add support for multi value in lb lambda ([#727](https://github.com/hamlet-io/engine-plugin-aws/issues/727))
+* (mta): Add support for bounces on receive ([#724](https://github.com/hamlet-io/engine-plugin-aws/issues/724))
+* (baseline): cmk access for cloudwatch service
+* (cdn): include body for lambda@edge
+* add support for allExcept on cachepolicy ([#721](https://github.com/hamlet-io/engine-plugin-aws/issues/721))
+* (rds): add support for cloudwatch log export ([#719](https://github.com/hamlet-io/engine-plugin-aws/issues/719))
+* (es): extend encrypotion config and custom endpoints ([#718](https://github.com/hamlet-io/engine-plugin-aws/issues/718))
+* add smtp endpoint address to send mta ([#715](https://github.com/hamlet-io/engine-plugin-aws/issues/715))
+* (sqs): add support for enabling SSE on sqs
+* (module): add ses send events to service logs
+* (module): add ses based mail sender with log ([#712](https://github.com/hamlet-io/engine-plugin-aws/issues/712))
+* (baseline): add image reference update runbook
+* (secretstore): add descriptions on secrets ([#703](https://github.com/hamlet-io/engine-plugin-aws/issues/703))
+* (s3): add support for in-transit https policy
+* remove the user defined boostrap process
+* (ecr): extended repository configuration
+* (ecs): add support for container insights
+* (runbooks): shorter names and pull image
+* (userpool): define email from address ([#696](https://github.com/hamlet-io/engine-plugin-aws/issues/696))
 * (s3): add support for replication v2 ([#690](https://github.com/hamlet-io/engine-plugin-aws/issues/690))
 * (userpool): control hosted ui setup ([#686](https://github.com/hamlet-io/engine-plugin-aws/issues/686))
 * (cloudtrail): Add support for cloudtrail ([#687](https://github.com/hamlet-io/engine-plugin-aws/issues/687))
@@ -15,6 +42,40 @@
 * (image): Adds aws image component
 #### Fixes
 
+* (baseline): permissions for logging
+* (secretstore): handle missing cmk
+* (api): build info sourcing ([#753](https://github.com/hamlet-io/engine-plugin-aws/issues/753))
+* (s3): inbound link permissions for cdn
+* (cdn): link to cachepolicy
+* (api): image registry type access
+* (api): spec download logic
+* (apigateway): image source type checking
+* image copying from registry
+* (image): include tag state from output ([#745](https://github.com/hamlet-io/engine-plugin-aws/issues/745))
+* (baseline): default file path for image pull
+* (baseline): data bucket object ownership
+* (image): s3 path when pull image
+* (image): source values ([#741](https://github.com/hamlet-io/engine-plugin-aws/issues/741))
+* (waf): align inbuilt rules config
+* (sqs): typo in sqs encryption policy
+* else statement for network acl creation
+* map for ipset
+* (networking): handling of missing port on acl
+* (s3): allow external policy sharing on public
+* (baseline): provide correct image for pull ([#733](https://github.com/hamlet-io/engine-plugin-aws/issues/733))
+* readonly attribute assignment
+* lb path for state attribute ([#730](https://github.com/hamlet-io/engine-plugin-aws/issues/730))
+* container image reference ([#728](https://github.com/hamlet-io/engine-plugin-aws/issues/728))
+* handle cmk based encryption at rest ([#725](https://github.com/hamlet-io/engine-plugin-aws/issues/725))
+* (elasticache): Use number based logic for retention ([#720](https://github.com/hamlet-io/engine-plugin-aws/issues/720))
+* (baseline): add extra policies for cmk
+* (lb): backend support for lambda ([#716](https://github.com/hamlet-io/engine-plugin-aws/issues/716))
+* (module): update link to basline component ([#714](https://github.com/hamlet-io/engine-plugin-aws/issues/714))
+* (lb): remove waf version lookup on lb ([#709](https://github.com/hamlet-io/engine-plugin-aws/issues/709))
+* remove version on setupWAFRule call ([#708](https://github.com/hamlet-io/engine-plugin-aws/issues/708))
+* remove version from waf rule lookup ([#707](https://github.com/hamlet-io/engine-plugin-aws/issues/707))
+* (image): handle single level docker tags
+* (baselinedata): policy lookup on suboccurrence ([#695](https://github.com/hamlet-io/engine-plugin-aws/issues/695))
 * (s3): add delete marker replication handling ([#693](https://github.com/hamlet-io/engine-plugin-aws/issues/693))
 * (ecs): handle secrets on ec2 tasks ([#692](https://github.com/hamlet-io/engine-plugin-aws/issues/692))
 * athena s3 policy ([#691](https://github.com/hamlet-io/engine-plugin-aws/issues/691))
@@ -30,9 +91,19 @@
 * (images): remove filename from CODE_SRC_PREFIX config for mobileapp component ([#673](https://github.com/hamlet-io/engine-plugin-aws/issues/673))
 #### Refactorings
 
+* (baseline): bucket policy extensions ([#757](https://github.com/hamlet-io/engine-plugin-aws/issues/757))
+* (baseline): bucket policy
+* replace reference with function lookups
+* (s3): object ownership support ([#732](https://github.com/hamlet-io/engine-plugin-aws/issues/732))
+* update policy for aws service to cmk
+* (mta): move to using cfn for config set
+* (waf): remove wafv1 support
 * allow manual trigger of release
 * github actions
 * (images): Update testing
+#### Others
+
+* update changelog ([#671](https://github.com/hamlet-io/engine-plugin-aws/issues/671))
 
 Full set of changes: [`8.8.2...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.2...latest)
 
