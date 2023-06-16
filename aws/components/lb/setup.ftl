@@ -311,6 +311,9 @@
 
         [#local listenerRuleId = resources["listenerRule"].Id ]
         [#local listenerRulePriority = resources["listenerRule"].Priority ]
+        [#if listenerRulePriority?is_string && ["default", "_default"]?seq_contains(listenerRulePriority) ]
+            [#local listenerRulePriority = "default" ]
+        [/#if]
 
         [#local fqdn = resources["listenerRule"].FQDN ]
 
@@ -494,8 +497,8 @@
                     [#local path = solution.Path]
                 [/#if]
 
-                [#if listenerRulePriority?is_string &&
-                            listenerRulePriority == "default" ]
+                [#if listenerRulePriority?is_string && listenerRulePriority == "default" ]
+
                     [#if solution.HostFilter || (! solution.Path?is_string &&  solution.Path != "default") ]
                         [@fatal
                             message="Request conditions can not be used for default rules"
