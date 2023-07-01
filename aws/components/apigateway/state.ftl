@@ -1,24 +1,49 @@
 [#ftl]
 [#--
-The config can get confusing as there are a lot of knobs to fiddle with. A few
-notes:-
+The config can get confusing as there are a lot of knobs to fiddle with. There
+is some reasonable documentation at
+https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-authorization-flow.html
+
+A few notes:-
+
+There is a top level split based on the EndpointType, between
+- private APIs (PRIVATE),
+- public global APIs (EDGE), and
+- public region APIs (REGIONAL).
+
+Custom domains are possible for publically exposed APIs (EDGE/REGIONAL),
+whereas they are not possible for private APIs.
+
+Access to an API can involve both the resource policy of the API endpoint and
+any authorization included (authorizer, cognito) in the openapi definition
+via AWS integration extension attributes.
+
+Where no authorization is provided by the API itself, it falls to the resource
+policy to provide a default ALLOW as this will not be provided by the API.
+
+For private APIs, the configuration treats vpc endpoints as equivalent to IP addresses.
+If no restriction on the private links that can consume the API is desired, then a
+value of "_global" MUST be provided as the vpc endpoint in the same manner as it is
+required by default for IPAddressGroups (see below). Where no authorization
+is provided, the resource policy provides an ALLOW. An extra alternate name is
+provided for VPCEndpoints for configuration clarity.
+
+For public APIs, IPAddressGroups on the gateway itself feed through to IP checks
+in the resource policy. The Authentication configuration also affects the resource
+policy, again with the resource policy needing to provide an ALLOW if not provided
+by the API.
+
+IPAddressGroups on the WAF configuration flow through to what IPs are checked by WAF.
+
+At least one of the IPAddressGroups above must be defined for a public API, even if
+it is just to include the _global group. Basically access for a public API must
+be explicitly stated even if access to everyone is desired.
 
 A certificate attribute needs to be defined to have any custom domains used on
 either CloudFront or the API Gateway. If it isn't present, then only the Amazon
 provided domains will be available.
 
-IPAddressGroups on the gateway itself control IP checks in the resource policy.
-The Authentication configuration also affects the resource policy.
-
-IPAddressGroups on WAF control what IPs are checked by WAF.
-
-At least one of the IPAddressGroups above must be defined, even if it is just
-to include the _global group. Basically acess must be explicitly stated even if
-access to everyone is desired.
-
-IPAddressGroups on Publish control what IPs can access the online documentation
-
-Mapping on gateway itself controls whether API domain mappings are created and
+Mapping on the gateway itself controls whether API domain mappings are created and
 whether the stage is included in the mappings.
 
 Mapping on CloudFront overrides the mapping on the gateway itself in terms of
@@ -44,15 +69,16 @@ stage in the path it receives. This environment variable can thus be used to
 adjust routes within http frameworks. The "basePath" attribute in any openAPI
 spec should reflect what is expected in the API URL as described above.
 
-To obtain the modes described above, the following key configuration setting
+To obtain the possibilities described above, the following key configuration setting
 combinations should be used;
 
+Mode 0: Private API                       EndPointType=PRIVATE
 Mode 1: CloudFront(Mapping=false)
 Mode 2: CloudFront(Mapping=true)  Mapping EndpointType=EDGE
 Mode 3: CloudFront(Mapping=true)  Mapping EndpointType=REGIONAL
 Mode 4: Mapping
 
-If Certificate is not configured, then Mode 1 is used if CloudFront is
+For public APIs, if Certificate is not configured, then Mode 1 is used if CloudFront is
 configured and Mode 4 is used if CloudFront is not configured. No mappings are
 created in either case.
 --]
@@ -93,7 +119,8 @@ created in either case.
     [#local accessLogEnabled   = solution.AccessLogging.Enabled ]
 
     [#local endpointType       = solution.EndpointType ]
-    [#local isEdgeEndpointType = solution.EndpointType == "EDGE" ]
+    [#local isPrivateEndpointType = solution.EndpointType == "PRIVATE" ]
+    [#local isEdgeEndpointType    = solution.EndpointType == "EDGE" ]
 
     [#local region = contentIfContent(
                         getExistingReference(apiId, REGION_ATTRIBUTE_TYPE),
@@ -172,7 +199,7 @@ created in either case.
     [#local docsDomains = [] ]
     [#local docsHostName = "" ]
 
-    [#if certificatePresent ]
+    [#if certificatePresent && !isPrivateEndpointType ]
         [#local certificateObject = getCertificateObject(solution.Certificate!"")]
         [#local certificateDomains = getCertificateDomains(certificateObject) ]
         [#local primaryDomainObject = getCertificatePrimaryDomain(certificateObject) ]
@@ -220,7 +247,7 @@ created in either case.
 
     [#-- CloudFront resources if required --]
     [#local cfResources = {} ]
-    [#if cfPresent]
+    [#if cfPresent && !isPrivateEndpointType]
         [#local cfId = formatDependentCFDistributionId(apiId)]
         [#local cfResources =
             {
@@ -277,7 +304,7 @@ created in either case.
     [#-- WAF Services --]
     [#local wafResources = {} ]
     [#local wafLogStreamResources = {}]
-    [#if wafPresent]
+    [#if wafPresent && !isPrivateEndpointType]
         [#local wafResources =
             {
                 "acl" : {
