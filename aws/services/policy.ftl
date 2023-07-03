@@ -67,3 +67,12 @@
         }
     ]
 [/#function]
+
+[#function getVPCEndpointCondition vpcEndpoints=[] match=true]
+    [#return
+        {
+            match?then("StringEquals", "StringNotEquals") :
+                { "aws:SourceVpce": asFlattenedArray(vpcEndpoints) }
+        }
+    ]
+[/#function]

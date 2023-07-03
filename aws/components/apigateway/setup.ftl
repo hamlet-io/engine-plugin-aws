@@ -88,6 +88,7 @@
     [#local cognitoPools = {} ]
     [#local lambdaAuthorizers = {} ]
     [#local privateHTTPEndpoints = {} ]
+    [#local sourceVPCEndpoints = [] ]
 
     [#list solution.Links?values as link]
         [#if link?is_hash]
@@ -196,11 +197,23 @@
                     [/#if]
                     [#break]
 
+                [#case EXTERNALSERVICE_COMPONENT_TYPE]
+                    [#-- For private APIs, provide the consumer vpc endpoints via an external service  --]
+                    [#-- If wanting public access, define an external service with a VPCEndpoint value --]
+                    [#-- of "_global" or its variants                                                  --]
+                    [#if linkTarget.Direction == "inbound" ]
+                        [#local vpcEndpoints = linkTargetAttributes["VPC_ENDPOINTS"]!"" ]
+                        [#if vpcEndpoints?has_content]
+                            [#local sourceVPCEndpoints += vpcEndpoints?split(",") ]
+                        [/#if]
+                    [/#if]
+                    [#break]
             [/#switch]
         [/#if]
     [/#list]
 
     [#local endpointType           = solution.EndpointType ]
+    [#local isPrivateEndpointType  = endpointType == "PRIVATE" ]
     [#local isRegionalEndpointType = endpointType == "REGIONAL" ]
 
     [#local securityProfile        = getSecurityProfile(occurrence, core.Type)]
@@ -216,14 +229,24 @@
 
     [#local apiPolicyStatements    = _context.Policy ]
     [#local apiPolicyAuth          = solution.AuthorisationModel?upper_case ]
+    [#-- For backwards compatability, IP is treated the same as SOURCE --]
+    [#if apiPolicyAuth == "IP"]
+        [#local apiPolicyAuth = "SOURCE" ]
+    [/#if]
 
-    [#local apiPolicyCidr          = getGroupCIDRs(solution.IPAddressGroups) ]
-    [#local apiPolicyCidrProvided  = apiPolicyCidr?has_content ]
-    [#local apiPolicyCidrIsClosed  = apiPolicyCidrProvided && getGroupCIDRs(solution.IPAddressGroups, true, {}, true) ]
+    [#if isPrivateEndpointType ]
+        [#local sourceConfigIsProvided = sourceVPCEndpoints?has_content ]
+        [#local sourceVPCEndpoints     = sourceVPCEndpoints?filter(e -> !["_global", "_global_", "__global__"]?seq_contains(e)) ]
+        [#local sourceConfigIsClosed   = sourceVPCEndpoints?has_content ]
+    [#else]
+        [#local sourceCidr             = getGroupCIDRs(solution.IPAddressGroups) ]
+        [#local sourceConfigIsProvided = sourceCidr?has_content ]
+        [#local sourceConfigIsClosed   = sourceConfigIsProvided && getGroupCIDRs(solution.IPAddressGroups, true, {}, true) ]
+    [/#if]
 
-    [#if (!(wafAclResources?has_content)) && (!apiPolicyCidrProvided) ]
+    [#if (!(wafAclResources?has_content)) && (!sourceConfigIsProvided) ]
         [@fatal
-            message="No IP Address Groups provided for API Gateway"
+            message="No IP Address Groups provided on or VPC endpoints linked to the API Gateway. At a minimum, provide \"_global\" for general access."
             context={
                 "Id": occurrence.Core.RawId
             }
@@ -250,7 +273,7 @@
     [#--                                                                              --]
     [#-- NOTE: for Cognito Authorizer, the authorizer and IP must both provide an     --]
     [#-- explicit ALLOW so can effectively be configured separately. Thus the model   --]
-    [#-- should be the "IP" default.                                                  --]
+    [#-- should be the "SOURCE" default.                                              --]
     [#--                                                                              --]
     [#-- NOTE: the format of the resource arn is non-standard, and differs slightly   --]
     [#-- from that documented at                                                      --]
@@ -271,28 +294,29 @@
                 false
             )
         ] ]
-    [#if apiPolicyCidrIsClosed ]
-        [#-- If lambda authorizers are in use, and the default AuthorisationModel is --]
-        [#-- effect, warn and force the model to a valid value                       --]
+    [#if sourceConfigIsClosed ]
+        [#-- If lambda authorizers are in use, and the default AuthorisationModel (SOURCE) is --]
+        [#-- in effect, warn and force the model to a valid value                         --]
         [#if lambdaAuthorizers?has_content && !apiPolicyAuth?starts_with("AUTHORI") ]
             [@fatal
                 message="Authorization model of \"" + apiPolicyAuth + "\" is not compatible with the use of lambda authorizers"
                 detail="Use one of the AUTHORISER models"
             /]
-            [#local apiPolicyAuth = "AUTHORISER_AND_IP" ]
+            [#local apiPolicyAuth = "AUTHORISER_AND_SOURCE" ]
         [/#if]
 
-        [#-- If cognito authorizers are in use, the AuthorisationModel must be IP --]
-        [#if cognitoPools?has_content && (apiPolicyAuth != "IP") ]
+        [#-- If cognito authorizers are in use, the AuthorisationModel must be SOURCE --]
+        [#if cognitoPools?has_content && (apiPolicyAuth != "SOURCE") ]
             [@fatal
                 message="Authorization model of \"" + apiPolicyAuth + "\" is not compatible with the use of cognito authorizers"
-                detail="Use the IP model"
+                detail="Use the SOURCE model"
             /]
-            [#local apiPolicyAuth = "IP" ]
+            [#local apiPolicyAuth = "SOURCE" ]
         [/#if]
 
         [#-- Ensure the stage(s) used for deployments can't be accessed externally --]
         [#switch apiPolicyAuth ]
+            [#case "SOURCE" ]
             [#case "IP" ]
                 [#-- Resource policy MUST provide explicit ALLOW --]
                 [#local apiPolicyStatements +=
@@ -303,12 +327,16 @@
                             "execute-api:/*",
                             "*"
                         ),
-                        [#-- DENY if not the expected IP --]
+                        [#-- DENY if not the expected source --]
                         getPolicyStatement(
                             "execute-api:Invoke",
                             "execute-api:/*",
                             "*",
-                            getIPCondition(apiPolicyCidr, false),
+                            valueIfTrue(
+                                getVPCEndpointCondition(sourceVPCEndpoints, false),
+                                isPrivateEndpointType,
+                                getIPCondition(sourceCidr, false)
+                            ),
                             false
                         )
                     ]
@@ -317,19 +345,24 @@
 
             [#case "SIG4ORIP" ]
             [#case "AWS:SIG4_OR_IP" ]
+            [#case "AUTHORIZER_OR_SOURCE" ]
             [#case "AUTHORIZER_OR_IP" ]
             [#case "AUTHORISER_OR_IP" ]
-                [#-- Resource policy provides ALLOW on IP --]
-                [#-- AWS_IAM provides ALLOW on SIG4       --]
-                [#-- If IP doesn't match, IAM policy MUST --]
-                [#-- provide explicit ALLOW               --]
+                [#-- Resource policy provides ALLOW on SOURCE --]
+                [#-- AWS_IAM provides ALLOW on SIG4           --]
+                [#-- If SOURCE doesn't match, IAM policy MUST --]
+                [#-- provide explicit ALLOW                   --]
                 [#local apiPolicyStatements +=
                     [
                         getPolicyStatement(
                             "execute-api:Invoke",
                             "execute-api:/*",
                             "*",
-                            getIPCondition(apiPolicyCidr)
+                            valueIfTrue(
+                                getVPCEndpointCondition(sourceVPCEndpoints),
+                                isPrivateEndpointType,
+                                getIPCondition(sourceCidr)
+                            )
                         )
                     ]
                 ]
@@ -352,18 +385,23 @@
 
             [#case "SIG4ANDIP" ]
             [#case "AWS:SIG4_AND_IP" ]
+            [#case "AUTHORIZER_AND_SOURCE" ]
             [#case "AUTHORIZER_AND_IP" ]
             [#case "AUTHORISER_AND_IP" ]
-                [#-- If IP doesn't match, EXPLICIT DENY regardless   --]
-                [#-- If IP matches, then IAM policy MUST provide the --]
-                [#-- explicit ALLOW.                                 --]
+                [#-- If SOURCE doesn't match, EXPLICIT DENY regardless   --]
+                [#-- If SOURCE matches, then IAM policy MUST provide the --]
+                [#-- explicit ALLOW.                                     --]
                 [#local apiPolicyStatements +=
                     [
                         getPolicyStatement(
                             "execute-api:Invoke",
                             "execute-api:/*",
                             "*",
-                            getIPCondition(apiPolicyCidr, false),
+                            valueIfTrue(
+                                getVPCEndpointCondition(sourceVPCEndpoints, false),
+                                isPrivateEndpointType,
+                                getIPCondition(sourceCidr, false)
+                            ),
                             false
                         )
                     ]
@@ -390,7 +428,7 @@
                 [#break]
         [/#switch]
     [#else]
-        [#-- No IP filtering required                                            --]
+        [#-- No SOURCE filtering required                                        --]
         [#-- Because we must have a resource policy to block the default stage,  --]
         [#-- the policy also needs to provide an explicit ALLOW to satisfy the   --]
         [#-- "API Gateway authorization workflow" for other types of authorizers --]
@@ -637,6 +675,17 @@
                     {
                         "Types" : [endpointType]
                     }
+                ) +
+                attributeIfTrue(
+                    "EndpointConfiguration",
+                    isPrivateEndpointType,
+                    {
+                        "Types" : [endpointType]
+                    } +
+                    attributeIfContent(
+                        "VpcEndpointIds",
+                        sourceVPCEndpoints
+                    )
                 ) +
                 attributeIfContent(
                     "Policy",
