@@ -309,6 +309,10 @@
                         [#break]
                 [/#switch]
 
+                [#if solution.StopAfterMatch ]
+                    [#local actions += getSESReceiptStopAction("RuleSet")]
+                [/#if]
+
                 [#if actions?has_content]
                     [@createSESReceiptRule
                         id=ruleId
