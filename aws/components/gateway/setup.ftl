@@ -740,6 +740,17 @@
             [#switch gwSolution.Engine ]
                 [#case "vpcendpoint" ]
                 [#case "privateservice" ]
+
+                    [#-- Support addition of policy via extensions --]
+                    [#local contextLinks = getLinkTargets(subOccurrence) ]
+                    [#local _context =
+                        {
+                            "Links" : contextLinks,
+                            "Policy" : []
+                        }
+                    ]
+                    [#local _context = invokeExtensions( subOccurrence, _context )]
+
                     [#local vpcEndpointResources = resources["vpcEndpoints"]!{} ]
                     [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
 
@@ -759,6 +770,7 @@
                                 subnetIds=endpointSubnets
                                 privateDNSZone=vpcPrivateDNS
                                 securityGroupIds=securityGroupId
+                                statements=_context.Policy
                             /]
                         [/#list]
                     [/#if]
