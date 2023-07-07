@@ -918,7 +918,8 @@
                     "SubnetIds" : getReferences(subnetIds),
                     "PrivateDnsEnabled" : privateDNSZone,
                     "SecurityGroupIds" : getReferences(securityGroupIds)
-                },
+                } +
+                valueIfContent(getPolicyDocument(statements), statements),
                 {}
             )
         outputs=AWS_VPC_VPCENDPOINT_OUTPUT_MAPPINGS
