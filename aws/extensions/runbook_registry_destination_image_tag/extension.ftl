@@ -25,7 +25,7 @@
         _context,
         {
             "TaskParameters" : {
-                "DestinationImage" : ((image.Registry)!"") + ":__input:Tag__"
+                "DestinationImage" : ((image.RegistryPath)!"") + ":__input:Tag__"
             }
         }
     )]
