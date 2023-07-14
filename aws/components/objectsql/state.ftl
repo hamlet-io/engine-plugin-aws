@@ -30,7 +30,7 @@
                 "Outbound" : {
                     "default" : "consume",
                     "consume" :
-                        athenaConsumePermission(workGroupId) +
+                        athenaConsumePermission(workGroupName) +
                         s3AllPermission(dataBucket, getAppDataFilePrefix(occurrence))
             }
             }

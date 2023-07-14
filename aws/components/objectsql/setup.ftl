@@ -114,7 +114,8 @@
                     pseudoStackOutputScript(
                         "Athena WorkGroup",
                         {
-                            formatId( workGroupId, NAME_ATTRIBUTE_TYPE ) : workGroupName
+                            formatId(workGroupId) : workGroupName,
+                            formatId(workGroupId, NAME_ATTRIBUTE_TYPE ) : workGroupName
                         }
                     ) +
                 [
