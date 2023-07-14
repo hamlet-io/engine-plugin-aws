@@ -1396,7 +1396,8 @@
                 "cloudtrail" : {
                     "deployment:Unit" : "cloudtrail",
                     "deployment:Priority" : 100,
-                    "GroupDeploymentUnit" : false
+                    "GroupDeploymentUnit" : false,
+                    "Enabled": false
                 },
                 "console" : {
                     "deployment:Unit" : "console",
