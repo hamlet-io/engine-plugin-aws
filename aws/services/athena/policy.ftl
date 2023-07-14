@@ -36,8 +36,10 @@
                 "athena:GetNamespace",
                 "athena:GetCatalogs",
                 "athena:GetNamespaces",
-                "athena:GetTables",
-                "athena:GetTable"
+                "glue:GetTableVersion",
+                "glue:GetTableVersions",
+                "glue:GetTables",
+                "glue:GetTable"
             ],
             "*",
             principals,
