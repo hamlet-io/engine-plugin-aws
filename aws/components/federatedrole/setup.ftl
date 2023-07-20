@@ -167,11 +167,44 @@
                 [#break]
         [/#switch]
 
-        [#local managedPolicies = _context.ManagedPolicy ]
-        [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
-
+        [#local policySet = {}]
 
         [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(roleId)]
+
+            [#-- Managed Policies --]
+            [#local policySet =
+                addAWSManagedPoliciesToSet(
+                    policySet,
+                    _context.ManagedPolicy
+                )
+            ]
+
+            [#local policySet =
+                addInlinePolicyToSet(
+                    policySet,
+                    formatDependentPolicyId(subOccurrence.Core.Id, _context.Name),
+                    _context.Name,
+                    _context.Policy
+                )
+            ]
+
+            [#-- Any permissions granted via links --]
+            [#local policySet =
+                addInlinePolicyToSet(
+                    policySet,
+                    formatDependentPolicyId(subOccurrence.Core.Id, "links"),
+                    "links",
+                    getLinkTargetsOutboundRoles(_context.Links)
+                )
+            ]
+
+            [#-- Ensure we don't blow any limits as far as possible --]
+            [#local policySet = adjustPolicySetForRole(policySet) ]
+
+            [#-- Create any required managed policies --]
+            [#-- They may result when policies are split to keep below AWS limits --]
+            [@createCustomerManagedPoliciesFromSet policies=policySet /]
+
 
             [@createRole
                 id=roleId
@@ -196,25 +229,9 @@
                 tags=getOccurrenceTags(subOccurrence)
             /]
 
-            [#if _context.Policy?has_content]
-                [#local policyId = formatDependentPolicyId(subCore.Id)]
-                [@createPolicy
-                    id=policyId
-                    name=_context.Name
-                    statements=_context.Policy
-                    roles=roleId
-                /]
-            [/#if]
+            [#-- Create any inline policies that attach to the role --]
+            [@createInlinePoliciesFromSet policies=policySet roles=roleId /]
 
-            [#if linkPolicies?has_content]
-                [#local policyId = formatDependentPolicyId(subCore.Id, "links")]
-                [@createPolicy
-                    id=policyId
-                    name="links"
-                    statements=linkPolicies
-                    roles=roleId
-                /]
-            [/#if]
         [/#if]
     [/#list]
 

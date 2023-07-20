@@ -178,7 +178,6 @@
                         context=context
                     /]
                     [#local managedEntries += [newEntry] ]
-                    ]
                 [/#list]
             [/#if]
         [/#list]

@@ -126,8 +126,52 @@
         [#local computeTaskExtensions = solution.ComputeInstance.ComputeTasks.Extensions ]
         [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, ecsAutoScaleGroupId, _context, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
 
+        [#local policySet = {}]
+
         [#if deploymentSubsetRequired("iam", true) &&
                 isPartOfCurrentDeploymentUnit(ecsRoleId)]
+
+            [#local policySet =
+                addAWSManagedPoliciesToSet(
+                    policySet,
+                    ["arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"] +
+                    _context.ManagedPolicy
+                )
+            ]
+
+            [#--  Standard policies for Ec2 to work --]
+            [#local policySet =
+                addInlinePolicyToSet(
+                    policySet,
+                    formatDependentPolicyId(occurrence.Core.Id, "base")
+                    "base",
+                    ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
+                    ec2ReadTagsPermission() +
+                    s3ListPermission(operationsBucket) +
+                    s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
+                    s3WritePermission(operationsBucket, "DOCKERLogs") +
+                    cwMetricsProducePermission("CWAgent") +
+                    cwLogsProducePermission(ecsLogGroupName) +
+                    ssmSessionManagerPermission(ecsOS) +
+                    (solution.VolumeDrivers?seq_contains("ebs"))?then(
+                        ec2EBSVolumeUpdatePermission(),
+                        []
+                    )+
+                    fixedIP?then(
+                        ec2IPAddressUpdatePermission(),
+                        []
+                    )
+                )]
+
+            [#local policySet =
+                addInlinePolicyToSet(
+                    policySet,
+                    formatDependentPolicyId(occurrence.Core.Id),
+                    _context.Name,
+                    _context.Policy
+                )
+            ]
+
             [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
             [#-- Add policies for external log group access --]
@@ -153,46 +197,32 @@
                 )]
             [/#list]
 
+            [#-- Any permissions granted via links --]
+            [#local policySet =
+                addInlinePolicyToSet(
+                    policySet,
+                    formatDependentPolicyId(occurrence.Core.Id, "links"),
+                    "links",
+                    linkPolicies
+                )
+            ]
+
+            [#-- Ensure we don't blow any limits as far as possible --]
+            [#local policySet = adjustPolicySetForRole(policySet) ]
+
+            [#-- Create any required managed policies --]
+            [#-- They may result when policies are split to keep below AWS limits --]
+            [@createCustomerManagedPoliciesFromSet policies=policySet /]
+
             [@createRole
                 id=ecsRoleId
                 trustedServices=["ec2.amazonaws.com" ]
-                managedArns=
-                    ["arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"] +
-                    _context.ManagedPolicy
-                policies=
-                    [
-                        getPolicyDocument(
-                                ec2AutoScaleGroupLifecyclePermission(ecsAutoScaleGroupName) +
-                                ec2ReadTagsPermission() +
-                                fixedIP?then(
-                                    ec2IPAddressUpdatePermission(),
-                                    []
-                                ) +
-                                s3ListPermission(operationsBucket) +
-                                s3WritePermission(operationsBucket, getSegmentBackupsFilePrefix()) +
-                                s3WritePermission(operationsBucket, "DOCKERLogs") +
-                                cwMetricsProducePermission("CWAgent") +
-                                cwLogsProducePermission(ecsLogGroupName) +
-                                (solution.VolumeDrivers?seq_contains("ebs"))?then(
-                                    ec2EBSVolumeUpdatePermission(),
-                                    []
-                                ),
-                            "docker"
-                        ),
-                        getPolicyDocument(
-                            ssmSessionManagerPermission(ecsOS),
-                            "ssm"
-                        )
-                    ] +
-                    arrayIfContent(
-                        [getPolicyDocument(_context.Policy, "extension")],
-                        _context.Policy) +
-                    arrayIfContent(
-                        [getPolicyDocument(linkPolicies, "links")],
-                        linkPolicies)
+                managedArns=getManagedPoliciesFromSet(policySet)
                 tags=getOccurrenceTags(occurrence)
             /]
 
+            [#-- Create any inline policies that attach to the role --]
+            [@createInlinePoliciesFromSet policies=policySet roles=ecsRoleId /]
         [/#if]
 
         [@setupLogGroup
@@ -1294,58 +1324,69 @@
 
         [#local dependencies = [] ]
         [#local roleId = "" ]
+
+        [#local policySet = {}]
+
         [#if solution.UseTaskRole]
             [#local roleId = resources["taskrole"].Id ]
             [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(roleId)]
                 [#local managedPolicy = []]
 
                 [#list containers as container]
-                    [#if container.ManagedPolicy?has_content ]
-                        [#local managedPolicy += container.ManagedPolicy ]
-                    [/#if]
+                    [#-- Managed Policies --]
+                    [#local policySet =
+                        addAWSManagedPoliciesToSet(
+                            policySet,
+                            container.ManagedPolicy
+                        )
+                    ]
 
-                    [#if container.Policy?has_content]
-                        [#local policyId = formatDependentPolicyId(taskId, container.Id) ]
-                        [@createPolicy
-                            id=policyId
-                            name=container.Name
-                            statements=container.Policy
-                            roles=roleId
-                        /]
-                        [#local dependencies += [policyId] ]
-                    [/#if]
+                    [#local policySet =
+                        addInlinePolicyToSet(
+                            policySet,
+                            formatDependentPolicyId(taskId, container.Id),
+                            container.Name,
+                            container.Policy
+                        )
+                    ]
 
-                    [#local linkPolicies = getLinkTargetsOutboundRoles(container.Links) ]
+                    [#local policySet =
+                        addInlinePolicyToSet(
+                            policySet,
+                            formatDependentPolicyId(taskId, container.Id, "links"),
+                            "links",
+                            getLinkTargetsOutboundRoles(container.Links)
+                        )
+                    ]
 
-                    [#if linkPolicies?has_content]
-                        [#local policyId = formatDependentPolicyId(taskId, container.Id, "links")]
-                        [@createPolicy
-                            id=policyId
-                            name="links"
-                            statements=linkPolicies
-                            roles=roleId
-                        /]
-                        [#local dependencies += [policyId] ]
-                    [/#if]
                 [/#list]
 
                 [#if (solution["aws:ExecuteCommand"])!false ]
-                    [@createPolicy
-                        id=formatDependentPolicyId(taskId, "ECSExecuteCommand")
-                        name="executecommand"
-                        statements=[
-                            getPolicyStatement(
-                                [
-                                    "ssmmessages:CreateControlChannel",
-                                    "ssmmessages:CreateDataChannel",
-                                    "ssmmessages:OpenControlChannel",
-                                    "ssmmessages:OpenDataChannel"
-                                ]
-                            )
-                        ]
-                        roles=roleId
-                    /]
+                    [#local policySet =
+                        addInlinePolicyToSet(
+                            policySet,
+                            formatDependentPolicyId(taskId, "execcmd"),
+                            "execcmd",
+                            [
+                                getPolicyStatement(
+                                    [
+                                        "ssmmessages:CreateControlChannel",
+                                        "ssmmessages:CreateDataChannel",
+                                        "ssmmessages:OpenControlChannel",
+                                        "ssmmessages:OpenDataChannel"
+                                    ]
+                                )
+                            ]
+                        )
+                    ]
                 [/#if]
+
+                [#-- Ensure we don't blow any limits as far as possible --]
+                [#local policySet = adjustPolicySetForRole(policySet) ]
+
+                [#-- Create any required managed policies --]
+                [#-- They may result when policies are split to keep below AWS limits --]
+                [@createCustomerManagedPoliciesFromSet policies=policySet /]
 
                 [@createRole
                     id=roleId
@@ -1353,6 +1394,15 @@
                     managedArns=managedPolicy
                     tags=getOccurrenceTags(subOccurrence)
                 /]
+
+                [#-- Create any inline policies that attach to the role --]
+                [@createInlinePoliciesFromSet policies=policySet roles=roleId /]
+
+                [#local dependencies = combineEntities(
+                    dependencies,
+                    getPolicyDependenciesFromSet(policySet),
+                    APPEND_COMBINE_BEHAVIOUR
+                )]
             [/#if]
         [/#if]
 
