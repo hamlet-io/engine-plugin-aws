@@ -109,40 +109,28 @@
         [/#if]
     [/#if]
 
-    [#if _context.ManagedPolicy?has_content]
-        [#local managedPolicyArns = combineEntities(managedPolicyArns, _context.ManagedPolicy, UNIQUE_COMBINE_BEHAVIOUR) ]
-    [/#if]
-
-    [#if _context.Policy?has_content]
-        [#local policyId = formatDependentManagedPolicyId(userId)]
-        [#local managedPolicyArns = combineEntities(managedPolicyArns, [ getReference(policyId, ARN_ATTRIBUTE_TYPE) ], UNIQUE_COMBINE_BEHAVIOUR) ]
-        [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(policyId)]
-            [@createManagedPolicy
-                id=policyId
-                name=_context.Name
-                statements=_context.Policy
-            /]
-        [/#if]
-    [/#if]
-
-    [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
-
-    [#if linkPolicies?has_content]
-        [#local linkPolicyId = formatDependentManagedPolicyId(userId, "links")]
-        [#local managedPolicyArns = combineEntities(managedPolicyArns, [ getReference(linkPolicyId, ARN_ATTRIBUTE_TYPE) ], UNIQUE_COMBINE_BEHAVIOUR) ]
-        [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(linkPolicyId)]
-            [@createManagedPolicy
-                id=linkPolicyId
-                name="links"
-                statements=linkPolicies
-            /]
-         [/#if]
-    [/#if]
-
-
     [#if fileTransferUser]
         [#if deploymentSubsetRequired("iam", true) &&
                 isPartOfCurrentDeploymentUnit(transferRoleId)]
+
+            [#local transferPolicySet = {}]
+
+            [#-- Managed Policies --]
+            [#local transferPolicySet =
+                addAWSManagedPoliciesToSet(
+                    transferPolicySet,
+                    _context.ManagedPolicy
+                )
+            ]
+
+            [#local transferPolicySet =
+                addInlinePolicyToSet(
+                    transferPolicySet,
+                    formatDependentPolicyId(occurrence.Core.Id, "transfer", _context.Name),
+                    _context.Name,
+                    _context.Policy
+                )
+            ]
 
             [#local transferLinks = {} ]
             [#list (_context.Links) as id, linkTarget ]
@@ -153,23 +141,73 @@
 
             [#local transferLinkPolicies = getLinkTargetsOutboundRoles(transferLinks)]
 
+            [#-- Any permissions granted via links --]
+            [#local transferPolicySet =
+                addInlinePolicyToSet(
+                    transferPolicySet,
+                    formatDependentPolicyId(occurrence.Core.Id, "transfer", "links"),
+                    "links",
+                    getLinkTargetsOutboundRoles(transferLinks)
+                )
+            ]
+
+            [#-- Ensure we don't blow any limits as far as possible --]
+            [#local transferPolicySet = adjustPolicySetForRole(transferPolicySet) ]
+
+            [#-- Create any required managed policies --]
+            [#-- They may result when policies are split to keep below AWS limits --]
+            [@createCustomerManagedPoliciesFromSet policies=transferPolicySet /]
+
             [@createRole
                 id=transferRoleId
                 trustedServices=["transfer.amazonaws.com" ]
-                policies=
-                    [] +
-                    arrayIfContent(
-                        [getPolicyDocument(_context.Policy, "extension")],
-                        _context.Policy) +
-                    arrayIfContent(
-                        [getPolicyDocument(transferLinkPolicies, "links")],
-                        transferLinkPolicies)
+                managedArns=getManagedPoliciesFromSet(transferPolicySet)
                 tags=getOccurrenceTags(occurrence)
             /]
+
+            [#-- Create any inline policies that attach to the role --]
+            [@createInlinePoliciesFromSet policies=transferPolicySet roles=transferRoleId /]
         [/#if]
     [/#if]
 
+    [#local policySet = {}]
+
     [#if deploymentSubsetRequired(USER_COMPONENT_TYPE, true)]
+
+        [#-- Managed Policies --]
+        [#local policySet =
+            addAWSManagedPoliciesToSet(
+                policySet,
+                _context.ManagedPolicy
+            )
+        ]
+
+        [#local policySet =
+            addInlinePolicyToSet(
+                policySet,
+                formatDependentPolicyId(occurrence.Core.Id, _context.Name),
+                _context.Name,
+                _context.Policy
+            )
+        ]
+
+        [#-- Any permissions granted via links --]
+        [#local policySet =
+            addInlinePolicyToSet(
+                policySet,
+                formatDependentPolicyId(occurrence.Core.Id, "links"),
+                "links",
+                getLinkTargetsOutboundRoles(_context.Links)
+            )
+        ]
+
+        [#-- Ensure we don't blow any limits as far as possible --]
+        [#local policySet = adjustPolicySetForRole(policySet) ]
+
+        [#-- Create any required managed policies --]
+        [#-- They may result when policies are split to keep below AWS limits --]
+        [@createCustomerManagedPoliciesFromSet policies=policySet /]
+
         [@cfResource
             id=userId
             type="AWS::IAM::User"
@@ -179,11 +217,14 @@
                 } +
                 attributeIfContent(
                     "ManagedPolicyArns",
-                    managedPolicyArns
+                    getManagedPoliciesFromSet(policySet)
                 )
             outputs=USER_OUTPUT_MAPPINGS
             tags=getOccurrenceTags(occurrence)
         /]
+
+        [#-- Create any inline policies that attach to the role --]
+        [@createInlinePoliciesFromSet policies=policySet users=userId /]
 
         [#-- Manage API keys for the user if linked to usage plans --]
         [#local apikeyNeeded = false ]

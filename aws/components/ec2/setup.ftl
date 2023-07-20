@@ -234,8 +234,51 @@
         [/#if]
     [/#list]
 
+    [#local policySet = {}]
+
     [#if deploymentSubsetRequired("iam", true) &&
             isPartOfCurrentDeploymentUnit(ec2RoleId)]
+
+        [#-- Managed Policies --]
+        [#local policySet =
+            addAWSManagedPoliciesToSet(
+                policySet,
+                _context.ManagedPolicy
+            )
+        ]
+
+        [#--  Standard policies for Ec2 to work --]
+        [#local policySet =
+            addInlinePolicyToSet(
+                policySet,
+                formatDependentPolicyId(occurrence.Core.Id, "base")
+                "base",
+                ec2ReadTagsPermission() +
+                s3ListPermission(operationsBucket) +
+                s3WritePermission(operationsBucket, "DOCKERLogs") +
+                s3WritePermission(operationsBucket, "Backups") +
+                cwMetricsProducePermission("CWAgent") +
+                cwLogsProducePermission(ec2LogGroupName) +
+                ec2EBSVolumeReadPermission() +
+                ssmSessionManagerPermission(ec2OS) +
+                targetGroupPermission?then(
+                    [
+                        getPolicyDocument(
+                            lbRegisterTargetPermission(),
+                            "loadbalancing")
+                    ],
+                    []
+                )
+            )]
+
+        [#local policySet =
+            addInlinePolicyToSet(
+                policySet,
+                formatDependentPolicyId(occurrence.Core.Id, _context.Name),
+                _context.Name,
+                _context.Policy
+            )
+        ]
 
         [#local linkPolicies = getLinkTargetsOutboundRoles(_context.Links) ]
 
@@ -262,46 +305,32 @@
             )]
         [/#list]
 
+        [#-- Any permissions granted via links --]
+        [#local policySet =
+            addInlinePolicyToSet(
+                policySet,
+                formatDependentPolicyId(occurrence.Core.Id, "links"),
+                "links",
+                linkPolicies
+            )
+        ]
+
+        [#-- Ensure we don't blow any limits as far as possible --]
+        [#local policySet = adjustPolicySetForRole(policySet) ]
+
+        [#-- Create any required managed policies --]
+        [#-- They may result when policies are split to keep below AWS limits --]
+        [@createCustomerManagedPoliciesFromSet policies=policySet /]
+
         [@createRole
             id=ec2RoleId
             trustedServices=["ec2.amazonaws.com" ]
-            managedArns=
-                _context.ManagedPolicy
-            policies=
-                [
-                    getPolicyDocument(
-                        ec2ReadTagsPermission() +
-                        s3ListPermission(operationsBucket) +
-                        s3WritePermission(operationsBucket, "DOCKERLogs") +
-                        s3WritePermission(operationsBucket, "Backups") +
-                        cwMetricsProducePermission("CWAgent") +
-                        cwLogsProducePermission(ec2LogGroupName) +
-                        ec2EBSVolumeReadPermission(),
-                        "basic"
-                    ),
-                    getPolicyDocument(
-                        ssmSessionManagerPermission(ec2OS),
-                        "ssm"
-                    )
-                ] +
-                targetGroupPermission?then(
-                    [
-                        getPolicyDocument(
-                            lbRegisterTargetPermission(),
-                            "loadbalancing")
-                    ],
-                    []
-                ) +
-                arrayIfContent(
-                    [getPolicyDocument(linkPolicies, "links")],
-                    linkPolicies
-                ) +
-                arrayIfContent(
-                    [getPolicyDocument(_context.Policy, "extension")],
-                    _context.Policy
-                )
+            managedArns=getManagedPoliciesFromSet(policySet)
             tags=getOccurrenceTags(occurrence)
         /]
+
+        [#-- Create any inline policies that attach to the role --]
+        [@createInlinePoliciesFromSet policies=policySet roles=ec2RoleId /]
     [/#if]
 
     [@setupLogGroup

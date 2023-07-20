@@ -158,6 +158,8 @@
 
     [#local computeTaskConfig = getOccurrenceComputeTaskConfig(occurrence, bastionAutoScaleGroupId, _context, computeTaskExtensions, componentComputeTasks, userComputeTasks)]
 
+    [#local policySet = {}]
+
     [#if sshEnabled ]
 
         [#list _context.Links as linkId,linkTarget]
@@ -180,33 +182,64 @@
 
         [#if deploymentSubsetRequired("iam", true) &&
                 isPartOfCurrentDeploymentUnit(bastionRoleId)]
+
+            [#--  Standard policies for Ec2 to work --]
+            [#local policySet =
+                addInlinePolicyToSet(
+                    policySet,
+                    formatDependentPolicyId(occurrence.Core.Id, "base")
+                    "base",
+                    ec2AutoScaleGroupLifecyclePermission(bastionAutoScaleGroupName) +
+                    ec2IPAddressUpdatePermission() +
+                    ec2ReadTagsPermission() +
+                    cwMetricsProducePermission("CWAgent") +
+                    cwLogsProducePermission(bastionLgName) +
+                    ssmSessionManagerPermission(bastionOS)
+                )]
+
+            [#-- Managed Policies --]
+            [#local policySet =
+                addAWSManagedPoliciesToSet(
+                    policySet,
+                    _context.ManagedPolicy
+                )
+            ]
+
+            [#local policySet =
+                addInlinePolicyToSet(
+                    policySet,
+                    formatDependentPolicyId(occurrence.Core.Id, _context.Name),
+                    _context.Name,
+                    _context.Policy
+                )
+            ]
+
+            [#-- Any permissions granted via links --]
+            [#local policySet =
+                addInlinePolicyToSet(
+                    policySet,
+                    formatDependentPolicyId(occurrence.Core.Id, "links"),
+                    "links",
+                    linkPolicies
+                )
+            ]
+
+            [#-- Ensure we don't blow any limits as far as possible --]
+            [#local policySet = adjustPolicySetForRole(policySet) ]
+
+            [#-- Create any required managed policies --]
+            [#-- They may result when policies are split to keep below AWS limits --]
+            [@createCustomerManagedPoliciesFromSet policies=policySet /]
+
             [@createRole
                 id=bastionRoleId
                 trustedServices=["ec2.amazonaws.com" ]
-                policies=
-                    [
-                        getPolicyDocument(
-                            ec2AutoScaleGroupLifecyclePermission(bastionAutoScaleGroupName) +
-                            ec2IPAddressUpdatePermission() +
-                            ec2ReadTagsPermission() +
-                            cwMetricsProducePermission("CWAgent") +
-                            cwLogsProducePermission(bastionLgName),
-                            "basic"
-                        ),
-                        getPolicyDocument(
-                            ssmSessionManagerPermission(bastionOS),
-                            "ssm"
-                        )
-                    ] +
-                    arrayIfContent(
-                        [getPolicyDocument(_context.Policy, "fragment")],
-                        _context.Policy) +
-                    arrayIfContent(
-                        [getPolicyDocument(linkPolicies, "links")],
-                        linkPolicies)
-                managedArns=_context.ManagedPolicy
+                managedArns=getManagedPoliciesFromSet(policySet)
                 tags=getOccurrenceTags(occurrence)
             /]
+
+            [#-- Create any inline policies that attach to the role --]
+            [@createInlinePoliciesFromSet policies=policySet roles=bastionRoleId /]
         [/#if]
 
 
@@ -235,17 +268,17 @@
             /]
 
             [#local bastionSSHNetworkRule = {
-                        "Ports" : solution.ComputeInstance.ManagementPorts,
-                        "IPAddressGroups" :
-                            sshEnabled?then(
-                                combineEntities(
-                                    (segmentObject.Bastion.IPAddressGroups)!(segmentObject.IPAddressGroups)![],
-                                    (solution.IPAddressGroups)![],
-                                    UNIQUE_COMBINE_BEHAVIOUR
-                                ),
-                                []
-                            ),
-                        "Description" : "Bastion Access Groups"
+                "Ports" : solution.ComputeInstance.ManagementPorts,
+                "IPAddressGroups" :
+                    sshEnabled?then(
+                        combineEntities(
+                            (segmentObject.Bastion.IPAddressGroups)!(segmentObject.IPAddressGroups)![],
+                            (solution.IPAddressGroups)![],
+                            UNIQUE_COMBINE_BEHAVIOUR
+                        ),
+                        []
+                    ),
+                "Description" : "Bastion Access Groups"
             }]
 
             [@createSecurityGroupIngressFromNetworkRule
@@ -262,6 +295,7 @@
                         "Path" : "/",
                         "Roles" : [ getReference(bastionRoleId) ]
                     }
+                dependencies=getPolicyDependenciesFromSet(policySet)
                 outputs={}
             /]
 
