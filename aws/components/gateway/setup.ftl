@@ -556,7 +556,8 @@
                             [#list linkTargetResources["routeTables"] as zone, zoneRouteTableResources ]
 
                                 [#local zoneRouteTableId = zoneRouteTableResources["routeTable"].Id]
-                                [#local routeTableIds += [ zoneRouteTableId ]]
+                                [#-- For manually configured vpcs, the same route table may be used in multiple zones --]
+                                [#local routeTableIds = getUniqueArrayElements( routeTableIds, zoneRouteTableId ) ]
 
                                     [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
 
