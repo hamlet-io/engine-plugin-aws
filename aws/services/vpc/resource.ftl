@@ -907,7 +907,8 @@
             (type == "gateway")?then(
                 {
                     "VpcEndpointType" : "Gateway",
-                    "RouteTableIds" : getReferences(routeTableIds)
+                    [#-- For manually configured vpcs, the same route table may be used in multiple zones --]
+                    "RouteTableIds" : getUniqueArrayElements(getReferences(routeTableIds))
                 } +
                 valueIfContent(getPolicyDocument(statements), statements),
                 {}
