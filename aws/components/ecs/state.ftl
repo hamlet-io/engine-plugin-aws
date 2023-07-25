@@ -35,41 +35,26 @@
 
     [#local asgEnabled = computeProviderProfile.Containers.Providers?seq_contains("_autoscalegroup")]
 
-    [#if getExistingReference(
-            formatComponentResourceId(
-            AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
-            core.Tier,
-            core.Component,
-            extensions))?has_content ]
-
-        [#local autoScaleGroupId = formatComponentResourceId(
-            AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
-            core.Tier,
-            core.Component,
-            extensions)]
-
-    [#else]
-        [#local autoScaleGroupId = formatResourceId(AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, occurrence.Core.Id)]
-    [/#if]
+    [#local autoScaleGroupId = getExistingReference(
+        formatResourceId(AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
+        "",
+        "",
+        getOccurrenceDeploymentUnit(occurrence)
+    )?has_content?then(
+        formatResourceId(AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
+        formatResourceId(AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, core.Id)
+    )]
 
 
-    [#if getExistingReference(
-            formatComponentResourceId(
-            AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE,
-            core.Tier,
-            core.Component,
-            extensions))?has_content ]
-
-        [#local launchConfigId = formatComponentResourceId(
-            AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE,
-            core.Tier,
-            core.Component,
-            extensions)]
-
-    [#else]
-        [#local launchConfigId = formatResourceId(AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE, occurrence.Core.Id)]
-    [/#if]
-
+    [#local launchConfigId = getExistingReference(
+        formatResourceId(AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
+        "",
+        "",
+        getOccurrenceDeploymentUnit(occurrence)
+    )?has_content?then(
+        formatResourceId(AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
+        formatResourceId(AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE, core.Id)
+    )]
 
     [#-- Always include the ASG so that we can still handle managed termination when disabling the asg --]
     [#local asgResources = {
@@ -86,7 +71,15 @@
         [#local lgInstanceLogId = formatLogGroupId(core.Id, "instancelog") ]
         [#local lgInstanceLogName = formatAbsolutePath( core.FullAbsolutePath, "instancelog") ]
 
-        [#local sgGroupId = formatComponentSecurityGroupId(core.Tier, core.Component)]
+        [#local sgGroupId = getExistingReference(
+                formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
+                "",
+                "",
+                getOccurrenceDeploymentUnit(occurrence)
+            )?has_content?then(
+                formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
+                formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id)
+            )]
 
         [#local asgResources += {
             "securityGroup" : {
