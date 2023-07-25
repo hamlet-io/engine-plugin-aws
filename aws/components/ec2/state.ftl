@@ -6,7 +6,15 @@
 
     [#local zoneResources = {}]
 
-    [#local securityGroupId = formatComponentSecurityGroupId(core.Tier, core.Component)]
+    [#local securityGroupId = getExistingReference(
+            formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
+            "",
+            "",
+            getOccurrenceDeploymentUnit(occurrence)
+        )?has_content?then(
+            formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
+            formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id)
+        )]
 
     [#local availablePorts = solution.ComputeInstance.ManagementPorts ]
     [#list solution.Ports as id,port ]
