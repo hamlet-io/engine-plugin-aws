@@ -5,7 +5,7 @@
 
     [#local securityGroupToId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id )]
 
-    [#local eipId = formatEIPId(core.Id) ]
+    [#local eipId = formatResourceId(AWS_EIP_RESOURCE_TYPE, core.Id) ]
 
     [#assign componentState =
         {

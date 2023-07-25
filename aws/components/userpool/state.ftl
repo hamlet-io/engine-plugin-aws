@@ -94,7 +94,7 @@
                         "Type" : AWS_COGNITO_USERPOOL_DOMAIN_RESOURCE_TYPE
                     },
                     "role" : {
-                        "Id" : formatComponentRoleId(core.Tier, core.Component),
+                        "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, occurrence.Core.Id),
                         "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
                         "IncludeInDeploymentState" : false
                     }

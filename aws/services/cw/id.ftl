@@ -73,13 +73,6 @@
                 extensions)]
 [/#function]
 
-[#function formatComponentLogGroupId tier component extensions...]
-    [#return formatComponentResourceId(
-                AWS_CLOUDWATCH_LOG_GROUP_RESOURCE_TYPE,
-                tier,
-                component,
-                extensions)]
-[/#function]
 
 [#function formatAccountLogGroupId ids...]
     [#return formatAccountResourceId(

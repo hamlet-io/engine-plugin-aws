@@ -34,7 +34,42 @@
     [#local computeProviderProfile  = getComputeProviderProfile(occurrence)]
 
     [#local asgEnabled = computeProviderProfile.Containers.Providers?seq_contains("_autoscalegroup")]
-    [#local autoScaleGroupId = formatEC2AutoScaleGroupId(core.Tier, core.Component)]
+
+    [#if getExistingReference(
+            formatComponentResourceId(
+            AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
+            core.Tier,
+            core.Component,
+            extensions))?has_content ]
+
+        [#local autoScaleGroupId = formatComponentResourceId(
+            AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
+            core.Tier,
+            core.Component,
+            extensions)]
+
+    [#else]
+        [#local autoScaleGroupId = formatResourceId(AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, occurrence.Core.Id)]
+    [/#if]
+
+
+    [#if getExistingReference(
+            formatComponentResourceId(
+            AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE,
+            core.Tier,
+            core.Component,
+            extensions))?has_content ]
+
+        [#local launchConfigId = formatComponentResourceId(
+            AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE,
+            core.Tier,
+            core.Component,
+            extensions)]
+
+    [#else]
+        [#local launchConfigId = formatResourceId(AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE, occurrence.Core.Id)]
+    [/#if]
+
 
     [#-- Always include the ASG so that we can still handle managed termination when disabling the asg --]
     [#local asgResources = {
@@ -60,12 +95,12 @@
                 "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
             },
             "role" : {
-                "Id" : formatComponentRoleId(core.Tier, core.Component),
+                "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, occurrence.Core.Id),
                 "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
                 "IncludeInDeploymentState" : false
             },
             "instanceProfile" : {
-                "Id" : formatEC2InstanceProfileId(core.Tier, core.Component),
+                "Id" : formatResourceId(AWS_EC2_INSTANCE_PROFILE_RESOURCE_TYPE, occurrence.Core.Id),
                 "Type" : AWS_EC2_INSTANCE_PROFILE_RESOURCE_TYPE
             },
             "autoScaleGroup" : {
@@ -90,8 +125,8 @@
             },
             "launchConfig" : {
                 "Id" : solution.AutoScaling.AlwaysReplaceOnUpdate?then(
-                        formatEC2LaunchConfigId(core.Tier, core.Component, getCLORunId()),
-                        formatEC2LaunchConfigId(core.Tier, core.Component)
+                        formatId(launchConfigId, getCLORunId()),
+                        launchConfigId
                 ),
                 "Type" : AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE
             },

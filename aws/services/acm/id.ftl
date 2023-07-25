@@ -21,14 +21,6 @@
                 extensions)]
 [/#function]
 
-[#function formatComponentCertificateId tier component extensions...]
-    [#return formatComponentResourceId(
-                AWS_CERTIFICATE_RESOURCE_TYPE,
-                tier,
-                component,
-                extensions)]
-[/#function]
-
 [#function formatDomainCertificateId certificateObject, hostName=""]
     [#local primaryDomain = getCertificatePrimaryDomain(certificateObject) ]
     [#if primaryDomain.Name?has_content ]
