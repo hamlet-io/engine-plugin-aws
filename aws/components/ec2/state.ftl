@@ -6,6 +6,7 @@
 
     [#local zoneResources = {}]
 
+    [#-- migrate from Component based Ids over to Occurrence Ids--]
     [#local securityGroupId = getExistingReference(
             formatResourceId(AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
             "",

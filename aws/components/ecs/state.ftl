@@ -35,6 +35,7 @@
 
     [#local asgEnabled = computeProviderProfile.Containers.Providers?seq_contains("_autoscalegroup")]
 
+    [#-- migrate from Component based Ids over to Occurrence Ids--]
     [#local autoScaleGroupId = getExistingReference(
         formatResourceId(AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
         "",
@@ -45,7 +46,7 @@
         formatResourceId(AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, core.Id)
     )]
 
-
+    [#-- migrate from Component based Ids over to Occurrence Ids--]
     [#local launchConfigId = getExistingReference(
         formatResourceId(AWS_EC2_LAUNCH_CONFIG_RESOURCE_TYPE, getTierId(core.Tier), getComponentId(core.Component)),
         "",
