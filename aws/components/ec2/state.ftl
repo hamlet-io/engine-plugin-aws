@@ -46,12 +46,12 @@
                         "Type" : AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE
                     },
                     "ec2EIP" : {
-                        "Id" : formatEIPId( core.Id, zone.Id, "eth0"),
+                        "Id" : formatResourceId(AWS_EIP_RESOURCE_TYPE, core.Id, zone.Id, "eth0"),
                         "Name" : formatName(core.FullName, zone.Name),
                         "Type" : AWS_EIP_RESOURCE_TYPE
                     },
                     "ec2EIPAssociation" : {
-                        "Id" : formatEIPAssociationId( core.Id, zone.Id, "eth0"),
+                        "Id" : formatResourceId(AWS_EIP_ASSOCIATION_RESOURCE_TYPE, core.Id, zone.Id, "eth0"),
                         "Type" : AWS_EIP_ASSOCIATION_RESOURCE_TYPE
                     },
                     "waitHandle" : {
@@ -71,7 +71,7 @@
         {
             "Resources" : {
                 "instanceProfile" : {
-                    "Id" : formatEC2InstanceProfileId(core.Tier, core.Component),
+                    "Id" : formatResourceId(AWS_EC2_INSTANCE_PROFILE_RESOURCE_TYPE, occurrence.Core.Id),
                     "Type" : AWS_EC2_INSTANCE_PROFILE_RESOURCE_TYPE
                 },
                 "sg" : {
@@ -81,7 +81,7 @@
                     "Type" : AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE
                 },
                 "ec2Role" : {
-                    "Id" : formatComponentRoleId(core.Tier, core.Component),
+                    "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, occurrence.Core.Id),
                     "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,
                     "IncludeInDeploymentState" : false
                 },

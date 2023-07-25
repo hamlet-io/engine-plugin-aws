@@ -45,14 +45,6 @@
                 extensions)]
 [/#function]
 
-[#function formatComponentPolicyId tier component extensions...]
-    [#return formatComponentResourceId(
-                AWS_IAM_POLICY_RESOURCE_TYPE,
-                tier,
-                component,
-                extensions)]
-[/#function]
-
 [#function formatManagedPolicyId ids... ]
     [#return formatResourceId(
                 AWS_IAM_MANAGED_POLICY_RESOURCE_TYPE,
@@ -87,15 +79,6 @@
                 type,
                 extensions)]
 [/#function]
-
-[#function formatComponentRoleId tier component extensions...]
-    [#return formatComponentResourceId(
-                AWS_IAM_ROLE_RESOURCE_TYPE,
-                tier,
-                component,
-                extensions)]
-[/#function]
-
 
 [#function formatAccountServiceLinkedRoleId type extensions...]
     [#return formatAccountResourceId(

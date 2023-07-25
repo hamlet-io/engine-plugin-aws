@@ -202,14 +202,6 @@
                 extensions)]
 [/#function]
 
-[#function formatComponentSecurityGroupIngressId tier component extensions...]
-    [#return formatComponentResourceId(
-                AWS_VPC_SECURITY_GROUP_INGRESS_RESOURCE_TYPE,
-                tier,
-                component,
-                extensions)]
-[/#function]
-
 [#function formatSSHFromProxySecurityGroupId ]
     [#return
         migrateToResourceId(

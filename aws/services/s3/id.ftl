@@ -35,13 +35,6 @@
                 extensions)]
 [/#function]
 
-[#function formatProductS3Id type extensions...]
-    [#return formatProductResourceId(
-                AWS_S3_RESOURCE_TYPE,
-                type,
-                extensions)]
-[/#function]
-
 [#function formatAccountS3Id type extensions...]
     [#return formatAccountResourceId(
                 AWS_S3_RESOURCE_TYPE,
