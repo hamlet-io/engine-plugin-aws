@@ -556,7 +556,7 @@
                             [#list linkTargetResources["routeTables"] as zone, zoneRouteTableResources ]
 
                                 [#local zoneRouteTableId = zoneRouteTableResources["routeTable"].Id]
-                                [#local routeTableIds = [zoneRouteTableId] ]
+                                [#local routeTableIds += [zoneRouteTableId] ]
                                 [#if deploymentSubsetRequired(NETWORK_GATEWAY_COMPONENT_TYPE, true)]
 
                                     [#switch gwSolution.Engine ]
