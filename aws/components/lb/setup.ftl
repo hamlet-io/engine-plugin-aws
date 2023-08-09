@@ -1084,6 +1084,15 @@
                             "deregistration_delay.timeout_seconds" : solution.Forward.DeregistrationTimeout
                         }]
                 [/#if]
+                [#switch solution.Forward.ClientIP!""]
+                    [#case "preserve"]
+                        [#local tgAttributes += { "preserve_client_ip.enabled" : true } ]
+                        [#break]
+
+                    [#case "proxy_protocol"]
+                        [#local tgAttributes += { "proxy_protocol_v2.enabled" : true } ]
+                        [#break]
+                [/#switch]
 
                 [#if engine == "network" && deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
                     [@createTargetGroup
