@@ -42,6 +42,23 @@
     mappings=AWS_EC2_INSTANCE_OUTPUT_MAPPINGS
 /]
 
+[#assign AWS_EC2_NETWORK_INTERFACE_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        },
+        IP_ADDRESS_ATTRIBUTE_TYPE: {
+            "Attribute": "PrimaryPrivateIpAddress"
+        }
+    }
+]
+
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE
+    mappings=AWS_EC2_NETWORK_INTERFACE_OUTPUT_MAPPINGS
+/]
+
 [#function getCFNInitFromComputeTasks computeTaskConfig ]
 
     [#local configSetName = ""]

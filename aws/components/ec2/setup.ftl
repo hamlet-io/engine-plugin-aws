@@ -463,7 +463,7 @@
                             )
                     }
                 tags=getOccurrenceTags(occurrence, { "zone" : zone }, [ zone, "eth0"])
-                outputs={}
+                outputs=AWS_EC2_NETWORK_INTERFACE_OUTPUT_MAPPINGS
             /]
 
             [#if fixedIP || publicRouteTable]
