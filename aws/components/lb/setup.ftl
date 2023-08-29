@@ -257,6 +257,20 @@
                         )]
                         [#break]
                     [#break]
+
+                    [#case EC2_COMPONENT_TYPE]
+                        [#list linkTargetResources["Zones"] as zone, resources ]
+                            [#if getExistingReference(resources["ec2ENI"].Id, IP_ADDRESS_ATTRIBUTE_TYPE)?has_content ]
+                                [#local staticTargets +=
+                                    getTargetGroupTarget(
+                                        "ip",
+                                        getExistingReference(resources["ec2ENI"].Id, IP_ADDRESS_ATTRIBUTE_TYPE),
+                                        port.Port,
+                                        false
+                                    )]
+                            [/#if]
+                        [/#list]
+                        [#break]
             [/#switch]
         [/#list]
 
@@ -974,6 +988,20 @@
                             "lambda",
                             linkTargetAttributes["ARN"]
                         )]
+                        [#break]
+
+                    [#case EC2_COMPONENT_TYPE]
+                        [#list linkTargetResources["Zones"] as zone, resources ]
+                            [#if getExistingReference(resources["ec2ENI"].Id, IP_ADDRESS_ATTRIBUTE_TYPE)?has_content ]
+                                [#local staticTargets +=
+                                    getTargetGroupTarget(
+                                        "ip",
+                                        getExistingReference(resources["ec2ENI"].Id, IP_ADDRESS_ATTRIBUTE_TYPE),
+                                        destinationPort.Port,
+                                        false
+                                    )]
+                            [/#if]
+                        [/#list]
                         [#break]
                 [/#switch]
             [/#if]
