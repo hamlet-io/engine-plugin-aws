@@ -53,6 +53,8 @@
             passwordEncryptionScheme
         )]
 
+        [#local sourceCidr = getGroupCIDRs(solution.IPAddressGroups) ]
+
     [#-- Add in container specifics including override of defaults --]
     [#-- Allows for explicit policy or managed ARN's to be assigned to the user --]
     [#local contextLinks = getLinkTargets(occurrence) ]
@@ -64,7 +66,21 @@
             "DefaultCoreVariables" : false,
             "DefaultEnvironmentVariables" : false,
             "DefaultLinkVariables" : false,
-            "Policy" : iamStandardPolicies(occurrence, baselineComponentIds),
+            "Policy" :
+                iamStandardPolicies(occurrence, baselineComponentIds) +
+                valueIfContent(
+                    [
+                        getPolicyStatement(
+                            "*",
+                            "*",
+                            "",
+                            getIPCondition(sourceCidr, false),
+                            false
+                        )
+                    ],
+                    sourceCidr,
+                    []
+                ),
             "TransferMounts" : {}
         }
     ]
