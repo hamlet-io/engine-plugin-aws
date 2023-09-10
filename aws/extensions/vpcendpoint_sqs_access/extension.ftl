@@ -1,28 +1,28 @@
 [#ftl]
 
 [@addExtension
-    id="vpcendpoint_apigateway_access"
+    id="vpcendpoint_sqs_access"
     aliases=[
-        "_vpcendpoint_apigateway_access"
+        "_vpcendpoint_sqs_access"
     ]
     description=[
-        "Limits access to the linked apis"
+        "Limits access to the sqs queues"
     ]
     supportedTypes=[
         NETWORK_GATEWAY_DESTINATION_COMPONENT_TYPE
     ]
 /]
 
-[#macro shared_extension_vpcendpoint_apigateway_access_deployment_setup occurrence ]
+[#macro shared_extension_vpcendpoint_sqs_access_deployment_setup occurrence ]
 
     [#local resources = [] ]
     [#list _context.Links as id, linkTarget]
         [#switch linkTarget.Core.Type]
             [#case EXTERNALSERVICE_COMPONENT_TYPE]
-            [#case APIGATEWAY_COMPONENT_TYPE]
+            [#case SQS_COMPONENT_TYPE]
                 [#local resource = (linkTarget.State.Attributes["ARN"])!"" ]
                 [#if resource?has_content]
-                    [#local resources += [ resource?ensure_ends_with("/*") ] ]
+                    [#local resources += [ resource ] ]
                 [/#if]
                 [#break]
         [/#switch]
@@ -32,13 +32,13 @@
             [
                 getPolicyStatement(
                     [
-                        "execute-api:Invoke"
+                        "sqs:*"
                     ],
                     resources,
                     "*",
                     {},
                     true,
-                    "Private API Gateway access"
+                    "SQS queue access"
                 )
             ]
         /]
