@@ -322,6 +322,7 @@
     [/#if]
 
     [#local resources = {} ]
+    [#local vpcEndpoints = [] ]
 
     [#switch engine ]
         [#case "natgw"]
@@ -355,10 +356,11 @@
                 [#list networkEndpoints as id, networkEndpoint  ]
                     [#local endpointTypeZones = endpointZones[id]![] ]
                     [#local endpointZones += { id : endpointTypeZones + [ zone.Id ] }]
+                    [#local resourceId = formatResourceId(AWS_VPC_VPCENDPOINT_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(id, "X"))]
                     [#local resources = mergeObjects( resources, {
                         "vpcEndpoints" : {
                             "vpcEndpoint" + id : {
-                                "Id" : formatResourceId(AWS_VPC_VPCENDPOINT_RESOURCE_TYPE, core.Id, replaceAlphaNumericOnly(id, "X")),
+                                "Id" : resourceId,
                                 "EndpointType" : networkEndpoint.Type?lower_case,
                                 "EndpointZones" : endpointZones[id],
                                 "ServiceName" : networkEndpoint.ServiceName,
@@ -366,6 +368,11 @@
                             }
                         }
                     })]
+                    [#local vpcEndpoints =
+                        getUniqueArrayElements(
+                            vpcEndpoints,
+                            getExistingReference(resourceId)
+                        )]
                 [/#list]
             [/#list]
             [#break]
@@ -380,8 +387,12 @@
     [#assign componentState =
         {
             "Resources" : resources,
-            "Attributes" : {
-            },
+            "Attributes" :
+            attributeIfContent(
+                "VPC_ENDPOINTS",
+                vpcEndpoints,
+                vpcEndpoints?join(",")
+            ),
             "Roles" : {
                 "Inbound" : {},
                 "Outbound" : {}

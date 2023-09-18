@@ -21,7 +21,7 @@
         } +
         attributeIfContent("Action", actions)+
         attributeIfContent("NotAction", notActions) +
-        attributeIfContent("Sid", sid) +
+        attributeIfContent("Sid", replaceAlphaNumericOnly(sid?capitalize)) +
         attributeIfContent("Resource", resources) +
         attributeIfContent("Principal", principals) +
         attributeIfContent("NotPrincipal", notprincipals) +
