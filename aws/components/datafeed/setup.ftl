@@ -118,7 +118,7 @@
         [/#list]
     [/#list]
 
-    [#local links = getLinkTargets(occurrence) ]
+    [#local links = getLinkTargets(occurrence, {}, false) ]
     [#local linkPolicies = []]
 
     [#list links as linkId,linkTarget]
@@ -130,7 +130,8 @@
 
         [#switch linkTargetCore.Type]
             [#case LAMBDA_FUNCTION_COMPONENT_TYPE]
-
+                [#-- Include lambda processor even if not deployed as config is required if bucket keys use lambda partitioning --]
+                [#-- This permits the firehose to be deployed before the lambda function --]
                 [#local linkPolicies += lambdaKinesisPermission( linkTargetAttributes["ARN"])]
 
                 [#local streamProcessors +=
@@ -143,7 +144,9 @@
                 [#break]
 
             [#default]
-                [#local linkPolicies += getLinkTargetsOutboundRoles( { linkId, linkTarget} ) ]
+                [#if isOccurrenceDeployed(linkTarget) ]
+                    [#local linkPolicies += getLinkTargetsOutboundRoles( { linkId, linkTarget} ) ]
+                [/#if]
         [/#switch]
     [/#list]
 
