@@ -130,17 +130,23 @@
 
         [#switch linkTargetCore.Type]
             [#case LAMBDA_FUNCTION_COMPONENT_TYPE]
-                [#-- Include lambda processor even if not deployed as config is required if bucket keys use lambda partitioning --]
-                [#-- This permits the firehose to be deployed before the lambda function --]
-                [#local linkPolicies += lambdaKinesisPermission( linkTargetAttributes["ARN"])]
+                [#if isOccurrenceDeployed(linkTarget) ]
+                    [#local linkPolicies += lambdaKinesisPermission( linkTargetAttributes["ARN"])]
 
-                [#local streamProcessors +=
-                        [ getFirehoseStreamLambdaProcessor(
-                            linkTargetAttributes["ARN"],
-                            streamRoleId,
-                            solution.Buffering.Interval,
-                            solution.Buffering.Size
-                        )]]
+                    [#local streamProcessors +=
+                            [ getFirehoseStreamLambdaProcessor(
+                                linkTargetAttributes["ARN"],
+                                streamRoleId,
+                                solution.Buffering.Interval,
+                                solution.Buffering.Size
+                            )]]
+                [#else]
+                    [@fatal
+                        message="Lambda stream processor must be deployed before the associated datafeed can be deployed"
+                        detail="Deploy the lambda first. One option is to adjust its deployment group and priority."
+                        context=occurrence
+                    /]
+                [/#if]
                 [#break]
 
             [#default]
