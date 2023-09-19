@@ -47,13 +47,91 @@
         [/#if]
     [/#list]
 
+    [#local parts = []]
+    [#list solution.Username.IncludeOrder as part]
+        [#if solution.Username.Include[part]]
+            [#switch part]
+                [#case "Product"]
+                    [#local layer = getActiveLayer(PRODUCT_LAYER_TYPE)]
+                    [#local parts += [
+                        solution.Username.UseIdValues?then(
+                            layer.Id,
+                            (layer.Name)!layer.Id
+                        )
+                    ]]
+                    [#break]
+                [#case "Environment"]
+                    [#local layer = getActiveLayer(ENVIRONMENT_LAYER_TYPE)]
+                    [#local parts += [
+                        solution.Username.UseIdValues?then(
+                            layer.Id,
+                            (layer.Name)!layer.Id
+                        )
+                    ]]
+                    [#break]
+                [#case "Segment"]
+                    [#local layer = getActiveLayer(ENVIRONMENT_LAYER_TYPE)]
+                    [#if layer.Id != "default" ]
+                        [#local parts += [
+                            solution.Username.UseIdValues?then(
+                                layer.Id,
+                                (layer.Name)!layer.Id
+                            )
+                        ]]
+                    [/#if]
+                    [#break]
+                [#case "Tier"]
+                    [#local parts += [
+                            solution.Username.UseIdValues?then(
+                                core.Tier.Id,
+                                (core.Tier.Name)!core.Tier.Id
+                            )
+                        ]]
+                    [#break]
+                [#case "Component"]
+                    [#local parts += [
+                            solution.Username.UseIdValues?then(
+                                core.Component.Id,
+                                (core.Component.Name)!core.Component.Id
+                            )
+                        ]]
+                    [#break]
+                [#case "Instance"]
+                    [#if core.Instance.Id != "default" ]
+                        [#local parts += [
+                                solution.Username.UseIdValues?then(
+                                    core.Instance.Id,
+                                    (core.Instance.Name)!core.Instance.Id
+                                )
+                            ]]
+                    [/#if]
+                    [#break]
+                [#case "Version"]
+                    [#if core.Version.Id != "default"]
+                        [#local parts += [
+                                solution.Username.UseIdValues?then(
+                                    core.Version.Id,
+                                    (core.Version.Name)!core.Version.Id
+                                )
+                            ]]
+                    [/#if]
+                    [#break]
+                [#case "Name"]
+                    [#local parts += [namespaceObject.Name!""] ]
+                    [#break]
+            [/#switch]
+        [/#if]
+    [/#list]
+
+    [#local userName = formatName(parts)]
+
     [#-- Use short full name for user as there is a length limit of 64 chars --]
     [#assign componentState =
         {
             "Resources" : {
                 "user" : {
                     "Id" : userId,
-                    "Name" : core.ShortFullName,
+                    "Name" : userName,
                     "Type" : AWS_IAM_USER_RESOURCE_TYPE,
                     "Deployed" : true
                 },
