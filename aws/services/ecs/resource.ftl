@@ -1140,7 +1140,7 @@
             attributeIfTrue(
                 "MaximumMemory",
                 !container.MaximumMemory??,
-                container.MemoryReservation*ECS_DEFAULT_MEMORY_LIMIT_MULTIPLIER
+                (container.MemoryReservation * ECS_DEFAULT_MEMORY_LIMIT_MULTIPLIER)?round
             ) +
             attributeIfContent("PortMappings", containerPortMappings) +
             attributeIfContent("IngressRules", ingressRules) +
