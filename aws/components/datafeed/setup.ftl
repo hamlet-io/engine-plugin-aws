@@ -141,11 +141,13 @@
                                 solution.Buffering.Size
                             )]]
                 [#else]
-                    [@fatal
-                        message="Lambda stream processor must be deployed before the associated datafeed can be deployed"
-                        detail="Deploy the lambda first. One option is to adjust its deployment group and priority."
-                        context=occurrence
-                    /]
+                    [#if deploymentSubsetRequired(DATAFEED_COMPONENT_TYPE, true)]
+                        [@fatal
+                            message="Lambda stream processor must be deployed before the associated datafeed can be deployed"
+                            detail="Deploy the lambda first. One option is to adjust its deployment group and priority."
+                            context=occurrence
+                        /]
+                    [/#if]
                 [/#if]
                 [#break]
 
