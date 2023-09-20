@@ -74,6 +74,69 @@
         }
     /]
 
+    [#-- flowlogs --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "mgmt" : {
+                    "Components" : {
+                        "firewalllogs" : {
+                            "Type": "firewall",
+                            "deployment:Unit" : "aws-firewall",
+                            "Profiles" : {
+                                "Testing" : ["firewalllogs"]
+                            },
+                            "Logging": {
+                                "Events": "all"
+                            },
+                            "Engine" : "network",
+                            "Rules" : {
+                                "default" : {
+                                    "Action" : "drop",
+                                    "Priority" : "default",
+                                    "Inspection" : "Stateless"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "firewalllogs" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "loggingConfig" : {
+                                    "Name" : "networkfirewallloggingXmgmtXfirewalllogs",
+                                    "Type" : "AWS::NetworkFirewall::LoggingConfiguration"
+                                }
+                            }
+                        },
+                        "JSON" : {
+                            "Length" : {
+                                "LogDestinations" : {
+                                    "Path": "Resources.networkfirewallloggingXmgmtXfirewalllogs.Properties.LoggingConfiguration.LogDestinationConfigs",
+                                    "Count": 2
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "firewalllogs" : {
+                    "firewall" : {
+                        "TestCases" : [ "firewalllogs" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+    /]
+
     [#-- Simple Network rule --]
     [@loadModule
         blueprint={

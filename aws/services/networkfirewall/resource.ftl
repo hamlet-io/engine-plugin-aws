@@ -172,7 +172,7 @@
     /]
 [/#macro]
 
-[#function getNetworkFirewallLoggingConfiguration logType destinationType destinationId s3Prefix ]
+[#function getNetworkFirewallLoggingConfiguration logTypes destinationType destinationId s3Prefix ]
 
     [#local logDestination = {}]
 
@@ -205,28 +205,38 @@
             /]
     [/#switch]
 
-    [#switch logType?upper_case ]
-        [#case "FLOW"]
-        [#case "ALERT"]
-            [#local logType = logType?upper_case]
-            [#break]
+    [#local result = []]
 
-        [#default]
-            [@fatal
-                message="Invalid network firewall log type"
-                context={
-                    "provided" : logType
-                }
-            /]
-    [/#switch]
+    [#list logTypes as logType ]
+        [#switch logType?upper_case ]
+            [#case "FLOW"]
+            [#case "ALERT"]
+                [#local logType = logType?upper_case]
+                [#break]
 
-    [#return
-        {
-            "LogDestinationType" : destinationType,
-            "LogType" : logType,
-            "LogDestination" : logDestination
-        }
-    ]
+            [#default]
+                [@fatal
+                    message="Invalid network firewall log type"
+                    context={
+                        "provided" : logType
+                    }
+                /]
+        [/#switch]
+
+        [#local result = combineEntities(
+                result,
+                [
+                    {
+                        "LogDestinationType" : destinationType,
+                        "LogType" : logType?upper_case,
+                        "LogDestination" : logDestination
+                    }
+                ],
+                APPEND_COMBINE_BEHAVIOUR
+            )]
+    [/#list]
+
+    [#return result ]
 [/#function]
 
 [#macro createNetworkFirewallLogging id
@@ -239,7 +249,7 @@
         properties={
             "FirewallArn" : getArn(firewallId),
             "LoggingConfiguration" : {
-                "LogDestinationConfigs" : asArray(logDestinationConfigs)
+                "LogDestinationConfigs" : logDestinationConfigs
             }
         }
         outputs=AWS_NETWORK_FIREWALL_LOGGING_OUTPUT_MAPPINGS
