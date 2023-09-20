@@ -142,19 +142,19 @@
                 [#break]
         [/#switch]
 
-        [#local logType = ""]
+        [#local logTypes = []]
         [#switch solution.Logging.Events]
             [#case "all"]
-                [#local logType = "flow"]
+                [#local logTypes = ["flow", "alert"]]
                 [#break]
 
             [#case "alert-only"]
-                [#local logType = "alert"]
+                [#local logTypes = ["alert"]]
                 [#break]
         [/#switch]
 
         [#local logConfig = getNetworkFirewallLoggingConfiguration(
-                                logType,
+                                logTypes,
                                 solution.Logging.DestinationType,
                                 loggingDestinationId,
                                 loggingS3Prefix)]
