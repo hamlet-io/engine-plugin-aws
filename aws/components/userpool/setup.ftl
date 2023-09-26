@@ -11,7 +11,7 @@
     [#local resources = occurrence.State.Resources]
 
     [#-- Baseline component lookup --]
-    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption" ] )]
+    [#local baselineLinks = getBaselineLinks(occurrence, [ "Encryption", "OpsData" ] )]
     [#local baselineComponentIds = getBaselineComponentIds(baselineLinks)]
     [#local cmkKeyId = baselineComponentIds["Encryption"]!"" ]
     [#local cmkKeyArn = getReference(cmkKeyId, ARN_ATTRIBUTE_TYPE)]
@@ -39,10 +39,17 @@
         [/#if]
     [/#if]
 
+    [#local wafAclResources = resources["wafacl"]!{} ]
+    [#local wafSolution = solution.WAF]
+    [#local wafLogStreamingResources = resources["wafLogStreaming"]!{} ]
+
     [#local smsVerification = false]
     [#local userPoolTriggerConfig = {}]
     [#local smsConfig = {}]
     [#local authProviders = []]
+
+    [#local loggingProfile = getLoggingProfile(occurrence)]
+    [#local securityProfile = getSecurityProfile(occurrence, core.Type)]
 
     [#local defaultUserPoolClientRequired = false ]
     [#local defaultUserPoolClientConfigured = false ]
@@ -799,6 +806,49 @@
     [/#if]
 
     [#if deploymentSubsetRequired(USERPOOL_COMPONENT_TYPE, true) ]
+
+        [#if wafLogStreamingResources?has_content ]
+
+            [@setupLoggingFirehoseStream
+                occurrence=occurrence
+                componentSubset=LB_COMPONENT_TYPE
+                resourceDetails=wafLogStreamingResources
+                destinationLink=baselineLinks["OpsData"]
+                bucketPrefix="WAF"
+                cloudwatchEnabled=true
+                cmkKeyId=kmsKeyId
+                loggingProfile=loggingProfile
+            /]
+
+            [@enableWAFLogging
+                wafaclId=wafAclResources.acl.Id
+                wafaclArn=getArn(wafAclResources.acl.Id)
+                componentSubset=LB_COMPONENT_TYPE
+                deliveryStreamId=wafLogStreamingResources["stream"].Id
+                deliveryStreamArns=[ wafLogStreamingResources["stream"].Arn ]
+                regional=true
+            /]
+        [/#if]
+        [#if wafAclResources?has_content ]
+            [#if deploymentSubsetRequired(LB_COMPONENT_TYPE, true) ]
+                [#-- Create a WAF ACL if required --]
+                [@createWAFAclFromSecurityProfile
+                    id=wafAclResources.acl.Id
+                    name=wafAclResources.acl.Name
+                    metric=wafAclResources.acl.Name
+                    wafSolution=wafSolution
+                    securityProfile=securityProfile
+                    occurrence=occurrence
+                    regional=true
+                /]
+                [@createWAFAclAssociation
+                    id=wafAclResources.association.Id
+                    wafaclId=getArn(wafAclResources.acl.Id)
+                    endpointId=getArn(userPoolId)
+                /]
+            [/#if]
+        [/#if]
+
         [@createUserPool
             id=userPoolId
             name=userPoolName

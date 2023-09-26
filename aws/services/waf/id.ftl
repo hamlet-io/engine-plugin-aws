@@ -99,6 +99,19 @@
     /]
 [/#list]
 
+[@addOutputMapping
+    provider=AWS_PROVIDER
+    resourceType=AWS_WAFV2_ACL_RESOURCE_TYPE
+    mappings={
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "Attribute" : "Id"
+        },
+        ARN_ATTRIBUTE_TYPE : {
+            "Attribute" : "Arn"
+        }
+    }
+/]
+
 [#function formatDependentWAFConditionId type resourceId extensions...]
     [#local matchSetResourceType = (getWAFConditionSetMappings(type)["ResourceType"]["hamlet"])!"" ]
     [#return

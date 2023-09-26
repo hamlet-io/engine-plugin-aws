@@ -424,6 +424,17 @@
                 )]
             [/#if]
 
+            [#if action == "Challenge" ]
+                [#switch rule["Action:CHALLENGE"].Engine]
+                    [#case "CAPTCHA"]
+                        [#local action = "CAPTCHA" ]
+                        [#break]
+                    [#case "Challenge"]
+                        [#local action = "CHALLENGE"]
+                        [#break]
+                [/#switch]
+            [/#if]
+
             [#local statement = formatV2Conditions(rule.Conditions, valueSet, ruleId) ]
 
             [#local rateLimitRule = {}]
