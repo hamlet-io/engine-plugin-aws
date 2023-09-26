@@ -429,7 +429,7 @@
                     [#case "CAPTCHA"]
                         [#local action = "CAPTCHA" ]
                         [#break]
-                    [#case "Challenge"]
+                    [#case "Transparent"]
                         [#local action = "CHALLENGE"]
                         [#break]
                 [/#switch]
