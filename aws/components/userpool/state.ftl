@@ -80,6 +80,36 @@
 
         [#local attrLbAuthHeader =  occurrence.Configuration.Solution.AuthorizationHeader ]
 
+        [#local wafResources = {} ]
+        [#if solution.WAF.Enabled]
+            [#local wafResources =
+                {
+                    "acl" : {
+                        "Id" : formatResourceId(AWS_WAFV2_ACL_RESOURCE_TYPE, occurrence.Core.Id),
+                        "Name" : occurrence.Core.FullName,
+                        "Type" : AWS_WAFV2_ACL_RESOURCE_TYPE
+                    },
+                    "association" : {
+                        "Id" : formatResourceId(AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE, occurrence.Core.Id),
+                        "Type" : AWS_WAFV2_ACL_ASSOCIATION_RESOURCE_TYPE
+                    }
+                } ]
+        [/#if]
+
+        [#local wafLoggingEnabled  = solution.WAF.Enabled && solution.WAF.Logging.Enabled  ]
+
+        [#local wafLogStreamResources = {}]
+        [#if wafLoggingEnabled ]
+            [#local wafLogStreamResources =
+                    getLoggingFirehoseStreamResources(
+                        core.Id,
+                        core.FullName,
+                        core.FullAbsolutePath,
+                        "waflog",
+                        "aws-waf-logs-"
+                    )]
+        [/#if]
+
         [#assign componentState =
             {
                 "Resources" : {
@@ -119,7 +149,9 @@
                         }
                     },
                     {}
-                ),
+                ) +
+                attributeIfContent("wafacl", wafResources) +
+                attributeIfContent("wafLogStreaming", wafLogStreamResources),
                 "Roles" : {
                     "Inbound" : {
                         "invoke" : {
