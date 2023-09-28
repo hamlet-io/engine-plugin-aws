@@ -1,6 +1,46 @@
 # Changelog
 
-## latest (2023-06-15)
+## latest (2023-09-28)
+
+#### New Features
+
+* (waf): enable waf and add challenges ([#784](https://github.com/hamlet-io/engine-plugin-aws/issues/784))
+* (user): name format handling
+* (vpcendpoint): source vpc endpoint extension ([#777](https://github.com/hamlet-io/engine-plugin-aws/issues/777))
+* (user): source IP filtering
+* SQS and SNS endpoint policies ([#775](https://github.com/hamlet-io/engine-plugin-aws/issues/775))
+* (ec2): lb fixed target mapping ([#774](https://github.com/hamlet-io/engine-plugin-aws/issues/774))
+* (lb): client IP control ([#773](https://github.com/hamlet-io/engine-plugin-aws/issues/773))
+* (iam): extend use of the large policy setup
+* (vpcendpoint): policy support ([#764](https://github.com/hamlet-io/engine-plugin-aws/issues/764))
+* (apigateway): private APIs ([#762](https://github.com/hamlet-io/engine-plugin-aws/issues/762))
+* (mta): stop after match
+#### Fixes
+
+* (firewall): add both log destinations for all
+* (datafeed): support subset passes ([#782](https://github.com/hamlet-io/engine-plugin-aws/issues/782))
+* (ecs): round max memory when calculated
+* (gateway): route table collection
+* add note for migration
+* ec2 sec groups and ecs ids
+* (gateway): duplicate route table ids ([#770](https://github.com/hamlet-io/engine-plugin-aws/issues/770))
+* (gateway): duplicate route table ids ([#769](https://github.com/hamlet-io/engine-plugin-aws/issues/769))
+* (account): disable cloudtrail by default
+* (objectsql): permissions state details
+* docker image tag extension ([#765](https://github.com/hamlet-io/engine-plugin-aws/issues/765))
+* (cdn): extraneous resources in lg pass ([#761](https://github.com/hamlet-io/engine-plugin-aws/issues/761))
+#### Refactorings
+
+* (datafeed): check for undeployed lambda ([#781](https://github.com/hamlet-io/engine-plugin-aws/issues/781))
+* (datafeed): undeployed lambda functions ([#778](https://github.com/hamlet-io/engine-plugin-aws/issues/778))
+* remove use of component ids
+#### Others
+
+* (datapipeline): remove support for AWS data pipeline
+
+Full set of changes: [`8.9.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.9.0...latest)
+
+## 8.9.0 (2023-06-16)
 
 #### New Features
 
@@ -42,6 +82,7 @@
 * (image): Adds aws image component
 #### Fixes
 
+* (lb): handle the documented lb default priority ([#759](https://github.com/hamlet-io/engine-plugin-aws/issues/759))
 * (baseline): permissions for logging
 * (secretstore): handle missing cmk
 * (api): build info sourcing ([#753](https://github.com/hamlet-io/engine-plugin-aws/issues/753))
@@ -103,9 +144,10 @@
 * (images): Update testing
 #### Others
 
+* update changelog ([#694](https://github.com/hamlet-io/engine-plugin-aws/issues/694))
 * update changelog ([#671](https://github.com/hamlet-io/engine-plugin-aws/issues/671))
 
-Full set of changes: [`8.8.2...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.2...latest)
+Full set of changes: [`8.8.2...8.9.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.8.2...8.9.0)
 
 ## 8.8.2 (2022-10-27)
 
