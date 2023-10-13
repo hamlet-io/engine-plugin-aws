@@ -247,6 +247,28 @@
                         /]
                     [/#if]
                 [/#list]
+
+                [#list solution.Endpoints as id, endpoint]
+                    [#switch endpoint.Protocol ]
+                        [#case "http"]
+                        [#case "https" ]
+                            [#local deliveryPolicy = getSNSDeliveryPolicy(solution.DeliveryPolicy) ]
+                            [#break]
+                    [/#switch]
+
+                    [#if deploymentSubsetRequired(TOPIC_COMPONENT_TYPE, true)]
+                        [@createSNSSubscription
+                            id=formatId(subscriptionId, "endpoint", id)
+                            topicId=topicId
+                            endpoint=endpoint.Address
+                            protocol=endpoint.Protocol
+                            rawMessageDelivery=solution.RawMessageDelivery
+                            deliveryPolicy=deliveryPolicy
+                            filterPolicy=filterPolicy
+                            dependencies=subscriptionDependencies
+                        /]
+                    [/#if]
+                [/#list]
                 [#break]
         [/#switch]
     [/#list]
