@@ -249,6 +249,7 @@
                 [/#list]
 
                 [#list solution.Endpoints as id, endpoint]
+                    [#local deliveryPolicy = {}]
                     [#switch endpoint.Protocol ]
                         [#case "http"]
                         [#case "https" ]
