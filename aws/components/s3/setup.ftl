@@ -37,6 +37,7 @@
     [#local replicationCrossAccount = false ]
     [#local replicationDestinationAccountId = "" ]
     [#local replicationExternalPolicy = []]
+    [#local replicationKMSKey = ""]
 
     [#local backupTags = {} ]
 
@@ -296,9 +297,16 @@
                             [#local replicationEnabled = true]
                             [#local versioningEnabled = true]
 
-                            [#local replicationDestinationAccountId = linkTargetAttributes["ACCOUNT_ID"]!"" ]
+                            [#local replicationDestinationAccountId = (linkTargetAttributes["ACCOUNT_ID"])!"" ]
                             [#local replicationExternalPolicy +=   s3ReplicaDestinationPermission( linkTargetAttributes["ARN"] ) ]
                             [#local replicationBucket = linkTargetAttributes["ARN"]]
+                            [#local replicationKMSKey = (linkTargetAttributes["KMS_KEY_ARN"])!""]
+                            [#local replicationKMSKeyARN = (linkTargetAttributes["KMS_KEY_REGION"])!""]
+
+                            [#if replicationKMSKey?has_content ]
+                                [#local replicationExternalPolicy += s3EncryptionAllPermission(replicationKMSKey, replicationBucket, "*", replicationKMSKeyARN)]
+                            [/#if]
+
                             [#break]
 
                         [#case "save" ]
@@ -394,7 +402,10 @@
                     solution.Replication.Enabled,
                     prefix,
                     replicateEncryptedData,
-                    kmsKeyId,
+                    replicationKMSKey?has_content?then(
+                        replicationKMSKey,
+                        kmsKeyId
+                    ),
                     replicationDestinationAccountId
                 )]]
         [/#list]

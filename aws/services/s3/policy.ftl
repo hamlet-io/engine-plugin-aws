@@ -243,6 +243,7 @@
     [#return
         getS3Statement(
             [
+                "s3:PutObject",
                 "s3:ReplicateObject",
                 "s3:ReplicateDelete",
                 "s3:ObjectOwnerOverrideToBucketOwner",
