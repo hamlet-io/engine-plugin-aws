@@ -76,7 +76,13 @@
                 "",
                 {
                     "StringLike" : {
-                        "kms:EncryptionContext:aws:s3:arn" : "arn:aws:s3:::" + formatRelativePath(bucketName, bucketPrefix?ensure_ends_with("*") )
+                        "kms:EncryptionContext:aws:s3:arn" : formatRelativePath(
+                            bucketName?is_string?then(
+                                bucketName?ensure_starts_with("arn:aws:s3:::"),
+                                bucketName
+                            ),
+                            bucketPrefix?ensure_ends_with("*")
+                        )
                     }
                 }
             )
