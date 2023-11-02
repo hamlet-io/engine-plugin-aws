@@ -260,14 +260,27 @@
 
                     [#case EC2_COMPONENT_TYPE]
                         [#list linkTargetResources["Zones"] as zone, resources ]
-                            [#if getExistingReference(resources["ec2ENI"].Id, IP_ADDRESS_ATTRIBUTE_TYPE)?has_content ]
-                                [#local staticTargets +=
-                                    getTargetGroupTarget(
-                                        "ip",
-                                        getExistingReference(resources["ec2ENI"].Id, IP_ADDRESS_ATTRIBUTE_TYPE),
-                                        port.Port,
-                                        false
-                                    )]
+                            [#if solution.TargetType == "ip" ]
+                                [#if getExistingReference(resources["ec2ENI"].Id, IP_ADDRESS_ATTRIBUTE_TYPE)?has_content ]
+                                    [#local staticTargets +=
+                                        getTargetGroupTarget(
+                                            "ip",
+                                            getExistingReference(resources["ec2ENI"].Id, IP_ADDRESS_ATTRIBUTE_TYPE),
+                                            port.Port,
+                                            false
+                                        )]
+                                [/#if]
+
+                            [#elseif solution.TargetType == "instance" ]
+                                [#if getExistingReference(resources["ec2Instance"].Id)?has_content ]
+                                    [#local staticTargets +=
+                                        getTargetGroupTarget(
+                                            "instance",
+                                            getExistingReference(resources["ec2Instance"].Id),
+                                            port.Port,
+                                            false
+                                        )]
+                                [/#if]
                             [/#if]
                         [/#list]
                         [#break]
