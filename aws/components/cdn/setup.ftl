@@ -49,6 +49,15 @@
         [#local aliases += [ formatDomainName(hostName, domain.Name) ] ]
     [/#list]
 
+    [#list solution.Aliases as id, alias ]
+        [#local aliasCertificateObject = getCertificateObject(alias.Hostname) ]
+        [#local aliasHostName = getHostName(aliasCertificateObject, occurrence) ]
+
+        [#list aliasCertificateObject.Domains as aliasDomain ]
+            [#local aliases += [ formatDomainName(aliasHostName, aliasDomain)]]
+        [/#list]
+    [/#list]
+
     [#local origins = []]
     [#local cacheBehaviours = []]
     [#local defaultCacheBehaviour = []]
