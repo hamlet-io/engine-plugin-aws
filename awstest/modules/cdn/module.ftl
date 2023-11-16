@@ -536,4 +536,86 @@
             }
         ]
     /]
+
+    [#-- Aliases --]
+    [@loadModule
+        blueprint={
+            "Tiers" : {
+                "web" : {
+                    "Components" : {
+                        "cdnaliases": {
+                            "Type": "cdn",
+                            "deployment:Unit": "aws-cdn",
+                            "Hostname" : {},
+                            "Aliases": {
+                                "env": {
+                                    "Hostname" : {
+                                        "IncludeInDomain" : {
+                                            "Environment" : true
+                                        },
+                                        "IncludeInHost" : {
+                                            "Environment" : false,
+                                            "Component": false,
+                                            "Host": true
+                                        },
+                                        "Host": "alias"
+                                    }
+                                }
+                            },
+                            "Routes" : {
+                                "default" : {
+                                    "PathPattern" : "_default",
+                                    "OriginSource" : "Placeholder",
+                                    "RedirectAliases" : {
+                                        "Enabled": false
+                                    }
+                                }
+                            },
+                            "Profiles" : {
+                                "Testing" : [ "cdnaliases" ]
+                            }
+                        }
+                    }
+                }
+            },
+            "TestCases" : {
+                "cdnaliases" : {
+                    "OutputSuffix" : "template.json",
+                    "Structural" : {
+                        "CFN" : {
+                            "Resource" : {
+                                "cfXwebXcdnaliases" : {
+                                    "Name" : "cfXwebXcdnaliases",
+                                    "Type" : "AWS::CloudFront::Distribution"
+                                }
+                            },
+                            "Output" : [
+                                "cfXwebXcdnaliasesXdns",
+                                "cfXwebXcdnaliases"
+                            ]
+                        },
+                        "JSON" : {
+                            "Match" : {
+                                "Aliases" : {
+                                    "Path"  : "Resources.cfXwebXcdnaliases.Properties.DistributionConfig.Aliases",
+                                    "Value" : ["cdnaliases-integration.mock.local", "alias.integration.mock.local"]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "TestProfiles" : {
+                "cdnaliases" : {
+                    "cdn" : {
+                        "TestCases" : [ "cdnaliases" ]
+                    },
+                    "*" : {
+                        "TestCases" : [ "_cfn-lint" ]
+                    }
+                }
+            }
+        }
+
+    /]
 [/#macro]
