@@ -1197,6 +1197,9 @@
                     copyTagsToSnapshot=true
                     deletionProtection=deletionProtection
                     cloudWatchLogExports=cloudWatchLogExports
+                    storageType=solution["aws:Storage"].Type
+                    storageIops=solution["aws:Storage"].Iops
+                    storageThroughput=solution["aws:Storage"].Throughput
                     maintenanceWindow=
                         solution.MaintenanceWindow.Configured?then(
                             getAmazonRdsMaintenanceWindow(

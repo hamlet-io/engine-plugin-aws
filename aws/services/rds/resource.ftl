@@ -142,6 +142,9 @@
     databaseName=""
     port=""
     retentionPeriod=""
+    storageType=""
+    storageIops=0
+    storageThroughput=0
     size=""
     snapshotArn=""
     dependencies=""
@@ -183,7 +186,7 @@
                                             size,
                                             size?c?string
                                         ),
-                    "StorageType" : "gp2",
+                    "StorageType" : storageType,
                     "BackupRetentionPeriod" : retentionPeriod,
                     "DBInstanceIdentifier": name,
                     "VPCSecurityGroups": asArray( getReference(securityGroupId)),
@@ -191,7 +194,19 @@
                     "EngineVersion": engineVersion,
                     "CopyTagsToSnapshot": copyTagsToSnapshot,
                     "DeletionProtection": deletionProtection
-                },
+                } +
+                valueIfTrue(
+                    {
+                        "Iops": storageIops
+                    },
+                    (["gp3", "io1"]?seq_contains(storageType) && storageIops > 0 )
+                ) +
+                valueIfTrue(
+                    {
+                        "StorageThroughput": storageThroughput
+                    },
+                    ( storageType == "gp3" && storageThroughput > 0 )
+                ),
                 ( !clusterMember ),
                 {
                     "DBClusterIdentifier" : getReference(clusterId),
@@ -202,7 +217,7 @@
             attributeIfContent(
                 "EnableCloudwatchLogsExports",
                 cloudWatchLogExports
-            ) + 
+            ) +
             valueIfTrue(
                 {
                     "MultiAZ": true
@@ -317,7 +332,7 @@
             attributeIfContent(
                 "EnableCloudwatchLogsExports",
                 cloudWatchLogExports
-            ) + 
+            ) +
             attributeIfContent(
                 "PreferredMaintenanceWindow",
                 maintenanceWindow
