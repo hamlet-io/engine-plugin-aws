@@ -40,7 +40,10 @@
                     "publish" : [snsPublishPermission(topicId)] +
                                 (solution.Encrypted)?then(
                                     snsEncryptionStatement(
-                                        [ "kms:GenerateDataKey*" ],
+                                        [
+                                            "kms:GenerateDataKey*",
+                                            "kms:Decrypt"
+                                        ],
                                         (baselineIds["Encryption"])!"",
                                         getExistingReference(topicId, REGION_ATTRIBUTE_TYPE)
                                     ),
