@@ -14,57 +14,61 @@
     [#local correspondentId = resources["correspondent"].Id ]
     [#local correspondentName = resources["correspondent"].Name ]
 
-    [@createPinpointApp
-        id=correspondentId
-        name=correspondentName
-        tags=getOccurrenceTags(occurrence)
-    /]
+    [#if deploymentSubsetRequired(CORRESPONDENT_COMPONENT_TYPE, true)]
 
-    [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CORRESPONDENT_CHANNEL_COMPONENT_TYPE ) as subOccurrence]
+        [@createPinpointApp
+            id=correspondentId
+            name=correspondentName
+            tags=getOccurrenceTags(occurrence)
+        /]
 
-        [#local core = subOccurrence.Core ]
-        [#local solution = subOccurrence.Configuration.Solution ]
-        [#local resources = subOccurrence.State.Resources ]
+        [#list (occurrence.Occurrences![])?filter(x -> x.Configuration.Solution.Enabled && x.Core.Type == CORRESPONDENT_CHANNEL_COMPONENT_TYPE ) as subOccurrence]
 
-        [#local channelId = resources["channel"].Id ]
+            [#local core = subOccurrence.Core ]
+            [#local solution = subOccurrence.Configuration.Solution ]
+            [#local resources = subOccurrence.State.Resources ]
 
-        [#local linkTargets = getLinkTargets(occurrence, solution.Links )]
+            [#local channelId = resources["channel"].Id ]
 
-        [#switch solution.Engine ]
-            [#case "apns"]
-                [@createPinpointAPNSChannel
-                    id=channelId
-                    pinpointAppId=correspondentId
-                    certificate=(solution["engine:APNS"].Certificate)!"HamletFatal: engine:APNS.Certificate configuration required for APNS Channel"
-                    privateKey=(solution["engine:APNS"].PrivateKey)!"HamletFatal: engine:APNS.PrivateKey configuration required for APNS Channel"
-                /]
-                [#break]
-            [#case "apns_sandbox"]
-                [@createPinpointAPNSSandboxChannel
-                    id=channelId
-                    pinpointAppId=correspondentId
-                    certificate=(solution["engine:APNSSandbox"].Certificate)!"HamletFatal: engine:APNSSandbox.Certificate configuration required for APNS Channel"
-                    privateKey=(solution["engine:APNSSandbox"].PrivateKey)!"HamletFatal: engine:APNSSandbox.PrivateKey configuration required for APNS Channel"
-                /]
-                [#break]
+            [#local linkTargets = getLinkTargets(occurrence, solution.Links )]
 
-            [#case "firebase"]
-                [@createPinpointGCMChannel
-                    id=channelId
-                    pinpointAppId=correspondentId
-                    apiKey=(solution["engine:Firebase"].APIKey)!"HamletFatal: engine:Firebase.APIKey configuration required for APNS Channel"
-                /]
-                [#break]
+            [#switch solution.Engine ]
+                [#case "apns"]
+                    [@createPinpointAPNSChannel
+                        id=channelId
+                        pinpointAppId=correspondentId
+                        certificate=(solution["engine:APNS"].Certificate)!"HamletFatal: engine:APNS.Certificate configuration required for APNS Channel"
+                        privateKey=(solution["engine:APNS"].PrivateKey)!"HamletFatal: engine:APNS.PrivateKey configuration required for APNS Channel"
+                    /]
+                    [#break]
+                [#case "apns_sandbox"]
+                    [@createPinpointAPNSSandboxChannel
+                        id=channelId
+                        pinpointAppId=correspondentId
+                        certificate=(solution["engine:APNSSandbox"].Certificate)!"HamletFatal: engine:APNSSandbox.Certificate configuration required for APNS Channel"
+                        privateKey=(solution["engine:APNSSandbox"].PrivateKey)!"HamletFatal: engine:APNSSandbox.PrivateKey configuration required for APNS Channel"
+                    /]
+                    [#break]
 
-            [#default]
-                [@fatal
-                    message="Invalid correspondent channel engine for AWS"
-                    detail={
-                        "CorrespondentId" : occurrence.Core.RawId,
-                        "ChannelId" : core.RawId,
-                        "Engine" : solution.Engine
-                    }
-                /]
-        [/#switch]
-    [/#list]
+                [#case "firebase"]
+                    [@createPinpointGCMChannel
+                        id=channelId
+                        pinpointAppId=correspondentId
+                        apiKey=(solution["engine:Firebase"].APIKey)!"HamletFatal: engine:Firebase.APIKey configuration required for APNS Channel"
+                    /]
+                    [#break]
+
+                [#default]
+                    [@fatal
+                        message="Invalid correspondent channel engine for AWS"
+                        detail={
+                            "CorrespondentId" : occurrence.Core.RawId,
+                            "ChannelId" : core.RawId,
+                            "Engine" : solution.Engine
+                        }
+                    /]
+            [/#switch]
+        [/#list]
+
+    [/#if]
 [/#macro]
