@@ -1099,6 +1099,7 @@
         [#local _context =
             containerDetails +
             {
+                "ContaierId": containerId,
                 "Essential" : container.Essential,
                 "Image": image.ImageLocation,
                 "MemoryReservation" : container.MemoryReservation,
