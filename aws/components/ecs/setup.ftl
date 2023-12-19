@@ -1334,7 +1334,6 @@
         [#if solution.UseTaskRole]
             [#local roleId = resources["taskrole"].Id ]
             [#if deploymentSubsetRequired("iam", true) && isPartOfCurrentDeploymentUnit(roleId)]
-                [#local managedPolicy = []]
 
                 [#list containers as container]
                     [#-- Managed Policies --]
@@ -1348,8 +1347,8 @@
                     [#local policySet =
                         addInlinePolicyToSet(
                             policySet,
-                            formatDependentPolicyId(taskId, container.Id),
-                            container.Name,
+                            formatDependentPolicyId(taskId, container.ContaierId),
+                            container.ContaierId,
                             container.Policy
                         )
                     ]
@@ -1357,7 +1356,7 @@
                     [#local policySet =
                         addInlinePolicyToSet(
                             policySet,
-                            formatDependentPolicyId(taskId, container.Id, "links"),
+                            formatDependentPolicyId(taskId, container.ContaierId, "links"),
                             "links",
                             getLinkTargetsOutboundRoles(container.Links)
                         )
@@ -1395,7 +1394,7 @@
                 [@createRole
                     id=roleId
                     trustedServices=["ecs-tasks.amazonaws.com"]
-                    managedArns=managedPolicy
+                    managedArns=getManagedPoliciesFromSet(policySet)
                     tags=getOccurrenceTags(subOccurrence)
                 /]
 
