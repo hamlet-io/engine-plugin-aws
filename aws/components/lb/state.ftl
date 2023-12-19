@@ -409,6 +409,7 @@
                         "Deployed" : getExistingReference(targetGroupId)?has_content
                     }
                 ),
+                "targetGroupSG": parentResources.targetGroupSG,
                 "targetgroup" : {
                     "Id" : targetGroupId,
                     "Type" : AWS_ALB_TARGET_GROUP_RESOURCE_TYPE,
