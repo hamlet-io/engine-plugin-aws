@@ -309,8 +309,8 @@
         [#local placementConstraints = combineEntities( placementConstraints, container.PlacementConstraints![], UNIQUE_COMBINE_BEHAVIOUR) ]
 
         [#if engine == "fargate" ]
-            [#local memoryTotal += container.MaximumMemory]
-            [#local cpuTotal += container.Cpu]
+            [#local memoryTotal += (container.MaximumMemory)!0 ]
+            [#local cpuTotal += (container.Cpu)!0 ]
         [/#if]
 
         [#local linuxParameters = {}]
