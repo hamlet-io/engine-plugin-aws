@@ -911,7 +911,7 @@
                                                 [#local sourceSecurityGroupIds += [ linkResources["sg"].Id ] ]
                                             [#elseif linkCore.Type == LB_BACKEND_COMPONENT_TYPE]
                                                 [#local sourceSecurityGroupIds += [ linkResources["targetGroupSG"].Id ] ]
-                                            [#endif]
+                                            [/#if]
                                             [#break]
                                         [#case "network" ]
                                             [#local sourceIPAddressGroups = linkConfiguration.IPAddressGroups + [ "_localnet" ] ]
