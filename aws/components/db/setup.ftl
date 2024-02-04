@@ -365,6 +365,7 @@
                         "# Check Snapshot Username",
                         "check_rds_snapshot_username" +
                         " \"" + getRegion() + "\" " +
+                        " \"" + hostType + "\" " +
                         " \"" + rdsManualSnapshot + "\" " +
                         " \"" + rdsUsername + "\" || return $?"
                     ],
