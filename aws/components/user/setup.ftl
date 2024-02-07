@@ -234,6 +234,10 @@
                 attributeIfContent(
                     "ManagedPolicyArns",
                     getManagedPoliciesFromSet(policySet)
+                ) +
+                attributeIfContent(
+                    "PermissionsBoundary",
+                    (solution["aws:PermissionsBoundaryPolicyArn"])!""
                 )
             outputs=USER_OUTPUT_MAPPINGS
             tags=getOccurrenceTags(occurrence)
