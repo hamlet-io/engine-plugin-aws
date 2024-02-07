@@ -13,3 +13,16 @@
             AWS_TRANSFER_SERVICE
         ]
 /]
+
+
+[@addResourceGroupAttributeValues
+    type=USER_COMPONENT_TYPE
+    provider=AWS_PROVIDER
+    extensions=[
+        {
+            "Names" : "PermissionsBoundaryPolicyArn",
+            "Types": STRING_TYPE,
+            "Description": "The Arn of a Permissions Boundary Policy Arn"
+        }
+    ]
+/]
