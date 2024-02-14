@@ -352,3 +352,334 @@
     outputFormat=""
     outputSuffix="template.json"
 /]
+
+
+[#-- Deployment Contract --]
+[#function getCFNStackName ]
+    [#local stack_details = {
+        "product": (getActiveLayer(PRODUCT_LAYER_TYPE).Name)!"",
+        "environment": (getActiveLayer(ENVIRONMENT_LAYER_TYPE).Name)!"",
+        "segment": (getActiveLayer(SEGMENT_LAYER_TYPE).Name)!"",
+        "level": getDeploymentLevel(),
+        "deployment_unit": getCLODeploymentUnit(),
+        "district_type": getCommandLineOptions()["Input"]["Filter"]["DistrictType"]
+    }]
+
+    [#local stack_keys = ["product", "environment", "segment", "level", "deployment_unit"]]
+
+    [#if stack_details["district_type"] == "account" ]
+        [#local stack_keys = ["district_type", "deployment_unit"]]
+    [/#if]
+
+    [#local stack_name = []]
+    [#list stack_keys as stack_key ]
+        [#if (stack_details[stack_key]!"")?has_content ]
+
+            [#switch stack_key ]
+                [#case "level" ]
+                    [#switch stack_details[stack_key]]
+                        [#case "account"]
+                            [#local stack_name += ["acct"]]
+                            [#break]
+                        [#case "application" ]
+                            [#local stack_name += ["app"]]
+                            [#break]
+                        [#case "solution" ]
+                            [#local stack_name += ["soln"]]
+                            [#break]
+                        [#case "segment"]
+                            [#local stack_name += ["seg"]]
+                            [#break]
+                        [#break]
+                            [#local stack_name += [ stack_details[stack_key] ]]
+                    [/#switch]
+                    [#break]
+
+
+                [#case "segment" ]
+                    [#if stack_details[stack_key] != "default" && stack_details["environment"] != stack_details["segment"] ]
+                        [#local stack_name += [ stack_details[stack_key] ]]
+                    [/#if]
+                    [#break]
+
+                [#default]
+                    [#local stack_name += [ stack_details[stack_key] ]]
+            [/#switch]
+        [/#if]
+    [/#list]
+
+    [#return stack_name?join("-")]
+[/#function]
+
+[#macro addDefaultAWSDeploymentContract prologue=false stack=true change_set=false epilogue=false ]
+
+    [#local stackName = getCFNStackName()]
+    [#local changeSetName = "hamlet" + getCLORunId() ]
+    [#local runId = getCLORunId()]
+
+    [#local s3StackPath = "cfn/" + stackName + "/template.json"]
+
+    [#local deploymentMode = getDeploymentMode()]
+    [#local deploymentModeDetails = getDeploymentModeDetails(deploymentMode)]
+    [#local deploymentModeOperations = deploymentModeDetails.Operations]
+
+    [#-- login to provider --]
+    [#local loginStageId = "login" ]
+    [@contractStage
+        id=loginStageId
+        executionMode=CONTRACT_EXECUTION_MODE_SERIAL
+        priority=1
+    /]
+
+    [@contractStep
+        id="aws_login"
+        stageId=loginStageId
+        taskType=SET_PROVIDER_CREDENTIALS_TASK_TYPE
+        parameters={
+            "AccountId" : getActiveLayer(ACCOUNT_LAYER_TYPE).Id,
+            "Provider": AWS_PROVIDER,
+            "ProviderId": getActiveLayer(ACCOUNT_LAYER_TYPE).ProviderId
+        }
+    /]
+
+    [#list deploymentModeOperations as deploymentModeOperation ]
+
+        [#if prologue]
+            [#-- prologue script --]
+            [#local prologueStageId = "prologue"]
+            [@contractStage
+                id=prologueStageId
+                executionMode=CONTRACT_EXECUTION_MODE_SERIAL
+                priority=deploymentModeOperation?index * 100 + 10
+            /]
+
+            [@contractStep
+                id="prologue_script"
+                stageId=prologueStageId
+                taskType=AWS_RUN_BASH_SCRIPT_TASK_TYPE
+                parameters={
+                    "ScriptPath": formatAbsolutePath(
+                        (getCommandLineOptions().Output.cfDir)!"",
+                        getOutputFileName("prologue", "primary", "")
+                    ),
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+                status="available"
+            /]
+        [/#if]
+
+        [#if ( stack || change_set ) && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
+            [#-- Templates to S3 --]
+            [#local templateS3StageId = "templates_to_s3"]
+            [@contractStage
+                id=templateS3StageId
+                executionMode=CONTRACT_EXECUTION_MODE_SERIAL
+                priority=deploymentModeOperation?index * 100 + 20
+            /]
+
+            [@contractStep
+                id="template_upload"
+                stageId=templateS3StageId
+                priority=100
+                taskType=AWS_S3_UPLOAD_OBJECT_TASK_TYPE
+                parameters={
+                    "BucketName": getRegistryBucket(getRegion()),
+                    "Object": s3StackPath,
+                    "LocalPath": formatAbsolutePath(
+                        (getCommandLineOptions().Output.cfDir)!"",
+                        getOutputFileName("template", "primary", "")
+                    ),
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+                status="available"
+            /]
+
+            [@contractStep
+                id="template_presign"
+                stageId=templateS3StageId
+                priority=200
+                taskType=AWS_S3_PRESIGN_URL_TASK_TYPE
+                parameters={
+                    "BucketName": getRegistryBucket(getRegion()),
+                    "Object": s3StackPath,
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+            /]
+        [/#if]
+
+        [#if stack && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
+            [#-- stack_execution --]
+            [#local stackExecutionStageId = "stack_execution" ]
+            [@contractStage
+                id=stackExecutionStageId
+                executionMode=CONTRACT_EXECUTION_MODE_SERIAL
+                priority=deploymentModeOperation?index * 100 + 30
+            /]
+
+            [@contractStep
+                id="run_stack"
+                priority=10
+                stageId=stackExecutionStageId
+                taskType=AWS_CFN_RUN_STACK_TASK_TYPE
+                parameters={
+                    "RunId": runId,
+                    "StackName": stackName,
+                    "TemplateS3Uri": "__Properties:output:template_presign:presigned_url__",
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+                status="available"
+            /]
+        [/#if]
+
+        [#if change_set && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
+            [#-- Run through the change set process as required --]
+            [#local changeSetExecutionStageId = "change_set_execution" ]
+            [@contractStage
+                id=changeSetExecutionStageId
+                executionMode=CONTRACT_EXECUTION_MODE_SERIAL
+                priority=deploymentModeOperation?index * 100 + 40
+            /]
+
+            [@contractStep
+                id="create_change_set"
+                priority=10
+                stageId=changeSetExecutionStageId
+                taskType=AWS_CFN_CREATE_CHANGE_SET_TASK_TYPE
+                parameters={
+                    "RunId": runId,
+                    "ChangeSetName": changeSetName,
+                    "StackName": stackName,
+                    "TemplateS3Uri": "__Properties:output:template_presign:presigned_url__",
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+                status="available"
+            /]
+
+            [@contractStep
+                id="no_changes_skip"
+                priority=15
+                stageId=changeSetExecutionStageId
+                taskType=CONDITIONAL_STAGE_SKIP_TASK_TYPE
+                status="skip_stage_if_failure"
+                parameters={
+                    "Test" : "True",
+                    "Condition": "Equals",
+                    "Value": "__Properties:output:create_change_set:changes_required__"
+                }
+            /]
+
+            [@contractStep
+                id="change_set_results"
+                stageId=changeSetExecutionStageId
+                taskType=AWS_CFN_GET_CHANGE_SET_CHANGES_TASK_TYPE
+                parameters={
+                    "ChangeSetName": changeSetName,
+                    "StackName": stackName,
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+                status="available"
+            /]
+
+            [@contractStep
+                id="exceute_change_set"
+                stageId=changeSetExecutionStageId
+                taskType=AWS_CFN_EXECUTE_CHANGE_SET_TASK_TYPE
+                parameters={
+                    "RunId": runId,
+                    "ChangeSetName": changeSetName,
+                    "StackName": stackName,
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+                status="available"
+            /]
+        [/#if]
+
+        [#if ( stack || change_set ) && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
+            [#-- Get Outputs from stack --]
+            [#local outputStackStageId = "outputs"]
+            [@contractStage
+                id=outputStackStageId
+                executionMode=CONTRACT_EXECUTION_MODE_SERIAL
+                priority=deploymentModeOperation?index * 100 + 50
+            /]
+
+            [@contractStep
+                id="outputs"
+                stageId=outputStackStageId
+                taskType=AWS_CFN_GET_STACK_OUTPUTS_TASK_TYPE
+                parameters={
+                    "StackName": stackName,
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+                status="available"
+            /]
+        [/#if]
+
+        [#if ( stack || change_set ) && ["delete" ]?seq_contains(deploymentModeOperation)  ]
+
+            [#-- Delete the stack --]
+            [#local deleteStackStageId = "delete_stack"]
+            [@contractStage
+                id=deleteStackStageId
+                executionMode=CONTRACT_EXECUTION_MODE_SERIAL
+                priority=deploymentModeOperation?index * 100 + 50
+            /]
+
+            [@contractStep
+                id="delete_stack"
+                stageId=deleteStackStageId
+                taskType=AWS_CFN_DELETE_STACK_TASK_TYPE
+                parameters={
+                    "StackName": stackName,
+                    "RunId": runId,
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+                status="available"
+            /]
+        [/#if]
+
+        [#if epilogue]
+            [#-- epilogue script --]
+            [#local epilogueStageId = "epilogue"]
+            [@contractStage
+                id=epilogueStageId
+                executionMode=CONTRACT_EXECUTION_MODE_SERIAL
+                priority=deploymentModeOperation?index * 100 + 60
+            /]
+
+            [@contractStep
+                id="epilogue_script"
+                stageId=epilogueStageId
+                taskType=AWS_RUN_BASH_SCRIPT_TASK_TYPE
+                parameters={
+                    "ScriptPath": formatAbsolutePath(
+                        (getCommandLineOptions().Output.cfDir)!"",
+                        getOutputFileName("epilogue", "primary", "")
+                    ),
+                    "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
+                    "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                }
+                status="available"
+            /]
+        [/#if]
+    [/#list]
+[/#macro]
