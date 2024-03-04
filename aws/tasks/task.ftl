@@ -25,5 +25,6 @@
 [#assign AWS_CFN_GET_STACK_OUTPUTS_TASK_TYPE = "aws_cfn_get_stack_outputs"]
 [#assign AWS_CFN_GET_CHANGE_SET_CHANGES_TASK_TYPE = "aws_cfn_get_change_set_changes_types"]
 [#assign AWS_CFN_RUN_STACK_TASK_TYPE = "aws_cfn_run_stack"]
+[#assign AWS_CFN_WRITE_STACK_OUTPUTS_TO_FILE_TASK_TYPE = "aws_cfn_write_stack_outputs_to_file"]
 
 [#assign AWS_RUN_BASH_SCRIPT_TASK_TYPE = "aws_run_bash_script"]

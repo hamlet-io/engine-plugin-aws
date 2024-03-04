@@ -1,23 +1,23 @@
 [#ftl]
 
 [@addTask
-    type=AWS_RUN_BASH_SCRIPT_TASK_TYPE
+    type=AWS_CFN_WRITE_STACK_OUTPUTS_TO_FILE_TASK_TYPE
     properties=[
             {
                 "Type"  : "Description",
-                "Value" : "Run a provided bash script with AWS Credentials set in the environment"
+                "Value" : "Get the outputs of a stack and write them to file"
             }
         ]
     attributes=[
         {
-            "Names": "ScriptPath",
-            "Description": "The path to the script to run",
+            "Names": "StackName",
+            "Description": "The name to use for the stack",
             "Types": STRING_TYPE,
             "Mandatory": true
         },
         {
-            "Names": "Environment",
-            "Description": "A json escaped dict with k/v environment variable pairs",
+            "Names" : "Region",
+            "Description" : "The name of the region to use for the aws session",
             "Types" : STRING_TYPE
         },
         {
@@ -34,6 +34,12 @@
             "Names" : "AWSSessionToken",
             "Description" : "The AWS Session Token with access to decrypt",
             "Types" : STRING_TYPE
+        },
+        {
+            "Names": "FilePath",
+            "Description": "The path to where the file should be written",
+            "Types" : STRING_TYPE,
+            "Mandatory" : true
         }
     ]
 /]

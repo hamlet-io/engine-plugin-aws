@@ -411,24 +411,60 @@
     [#return stack_name?join("-")]
 [/#function]
 
-[#macro addDefaultAWSDeploymentContract prologue=false stack=true change_set=false epilogue=false ]
+[#macro addDefaultAWSDeploymentContract prologue=false stack=true changeset=false epilogue=false ]
 
     [#local stackName = getCFNStackName()]
     [#local changeSetName = "hamlet" + getCLORunId() ]
     [#local runId = getCLORunId()]
 
+    [#local cfDir = (getCommandLineOptions().Output.cfDir)!""]
     [#local s3StackPath = "cfn/" + stackName + "/template.json"]
+
+    [#local segmentOperationsDir = (getCommandLineOptions().Output.segmentOperationsDir)!""]
 
     [#local deploymentMode = getDeploymentMode()]
     [#local deploymentModeDetails = getDeploymentModeDetails(deploymentMode)]
     [#local deploymentModeOperations = deploymentModeDetails.Operations]
+
+    [#local scriptEnv = {
+        "STACK_NAME": stackName,
+        "CF_DIR": cfDir,
+        "SEGMENT_OPERATIONS_DIR": segmentOperationsDir
+    }]
+
+    [#list getActiveLayers() as type, layerInfo ]
+        [#local scriptEnv = mergeObjects(scriptEnv, { type?upper_case: layerInfo.Name  })]
+    [/#list]
+
+    [#-- Update deployment contract name --]
+    [#local contractRenameStageId = "contract_rename" ]
+    [@contractStage
+        id=contractRenameStageId
+        executionMode=CONTRACT_EXECUTION_MODE_SERIAL
+        priority=1
+    /]
+    [@contractStep
+        id="rename_contract_file"
+        stageId=contractRenameStageId
+        taskType=RENAME_FILE_TASK_TYPE
+        parameters={
+            "currentFileName": formatAbsolutePath(
+                cfDir,
+                getOutputFileName("deploymentcontract", "", "")
+            ),
+            "newFileName": formatAbsolutePath(
+                cfDir,
+                getOutputFileName("deploymentcontract", "final", "")
+            )
+        }
+    /]
 
     [#-- login to provider --]
     [#local loginStageId = "login" ]
     [@contractStage
         id=loginStageId
         executionMode=CONTRACT_EXECUTION_MODE_SERIAL
-        priority=1
+        priority=2
     /]
 
     [@contractStep
@@ -444,6 +480,8 @@
 
     [#list deploymentModeOperations as deploymentModeOperation ]
 
+        [#local scriptEnv = mergeObjects(scriptEnv, { "STACK_OPERATION": deploymentModeOperation})]
+
         [#if prologue]
             [#-- prologue script --]
             [#local prologueStageId = "prologue"]
@@ -454,14 +492,42 @@
             /]
 
             [@contractStep
+                id="prologue_script_details"
+                priority=10
+                stageId=prologueStageId
+                taskType=FILE_PATH_DETAILS_TASK_TYPE
+                parameters={
+                    "FilePath": formatAbsolutePath(
+                        cfDir,
+                        getOutputFileName("prologue", "", "")
+                    )
+                }
+            /]
+
+            [@contractStep
+                id="no_prologue_file_skip"
+                priority=15
+                stageId=prologueStageId
+                taskType=CONDITIONAL_STAGE_SKIP_TASK_TYPE
+                status="skip_stage_if_failure"
+                parameters={
+                    "Test" : "True",
+                    "Condition": "Equals",
+                    "Value": "__Properties:output:prologue_script_details:exists__"
+                }
+            /]
+
+            [@contractStep
                 id="prologue_script"
+                priority=20
                 stageId=prologueStageId
                 taskType=AWS_RUN_BASH_SCRIPT_TASK_TYPE
                 parameters={
                     "ScriptPath": formatAbsolutePath(
-                        (getCommandLineOptions().Output.cfDir)!"",
+                        cfDir,
                         getOutputFileName("prologue", "primary", "")
                     ),
+                    "Environment": getJSON(scriptEnv),
                     "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
                     "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
                     "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
@@ -470,7 +536,7 @@
             /]
         [/#if]
 
-        [#if ( stack || change_set ) && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
+        [#if ( stack || changeset ) && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
             [#-- Templates to S3 --]
             [#local templateS3StageId = "templates_to_s3"]
             [@contractStage
@@ -488,7 +554,7 @@
                     "BucketName": getRegistryBucket(getRegion()),
                     "Object": s3StackPath,
                     "LocalPath": formatAbsolutePath(
-                        (getCommandLineOptions().Output.cfDir)!"",
+                        cfDir,
                         getOutputFileName("template", "primary", "")
                     ),
                     "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
@@ -539,7 +605,7 @@
             /]
         [/#if]
 
-        [#if change_set && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
+        [#if changeset && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
             [#-- Run through the change set process as required --]
             [#local changeSetExecutionStageId = "change_set_execution" ]
             [@contractStage
@@ -608,7 +674,7 @@
             /]
         [/#if]
 
-        [#if ( stack || change_set ) && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
+        [#if ( stack || changeset ) && ["update", "create"]?seq_contains(deploymentModeOperation)  ]
             [#-- Get Outputs from stack --]
             [#local outputStackStageId = "outputs"]
             [@contractStage
@@ -620,18 +686,22 @@
             [@contractStep
                 id="outputs"
                 stageId=outputStackStageId
-                taskType=AWS_CFN_GET_STACK_OUTPUTS_TASK_TYPE
+                taskType=AWS_CFN_WRITE_STACK_OUTPUTS_TO_FILE_TASK_TYPE
                 parameters={
                     "StackName": stackName,
                     "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
                     "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
-                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
+                    "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__",
+                    "FilePath": formatAbsolutePath(
+                        cfDir,
+                        getOutputFileName("stack", "", "")
+                    )
                 }
                 status="available"
             /]
         [/#if]
 
-        [#if ( stack || change_set ) && ["delete" ]?seq_contains(deploymentModeOperation)  ]
+        [#if ( stack || changeset ) && ["delete" ]?seq_contains(deploymentModeOperation)  ]
 
             [#-- Delete the stack --]
             [#local deleteStackStageId = "delete_stack"]
@@ -654,6 +724,18 @@
                 }
                 status="available"
             /]
+
+            [@contractStep
+                id="delete_stack_output"
+                stageId=deleteStackStageId
+                taskType=FILE_DELETE_TASK_TYPE
+                parameters={
+                    "FilePath": formatAbsolutePath(
+                        cfDir,
+                        getOutputFileName("stack", "primary", "")
+                    )
+                }
+            /]
         [/#if]
 
         [#if epilogue]
@@ -666,14 +748,42 @@
             /]
 
             [@contractStep
+                id="epilogue_script_details"
+                priority=10
+                stageId=epilogueStageId
+                taskType=FILE_PATH_DETAILS_TASK_TYPE
+                parameters={
+                    "FilePath": formatAbsolutePath(
+                        cfDir,
+                        getOutputFileName("epilogue", "", "")
+                    )
+                }
+            /]
+
+            [@contractStep
+                id="no_epilogue_file_skip"
+                priority=15
+                stageId=epilogueStageId
+                taskType=CONDITIONAL_STAGE_SKIP_TASK_TYPE
+                status="skip_stage_if_failure"
+                parameters={
+                    "Test" : "True",
+                    "Condition": "Equals",
+                    "Value": "__Properties:output:epilogue_script_details:exists__"
+                }
+            /]
+
+            [@contractStep
                 id="epilogue_script"
+                priority=20
                 stageId=epilogueStageId
                 taskType=AWS_RUN_BASH_SCRIPT_TASK_TYPE
                 parameters={
                     "ScriptPath": formatAbsolutePath(
-                        (getCommandLineOptions().Output.cfDir)!"",
+                        cfDir,
                         getOutputFileName("epilogue", "primary", "")
                     ),
+                    "Environment": getJSON(scriptEnv),
                     "AWSAccessKeyId" : "__Properties:output:aws_login:aws_access_key_id__",
                     "AWSSecretAccessKey": "__Properties:output:aws_login:aws_secret_access_key__",
                     "AWSSessionToken" : "__Properties:output:aws_login:aws_session_token__"
