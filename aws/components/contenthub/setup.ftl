@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_contenthub_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets="prologue" /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "prologue"] /]
+[/#macro]
+
+[#macro aws_contenthub_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true stack=false /]
 [/#macro]
 
 [#macro aws_contenthub_cf_deployment_solution occurrence ]

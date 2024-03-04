@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_mta_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets=["template"]+(occurrence.Configuration.Solution.Direction == "send")?then(["epilogue"],[]) /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "template"]+(occurrence.Configuration.Solution.Direction == "send")?then(["epilogue"],[]) /]
+[/#macro]
+
+[#macro aws_mta_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract epilogue=true /]
 [/#macro]
 
 [#macro aws_mta_cf_deployment_solution occurrence ]

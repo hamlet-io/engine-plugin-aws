@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_datavolume_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets=["template", "epilogue"] /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "template", "epilogue"] /]
+[/#macro]
+
+[#macro aws_datavolume_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract epilogue=true /]
 [/#macro]
 
 [#macro aws_datavolume_cf_deployment_solution occurrence ]

@@ -7,9 +7,13 @@
     [/#if]
 
     [@addDefaultGenerationContract
-        subsets=["pregeneration", "config", "template", "prologue", "epilogue" ]
+        subsets=["deploymentcontract", "pregeneration", "config", "template", "prologue", "epilogue" ]
         converters=converters
     /]
+[/#macro]
+
+[#macro aws_adaptor_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true epilogue=true /]
 [/#macro]
 
 [#macro aws_adaptor_cf_deployment_application occurrence ]

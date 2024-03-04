@@ -12,7 +12,11 @@
         [/#if]
     [/#list]
 
-    [@addDefaultGenerationContract subsets=[ "pregeneration", "prologue", "template", "config", "epilogue"] converters=converters /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "pregeneration", "prologue", "template", "config", "epilogue"] converters=converters /]
+[/#macro]
+
+[#macro aws_lambda_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true epilogue=true /]
 [/#macro]
 
 [#macro aws_lambda_cf_deployment_application occurrence ]

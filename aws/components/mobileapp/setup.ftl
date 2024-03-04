@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_mobileapp_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=["pregeneration", "prologue", "config"] /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "pregeneration", "prologue", "config"] /]
+[/#macro]
+
+[#macro aws_mobileapp_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true stack=false /]
 [/#macro]
 
 [#macro aws_mobileapp_cf_deployment_application occurrence ]

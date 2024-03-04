@@ -1,13 +1,17 @@
 [#ftl]
 [#macro aws_db_cf_deployment_generationcontract_solution occurrence ]
     [@addDefaultGenerationContract
-        subsets=["prologue", "template", "epilogue"]
+        subsets=["deploymentcontract", "prologue", "template", "epilogue"]
         alternatives=[
             "primary",
             { "subset" : "template", "alternative" : "replace1"},
             { "subset" : "template", "alternative" : "replace2"}
         ]
     /]
+[/#macro]
+
+[#macro aws_db_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true changeset=true stack=false epilogue=true  /]
 [/#macro]
 
 [#macro aws_db_cf_deployment_solution occurrence ]

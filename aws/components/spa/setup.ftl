@@ -8,7 +8,11 @@
 [/#macro]
 
 [#macro aws_spa_cf_deployment_generationcontract_application occurrence  ]
-    [@addDefaultGenerationContract subsets=["pregeneration", "prologue", "config", "epilogue" ] /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "pregeneration", "prologue", "config", "epilogue" ] /]
+[/#macro]
+
+[#macro aws_spa_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true epilogue=true/]
 [/#macro]
 
 [#macro aws_spa_cf_deployment_application occurrence  ]

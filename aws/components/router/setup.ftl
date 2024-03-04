@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_router_cf_deployment_generationcontract_segment occurrence ]
-    [@addDefaultGenerationContract subsets="template" /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "template"] /]
+[/#macro]
+
+[#macro aws_router_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract /]
 [/#macro]
 
 [#macro aws_router_cf_deployment_segment occurrence ]

@@ -1,8 +1,12 @@
 [#ftl]
 [#macro aws_healthcheck_cf_deployment_generationcontract occurrence ]
     [@addDefaultGenerationContract
-        subsets=[ "prologue", "template", "epilogue" ]
+        subsets=[ "deploymentcontract", "prologue", "template", "epilogue" ]
     /]
+[/#macro]
+
+[#macro aws_healthcheck_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true epilogue=true /]
 [/#macro]
 
 [#macro aws_healthcheck_cf_deployment occurrence ]

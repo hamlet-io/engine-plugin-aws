@@ -2,8 +2,12 @@
 
 [#macro aws_image_cf_deployment_generationcontract_application occurrence ]
     [@addDefaultGenerationContract
-        subsets=["template", "epilogue" ]
+        subsets=["deploymentcontract", "template", "epilogue" ]
     /]
+[/#macro]
+
+[#macro aws_image_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract epilogue=true /]
 [/#macro]
 
 [#macro aws_image_cf_deployment_application occurrence ]

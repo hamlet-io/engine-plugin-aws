@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_es_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets=["template", "epilogue" ] /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "template", "epilogue" ] /]
+[/#macro]
+
+[#macro aws_es_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract epilogue=true /]
 [/#macro]
 
 [#macro aws_es_cf_deployment_solution occurrence ]
@@ -464,11 +468,11 @@
                     "DomainEndpointOptions": {
                         "EnforceHTTPS": (securityProfile.ProtocolPolicy == "https-only"),
                         "TLSSecurityPolicy": securityProfile.HTTPSProfile
-                    } + 
+                    } +
                     attributeIfContent(
                         "CustomEndpoint",
                         esHostName
-                    ) + 
+                    ) +
                     attributeIfContent(
                         "CustomEndpointEnabled",
                         esHostName,
@@ -483,10 +487,10 @@
                 attributeIfContent("AdvancedOptions", esAdvancedOptions) +
                 attributeIfContent("SnapshotOptions", solution.Snapshot.Hour, solution.Snapshot.Hour) +
                 attributeIfTrue(
-                    "NodeToNodeEncryptionOptions", 
-                    (securityProfile.NodeTransitEncryption)!false, 
-                    {"Enabled": securityProfile.NodeTransitEncryption} 
-                ) + 
+                    "NodeToNodeEncryptionOptions",
+                    (securityProfile.NodeTransitEncryption)!false,
+                    {"Enabled": securityProfile.NodeTransitEncryption}
+                ) +
                 attributeIfContent(
                     "EBSOptions",
                     volume,

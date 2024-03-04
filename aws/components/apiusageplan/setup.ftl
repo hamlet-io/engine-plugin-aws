@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_apiusageplan_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets="template" /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "template"]  /]
+[/#macro]
+
+[#macro aws_apiusageplan_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract /]
 [/#macro]
 
 [#macro aws_apiusageplan_cf_deployment_application occurrence ]

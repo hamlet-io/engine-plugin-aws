@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_user_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=["prologue", "template", "epilogue"] /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "prologue", "template", "epilogue"] /]
+[/#macro]
+
+[#macro aws_user_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true epilogue=true /]
 [/#macro]
 
 [#macro aws_user_cf_deployment_application occurrence ]
