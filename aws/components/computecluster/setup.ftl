@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_computecluster_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=[ "pregeneration", "template" ] /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "pregeneration", "template" ] /]
+[/#macro]
+
+[#macro aws_computecluster_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract /]
 [/#macro]
 
 [#macro aws_computecluster_cf_deployment_application occurrence ]
