@@ -66,6 +66,7 @@
         [#local replicationEnabled = false]
         [#local replicationConfiguration = {} ]
         [#local replicationBucket = "" ]
+        [#local replicationKMSKey = ""]
 
         [#-- Storage bucket --]
         [#if subCore.Type == BASELINE_DATA_COMPONENT_TYPE ]
@@ -212,7 +213,17 @@
                         [#case EXTERNALSERVICE_COMPONENT_TYPE ]
                             [#if linkTarget.Role  == "replicadestination" ]
                                 [#local replicationDestinationAccountId = linkTargetAttributes["ACCOUNT_ID"]!"" ]
-                                [#local replicationExternalPolicy +=   s3ReplicaDestinationPermission( linkTargetAttributes["ARN"] ) ]
+                                [#local replicationExternalPolicy +=  s3ReplicaDestinationPermission( linkTargetAttributes["ARN"] ) ]
+
+                                [#local replicationBucket = linkTargetAttributes["ARN"]]
+
+                                [#local replicationKMSKey = (linkTargetAttributes["KMS_KEY_ARN"])!""]
+                                [#local replicationKMSKeyRegion = (linkTargetAttributes["KMS_KEY_REGION"])!""]
+
+                                [#if replicationKMSKey?has_content ]
+                                    [#local replicationExternalPolicy += s3EncryptionAllPermission(replicationKMSKey, replicationBucket, "*", replicationKMSKeyRegion)]
+                                [/#if]
+
                             [/#if]
 
                         [#case BASELINE_DATA_COMPONENT_TYPE]
@@ -221,14 +232,7 @@
                             [#switch linkTarget.Role ]
                                 [#case "replicadestination" ]
                                     [#local replicationEnabled = true]
-                                    [#if !replicationBucket?has_content ]
-                                        [#local replicationBucket = linkTargetAttributes["ARN"]]
-                                    [#else]
-                                        [@fatal
-                                            message="Only one replication destination is supported"
-                                            context=contextLinks
-                                        /]
-                                    [/#if]
+                                    [#local replicationBucket = linkTargetAttributes["ARN"]]
                                     [#break]
                             [/#switch]
                             [#break]
@@ -248,8 +252,12 @@
                                     subSolution.Replication.Enabled,
                                     prefix,
                                     replicateEncryptedData,
-                                    cmkId,
-                                    replicationDestinationAccountId
+                                    replicationKMSKey?has_content?then(
+                                        replicationKMSKey,
+                                        cmkId
+                                    ),
+                                    replicationDestinationAccountId,
+                                    {}
                                 )]]
                         [/#list]
 
@@ -270,10 +278,14 @@
 
                         [#local replicationRolePolicies =
                                 arrayIfContent(
-                                    [getPolicyDocument(replicationLinkPolicies, "links")],
-                                    replicationLinkPolicies) +
+                                    [
+                                        getPolicyDocument(replicationLinkPolicies, "links")
+                                    ],
+                                    replicationLinkPolicies
+                                ) +
                                 arrayIfContent(
                                     getPolicyDocument(
+                                        s3ReplicaSourceBatchPermission(bucketId) +
                                         s3ReplicaSourcePermission(bucketId) +
                                         s3ReplicationConfigurationPermission(bucketId),
                                         "replication"),
@@ -290,7 +302,11 @@
                         [#if replicationRolePolicies?has_content ]
                             [@createRole
                                 id=replicationRoleId
-                                trustedServices=["s3.amazonaws.com"]
+                                trustedServices=[
+                                    "s3.amazonaws.com",
+                                    [#-- Included here so that the same IAM Role can be used for batch replication --]
+                                    "batchoperations.s3.amazonaws.com"
+                                ]
                                 policies=replicationRolePolicies
                                 tags=getOccurrenceTags(subOccurrence)
                             /]

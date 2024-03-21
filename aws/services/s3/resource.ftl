@@ -314,6 +314,9 @@
 
     [#return
         {
+            "Id": replaceAlphaNumericOnly(
+                destinationBucket?remove_beginning("arn:aws:s3:::") + "_" + prefix
+            ),
             "Status" : enabled?then(
                 "Enabled",
                 "Disabled"

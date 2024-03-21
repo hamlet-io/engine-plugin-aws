@@ -227,6 +227,30 @@
     ]
 [/#function]
 
+[#function s3ReplicaSourceBatchPermission bucket prefix="" object="*"]
+    [#return
+        getS3BucketStatement(
+            [
+                "s3:GetReplicationConfiguration",
+                "s3:PutInventoryConfiguration"
+            ],
+            bucket
+        ) +
+        getS3Statement(
+            [
+                "s3:InitiateReplication",
+                "s3:GetObject",
+                "s3:GetObjectVersion",
+                "s3:PutObject"
+            ],
+            bucket,
+            prefix,
+            object
+        )
+    ]
+[/#function]
+
+
 [#function s3ReplicationConfigurationPermission bucket ]
     [#return
         getS3BucketStatement(
