@@ -1,6 +1,6 @@
 # Changelog
 
-## latest (2024-03-25)
+## latest (2024-03-27)
 
 #### New Features
 
@@ -54,6 +54,7 @@
 * remove use of component ids
 #### Others
 
+* update changelog ([#785](https://github.com/hamlet-io/engine-plugin-aws/issues/785))
 * update actions pipelines ([#802](https://github.com/hamlet-io/engine-plugin-aws/issues/802))
 * update changelog ([#760](https://github.com/hamlet-io/engine-plugin-aws/issues/760))
 * (datapipeline): remove support for AWS data pipeline
