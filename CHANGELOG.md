@@ -1,9 +1,18 @@
 # Changelog
 
-## latest (2023-09-28)
+## latest (2024-03-25)
 
 #### New Features
 
+* (s3): batch replication support ([#801](https://github.com/hamlet-io/engine-plugin-aws/issues/801))
+* (user): add permissions boundary arn config ([#799](https://github.com/hamlet-io/engine-plugin-aws/issues/799))
+* add the cluster type when calling snapshot username ([#796](https://github.com/hamlet-io/engine-plugin-aws/issues/796))
+* (baseline): add sqs extension ([#792](https://github.com/hamlet-io/engine-plugin-aws/issues/792))
+* (db): add storage type configuration support ([#790](https://github.com/hamlet-io/engine-plugin-aws/issues/790))
+* cdn aliases ([#789](https://github.com/hamlet-io/engine-plugin-aws/issues/789))
+* instance type support for lb
+* add support for kms replication of objects
+* (topic): add fixed endpoint subscriptions ([#786](https://github.com/hamlet-io/engine-plugin-aws/issues/786))
 * (waf): enable waf and add challenges ([#784](https://github.com/hamlet-io/engine-plugin-aws/issues/784))
 * (user): name format handling
 * (vpcendpoint): source vpc endpoint extension ([#777](https://github.com/hamlet-io/engine-plugin-aws/issues/777))
@@ -17,6 +26,15 @@
 * (mta): stop after match
 #### Fixes
 
+* changelog pipeline ([#803](https://github.com/hamlet-io/engine-plugin-aws/issues/803))
+* (cdn): restrict CDN region check lookup ([#798](https://github.com/hamlet-io/engine-plugin-aws/issues/798))
+* (ec2): update ssh key env lookup ([#797](https://github.com/hamlet-io/engine-plugin-aws/issues/797))
+* (ecs): policy split for ecs tasks ([#795](https://github.com/hamlet-io/engine-plugin-aws/issues/795))
+* target group sg lookup
+* typo in templates
+* (ecs): memory and lb complex configuration ([#794](https://github.com/hamlet-io/engine-plugin-aws/issues/794))
+* (correspondent): only deploy for right template type ([#793](https://github.com/hamlet-io/engine-plugin-aws/issues/793))
+* (topic): kms permissions ([#791](https://github.com/hamlet-io/engine-plugin-aws/issues/791))
 * (firewall): add both log destinations for all
 * (datafeed): support subset passes ([#782](https://github.com/hamlet-io/engine-plugin-aws/issues/782))
 * (ecs): round max memory when calculated
@@ -36,6 +54,8 @@
 * remove use of component ids
 #### Others
 
+* update actions pipelines ([#802](https://github.com/hamlet-io/engine-plugin-aws/issues/802))
+* update changelog ([#760](https://github.com/hamlet-io/engine-plugin-aws/issues/760))
 * (datapipeline): remove support for AWS data pipeline
 
 Full set of changes: [`8.9.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.9.0...latest)
