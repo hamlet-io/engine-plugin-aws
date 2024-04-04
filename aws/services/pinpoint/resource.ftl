@@ -66,13 +66,59 @@
     /]
 [/#macro]
 
+[#macro createPinpointAPNSChannelWithTokenKey id pinpointAppId tokenKeyId bundleId teamId tokenKey dependencies=[] ]
+    [@cfResource
+        id=id
+        type="AWS::Pinpoint::APNSChannel"
+        properties={
+            "ApplicationId": getReference(pinpointAppId),
+            "DefaultAuthenticationMethod" : "TOKEN",
+            "TokenKeyId" : tokenKeyId,
+            "BundleId" : bundleId,
+            "TeamId" : teamId,
+            "TokenKey" : tokenKey
+        }
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#macro createPinpointAPNSSandboxChannelWithTokenKey id pinpointAppId tokenKeyId bundleId teamId tokenKey dependencies=[] ]
+    [@cfResource
+        id=id
+        type="AWS::Pinpoint::APNSSandboxChannel"
+        properties={
+            "ApplicationId": getReference(pinpointAppId),
+            "DefaultAuthenticationMethod" : "TOKEN",
+            "TokenKeyId" : tokenKeyId,
+            "BundleId" : bundleId,
+            "TeamId" : teamId,
+            "TokenKey" : tokenKey
+        }
+        dependencies=dependencies
+    /]
+[/#macro]
+
 [#macro createPinpointGCMChannel id pinpointAppId apiKey dependencies=[]]
     [@cfResource
         id=id
         type="AWS::Pinpoint::GCMChannel"
         properties={
             "ApplicationId" : getReference(pinpointAppId),
+            "DefaultAuthenticationMethod" : "KEY",
             "ApiKey": apiKey
+        }
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#macro createPinpointGCMChannelWithToken id pinpointAppId token dependencies=[]]
+    [@cfResource
+        id=id
+        type="AWS::Pinpoint::GCMChannel"
+        properties={
+            "ApplicationId" : getReference(pinpointAppId),
+            "DefaultAuthenticationMethod" : "TOKEN",
+            "ServiceJson": token
         }
         dependencies=dependencies
     /]

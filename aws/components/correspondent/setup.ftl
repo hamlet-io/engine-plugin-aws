@@ -38,28 +38,67 @@
 
             [#switch solution.Engine ]
                 [#case "apns"]
-                    [@createPinpointAPNSChannel
-                        id=channelId
-                        pinpointAppId=correspondentId
-                        certificate=(solution["engine:APNS"].Certificate)!"HamletFatal: engine:APNS.Certificate configuration required for APNS Channel"
-                        privateKey=(solution["engine:APNS"].PrivateKey)!"HamletFatal: engine:APNS.PrivateKey configuration required for APNS Channel"
-                    /]
+                    [#switch solution.AuthMethod ]
+                        [#case "certificate"]
+                            [@createPinpointAPNSChannel
+                                id=channelId
+                                pinpointAppId=correspondentId
+                                certificate=(solution["engine:APNS"].Certificate)!"HamletFatal: engine:APNS.Certificate configuration required for APNS Channel"
+                                privateKey=(solution["engine:APNS"].PrivateKey)!"HamletFatal: engine:APNS.PrivateKey configuration required for APNS Channel"
+                            /]
+                            [#break]
+                        [#case "token"]
+                            [@createPinpointAPNSChannelWithTokenKey
+                                id=channelId
+                                pinpointAppId=correspondentId
+                                tokenKeyId=(solution["engine:APNS"].TokenKeyId)!"HamletFatal: engine:APNS.TokenKeyId configuration required for APNS Channel"
+                                bundleId=(solution["engine:APNS"].BundleId)!"HamletFatal: engine:APNS.BundleId configuration required for APNS Channel"
+                                teamId=(solution["engine:APNS"].TeamId)!"HamletFatal: engine:APNS.TeamId configuration required for APNS Channel"
+                                tokenKey=(solution["engine:APNS"].TokenKey)!"HamletFatal: engine:APNS.TokenKey configuration required for APNS Channel"
+                            /]
+                            [#break]
+                    [/#switch]
                     [#break]
                 [#case "apns_sandbox"]
-                    [@createPinpointAPNSSandboxChannel
-                        id=channelId
-                        pinpointAppId=correspondentId
-                        certificate=(solution["engine:APNSSandbox"].Certificate)!"HamletFatal: engine:APNSSandbox.Certificate configuration required for APNS Channel"
-                        privateKey=(solution["engine:APNSSandbox"].PrivateKey)!"HamletFatal: engine:APNSSandbox.PrivateKey configuration required for APNS Channel"
-                    /]
+                    [#switch solution.AuthMethod ]
+                        [#case "certificate"]
+                            [@createPinpointAPNSSandboxChannel
+                                id=channelId
+                                pinpointAppId=correspondentId
+                                certificate=(solution["engine:APNSSandbox"].Certificate)!"HamletFatal: engine:APNSSandbox.Certificate configuration required for APNS Sandbox Channel"
+                                privateKey=(solution["engine:APNSSandbox"].PrivateKey)!"HamletFatal: engine:APNSSandbox.PrivateKey configuration required for APNS Sandbox Channel"
+                            /]
+                            [#break]
+                        [#case "token"]
+                            [@createPinpointAPNSSandboxChannelWithTokenKey
+                                id=channelId
+                                pinpointAppId=correspondentId
+                                tokenKeyId=(solution["engine:APNSSandbox"].TokenKeyId)!"HamletFatal: engine:APNSSandbox.TokenKeyId configuration required for APNS Sandbox Channel"
+                                bundleId=(solution["engine:APNSSandbox"].BundleId)!"HamletFatal: engine:APNSSandbox.BundleId configuration required for APNS Sandbox Channel"
+                                teamId=(solution["engine:APNSSandbox"].TeamId)!"HamletFatal: engine:APNSSandbox.TeamId configuration required for APNS Sandbox Channel"
+                                tokenKey=(solution["engine:APNSSandbox"].TokenKey)!"HamletFatal: engine:APNSSandbox.TokenKey configuration required for APNS Sandbox Channel"
+                            /]
+                            [#break]
+                    [/#switch]
                     [#break]
 
                 [#case "firebase"]
-                    [@createPinpointGCMChannel
-                        id=channelId
-                        pinpointAppId=correspondentId
-                        apiKey=(solution["engine:Firebase"].APIKey)!"HamletFatal: engine:Firebase.APIKey configuration required for APNS Channel"
-                    /]
+                    [#switch solution.AuthMethod ]
+                        [#case "apikey"]
+                            [@createPinpointGCMChannel
+                                id=channelId
+                                pinpointAppId=correspondentId
+                                apiKey=(solution["engine:Firebase"].APIKey)!"HamletFatal: engine:Firebase.APIKey configuration required for GCM Channel"
+                            /]
+                            [#break]
+                        [#case "token"]
+                            [@createPinpointGCMChannelWithToken
+                                id=channelId
+                                pinpointAppId=correspondentId
+                                token=(solution["engine:Firebase"].Token)!"HamletFatal: engine:Firebase.Token configuration required for GCM Channel"
+                            /]
+                            [#break]
+                    [/#switch]
                     [#break]
 
                 [#default]

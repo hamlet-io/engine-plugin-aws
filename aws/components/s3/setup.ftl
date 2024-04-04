@@ -305,10 +305,10 @@
                             [#local replicationExternalPolicy +=   s3ReplicaDestinationPermission( linkTargetAttributes["ARN"] ) ]
                             [#local replicationBucket = linkTargetAttributes["ARN"]]
                             [#local replicationKMSKey = (linkTargetAttributes["KMS_KEY_ARN"])!""]
-                            [#local replicationKMSKeyARN = (linkTargetAttributes["KMS_KEY_REGION"])!""]
+                            [#local replicationKMSKeyRegion = (linkTargetAttributes["KMS_KEY_REGION"])!""]
 
                             [#if replicationKMSKey?has_content ]
-                                [#local replicationExternalPolicy += s3EncryptionAllPermission(replicationKMSKey, replicationBucket, "*", replicationKMSKeyARN)]
+                                [#local replicationExternalPolicy += s3EncryptionAllPermission(replicationKMSKey, replicationBucket, "*", replicationKMSKeyRegion)]
                             [/#if]
 
                             [#break]
@@ -450,6 +450,7 @@
                     linkPolicies) +
                 arrayIfContent(
                     getPolicyDocument(
+                        s3ReplicaSourceBatchPermission(s3Id) +
                         s3ReplicaSourcePermission(s3Id) +
                         s3ReplicationConfigurationPermission(s3Id),
                         "replication"),
@@ -466,7 +467,11 @@
         [#if rolePolicies?has_content ]
             [@createRole
                 id=roleId
-                trustedServices=["s3.amazonaws.com"]
+                trustedServices=[
+                    "s3.amazonaws.com"
+                    [#-- Included here so that the same IAM Role can be used for batch replication --]
+                    "batchoperations.s3.amazonaws.com"
+                ]
                 policies=rolePolicies
                 tags=getOccurrenceTags(occurrence)
             /]
