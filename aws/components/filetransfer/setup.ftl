@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_filetransfer_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets=[ "prologue", "template", "epilogue" ] /]
+    [@addDefaultGenerationContract subsets=[ "deploymentcontract", "prologue", "template", "epilogue" ] /]
+[/#macro]
+
+[#macro aws_filetransfer_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true epilogue=true /]
 [/#macro]
 
 [#macro aws_filetransfer_cf_deployment_solution occurrence ]

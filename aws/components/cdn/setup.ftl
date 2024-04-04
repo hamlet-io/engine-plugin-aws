@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_cdn_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets=["prologue", "template", "epilogue", "cli" ] /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "prologue", "template", "epilogue", "cli" ] /]
+[/#macro]
+
+[#macro aws_cdn_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true epilogue=true /]
 [/#macro]
 
 [#macro aws_cdn_cf_deployment_solution occurrence ]

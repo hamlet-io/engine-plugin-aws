@@ -1,6 +1,10 @@
 [#ftl]
 [#macro aws_federatedrole_cf_deployment_generationcontract_solution occurrence ]
-    [@addDefaultGenerationContract subsets="template" /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "template"] /]
+[/#macro]
+
+[#macro aws_federatedrole_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract /]
 [/#macro]
 
 [#macro aws_federatedrole_cf_deployment_solution occurrence ]

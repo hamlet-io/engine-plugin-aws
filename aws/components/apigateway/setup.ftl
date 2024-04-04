@@ -1,7 +1,11 @@
 [#ftl]
 
 [#macro aws_apigateway_cf_deployment_generationcontract_application occurrence ]
-    [@addDefaultGenerationContract subsets=["pregeneration", "prologue", "template", "epilogue", "config", "cli" ] /]
+    [@addDefaultGenerationContract subsets=["deploymentcontract", "pregeneration", "prologue", "template", "epilogue", "config", "cli" ] /]
+[/#macro]
+
+[#macro aws_apigateway_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract prologue=true epilogue=true /]
 [/#macro]
 
 [#macro aws_apigateway_cf_deployment_application occurrence ]

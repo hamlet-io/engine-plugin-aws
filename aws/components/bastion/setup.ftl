@@ -1,13 +1,17 @@
 [#ftl]
 [#macro aws_bastion_cf_deployment_generationcontract_segment occurrence ]
     [@addDefaultGenerationContract
-        subsets="template"
+        subsets=["deploymentcontract", "template"]
         alternatives=[
             "primary",
             { "subset" : "template", "alternative" : "replace1"},
             { "subset" : "template", "alternative" : "replace2"}
         ]
     /]
+[/#macro]
+
+[#macro aws_bastion_cf_deployment_deploymentcontract occurrence ]
+    [@addDefaultAWSDeploymentContract changeset=true stack=false /]
 [/#macro]
 
 [#macro aws_bastion_cf_deployment_segment occurrence ]
