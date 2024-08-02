@@ -1,6 +1,19 @@
 # Changelog
 
-## latest (2024-03-25)
+## latest (2024-08-02)
+
+#### New Features
+
+* initial deployment contract support ([#800](https://github.com/hamlet-io/engine-plugin-aws/issues/800))
+* support recommended token auth method for Pinpoint channels ([#805](https://github.com/hamlet-io/engine-plugin-aws/issues/805))
+#### Fixes
+
+* autoMinorVersionUpdate flag for Amazon MQ resource
+* cdn origin request policy headers
+
+Full set of changes: [`9.1.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/9.1.0...latest)
+
+## 9.1.0 (2024-03-27)
 
 #### New Features
 
@@ -54,11 +67,12 @@
 * remove use of component ids
 #### Others
 
+* update changelog ([#785](https://github.com/hamlet-io/engine-plugin-aws/issues/785))
 * update actions pipelines ([#802](https://github.com/hamlet-io/engine-plugin-aws/issues/802))
 * update changelog ([#760](https://github.com/hamlet-io/engine-plugin-aws/issues/760))
 * (datapipeline): remove support for AWS data pipeline
 
-Full set of changes: [`8.9.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.9.0...latest)
+Full set of changes: [`8.9.0...9.1.0`](https://github.com/hamlet-io/engine-plugin-aws/compare/8.9.0...9.1.0)
 
 ## 8.9.0 (2023-06-16)
 
