@@ -194,7 +194,7 @@
                         getSecretManagerSecretRef(resources["rootCredentials"]["secret"].Id, "password")
                     )
                 ]
-                autoMinorVersionUpdate=solution.AutoMinorUpgrade
+                autoMinorVersionUpdate=solution.AutoMinorVersionUpgrade
                 logging=true
                 maintenanceWindow=
                     solution.MaintenanceWindow.Configured?then(
