@@ -366,7 +366,7 @@
         customHeaders
         originLink
         tlsProtocols
-        ConnectionTimeout ]
+        connectionTimeout ]
 
     [#local origins = []]
 
