@@ -24,7 +24,7 @@ jobs:
 
       - name: Install
         run: |
-          pip install hamlet cfn-lint
+          pip install hamlet cfn-lint==0.87.3
 
       - name: Run Tests
         run: |
