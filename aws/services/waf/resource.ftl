@@ -225,6 +225,20 @@
 
         [#switch hamletResourceType ]
             [#case AWS_WAFV2_IPSET_RESOURCE_TYPE]
+
+                [#local addresses = asFlattenedArray(
+                    filters?map(filter ->
+                        getWAFValueList(filter.Targets, valueSet)
+                    )
+                )]
+
+                [#-- Matches on IPv6 Values, but not IPv4 --]
+                [#if (addresses?first)?matches(r"^.*:.*:.*\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$") ]
+                    [#local ipversion = "IPV6"]
+                [#else]
+                    [#local ipversion = "IPV4"]
+                [/#if]
+
                 [@cfResource
                     id=id
                     type=cfnResourceType
@@ -232,12 +246,8 @@
                         {
                             "Name": name,
                             "Scope" : regional?then("REGIONAL","CLOUDFRONT"),
-                            "IPAddressVersion" : "IPV4",
-                            "Addresses": asFlattenedArray(
-                                filters?map(filter ->
-                                    getWAFValueList(filter.Targets, valueSet)
-                                )
-                            )
+                            "IPAddressVersion" : ipversion,
+                            "Addresses": addresses
                         }
                 /]
                 [#break]
