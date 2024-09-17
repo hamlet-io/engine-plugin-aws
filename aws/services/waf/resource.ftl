@@ -645,10 +645,24 @@
     )]
 
     [#if getGroupCIDRs(wafSolution.IPAddressGroups, true, occurrence, true) ]
-        [#local wafValueSet += {
-            "whitelistedips" : getGroupCIDRs(wafSolution.IPAddressGroups, true, occurrence)
-        }]
-        [#local wafProfile += {
+
+        [#local groupcidrs = asFlattenedArray(getGroupCIDRs(wafSolution.IPAddressGroups, true, occurrence))]
+        [#local whitelistedipsipv4 = [] ]
+        [#local whitelistedipsipv6 = [] ]
+
+        [#list groupcidrs as cidr ]
+            [#if cidr?matches(r"^.*:.*:.*\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$")]
+                [#local whitelistedipsipv6 += [ cidr ] ]
+            [#else]
+                [#local whitelistedipsipv4 += [ cidr ] ]
+            [/#if]
+        [/#list]
+
+        [#if whitelistedipsipv4?has_content]
+            [#local wafValueSet += {
+                "whitelistedips" : whitelistedipsipv4
+            }]
+            [#local wafProfile += {
                 "Rules" :
                     wafProfile.Rules +
                     [
@@ -659,6 +673,23 @@
                     ],
                 "DefaultAction" : "BLOCK"
             } ]
+        [/#if]
+        [#if whitelistedipsipv6?has_content]
+            [#local wafValueSet += {
+                "whitelistedipsipv6" : whitelistedipsipv6
+            }]
+            [#local wafProfile += {
+                "Rules" :
+                    wafProfile.Rules +
+                    [
+                        {
+                            "Rule" : "whitelistipsipv6",
+                            "Action" : "ALLOW"
+                        }
+                    ],
+                "DefaultAction" : "BLOCK"
+            } ]
+        [/#if]
     [/#if]
 
     [#local whitelistedCountryCodes = getGroupCountryCodes(wafSolution.CountryGroups, false) ]
