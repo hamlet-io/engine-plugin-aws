@@ -1,6 +1,6 @@
 # Changelog
 
-## latest (2024-09-17)
+## latest (2024-09-18)
 
 #### New Features
 
@@ -16,6 +16,7 @@
 * cdn origin request policy headers
 #### Others
 
+* update changelog ([#804](https://github.com/hamlet-io/engine-plugin-aws/issues/804))
 * pin cfn-lint for now to pass the tests and produce uncicyle
 
 Full set of changes: [`9.1.0...latest`](https://github.com/hamlet-io/engine-plugin-aws/compare/9.1.0...latest)
