@@ -16,6 +16,7 @@
 * cdn origin request policy headers
 #### Others
 
+* update changelog ([#810](https://github.com/hamlet-io/engine-plugin-aws/issues/810))
 * update changelog ([#804](https://github.com/hamlet-io/engine-plugin-aws/issues/804))
 * pin cfn-lint for now to pass the tests and produce uncicyle
 
