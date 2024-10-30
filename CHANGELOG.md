@@ -1,6 +1,6 @@
 # Changelog
 
-## latest (2024-09-18)
+## latest (2024-10-30)
 
 #### New Features
 
@@ -10,12 +10,14 @@
 * support recommended token auth method for Pinpoint channels ([#805](https://github.com/hamlet-io/engine-plugin-aws/issues/805))
 #### Fixes
 
+* add host to list of network modes
 * update input regex for alb service logs table
 * connectionTimeout attribute
 * autoMinorVersionUpdate flag for Amazon MQ resource
 * cdn origin request policy headers
 #### Others
 
+* update changelog ([#810](https://github.com/hamlet-io/engine-plugin-aws/issues/810))
 * update changelog ([#804](https://github.com/hamlet-io/engine-plugin-aws/issues/804))
 * pin cfn-lint for now to pass the tests and produce uncicyle
 
