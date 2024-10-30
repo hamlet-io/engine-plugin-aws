@@ -941,7 +941,7 @@
             [/#if]
 
             [#if port.IPAddressGroups?has_content]
-                [#if ["awsvpc", "aws:awsvpc" ]?seq_contains(solution.NetworkMode) ]
+                [#if ["awsvpc", "aws:awsvpc", "host" ]?seq_contains(solution.NetworkMode) ]
                     [#list getGroupCIDRs(port.IPAddressGroups, true, task ) as cidr]
                         [#local ingressRules += [ {
                             "port" : port.DynamicHostPort?then(0,contentIfContent(
