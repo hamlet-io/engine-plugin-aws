@@ -1468,9 +1468,11 @@
                      }]
 
                     [#if networkMode == "awsvpc" ]
+                        [#local ecsSecurityGroupId = resources["securityGroup"].Id ]
                         [#local ecsParameters += {
                             "NetworkConfiguration" : {
                                 "AwsVpcConfiguration" : {
+                                    "SecurityGroups" : getReferences(ecsSecurityGroupId),
                                     "Subnets" : subnets,
                                     "AssignPublicIp" : publicRouteTable?then(
                                                         "ENABLE",
