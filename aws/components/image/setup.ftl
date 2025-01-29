@@ -119,6 +119,7 @@
                                     "description": "Keep a number limited set of tagged images, expire all others",
                                     "selection": {
                                         "tagStatus": "tagged",
+                                        "tagPatternList": ["*"],
                                         "countType": "imageCountMoreThan",
                                         "countNumber": dockerConfig.Lifecycle.Expiry.TaggedMaxCount
                                     },
