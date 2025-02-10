@@ -69,6 +69,11 @@ This `AlertProfile` is intended to be used with components external to the modul
               "type": "object",
               "description": "The tier to use to host the components",
               "default": "mgmt"
+            },
+            "tier": {
+              "type": "object",
+              "description": "The extension to define businessAlerts as a fragment .ftl file",
+              "default": "_mgmtalarms"
             }
           },
           "additionalProperties": false,

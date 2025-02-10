@@ -58,6 +58,12 @@
             "Type" : STRING_TYPE,
             "Description" : "The tier to use to host the components",
             "Default" : "mgmt"
+        },
+        {
+            "Names" : "extension",
+            "Type" : STRING_TYPE,
+            "Description" : "The extension to define businessAlerts",
+            "Default" : "_mgmtalarms"
         }
     ]
 /]
@@ -71,7 +77,8 @@
             namePrefix
             tier
             alertSeverity
-            alertProfile ]
+            alertProfile 
+            extension ]
 
     [#local topicName = formatName(namePrefix, "topic" )]
     [#local lambdaName = formatName(namePrefix, "lambda" )]
@@ -123,6 +130,9 @@
                             "Functions" : {
                                 "send" : {
                                     "Handler" : "cloudwatch-slack/lambda_function.lambda_handler",
+                                    "Extensions": [
+                                        extension
+                                    ],
                                     "RunTime" : "python3.9",
                                     "MemorySize" : 128,
                                     "Timeout" : 15,
