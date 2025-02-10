@@ -233,7 +233,7 @@
                 )]
 
                 [#-- Matches on IPv6 Values, but not IPv4 --]
-                [#if (addresses?first)?matches(r"^.*:.*:.*\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$") ]
+                [#if (addresses?first)?? && (addresses?first)?matches(r"^.*:.*:.*\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$") ]
                     [#local ipversion = "IPV6"]
                 [#else]
                     [#local ipversion = "IPV4"]
