@@ -100,7 +100,7 @@
                     "SLACK_HOOK_URL" : webHookUrl,
                     "KMS_PREFIX" : kmsPrefix,
                     "SLACK_CHANNEL" : slackChannel,
-                    "ENVIRONMENT" : namespace
+                    "ENVIRONMENT" : environment["Name"]
                 }
             }
         ]
