@@ -1,9 +1,10 @@
 # Changelog
 
-## latest (2025-02-27)
+## latest (2025-04-24)
 
 #### New Features
 
+* add AWSBackupServiceRolePolicyForS3Backup managed policy
 * add a default extension for cloudwatch alarm module
 * WAFACLs to support IPV6
 * waf service to support IPV6 CIDRs
@@ -22,6 +23,7 @@
 * cdn origin request policy headers
 #### Others
 
+* update changelog ([#814](https://github.com/hamlet-io/engine-plugin-aws/issues/814))
 * update changelog ([#810](https://github.com/hamlet-io/engine-plugin-aws/issues/810))
 * update changelog ([#804](https://github.com/hamlet-io/engine-plugin-aws/issues/804))
 * pin cfn-lint for now to pass the tests and produce uncicyle
