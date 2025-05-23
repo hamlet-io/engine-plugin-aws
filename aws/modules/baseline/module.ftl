@@ -53,6 +53,11 @@
                                                 "Prefix": "WAF",
                                                 "Expiration": "_operations",
                                                 "Offline": "_operations"
+                                            },
+                                            "ses": {
+                                                "Prefix": "SES",
+                                                "Expiration": "_operations",
+                                                "Offline": "_operations"
                                             }
                                         },
                                         "Links": {
