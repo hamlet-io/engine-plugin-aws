@@ -109,14 +109,14 @@
                         )]
                     [/#if]
 
-                    [#if (dockerConfig.Lifecycle.Expiry.TaggedDays)?is_string || dockerConfig.Lifecycle.Expiry.TaggedDays > 0 ]
+                    [#if (dockerConfig.Lifecycle.Expiry.Days)?is_string || dockerConfig.Lifecycle.Expiry.Days > 0 ]
 
-                        [#local taggedDaysExpiry = dockerConfig.Lifecycle.Expiry.TaggedDays]
+                        [#local anyDaysExpiry = dockerConfig.Lifecycle.Expiry.Days]
 
-                        [#if taggedDaysExpiry?is_string ]
-                            [#switch taggedDaysExpiry ]
+                        [#if anyDaysExpiry?is_string ]
+                            [#switch anyDaysExpiry ]
                                 [#case "_operations" ]
-                                    [#local taggedDaysExpiry = operationsExpiration]
+                                    [#local anyDaysExpiry = operationsExpiration]
                                     [#break ]
 
                                 [#default]
@@ -136,12 +136,12 @@
                             [
                                 {
                                     "rulePriority": 3,
-                                    "description": "Expire tagged images after time",
+                                    "description": "Expire any images after time",
                                     "selection": {
-                                        "tagStatus": "tagged",
+                                        "tagStatus": "any",
                                         "countType": "sinceImagePushed",
                                         "countUnit": "days",
-                                        "countNumber": taggedDaysExpiry
+                                        "countNumber": anyDaysExpiry
                                     },
                                     "action": {
                                         "type": "expire"
