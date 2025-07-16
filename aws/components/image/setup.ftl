@@ -109,6 +109,48 @@
                         )]
                     [/#if]
 
+                    [#if (dockerConfig.Lifecycle.Expiry.TaggedDays)?is_string || dockerConfig.Lifecycle.Expiry.TaggedDays > 0 ]
+
+                        [#local taggedDaysExpiry = dockerConfig.Lifecycle.Expiry.TaggedDays]
+
+                        [#if taggedDaysExpiry?is_string ]
+                            [#switch taggedDaysExpiry ]
+                                [#case "_operations" ]
+                                    [#local taggedDaysExpiry = operationsExpiration]
+                                    [#break ]
+
+                                [#default]
+                                    [@fatal
+                                        message="Invalid expiry value"
+                                        detail="Supports a number of days or _operations"
+                                        context={
+                                            "Name": occurrence.Core.FullRawName,
+                                            "ImageConfiguration" : dockerConfig
+                                        }
+                                    /]
+                            [/#switch]
+                        [/#if]
+
+                        [#local rules = combineEntities(
+                            rules,
+                            [
+                                {
+                                    "rulePriority": 3,
+                                    "description": "Expire tagged images after time",
+                                    "selection": {
+                                        "tagStatus": "tagged",
+                                        "countType": "sinceImagePushed",
+                                        "countUnit": "days",
+                                        "countNumber": taggedDaysExpiry
+                                    },
+                                    "action": {
+                                        "type": "expire"
+                                    }
+                                }
+                            ]
+                        )]
+                    [/#if]
+
 
                     [#if dockerConfig.Lifecycle.Expiry.TaggedMaxCount > 0 ]
                         [#local rules = combineEntities(
