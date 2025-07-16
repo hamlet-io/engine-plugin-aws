@@ -1101,6 +1101,7 @@
                 [#local processorCounts = getProcessorCounts(processorProfile, multiAZ, solution.DesiredCount ) ]
 
                 [#local desiredCount = processorCounts.DesiredCount ]
+                
                 [#if hibernate ]
                     [#local desiredCount = 0 ]
                 [/#if]
@@ -1108,7 +1109,7 @@
                 [#if solution.ScalingPolicies?has_content ]
                     [#local scalingTargetId = resources["scalingTarget"].Id ]
 
-                    [#local serviceResourceType = resources["service"].Type ]]
+                    [#local serviceResourceType = resources["service"].Type ]
 
                     [#local scheduledActions = []]
                     [#list solution.ScalingPolicies as name, scalingPolicy ]
