@@ -883,6 +883,7 @@
                         [/#if]
                     [/#if]
 
+		            [#local portMappingIndex = 0]
                     [#list container.PortMappings![] as portMapping]
                         [#if portMapping.LoadBalancer?has_content]
                             [#local loadBalancer = portMapping.LoadBalancer]
@@ -981,7 +982,7 @@
                                             ecsSecurityGroupId,
                                             container,
                                             portMapping.DynamicHostPort?then(
-                                                "dynamic",
+                                                "dynamic"+portMappingIndex,
                                                 ports[portMapping.HostPort].Port
                                             ),
                                             replaceAlphaNumericOnly(cidr)
@@ -999,7 +1000,7 @@
                                             ecsSecurityGroupId,
                                             container,
                                             portMapping.DynamicHostPort?then(
-                                                "dynamic",
+                                                "dynamic"+portMappingIndex,
                                                 ports[portMapping.HostPort].Port
                                             )
                                         )
@@ -1058,6 +1059,7 @@
                                     [#break]
                             [/#switch]
                         [/#if]
+                    	[#local portMappingIndex += 1]
                     [/#list]
                     [#if container.IngressRules?has_content ]
                         [#list container.IngressRules as ingressRule ]
