@@ -141,7 +141,7 @@
                             "deployment:Unit": "${deploymentUnitPrefix}-handler",
                             "Functions": {
                                 "notify": {
-                                    "RunTime": "python3.9",
+                                    "RunTime": "python3.12",
                                     "Memory": 128,
                                     "Encrypted": true,
                                     "Handler": "index.lambda_handler",
@@ -178,7 +178,7 @@
                                     }
                                 },
                                 "events": {
-                                    "RunTime": "python3.9",
+                                    "RunTime": "python3.12",
                                     "Memory": 128,
                                     "Encrypted": true,
                                     "Handler": "index.lambda_handler",
