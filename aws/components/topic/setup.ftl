@@ -196,6 +196,11 @@
                     [#local protocol = ""]
                     [#local deliveryPolicy = {}]
 
+                    [#--  topic component might have an inbound link to s3 component, it is for s3 notifications, not for sns subscription --]
+                    [#if linkTargetCore.Type == S3_COMPONENT_TYPE]
+                        [#continue]
+                    [/#if]
+
                     [#switch linkTargetCore.Type ]
                         [#case "external" ]
                         [#case EXTERNALSERVICE_COMPONENT_TYPE ]
