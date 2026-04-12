@@ -371,6 +371,11 @@
                     /]
                 [/#if]
 
+
+                [#-- use ContentWAFValue if it is set as the key for CustomResponseBodies --]
+                [#-- this assumes that the ContentWAFValue always goes with the same ContentType --]
+                [#local customResponseBodyKey = (rule["Action:BLOCK"].CustomResponse.Body.ContentWAFValue)!ruleName ]
+
                 [#local responseBodyContentType = ""]
                 [#switch rule["Action:BLOCK"].CustomResponse.Body.ContentType ]
                     [#case "application/json"]
@@ -395,7 +400,7 @@
                 [#local customResponseBodies = mergeObjects(
                         customResponseBodies,
                         {
-                            ruleName : {
+                            customResponseBodyKey : {
                                 "Content": responseBodyContent,
                                 "ContentType": responseBodyContentType
                             }
@@ -423,7 +428,7 @@
                     actionExtensions,
                     {
                         "CustomResponse": {
-                            "CustomResponseBodyKey": ruleName,
+                            "CustomResponseBodyKey": customResponseBodyKey,
                             "ResponseCode": blockCustomResponse.StatusCode
                         } +
                         attributeIfContent(
