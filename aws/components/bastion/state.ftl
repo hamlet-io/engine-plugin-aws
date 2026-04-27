@@ -2,6 +2,54 @@
 [#macro aws_bastion_cf_state occurrence parent={} ]
     [#local core = occurrence.Core]
     [#local solution = occurrence.Configuration.Solution]
+    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
+
+    [#local computeTasks = []]
+    [#switch operatingSystem.Family ]
+        [#case "linux" ]
+            [#switch operatingSystem.Distribution ]
+                [#case "awslinux" ]
+                    [#switch operatingSystem.MajorVersion ]
+                        [#case "2023"]
+                            [#local computeTasks = [
+                                COMPUTE_TASK_RUN_STARTUP_CONFIG,
+                                COMPUTE_TASK_AWS_CFN_SIGNAL,
+                                COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL,
+                                COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
+                                COMPUTE_TASK_FILE_DIR_CREATION,
+                                COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
+                                COMPUTE_TASK_OS_SECURITY_PATCHING,
+                                COMPUTE_TASK_ANTIVIRUS_CONFIG,
+                                COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
+                                COMPUTE_TASK_AWS_EIP,
+                                COMPUTE_TASK_USER_ACCESS,
+                                COMPUTE_TASK_EFS_MOUNT
+                            ]]
+                            [#break]
+                        [#case "2"]
+                        [#case "1" ]
+                            [#local computeTasks = [
+                                COMPUTE_TASK_RUN_STARTUP_CONFIG,
+                                COMPUTE_TASK_AWS_CFN_SIGNAL,
+                                COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL,
+                                COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
+                                COMPUTE_TASK_FILE_DIR_CREATION,
+                                COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
+                                COMPUTE_TASK_OS_SECURITY_PATCHING,
+                                COMPUTE_TASK_ANTIVIRUS_CONFIG,
+                                COMPUTE_TASK_AWS_CLI,
+                                COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
+                                COMPUTE_TASK_AWS_EIP,
+                                COMPUTE_TASK_USER_ACCESS,
+                                COMPUTE_TASK_EFS_MOUNT
+                            ]]
+                            [#break]
+                    [/#switch]
+                    [#break]
+            [/#switch]
+            [#break]
+        [#break]
+    [/#switch]
 
     [#local securityGroupToId = formatResourceId( AWS_VPC_SECURITY_GROUP_RESOURCE_TYPE, core.Id )]
 
@@ -33,21 +81,7 @@
                     "Id" : formatResourceId( AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE, core.Id ),
                     "Name" : core.FullName,
                     "Type" : AWS_EC2_AUTO_SCALE_GROUP_RESOURCE_TYPE,
-                    "ComputeTasks" : [
-                        COMPUTE_TASK_RUN_STARTUP_CONFIG,
-                        COMPUTE_TASK_AWS_CFN_SIGNAL,
-                        COMPUTE_TASK_AWS_ASG_STARTUP_SIGNAL,
-                        COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
-                        COMPUTE_TASK_FILE_DIR_CREATION,
-                        COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
-                        COMPUTE_TASK_OS_SECURITY_PATCHING,
-                        COMPUTE_TASK_ANTIVIRUS_CONFIG,
-                        COMPUTE_TASK_AWS_CLI,
-                        COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
-                        COMPUTE_TASK_AWS_EIP,
-                        COMPUTE_TASK_USER_ACCESS,
-                        COMPUTE_TASK_EFS_MOUNT
-                    ]
+                    "ComputeTasks" : computeTasks
                 },
                 "lg" : {
                     "Id" : formatLogGroupId(core.Id),

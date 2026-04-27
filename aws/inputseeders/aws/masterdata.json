@@ -1096,6 +1096,75 @@
                 }
             }
         },
+        "_awslinux2023" : {
+            "Modes" : {
+                "*" : {
+                    "ecs" : {
+                        "Profiles" : {
+                            "Storage" : "ecs_awslinux2"
+                        },
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "linux",
+                                "Distribution" : "awslinux",
+                                "MajorVersion" : "2023"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id"
+                                }
+                            }
+                        }
+                    },
+                    "computecluster" : {
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "linux",
+                                "Distribution" : "awslinux",
+                                "MajorVersion" : "2023"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+                                }
+                            }
+                        }
+                    },
+                    "bastion" : {
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "linux",
+                                "Distribution" : "awslinux",
+                                "MajorVersion" : "2023"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+                                }
+                            }
+                        }
+                    },
+                    "ec2" : {
+                        "ComputeInstance" : {
+                            "OperatingSystem" : {
+                                "Family" : "linux",
+                                "Distribution" : "awslinux",
+                                "MajorVersion" : "2023"
+                            },
+                            "Image" : {
+                                "Source" : "aws:SSMParam",
+                                "aws:Source:SSMParam" : {
+                                    "Name" : "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "_awswin" : {
             "Modes" : {
                 "*" : {
