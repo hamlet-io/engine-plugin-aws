@@ -34,7 +34,8 @@
             id=roleId
             trustedServices="backup.amazonaws.com"
             managedArns=[
-                "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+                "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup",
+                "arn:aws:iam::aws:policy/AWSBackupServiceRolePolicyForS3Backup"
             ]
         /]
     [/#if]

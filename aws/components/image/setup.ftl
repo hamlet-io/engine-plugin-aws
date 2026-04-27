@@ -109,6 +109,48 @@
                         )]
                     [/#if]
 
+                    [#if (dockerConfig.Lifecycle.Expiry.Days)?is_string || dockerConfig.Lifecycle.Expiry.Days > 0 ]
+
+                        [#local anyDaysExpiry = dockerConfig.Lifecycle.Expiry.Days]
+
+                        [#if anyDaysExpiry?is_string ]
+                            [#switch anyDaysExpiry ]
+                                [#case "_operations" ]
+                                    [#local anyDaysExpiry = operationsExpiration]
+                                    [#break ]
+
+                                [#default]
+                                    [@fatal
+                                        message="Invalid expiry value"
+                                        detail="Supports a number of days or _operations"
+                                        context={
+                                            "Name": occurrence.Core.FullRawName,
+                                            "ImageConfiguration" : dockerConfig
+                                        }
+                                    /]
+                            [/#switch]
+                        [/#if]
+
+                        [#local rules = combineEntities(
+                            rules,
+                            [
+                                {
+                                    "rulePriority": 3,
+                                    "description": "Expire any images after time",
+                                    "selection": {
+                                        "tagStatus": "any",
+                                        "countType": "sinceImagePushed",
+                                        "countUnit": "days",
+                                        "countNumber": anyDaysExpiry
+                                    },
+                                    "action": {
+                                        "type": "expire"
+                                    }
+                                }
+                            ]
+                        )]
+                    [/#if]
+
 
                     [#if dockerConfig.Lifecycle.Expiry.TaggedMaxCount > 0 ]
                         [#local rules = combineEntities(
@@ -128,6 +170,94 @@
                                     }
                                 }
                             ]
+                        )]
+                    [/#if]
+
+                    [#if (dockerConfig.Lifecycle.Archive.Days)?is_string || dockerConfig.Lifecycle.Archive.Days > 0 ]
+
+                        [#local anyDaysArchive = dockerConfig.Lifecycle.Archive.Days]
+
+                        [#if anyDaysArchive?is_string ]
+                            [#switch anyDaysArchive ]
+                                [#case "_operations" ]
+                                    [#local anyDaysArchive = operationsExpiration]
+                                    [#break ]
+
+                                [#default]
+                                    [@fatal
+                                        message="Invalid archive value"
+                                        detail="Supports a number of days or _operations"
+                                        context={
+                                            "Name": occurrence.Core.FullRawName,
+                                            "ImageConfiguration" : dockerConfig
+                                        }
+                                    /]
+                            [/#switch]
+                        [/#if]
+
+                        [#local rules = combineEntities(
+                            rules,
+                            [
+                                {
+                                    "rulePriority": 4,
+                                    "description": "Archive any images after time",
+                                    "selection": {
+                                        "tagStatus": "any",
+                                        "countType": "sinceImagePulled",
+                                        "countUnit": "days",
+                                        "countNumber": anyDaysArchive
+                                    },
+                                    "action": {
+                                        "type": "transition",
+                                        "targetStorageClass": "archive"
+                                    }
+                                }
+                            ],
+                            APPEND_COMBINE_BEHAVIOUR
+                        )]
+                    [/#if]
+
+                    [#if (dockerConfig.Lifecycle.ExpireTransitioned.Days)?is_string || dockerConfig.Lifecycle.ExpireTransitioned.Days > 0 ]
+
+                        [#local anyDaysExpiry = dockerConfig.Lifecycle.ExpireTransitioned.Days]
+
+                        [#if anyDaysExpiry?is_string ]
+                            [#switch anyDaysExpiry ]
+                                [#case "_operations" ]
+                                    [#local anyDaysExpiry = operationsExpiration]
+                                    [#break ]
+
+                                [#default]
+                                    [@fatal
+                                        message="Invalid archive value"
+                                        detail="Supports a number of days or _operations"
+                                        context={
+                                            "Name": occurrence.Core.FullRawName,
+                                            "ImageConfiguration" : dockerConfig
+                                        }
+                                    /]
+                            [/#switch]
+                        [/#if]
+
+                        [#local rules = combineEntities(
+                            rules,
+                            [
+                                {
+                                    "rulePriority": 5,
+                                    "description": "Archive any images after time",
+                                    "selection": {
+                                        "tagStatus": "any",
+                                        "storageClass": "archive",
+                                        "countType": "sinceImageTransitioned",
+                                        "countUnit": "days",
+                                        "countNumber": anyDaysExpiry
+                                    },
+                                    "action": {
+                                        "type": "expire"
+                                    }
+                                }
+                            ],
+                            APPEND_COMBINE_BEHAVIOUR
                         )]
                     [/#if]
 
