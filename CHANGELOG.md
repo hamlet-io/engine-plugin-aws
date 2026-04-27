@@ -1,9 +1,16 @@
 # Changelog
 
-## latest (2025-02-27)
+## latest (2026-04-27)
 
 #### New Features
 
+* add support of AL2023 for bastion component
+* use ContentWAFValue for CustomResponseBodies
+* (image): add archive/expiry default lifecycle rules
+* add days ECR policy
+* add tagged days ECR policy
+* enable default lifecycle policy on SES prefix in ops bucket
+* add AWSBackupServiceRolePolicyForS3Backup managed policy
 * add a default extension for cloudwatch alarm module
 * WAFACLs to support IPV6
 * waf service to support IPV6 CIDRs
@@ -11,6 +18,10 @@
 * support recommended token auth method for Pinpoint channels ([#805](https://github.com/hamlet-io/engine-plugin-aws/issues/805))
 #### Fixes
 
+* pytest version
+* (topic): skip subscriptions for S3 links
+* dymamic ingress rule id generation
+* delete extra bracket
 * ENVIRONMENT setting for cloudwatchslack module
 * (waf): check if addresses is empty before testing for ip version
 * add tagPatternList for tagged max count ECR lifecycle rule ([#813](https://github.com/hamlet-io/engine-plugin-aws/issues/813))
@@ -22,6 +33,9 @@
 * cdn origin request policy headers
 #### Others
 
+* update lambda runtimes for mail handler
+* cloudwatch readme cleanup
+* update changelog ([#814](https://github.com/hamlet-io/engine-plugin-aws/issues/814))
 * update changelog ([#810](https://github.com/hamlet-io/engine-plugin-aws/issues/810))
 * update changelog ([#804](https://github.com/hamlet-io/engine-plugin-aws/issues/804))
 * pin cfn-lint for now to pass the tests and produce uncicyle
