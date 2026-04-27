@@ -69,20 +69,24 @@
         [#break]
     [/#switch]
 
-    [#if ! (content?has_content) ]
-        [@fatal
-            message="computetask_awscli could not find a way to install the aws cli for this os"
-            detail="Check your operating system config or replace this extension with your own"
-            context={ "OccurrenceId" : core.Id, "OperatingSystem" : operatingSystem }
-        /]
+    [#if ! (operatingSystem.Distribution == "awslinux" && operatingSystem.MajorVersion == "2023")]
+        [#if ! (content?has_content)]
+            [@fatal
+                message="computetask_awscli could not find a way to install the aws cli for this os"
+                detail="Check your operating system config or replace this extension with your own"
+                context={ "OccurrenceId" : core.Id, "OperatingSystem" : operatingSystem }
+            /]
+        [#else]
+            [@computeTaskConfigSection
+                computeTaskTypes=[ COMPUTE_TASK_AWS_CLI ]
+                id="AWSClI"
+                priority=1
+                engine=AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE
+                content=content
+            /]
+
+        [/#if]
     [/#if]
 
-    [@computeTaskConfigSection
-        computeTaskTypes=[ COMPUTE_TASK_AWS_CLI ]
-        id="AWSClI"
-        priority=1
-        engine=AWS_EC2_CFN_INIT_COMPUTE_TASK_CONFIG_TYPE
-        content=content
-    /]
 
 [/#macro]

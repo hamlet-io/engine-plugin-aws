@@ -23,29 +23,70 @@
 
     [#local eips = _context.ElasticIPs ]
     [#local content = {}]
+    [#local solution = occurrence.Configuration.Solution ]
+    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
+
 
     [#if eips?has_content]
         [#local allocationIds = eips?map( eip -> getReference(eip, ALLOCATION_ATTRIBUTE_TYPE))]
 
-        [#local script = [
-            r'#!/bin/bash',
-            r'set -euo pipefail',
-            r'exec > >(tee /var/log/hamlet_cfninit/eip.log | logger -t codeontap-eip -s 2>/dev/console) 2>&1',
-            r'INSTANCE=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)',
-            { "Fn::Sub" : r'export AWS_DEFAULT_REGION="${AWS::Region}"' },
-            {
-                "Fn::Sub" : [
-                    r'available_eip="$(aws ec2 describe-addresses --filter "Name=allocation-id,Values=${AllocationIds}" --query ' + r"'Addresses[?AssociationId==`null`].AllocationId | [0]' " + '--output text )"',
-                    { "AllocationIds": { "Fn::Join" : [ ",", allocationIds ] }}
-                ]
-            },
-            r'if [[ -n "${available_eip}" && "${available_eip}" != "None" ]]; then',
-            r'  aws ec2 associate-address --instance-id ${INSTANCE} --allocation-id ${available_eip} --no-allow-reassociation',
-            r'else',
-            r'  >&2 echo "No elastic IP available to allocate"',
-            r'  exit 255',
-            r'fi'
-        ]]
+        [#local script = []]
+            [#switch operatingSystem.Family ]
+                [#case "linux" ]
+                    [#switch operatingSystem.Distribution ]
+                        [#case "awslinux" ]
+                            [#switch operatingSystem.MajorVersion ]
+                                [#case "1" ]
+                                [#case "2"]
+                                    [#local script = [
+                                        r'#!/bin/bash',
+                                        r'set -euo pipefail',
+                                        r'exec > >(tee /var/log/hamlet_cfninit/eip.log | logger -t codeontap-eip -s 2>/dev/console) 2>&1',
+                                        r'INSTANCE=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)',
+                                        { "Fn::Sub" : r'export AWS_DEFAULT_REGION="${AWS::Region}"' },
+                                        {
+                                            "Fn::Sub" : [
+                                                r'available_eip="$(aws ec2 describe-addresses --filter "Name=allocation-id,Values=${AllocationIds}" --query ' + r"'Addresses[?AssociationId==`null`].AllocationId | [0]' " + '--output text )"',
+                                                { "AllocationIds": { "Fn::Join" : [ ",", allocationIds ] }}
+                                            ]
+                                        },
+                                        r'if [[ -n "${available_eip}" && "${available_eip}" != "None" ]]; then',
+                                        r'  aws ec2 associate-address --instance-id ${INSTANCE} --allocation-id ${available_eip} --no-allow-reassociation',
+                                        r'else',
+                                        r'  >&2 echo "No elastic IP available to allocate"',
+                                        r'  exit 255',
+                                        r'fi'
+                                    ]]
+                                    [#break]
+                                [#case "2023"]
+                                    [#local script = [
+                                        r'#!/bin/bash',
+                                        r'set -euo pipefail',
+                                        r'exec > >(tee /var/log/hamlet_cfninit/eip.log | logger -t codeontap-eip -s 2>/dev/console) 2>&1',
+                                        r'TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")',
+                                        r'IMDS() { curl -s -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/$1"; }',
+                                        r'INSTANCE=$(IMDS instance-id)',
+                                        { "Fn::Sub" : r'export AWS_DEFAULT_REGION="${AWS::Region}"' },
+                                        {
+                                            "Fn::Sub" : [
+                                                r'available_eip="$(aws ec2 describe-addresses --filter "Name=allocation-id,Values=${AllocationIds}" --query ' + r"'Addresses[?AssociationId==`null`].AllocationId | [0]' " + '--output text )"',
+                                                { "AllocationIds": { "Fn::Join" : [ ",", allocationIds ] }}
+                                            ]
+                                        },
+                                        r'if [[ -n "${available_eip}" && "${available_eip}" != "None" ]]; then',
+                                        r'  aws ec2 associate-address --instance-id ${INSTANCE} --allocation-id ${available_eip} --no-allow-reassociation',
+                                        r'else',
+                                        r'  >&2 echo "No elastic IP available to allocate"',
+                                        r'  exit 255',
+                                        r'fi'
+                                    ]]
+                                    [#break]
+                            [/#switch]
+                            [#break]
+                    [/#switch]
+                    [#break]
+                [#break]
+            [/#switch]
 
         [#local content = {
             "files" : {

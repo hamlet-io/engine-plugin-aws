@@ -25,31 +25,89 @@
     [#local schedule = OSPatching.Schedule ]
     [#local securityOnly = OSPatching.SecurityOnly ]
 
-    [#local updateCommand = "yum clean all && yum -y update"]
+    [#local solution = occurrence.Configuration.Solution ]
+    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
+
+    [#local updateCommand = ""]
+    [#local content = ""]
+
+    [#switch operatingSystem.Family ]
+        [#case "linux" ]
+            [#switch operatingSystem.Distribution ]
+                [#case "awslinux" ]
+                    [#switch operatingSystem.MajorVersion ]
+                        [#case "1" ]
+                        [#case "2"]
+                            [#local updateCommand = "yum clean all && yum -y update"]
+                            [#local content = {
+                                "commands": {
+                                    "InitialUpdate" : {
+                                        "command" : updateCommand,
+                                        "ignoreErrors" : false
+                                    }
+                                } +
+                                securityOnly?then(
+                                    {
+                                        "DailySecurity" : {
+                                            "command" : 'echo \"${schedule} ${updateCommand} --security >> /var/log/update.log 2>&1\" >crontab.txt && crontab crontab.txt',
+                                            "ignoreErrors" : false
+                                        }
+                                    },
+                                    {
+                                        "DailyUpdates" : {
+                                            "command" : 'echo \"${schedule} ${updateCommand} >> /var/log/update.log 2>&1\" >crontab.txt && crontab crontab.txt',
+                                            "ignoreErrors" : false
+                                        }
+                                    }
+                                )
+                            }]
+                            [#break]
+                        [#case "2023"]
+                            [#local updateCommand = "dnf clean all && dnf -y update"]
+                            [#local content = {
+                                "packages": {
+                                    "yum": {
+                                        "cronie": []
+                                    }
+                                },
+                                "commands": {
+                                    "00EnableCrond": {
+                                        "command": "systemctl enable --now crond"
+                                    },
+                                    "02CreateUpdateLog": {
+                                        "command": "touch /var/log/update.log && chmod 644 /var/log/update.log",
+                                        "ignoreErrors": false
+                                    },
+                                    "InitialUpdate" : {
+                                        "command" : updateCommand,
+                                        "ignoreErrors" : false
+                                    }
+                                } +
+                                securityOnly?then(
+                                    {
+                                        "DailySecurity" : {
+                                            "command" : "echo '${schedule} ${updateCommand} --security >> /var/log/update.log 2>&1' > /etc/cron.d/dnf-updates && chmod 644 /etc/cron.d/dnf-updates",
+                                            "ignoreErrors" : false
+                                        }
+                                    },
+                                    {
+                                        "DailyUpdates" : {
+                                            "command" : "echo '${schedule} ${updateCommand} >> /var/log/update.log 2>&1' > /etc/cron.d/dnf-updates && chmod 644 /etc/cron.d/dnf-updates",
+                                            "ignoreErrors" : false
+                                        }
+                                    }
+                                )
+                            }]
+                            [#break]
+                    [/#switch]
+                    [#break]
+            [/#switch]
+            [#break]
+        [#break]
+    [/#switch]
 
     [#if OSPatching.Enabled ]
-        [#local content = {
-                "commands": {
-                    "InitialUpdate" : {
-                        "command" : updateCommand,
-                        "ignoreErrors" : false
-                    }
-                } +
-                securityOnly?then(
-                    {
-                        "DailySecurity" : {
-                            "command" : 'echo \"${schedule} ${updateCommand} --security >> /var/log/update.log 2>&1\" >crontab.txt && crontab crontab.txt',
-                            "ignoreErrors" : false
-                        }
-                    },
-                    {
-                        "DailyUpdates" : {
-                            "command" : 'echo \"${schedule} ${updateCommand} >> /var/log/update.log 2>&1\" >crontab.txt && crontab crontab.txt',
-                            "ignoreErrors" : false
-                        }
-                    }
-                )
-            }]
+        [#local content = content]
     [#else]
         [#local content = {
             "copmmands" : {
