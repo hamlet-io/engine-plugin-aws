@@ -983,7 +983,7 @@
                                             container,
                                             portMapping.DynamicHostPort?then(
                                                 "dynamic"+portMappingIndex,
-                                                ports[portMapping.HostPort].Port
+                                                ports[portMapping.HostPort].Port+"x"+portMappingIndex
                                             ),
                                             replaceAlphaNumericOnly(cidr)
                                         )
@@ -1001,7 +1001,7 @@
                                             container,
                                             portMapping.DynamicHostPort?then(
                                                 "dynamic"+portMappingIndex,
-                                                ports[portMapping.HostPort].Port
+                                                ports[portMapping.HostPort].Port+"x"+portMappingIndex
                                             )
                                         )
                                     port=portMapping.DynamicHostPort?then(0, portMapping.HostPort)
