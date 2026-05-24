@@ -32,6 +32,135 @@
         /]
     [/#if]
 
+
+    [#local solution = occurrence.Configuration.Solution ]
+    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
+
+    [#local contentCFNInitWait = {}]
+
+    [#switch operatingSystem.Family ]
+        [#case "linux" ]
+            [#switch operatingSystem.Distribution ]
+                [#case "awslinux" ]
+                    [#switch operatingSystem.MajorVersion ]
+                        [#case "1" ]
+                        [#case "2"]
+                            [#local contentCFNInitWait = [
+                                r'#!/bin/bash',
+                                r'set -uo pipefail',
+                                "exec > >(tee /var/log/user-data.log | logger -t user-data -s 2>/dev/console) 2>&1",
+                                "# Update cfn bootstrap commands",
+                                "yum install -y aws-cfn-bootstrap",
+                                "# Create staging dirs for cfninit scripts",
+                                "mkdir -p /var/log/hamlet_cfninit/",
+                                "mkdir -p /opt/hamlet_cfninit/",
+                                "# Remainder of configuration via metadata",
+                                {
+                                    "Fn::Sub" : [
+                                        r'/opt/aws/bin/cfn-init -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${ConfigSet}',
+                                        {
+                                            "StackName" : { "Ref" : "AWS::StackName" },
+                                            "Region" : { "Ref" : "AWS::Region" },
+                                            "Resource" : computeResourceId,
+                                            "ConfigSet" : computeResourceId
+                                        }
+                                    ]
+                                },
+                                "# Signal the status from cfn-init",
+                                {
+                                    "Fn::Sub" : [
+                                        r'/opt/aws/bin/cfn-signal -e $? --stack ${StackName} --resource ${Resource} --region ${Region}',
+                                        {
+                                            "StackName" : { "Ref" : "AWS::StackName" },
+                                            "Region" : { "Ref" : "AWS::Region" },
+                                            "Resource" : computeResourceId
+                                        }
+                                    ]
+                                },
+                                "# Run post create step configuration as part of wait handling",
+                                {
+                                    "Fn::Sub" : [
+                                        r'/opt/aws/bin/cfn-init -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${WaitConfigSet}',
+                                        {
+                                            "StackName" : { "Ref" : "AWS::StackName" },
+                                            "Region" : { "Ref" : "AWS::Region" },
+                                            "Resource" : computeResourceId,
+                                            "WaitConfigSet" : waitConfigSetName
+                                        }
+                                    ]
+                                },
+                                "# Send Signal to wait handler to let it know we have finished",
+                                {
+                                    "Fn::Sub" : [
+                                        r"/opt/aws/bin/cfn-signal -e $? '${WaitHandleUrl}'",
+                                        {
+                                            "WaitHandleUrl" : getReference(waitHandleId)
+                                        }
+                                    ]
+                                }
+                            ]]
+                            [#break]
+                        [#case "2023"]
+                            [#local contentCFNInitWait = [
+                                r'#!/bin/bash',
+                                r'set -uo pipefail',
+                                "exec > >(tee /var/log/user-data.log | logger -t user-data -s 2>/dev/console) 2>&1",
+                                "# Create staging dirs for cfninit scripts",
+                                "mkdir -p /var/log/hamlet_cfninit/",
+                                "mkdir -p /opt/hamlet_cfninit/",
+                                "# Remainder of configuration via metadata",
+                                {
+                                    "Fn::Sub" : [
+                                        r'/opt/aws/bin/cfn-init -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${ConfigSet}',
+                                        {
+                                            "StackName" : { "Ref" : "AWS::StackName" },
+                                            "Region" : { "Ref" : "AWS::Region" },
+                                            "Resource" : computeResourceId,
+                                            "ConfigSet" : computeResourceId
+                                        }
+                                    ]
+                                },
+                                "# Signal the status from cfn-init",
+                                {
+                                    "Fn::Sub" : [
+                                        r'/opt/aws/bin/cfn-signal -e $? --stack ${StackName} --resource ${Resource} --region ${Region}',
+                                        {
+                                            "StackName" : { "Ref" : "AWS::StackName" },
+                                            "Region" : { "Ref" : "AWS::Region" },
+                                            "Resource" : computeResourceId
+                                        }
+                                    ]
+                                },
+                                "# Run post create step configuration as part of wait handling",
+                                {
+                                    "Fn::Sub" : [
+                                        r'/opt/aws/bin/cfn-init -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${WaitConfigSet}',
+                                        {
+                                            "StackName" : { "Ref" : "AWS::StackName" },
+                                            "Region" : { "Ref" : "AWS::Region" },
+                                            "Resource" : computeResourceId,
+                                            "WaitConfigSet" : waitConfigSetName
+                                        }
+                                    ]
+                                },
+                                "# Send Signal to wait handler to let it know we have finished",
+                                {
+                                    "Fn::Sub" : [
+                                        r"/opt/aws/bin/cfn-signal -e $? '${WaitHandleUrl}'",
+                                        {
+                                            "WaitHandleUrl" : getReference(waitHandleId)
+                                        }
+                                    ]
+                                }
+                            ]]
+                            [#break]
+                    [/#switch]
+                    [#break]
+            [/#switch]
+            [#break]
+        [#break]
+    [/#switch]
+
     [@computeTaskConfigSection
         computeTaskTypes=[
             COMPUTE_TASK_RUN_STARTUP_CONFIG,
@@ -41,60 +170,7 @@
         id="CFNInit"
         priority=0
         engine=AWS_EC2_USERDATA_COMPUTE_TASK_CONFIG_TYPE
-        content=[
-            r'#!/bin/bash',
-            r'set -uo pipefail',
-            "exec > >(tee /var/log/user-data.log | logger -t user-data -s 2>/dev/console) 2>&1",
-            "# Update cfn bootstrap commands",
-            "yum install -y aws-cfn-bootstrap",
-            "# Create staging dirs for cfninit scripts",
-            "mkdir -p /var/log/hamlet_cfninit/",
-            "mkdir -p /opt/hamlet_cfninit/",
-            "# Remainder of configuration via metadata",
-            {
-                "Fn::Sub" : [
-                    r'/opt/aws/bin/cfn-init -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${ConfigSet}',
-                    {
-                        "StackName" : { "Ref" : "AWS::StackName" },
-                        "Region" : { "Ref" : "AWS::Region" },
-                        "Resource" : computeResourceId,
-                        "ConfigSet" : computeResourceId
-                    }
-                ]
-            },
-            "# Signal the status from cfn-init",
-            {
-                "Fn::Sub" : [
-                    r'/opt/aws/bin/cfn-signal -e $? --stack ${StackName} --resource ${Resource} --region ${Region}',
-                    {
-                        "StackName" : { "Ref" : "AWS::StackName" },
-                        "Region" : { "Ref" : "AWS::Region" },
-                        "Resource" : computeResourceId
-                    }
-                ]
-            },
-            "# Run post create step configuration as part of wait handling",
-            {
-                "Fn::Sub" : [
-                    r'/opt/aws/bin/cfn-init -v --stack ${StackName} --resource ${Resource} --region ${Region} --configset ${WaitConfigSet}',
-                    {
-                        "StackName" : { "Ref" : "AWS::StackName" },
-                        "Region" : { "Ref" : "AWS::Region" },
-                        "Resource" : computeResourceId,
-                        "WaitConfigSet" : waitConfigSetName
-                    }
-                ]
-            },
-            "# Send Signal to wait handler to let it know we have finished",
-            {
-                "Fn::Sub" : [
-                    r"/opt/aws/bin/cfn-signal -e $? '${WaitHandleUrl}'",
-                    {
-                        "WaitHandleUrl" : getReference(waitHandleId)
-                    }
-                ]
-            }
-        ]
+        content=contentCFNInitWait
     /]
 
     [@computeTaskConfigSection

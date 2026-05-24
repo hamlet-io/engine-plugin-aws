@@ -2,7 +2,8 @@
 
 [#macro aws_ec2_cf_state occurrence parent={} ]
     [#local core = occurrence.Core ]
-     [#local solution = occurrence.Configuration.Solution ]
+    [#local solution = occurrence.Configuration.Solution ]
+    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
 
     [#local zoneResources = {}]
 
@@ -22,6 +23,55 @@
         [#local availablePorts += [ port.Name ]]
     [/#list]
 
+    [#local computeTasks = []]
+    [#switch operatingSystem.Family ]
+        [#case "linux" ]
+            [#switch operatingSystem.Distribution ]
+                [#case "awslinux" ]
+                    [#switch operatingSystem.MajorVersion ]
+                        [#case "2023"]
+                            [#local computeTasks = [
+                                COMPUTE_TASK_RUN_STARTUP_CONFIG,
+                                COMPUTE_TASK_AWS_CFN_SIGNAL,
+                                COMPUTE_TASK_AWS_CFN_WAIT_SIGNAL,
+                                COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
+                                COMPUTE_TASK_DATA_VOLUME_MOUNTING,
+                                COMPUTE_TASK_FILE_DIR_CREATION,
+                                COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
+                                COMPUTE_TASK_OS_SECURITY_PATCHING,
+                                COMPUTE_TASK_ANTIVIRUS_CONFIG,
+                                COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
+                                COMPUTE_TASK_USER_ACCESS,
+                                COMPUTE_TASK_EFS_MOUNT,
+                                COMPUTE_TASK_AWS_LB_REGISTRATION
+                            ]]
+                            [#break]
+                        [#case "2"]
+                        [#case "1" ]
+                            [#local computeTasks = [
+                                COMPUTE_TASK_RUN_STARTUP_CONFIG,
+                                COMPUTE_TASK_AWS_CFN_SIGNAL,
+                                COMPUTE_TASK_AWS_CFN_WAIT_SIGNAL,
+                                COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
+                                COMPUTE_TASK_DATA_VOLUME_MOUNTING,
+                                COMPUTE_TASK_FILE_DIR_CREATION,
+                                COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
+                                COMPUTE_TASK_OS_SECURITY_PATCHING,
+                                COMPUTE_TASK_ANTIVIRUS_CONFIG,
+                                COMPUTE_TASK_AWS_CLI,
+                                COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
+                                COMPUTE_TASK_USER_ACCESS,
+                                COMPUTE_TASK_EFS_MOUNT,
+                                COMPUTE_TASK_AWS_LB_REGISTRATION
+                            ]]
+                            [#break]
+                    [/#switch]
+                    [#break]
+            [/#switch]
+            [#break]
+        [#break]
+    [/#switch]
+
     [#local zones = getZones()?filter(zone -> solution.Zones?seq_contains(zone.Id) || solution.Zones?seq_contains("_all")) ]
 
     [#list solution.MultiAZ?then(zones, [zones[0]]) as zone ]
@@ -33,22 +83,7 @@
                         "Id"   : formatResourceId(AWS_EC2_INSTANCE_RESOURCE_TYPE, core.Id, zone.Id),
                         "Name" : formatName(tenantId, formatComponentFullName(core.Tier, core.Component), zone.Id),
                         "Type" : AWS_EC2_INSTANCE_RESOURCE_TYPE,
-                        "ComputeTasks" : [
-                            COMPUTE_TASK_RUN_STARTUP_CONFIG,
-                            COMPUTE_TASK_AWS_CFN_SIGNAL,
-                            COMPUTE_TASK_AWS_CFN_WAIT_SIGNAL,
-                            COMPUTE_TASK_SYSTEM_VOLUME_MOUNTING,
-                            COMPUTE_TASK_DATA_VOLUME_MOUNTING,
-                            COMPUTE_TASK_FILE_DIR_CREATION,
-                            COMPUTE_TASK_HAMLET_ENVIRONMENT_VARIABLES,
-                            COMPUTE_TASK_OS_SECURITY_PATCHING,
-                            COMPUTE_TASK_ANTIVIRUS_CONFIG,
-                            COMPUTE_TASK_AWS_CLI,
-                            COMPUTE_TASK_SYSTEM_LOG_FORWARDING,
-                            COMPUTE_TASK_USER_ACCESS,
-                            COMPUTE_TASK_EFS_MOUNT,
-                            COMPUTE_TASK_AWS_LB_REGISTRATION
-                        ]
+                        "ComputeTasks" : computeTasks
                     },
                     "ec2ENI" : {
                         "Id" : formatResourceId(AWS_EC2_NETWORK_INTERFACE_RESOURCE_TYPE, core.Id, zone.Id, "eth0"),

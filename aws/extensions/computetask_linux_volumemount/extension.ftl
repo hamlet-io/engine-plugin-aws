@@ -81,6 +81,9 @@
             [/#list]
         [/#list]
     [/#if]
+    
+    [#local solution = occurrence.Configuration.Solution ]
+    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
 
     [#list volumes as id,volume ]
 
@@ -98,55 +101,136 @@
         [/#if]
 
         [#local scriptName = "data_volume_mount_" + replaceAlphaNumericOnly(deviceId) ]
+        [#local script = []]
 
-        [#local script = [
-            r'#!/bin/bash',
-            r'set -euo pipefail',
-            'exec > >(tee /var/log/hamlet_cfninit/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1',
+        [#switch operatingSystem.Family ]
+            [#case "linux" ]
+                [#switch operatingSystem.Distribution ]
+                    [#case "awslinux" ]
+                        [#switch operatingSystem.MajorVersion ]
+                            [#case "1" ]
+                            [#case "2"]
+                                [#local script = [
+                                    r'#!/bin/bash',
+                                    r'set -euo pipefail',
+                                    'exec > >(tee /var/log/hamlet_cfninit/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1',
 
-            'device_id="${deviceId}"',
-            'os_mount="${osMount}"',
+                                    'device_id="${deviceId}"',
+                                    'os_mount="${osMount}"',
 
-            r'# Ensure device exists',
-            r'if [[ ! -b "${device_id}" ]]; then'
-            r'  sleep 30s',
-            r'fi',
-            r'if [[ ! -b "${device_id}" ]]; then'
-            r'  echo "${device_id} not available"',
-            r'  exit 1',
-            r'fi',
+                                    r'# Ensure device exists',
+                                    r'if [[ ! -b "${device_id}" ]]; then'
+                                    r'  sleep 30s',
+                                    r'fi',
+                                    r'if [[ ! -b "${device_id}" ]]; then'
+                                    r'  echo "${device_id} not available"',
+                                    r'  exit 1',
+                                    r'fi',
 
-            r'# Create filesystem if required',
-            r'if [[ -z "$(file  -sL $device_id | grep "ext" || test $? =1 )" ]]; then',
-            r'  mkfs -t ext4 "${device_id}"',
-            r'else',
-            r'  echo "Using existing filesystem on ${device_id}"',
-            r'fi',
+                                    r'# Create filesystem if required',
+                                    r'if [[ -z "$(file  -sL $device_id | grep "ext" || test $? =1 )" ]]; then',
+                                    r'  mkfs -t ext4 "${device_id}"',
+                                    r'else',
+                                    r'  echo "Using existing filesystem on ${device_id}"',
+                                    r'fi',
 
-            r'# Mount device to mount point',
-            r'for local_mount_point in $(findmnt -frnuo TARGET --source "${device_id}" || test $? = 1 ); do',
-            r'  if [[ "${local_mount_point}" == "${os_mount}" ]]; then',
-            r'      echo "${device_id} already mounted to ${os_mount}"',
-            r'      exit 0',
-            r'  else',
-            r'      echo "${device_id} is not mounted to ${os_mount}"',
-            r'  fi',
-            r'done',
-            r'mkdir -p "${os_mount}"',
-            r'mount "${device_id}" "${os_mount}"',
+                                    r'# Mount device to mount point',
+                                    r'for local_mount_point in $(findmnt -frnuo TARGET --source "${device_id}" || test $? = 1 ); do',
+                                    r'  if [[ "${local_mount_point}" == "${os_mount}" ]]; then',
+                                    r'      echo "${device_id} already mounted to ${os_mount}"',
+                                    r'      exit 0',
+                                    r'  else',
+                                    r'      echo "${device_id} is not mounted to ${os_mount}"',
+                                    r'  fi',
+                                    r'done',
+                                    r'mkdir -p "${os_mount}"',
+                                    r'mount "${device_id}" "${os_mount}"',
 
-            r'# Permanent mount',
-            r'if [[ -z "$( grep "${device_id}" /etc/fstab || test $? = 1 )" ]]; then',
-            r'  if [[ -n "$( findmnt -frnuo SOURCE --source "${device_id}" || test $? = 1 )" ]]; then',
-            r'      echo -e "${device_id} ${os_mount} ext4 defaults 0 0" >> /etc/fstab',
-            r'    else',
-            r'        echo "device ${device_id} is not mounted"',
-            r'        exit 1',
-            r'    fi',
-            r'else',
-            r'  echo "permanent mount setup ${device_id} to ${os_mount}"',
-            r'fi'
-        ]]
+                                    r'# Permanent mount',
+                                    r'if [[ -z "$( grep "${device_id}" /etc/fstab || test $? = 1 )" ]]; then',
+                                    r'  if [[ -n "$( findmnt -frnuo SOURCE --source "${device_id}" || test $? = 1 )" ]]; then',
+                                    r'      echo -e "${device_id} ${os_mount} ext4 defaults 0 0" >> /etc/fstab',
+                                    r'    else',
+                                    r'        echo "device ${device_id} is not mounted"',
+                                    r'        exit 1',
+                                    r'    fi',
+                                    r'else',
+                                    r'  echo "permanent mount setup ${device_id} to ${os_mount}"',
+                                    r'fi'
+                                ]]
+                                [#break]
+                            [#case "2023"]
+                                [#local device_id_line = {}]
+                                [#if dataVolume ]
+                                    [#local volumeIdShort = getReference(id)?remove_beginning("vol-")]
+                                    [#local device_id_line = {
+                                        "Fn::Sub" : [
+                                            r"device_id=$(readlink -f /dev/disk/by-id/nvme-Amazon_Elastic_Block_Store_vol${volumeId})",
+                                            {
+                                                "volumeId": "${volumeIdShort}"
+                                            }
+                                        ]
+                                    }
+                                    ]
+                                [#else]
+                                    [#local device_id_line = 'device_id="${deviceId}"']
+                                [/#if]
+                                [#local script = [
+                                    r'#!/bin/bash',
+                                    r'set -euo pipefail',
+                                    'exec > >(tee /var/log/hamlet_cfninit/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1',
+
+                                    '',
+                                    device_id_line,
+                                    'os_mount="${osMount}"',
+
+                                    r'# Ensure device exists',
+                                    r'if [[ ! -b "${device_id}" ]]; then'
+                                    r'  sleep 30s',
+                                    r'fi',
+                                    r'if [[ ! -b "${device_id}" ]]; then'
+                                    r'  echo "${device_id} not available"',
+                                    r'  exit 1',
+                                    r'fi',
+
+                                    r'# Create filesystem if required',
+                                    r'if [[ -z "$(file  -sL $device_id | grep "ext" || test $? =1 )" ]]; then',
+                                    r'  mkfs -t ext4 "${device_id}"',
+                                    r'else',
+                                    r'  echo "Using existing filesystem on ${device_id}"',
+                                    r'fi',
+
+                                    r'# Mount device to mount point',
+                                    r'for local_mount_point in $(findmnt -frnuo TARGET --source "${device_id}" || test $? = 1 ); do',
+                                    r'  if [[ "${local_mount_point}" == "${os_mount}" ]]; then',
+                                    r'      echo "${device_id} already mounted to ${os_mount}"',
+                                    r'      exit 0',
+                                    r'  else',
+                                    r'      echo "${device_id} is not mounted to ${os_mount}"',
+                                    r'  fi',
+                                    r'done',
+                                    r'mkdir -p "${os_mount}"',
+                                    r'mount "${device_id}" "${os_mount}"',
+
+                                    r'# Permanent mount',
+                                    r'if [[ -z "$( grep "${device_id}" /etc/fstab || test $? = 1 )" ]]; then',
+                                    r'  if [[ -n "$( findmnt -frnuo SOURCE --source "${device_id}" || test $? = 1 )" ]]; then',
+                                    r'      echo -e "${device_id} ${os_mount} ext4 defaults 0 0" >> /etc/fstab',
+                                    r'    else',
+                                    r'        echo "device ${device_id} is not mounted"',
+                                    r'        exit 1',
+                                    r'    fi',
+                                    r'else',
+                                    r'  echo "permanent mount setup ${device_id} to ${os_mount}"',
+                                    r'fi'
+                                ]]
+                                [#break]
+                        [/#switch]
+                        [#break]
+                [/#switch]
+                [#break]
+            [#break]
+        [/#switch]
 
         [#if dataVolume ]
 

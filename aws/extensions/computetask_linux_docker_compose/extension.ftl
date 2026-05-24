@@ -19,7 +19,9 @@
 
 [#macro shared_extension_computetask_linux_docker_compose_deployment_computetask occurrence ]
 
-    [#local version = "1.29.1"]
+    [#-- 2026-05-22 v2.39.4 works with docker buildx version installed on AL2023 --]
+    [#-- https://github.com/amazonlinux/amazon-linux-2023/issues/1032#issuecomment-3674146092 --]
+    [#local version = "v2.39.4"]
 
     [#local commands = {}]
     [#local commands += {
