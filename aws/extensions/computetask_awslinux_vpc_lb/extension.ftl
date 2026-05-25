@@ -21,6 +21,8 @@
 
     [#local files = {}]
     [#local commands = {}]
+    [#local solution = occurrence.Configuration.Solution ]
+    [#local operatingSystem = solution.ComputeInstance.OperatingSystem]
 
     [#list _context.Links as linkId,linkTarget]
 
@@ -51,27 +53,69 @@
                         [#local targetGroupArn = linkTargetAttributes["TARGET_GROUP_ARN"]]
 
                         [#local scriptName = "register_targetgroup_${portId}" ]
+                        [#local content = {}]
+
+                        [#switch operatingSystem.Family ]
+                            [#case "linux" ]
+                                [#switch operatingSystem.Distribution ]
+                                    [#case "awslinux" ]
+                                        [#switch operatingSystem.MajorVersion ]
+                                            [#case "1" ]
+                                            [#case "2"]
+                                                [#local content = {
+                                                    "Fn::Join" : [
+                                                        "\n",
+                                                        [
+                                                            r'#!/bin/bash',
+                                                            r'set -euo pipefail',
+                                                            'exec > >(tee /var/log/hamlet_cfninit/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1',
+                                                            {
+                                                                "Fn::Sub" : [
+                                                                    r'aws --region "${Region}" elbv2 register-targets --target-group-arn "${TargeGroupArn}" --targets "Id=$(curl http://169.254.169.254/latest/meta-data/instance-id)"',
+                                                                    {
+                                                                        "TargeGroupArn": targetGroupArn,
+                                                                        "Region" : { "Ref" : "AWS::Region" }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    ]
+                                                }]
+                                                [#break]
+                                            [#case "2023"]
+                                                [#local content = {
+                                                    "Fn::Join" : [
+                                                        "\n",
+                                                        [
+                                                            r'#!/bin/bash',
+                                                            r'set -euo pipefail',
+                                                            'exec > >(tee /var/log/hamlet_cfninit/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1',
+                                                            r'TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")',
+                                                            r'IMDS() { curl -s -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/$1"; }',
+                                                            r'instance_id="$(IMDS instance-id)"',
+                                                            {
+                                                                "Fn::Sub" : [
+                                                                    r'aws --region "${Region}" elbv2 register-targets --target-group-arn "${TargeGroupArn}" --targets "Id=${instance_id}"',
+                                                                    {
+                                                                        "TargeGroupArn": targetGroupArn,
+                                                                        "Region" : { "Ref" : "AWS::Region" }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    ]
+                                                }]
+                                                [#break]
+                                        [/#switch]
+                                        [#break]
+                                [/#switch]
+                                [#break]
+                            [#break]
+                        [/#switch]
+
                         [#local files += {
                             "/opt/hamlet_cfninit/${scriptName}.sh" : {
-                                "content" : {
-                                    "Fn::Join" : [
-                                        "\n",
-                                        [
-                                            r'#!/bin/bash',
-                                            r'set -euo pipefail',
-                                            'exec > >(tee /var/log/hamlet_cfninit/${scriptName}.log | logger -t ${scriptName} -s 2>/dev/console) 2>&1',
-                                            {
-                                                "Fn::Sub" : [
-                                                    r'aws --region "${Region}" elbv2 register-targets --target-group-arn "${TargeGroupArn}" --targets "Id=$(curl http://169.254.169.254/latest/meta-data/instance-id)"',
-                                                    {
-                                                        "TargeGroupArn": targetGroupArn,
-                                                        "Region" : { "Ref" : "AWS::Region" }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    ]
-                                },
+                                "content" : content,
                                 "mode" : "000755"
                             }
                         }]
