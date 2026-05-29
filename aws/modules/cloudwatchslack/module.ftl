@@ -39,13 +39,13 @@
             "Names" : "lambdaSourceUrl",
             "Type" : STRING_TYPE,
             "Description" : "A URL to the lambda zip package for sending alerts",
-            "Default" : "https://github.com/hamlet-io/lambda-cloudwatch-slack/releases/download/v1.4.0/cloudwatch-slack.zip"
+            "Default" : "https://github.com/hamlet-io/lambda-cloudwatch-slack/releases/download/v1.4.1/cloudwatch-slack.zip"
         },
         {
             "Names" : "lambdaSourceHash",
             "Type" : STRING_TYPE,
             "Description" : "A sha1 hash of the lambda image to ensure its the right one",
-            "Default" : "28789e61882f44246fa9ee1cfb4f82a05d7f5815"
+            "Default" : "d569a0ffb44605ae2b6661a62daefd0c9932225b"
         },
         {
             "Names" : "namePrefix",
