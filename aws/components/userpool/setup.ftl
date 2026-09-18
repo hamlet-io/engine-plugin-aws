@@ -28,6 +28,8 @@
     [#local userPoolDomainId           = resources["domain"].Id]
     [#local userPoolHostName           = resources["domain"].Name]
     [#local customDomainRequired       = ((resources["customdomain"].Id)!"")?has_content ]
+    [#local userpoolBrandingId         = resources["branding"].Id]
+
     [#if customDomainRequired ]
         [#local userPoolCustomDomainId = resources["customdomain"].Id ]
         [#local userPoolCustomDomainName = resources["customdomain"].Name ]
@@ -43,6 +45,14 @@
         [/#if]
     [/#if]
 
+    [#local managedLoginVersion = ""]
+    [#local useCognitoProvidedBranding = false]
+    [#if solution.HostedUI.Enabled && (solution.HostedUI.ManagedLoginVersion!"")?has_content ]
+        [#local managedLoginVersion = solution.HostedUI.ManagedLoginVersion]
+        [#local useCognitoProvidedBranding = solution.HostedUI.UseCognitoProvidedBranding]
+    [/#if]
+
+
     [#local wafAclResources = resources["wafacl"]!{} ]
     [#local wafSolution = solution.WAF]
     [#local wafLogStreamingResources = resources["wafLogStreaming"]!{} ]
@@ -57,6 +67,11 @@
 
     [#local defaultUserPoolClientRequired = false ]
     [#local defaultUserPoolClientConfigured = false ]
+
+    [#local webAuthnFactorConfiguration = "" ]
+    [#local webAuthnUserVerification = "" ]
+    [#local webAuthnRelyingPartyID = "" ]
+    [#local allowedFirstAuthFactors = [] ]
 
     [#if (resources["client"]!{})?has_content]
         [#local defaultUserPoolClientRequired = true ]
@@ -191,7 +206,7 @@
         [/#if]
     [/#list]
 
-    [#if ((mfaRequired) || ( solution.VerifyPhone))]
+    [#if ((mfaRequired) && ( solution.VerifyPhone))]
         [#if ! (solution.Schema["phone_number"]!"")?has_content ]
             [@fatal
                 message="Schema Attribute required: phone_number - Add Schema listed in detail"
@@ -207,6 +222,20 @@
 
         [#local smsConfig = getUserPoolSMSConfiguration( getReference(userPoolRoleId, ARN_ATTRIBUTE_TYPE), userPoolName )]
         [#local smsVerification = true]
+    [/#if]
+
+    [#if ((mfaRequired) && ( solution.PasskeyEnabled))]
+        [#switch solution.WebAuthnFactorConfiguration ]
+            [#case "single" ]
+                [#local webAuthnFactorConfiguration = "SINGLE_FACTOR"]
+                [#break]
+            [#case "mfa" ]
+                [#local webAuthnFactorConfiguration = "MULTI_FACTOR_WITH_USER_VERIFICATION"]
+                [#break]
+        [/#switch]
+        [#local webAuthnUserVerification = solution.WebAuthnUserVerification]
+        [#local webAuthnRelyingPartyID = userPoolCustomDomainName ]
+        [#local allowedFirstAuthFactors = solution.AllowedFirstAuthFactors]
     [/#if]
 
     [#if solution.VerifyEmail || loginAliases?seq_contains("email")]
@@ -602,6 +631,7 @@
             [#local clientDepedencies = []]
 
             [#local oAuthScopes = subSolution.OAuth.Scopes]
+            [#local explicitAuthFlows = subSolution.ExplicitAuthFlows ]
 
             [#list subSolution.AuthProviders as authProvider ]
                 [#if authProvider?upper_case == "COGNITO" ]
@@ -616,7 +646,7 @@
                                                 },
                                                 false
                                             )]
-                    [#if linkTarget?has_content && linkTarget.Configuration.Solution.Enabled  ]]
+                    [#if linkTarget?has_content && linkTarget.Configuration.Solution.Enabled  ]
                         [#local identityProviders += [ linkTarget.State.Attributes["PROVIDER_NAME"] ]]
                         [#local clientDepedencies += [ linkTarget.State.Resources["authprovider"].Id ]]
                     [/#if]
@@ -633,7 +663,7 @@
                                             },
                                             false
                                         )]
-                [#if linkTarget?has_content && linkTarget.Configuration.Solution.Enabled ]]
+                [#if linkTarget?has_content && linkTarget.Configuration.Solution.Enabled ]
 
                     [#local resourceIdentifier = getReference( linkTarget.State.Resources["resourceserver"].Id )  ]
 
@@ -709,6 +739,7 @@
                     tokenValidity=subSolution.ClientTokenValidity
                     oAuthFlows=subSolution.OAuth.Flows
                     oAuthScopes=oAuthScopes
+                    explicitAuthFlows=explicitAuthFlows
                     oAuthEnabled=subSolution.OAuth.Enabled
                     identityProviders=identityProviders
                     callbackUrls=callbackUrls
@@ -892,7 +923,10 @@
                     emailVerificationSubjectByLink,
                     smsVerificationMessage
                 )
-
+            webAuthnFactorConfiguration=webAuthnFactorConfiguration
+            webAuthnUserVerification=webAuthnUserVerification
+            webAuthnRelyingPartyID=webAuthnRelyingPartyID
+            allowedFirstAuthFactors=allowedFirstAuthFactors
         /]
 
         [@createUserPoolDomain
@@ -909,6 +943,16 @@
                 domainName=userPoolCustomDomainName
                 customDomain=true
                 certificateArn=userPoolCustomDomainCertArn
+                managedLoginVersion=managedLoginVersion
+            /]
+        [/#if]
+
+        [#if managedLoginVersion?has_content ]
+            [@createUserPoolManagedLoginBranding 
+                id=userpoolBrandingId
+                clientId=userPoolClientId
+                userPoolId=userPoolId
+                useCognitoProvidedBranding=useCognitoProvidedBranding
             /]
         [/#if]
 

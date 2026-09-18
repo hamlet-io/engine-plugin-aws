@@ -44,6 +44,15 @@
     }
 ]
 
+[#assign USERPOOL_MANAGEDLOGINBRANDING_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        }
+    }
+
+]
+
 [#assign USERPOOL_RESOURCESERVER_OUTPUT_MAPPINGS =
     {
         REFERENCE_ATTRIBUTE_TYPE : {
@@ -345,6 +354,10 @@
     emailInviteMessage=""
     emailInviteSubject=""
     smsAuthenticationMessage=""
+    webAuthnFactorConfiguration=""
+    webAuthnUserVerification=""
+    webAuthnRelyingPartyID=""
+    allowedFirstAuthFactors=[]
     mfaMethods=[]
     loginAliases=[]
     autoVerify=[]
@@ -405,7 +418,29 @@
                 "Priority" : 1
             }
         ]]
+    [/#if]
 
+    [#local policies = {}]
+
+
+    [#if passwordPolicy?has_content]
+        [#local policies = mergeObjects(
+                    policies,
+                    passwordPolicy
+                )
+        ]
+    [/#if]
+
+    [#if allowedFirstAuthFactors?has_content]
+        [#local policies = mergeObjects(
+                    policies,
+                    {
+                        "SignInPolicy": {
+                            "AllowedFirstAuthFactors" : allowedFirstAuthFactors
+                        }
+                    }
+                )
+        ]
     [/#if]
 
     [@cfResource
@@ -435,7 +470,8 @@
             } +
             attributeIfContent(
                 "Policies",
-                passwordPolicy
+                policies,
+                policies
             ) +
             attributeIfContent(
                 "AliasAttributes",
@@ -498,6 +534,18 @@
                  userDeviceTracking
              ) +
              attributeIfContent(
+                 "WebAuthnFactorConfiguration",
+                 webAuthnFactorConfiguration
+             ) +
+             attributeIfContent(
+                 "WebAuthnUserVerification",
+                 webAuthnUserVerification
+             ) +
+             attributeIfContent(
+                 "WebAuthnRelyingPartyID",
+                 webAuthnRelyingPartyID
+             ) +
+             attributeIfContent(
                  "VerificationMessageTemplate",
                  verificationMessageTemplate
              ) +
@@ -518,6 +566,7 @@
         tokenValidity=30
         oAuthFlows=[]
         oAuthScopes=[]
+        explicitAuthFlows=[]
         oAuthEnabled=true
         identityProviders=[]
         callbackUrls=[]
@@ -549,6 +598,10 @@
                     oAuthScopes
                 ),
                 {}
+            ) +
+            attributeIfContent(
+                "ExplicitAuthFlows",
+                explicitAuthFlows
             ) +
             attributeIfContent(
                 "SupportedIdentityProviders",
@@ -618,6 +671,7 @@
         domainName
         customDomain=false
         certificateArn=""
+        managedLoginVersion=""
         dependencies=""
         outputId=""
  ]
@@ -634,8 +688,33 @@
             {
                 "CertificateArn" : certificateArn
             }
+        ) +
+        attributeIfContent(
+            "ManagedLoginVersion",
+            managedLoginVersion
         )
         outputs=USERPOOL_DOMAIN_OUTPUT_MAPPINGS
+        outputId=outputId
+        dependencies=dependencies
+    /]
+[/#macro]
+
+[#macro createUserPoolManagedLoginBranding id
+    clientId
+    userPoolId
+    useCognitoProvidedBranding=false
+    dependencies=""
+    outputId=""
+]
+    [@cfResource
+        id=id
+        type="AWS::Cognito::ManagedLoginBranding"
+        properties={
+            "ClientId" : getReference(clientId),
+            "UserPoolId" : getReference(userPoolId),
+            "UseCognitoProvidedValues" : useCognitoProvidedBranding
+        }
+        outputs=USERPOOL_MANAGEDLOGINBRANDING_OUTPUT_MAPPINGS
         outputId=outputId
         dependencies=dependencies
     /]

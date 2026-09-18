@@ -123,6 +123,10 @@
                         "Name" : userPoolDomainName,
                         "Type" : AWS_COGNITO_USERPOOL_DOMAIN_RESOURCE_TYPE
                     },
+                    "branding" : {
+                        "Id" : formatResourceId(AWS_COGNITO_USERPOOL_BRANDING_RESOURCE_TYPE, occurrence.Core.Id),
+                        "Type" : AWS_COGNITO_USERPOOL_BRANDING_RESOURCE_TYPE
+                    },
                     "role" : {
                         "Id" : formatResourceId(AWS_IAM_ROLE_RESOURCE_TYPE, occurrence.Core.Id),
                         "Type" : AWS_IAM_ROLE_RESOURCE_TYPE,

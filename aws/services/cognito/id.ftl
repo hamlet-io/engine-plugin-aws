@@ -13,6 +13,12 @@
     service=AWS_COGNITO_SERVICE
     resource=AWS_COGNITO_USERPOOL_CLIENT_RESOURCE_TYPE
 /]
+[#assign AWS_COGNITO_USERPOOL_BRANDING_RESOURCE_TYPE = "userpoolBranding"]
+[@addServiceResource
+    provider=AWS_PROVIDER
+    service=AWS_COGNITO_SERVICE
+    resource=AWS_COGNITO_USERPOOL_BRANDING_RESOURCE_TYPE
+/]
 [#assign AWS_COGNITO_IDENTITYPOOL_RESOURCE_TYPE = "identitypool"]
 [@addServiceResource
     provider=AWS_PROVIDER
