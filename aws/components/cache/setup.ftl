@@ -185,54 +185,114 @@
                 [/#list]
             [/#list]
 
-            [@cfResource
-                id=cacheId
-                type="AWS::ElastiCache::CacheCluster"
-                properties=
-                    {
-                        "Engine": engine,
-                        "EngineVersion": engineVersion,
-                        "CacheNodeType" : processorProfile.Processor,
-                        "Port" : portObject.Port,
-                        "CacheParameterGroupName": getReference(cacheParameterGroupId),
-                        "CacheSubnetGroupName": getReference(cacheSubnetGroupId),
-                        "VpcSecurityGroupIds":[getReference(cacheSecurityGroupId)]
-                    } +
-                    attributeIfContent(
-                        "PreferredMaintenanceWindow",
-                        solution.MaintenanceWindow.Configured?then(
-                                getAmazonCacheMaintenanceWindow(
-                                    solution.MaintenanceWindow.DayOfTheWeek,
-                                    solution.MaintenanceWindow.TimeOfDay,
-                                    solution.MaintenanceWindow.TimeZone
-                                ),
-                                ""
-                            )
+            [#switch solution.CacheType]
+                [#case "CacheCluster"]
+                    [@cfResource
+                        id=cacheId
+                        type="AWS::ElastiCache::CacheCluster"
+                        properties=
+                            {
+                                "Engine": engine,
+                                "EngineVersion": engineVersion,
+                                "CacheNodeType" : processorProfile.Processor,
+                                "Port" : portObject.Port,
+                                "CacheParameterGroupName": getReference(cacheParameterGroupId),
+                                "CacheSubnetGroupName": getReference(cacheSubnetGroupId),
+                                "VpcSecurityGroupIds":[getReference(cacheSecurityGroupId)]
+                            } +
+                            attributeIfContent(
+                                "PreferredMaintenanceWindow",
+                                solution.MaintenanceWindow.Configured?then(
+                                        getAmazonCacheMaintenanceWindow(
+                                            solution.MaintenanceWindow.DayOfTheWeek,
+                                            solution.MaintenanceWindow.TimeOfDay,
+                                            solution.MaintenanceWindow.TimeZone
+                                        ),
+                                        ""
+                                    )
 
-                    ) +
-                    multiAZ?then(
-                        {
-                            "AZMode": "cross-az",
-                            "PreferredAvailabilityZones" : getCFAWSAzReferences(getZones()?map( x -> x.Id)),
-                            "NumCacheNodes" : processorProfile.CountPerZone * getZones()?size
-                        },
-                        {
-                            "AZMode": "single-az",
-                            "PreferredAvailabilityZone" : getCFAWSAzReference(getZones()[0].Id),
-                            "NumCacheNodes" : processorProfile.CountPerZone
-                        }
-                    ) +
-                    attributeIfTrue(
-                        "SnapshotRetentionLimit",
-                        solution.Backup.RetentionPeriod > 0,
-                        solution.Backup.RetentionPeriod
-                    )
-                tags=getOccurrenceTags(occurrence)
-                outputs=engine?switch(
-                    "memcached", MEMCACHED_OUTPUT_MAPPINGS,
-                    "redis", REDIS_OUTPUT_MAPPINGS,
-                    {})
-            /]
+                            ) +
+                            multiAZ?then(
+                                {
+                                    "AZMode": "cross-az",
+                                    "PreferredAvailabilityZones" : getCFAWSAzReferences(getZones()?map( x -> x.Id)),
+                                    "NumCacheNodes" : processorProfile.CountPerZone * getZones()?size
+                                },
+                                {
+                                    "AZMode": "single-az",
+                                    "PreferredAvailabilityZone" : getCFAWSAzReference(getZones()[0].Id),
+                                    "NumCacheNodes" : processorProfile.CountPerZone
+                                }
+                            ) +
+                            attributeIfTrue(
+                                "SnapshotRetentionLimit",
+                                solution.Backup.RetentionPeriod > 0,
+                                solution.Backup.RetentionPeriod
+                            )
+                        tags=getOccurrenceTags(occurrence)
+                        outputs=engine?switch(
+                            "memcached", MEMCACHED_OUTPUT_MAPPINGS,
+                            "redis", REDIS_OUTPUT_MAPPINGS,
+                            {})
+                    /]
+                    [#break]
+                [#case "ReplicationGroup"]
+
+                    [@cfResource
+                        id=cacheId
+                        type="AWS::ElastiCache::ReplicationGroup"
+                        properties=
+                            {
+                                "ReplicationGroupDescription": cacheId,
+                                "AtRestEncryptionEnabled": solution.Encrypted,
+                                "TransitEncryptionEnabled": solution.Encrypted,
+                                "TransitEncryptionMode": solution.TransitEncryptionMode,
+                                "ClusterMode": solution.ClusterMode,
+                                "AutomaticFailoverEnabled": (solution.ClusterMode != "disabled"),
+                                "Engine": engine,
+                                "EngineVersion": engineVersion,
+                                "CacheNodeType" : processorProfile.Processor,
+                                "Port" : portObject.Port,
+                                "CacheParameterGroupName": getReference(cacheParameterGroupId),
+                                "CacheSubnetGroupName": getReference(cacheSubnetGroupId),
+                                "SecurityGroupIds":[getReference(cacheSecurityGroupId)]
+                            } +
+                            attributeIfContent(
+                                "PreferredMaintenanceWindow",
+                                solution.MaintenanceWindow.Configured?then(
+                                        getAmazonCacheMaintenanceWindow(
+                                            solution.MaintenanceWindow.DayOfTheWeek,
+                                            solution.MaintenanceWindow.TimeOfDay,
+                                            solution.MaintenanceWindow.TimeZone
+                                        ),
+                                        ""
+                                    )
+
+                            ) +
+                            multiAZ?then(
+                                {
+                                    "MultiAZEnabled": true,
+                                    "PreferredCacheClusterAZs" : getCFAWSAzReferences(getZones()?map( x -> x.Id)),
+                                    "NumCacheClusters" : processorProfile.CountPerZone * getZones()?size
+                                },
+                                {
+                                    "MultiAZEnabled": false,
+                                    "PreferredCacheClusterAZs" : [getCFAWSAzReference(getZones()[0].Id)],
+                                    "NumCacheClusters" : processorProfile.CountPerZone
+                                }
+                            ) +
+                            attributeIfTrue(
+                                "SnapshotRetentionLimit",
+                                solution.Backup.RetentionPeriod > 0,
+                                solution.Backup.RetentionPeriod
+                            )
+                        tags=getOccurrenceTags(occurrence)
+                        outputs=engine?switch(
+                            "redis", REDIS_REPLICATION_GROUP_OUTPUT_MAPPINGS,
+                            {})
+                    /]
+                    [#break]
+            [/#switch]
         [/#if]
     [/#if]
 [/#macro]

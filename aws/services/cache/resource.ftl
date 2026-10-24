@@ -13,6 +13,21 @@
         }
     }
 ]
+
+[#assign REDIS_REPLICATION_GROUP_OUTPUT_MAPPINGS =
+    {
+        REFERENCE_ATTRIBUTE_TYPE : {
+            "UseRef" : true
+        },
+        DNS_ATTRIBUTE_TYPE : {
+            "Attribute" : "PrimaryEndPoint.Address"
+        },
+        PORT_ATTRIBUTE_TYPE : {
+            "Attribute" : "PrimaryEndPoint.Port"
+        }
+    }
+]
+
 [#assign MEMCACHED_OUTPUT_MAPPINGS =
     {
         REFERENCE_ATTRIBUTE_TYPE : {
