@@ -232,7 +232,7 @@
                     "StorageEncrypted" : true,
                     "KmsKeyId" : getArn(kmsKeyId)
                 },
-                ( (!(snapshotArn?has_content) && encrypted) && !clusterMember )
+                ( (encrypted) && !clusterMember )
             ) +
             [#-- If restoring from a snapshot the database details will be provided by the snapshot --]
             valueIfTrue(
